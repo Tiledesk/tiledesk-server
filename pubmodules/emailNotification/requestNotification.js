@@ -1,36 +1,36 @@
 'use strict';
 
-var emailService = require("../../services/emailService");
-var Project = require("../../models/project");
-var Request = require("../../models/request");
-var RequestConstants = require("../../models/requestConstants");
-var Project_user = require("../../models/project_user");
+let emailService = require("../../services/emailService");
+let Project = require("../../models/project");
+let Request = require("../../models/request");
+let RequestConstants = require("../../models/requestConstants");
+let Project_user = require("../../models/project_user");
 
-var User = require("../../models/user");
-var Lead = require("../../models/lead");
-var Message = require("../../models/message");
+let User = require("../../models/user");
+let Lead = require("../../models/lead");
+let Message = require("../../models/message");
 const requestEvent = require('../../event/requestEvent');
-var winston = require('../../config/winston');
-var RoleConstants = require("../../models/roleConstants");
-var ChannelConstants = require("../../models/channelConstants");
-var cacheUtil = require('../../utils/cacheUtil');
+let winston = require('../../config/winston');
+let RoleConstants = require("../../models/roleConstants");
+let ChannelConstants = require("../../models/channelConstants");
+let cacheUtil = require('../../utils/cacheUtil');
 
 const messageEvent = require('../../event/messageEvent');
-var mongoose = require('mongoose');
-var jwt = require('jsonwebtoken');
+let mongoose = require('mongoose');
+let jwt = require('jsonwebtoken');
 const uuidv4 = require('uuid/v4');
-var config = require('../../config/database');
-var configGlobal = require('../../config/global');
+let config = require('../../config/database');
+let configGlobal = require('../../config/global');
 
-var widgetConfig = require('../../config/widget');
-var widgetTestLocation = process.env.WIDGET_LOCATION || widgetConfig.testLocation;
+let widgetConfig = require('../../config/widget');
+let widgetTestLocation = process.env.WIDGET_LOCATION || widgetConfig.testLocation;
 widgetTestLocation = widgetTestLocation + "assets/twp/index.html";
 
 
 
 let configSecret = process.env.GLOBAL_SECRET || config.secret;
 
-var pKey = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY;
+let pKey = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY;
 // console.log("pKey",pKey);
 
 if (pKey) {
@@ -53,7 +53,7 @@ class RequestNotification {
 listen() {
 
   winston.debug("RequestNotification listen");
-    var that = this; 
+    let that = this; 
     
 
       
@@ -64,7 +64,7 @@ listen() {
     }
 
 
-    var messageCreateKey = 'message.create';
+    let messageCreateKey = 'message.create';
     if (messageEvent.queueEnabled) {
       messageCreateKey = 'message.create.queue';
     }
@@ -131,7 +131,7 @@ listen() {
       });
      });
 
-     var requestCreateKey = 'request.create';
+     let requestCreateKey = 'request.create';
      if (requestEvent.queueEnabled) {
        requestCreateKey = 'request.create.queue';
      }
@@ -154,7 +154,7 @@ listen() {
      });
 
 
-     var requestParticipantsUpdateKey = 'request.participants.update';
+     let requestParticipantsUpdateKey = 'request.participants.update';
      if (requestEvent.queueEnabled) {
       requestParticipantsUpdateKey = 'request.participants.update.queue';
      }
@@ -164,7 +164,7 @@ listen() {
 
       winston.debug("requestEvent request.participants.update");
 
-      var request = data.request;
+      let request = data.request;
       
       setImmediate(() => {
    
@@ -189,7 +189,7 @@ listen() {
 
     //  TODO Send email also for addAgent and reassign. Alessio request for pooled only?
 
-    var requestCloseExtendedKey = 'request.close.extended';
+    let requestCloseExtendedKey = 'request.close.extended';
     if (requestEvent.queueEnabled) {
       requestCloseExtendedKey = 'request.close.extended.queue';
     }
@@ -197,14 +197,14 @@ listen() {
     requestEvent.on(requestCloseExtendedKey, function(data) {
       winston.debug('requestEvent.on(requestCloseExtendedKey ' + requestCloseExtendedKey);
       setImmediate(() => {
-        var request = data.request;
-        var notify = data.notify;
+        let request = data.request;
+        let notify = data.notify;
         if (notify==false) {
           winston.debug("sendTranscriptByEmail notify disabled", request);
           return;
         }
-        var id_project = request.id_project;
-        var request_id  = request.request_id;
+        let id_project = request.id_project;
+        let request_id  = request.request_id;
  
         try {                
           Project.findOne({_id: id_project, status: 100}, function(err, project){   
@@ -263,7 +263,7 @@ listen() {
 
 sendToUserEmailChannelEmail(projectid, message) {
   winston.debug("sendToUserEmailChannelEmail");
-  var that = this;
+  let that = this;
   try {
 
     if (!message.request) {
@@ -301,30 +301,30 @@ sendToUserEmailChannelEmail(projectid, message) {
       
       winston.debug("sending user email to  "+ lead.email);
 
-      var signOptions = {
+      let signOptions = {
         issuer:  'https://tiledesk.com',
         subject:  'userexternal',
         audience:  'https://tiledesk.com',
         jwtid: uuidv4()
       };
 
-      var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+      let alg = process.env.GLOBAL_SECRET_ALGORITHM;
       if (alg) {
         signOptions.algorithm = alg;
       }
 
 
-      var recipient = lead.lead_id;
+      let recipient = lead.lead_id;
       winston.debug("recipient:"+ recipient);
 
       let userEmail = {_id: recipient, firstname: lead.fullname, lastname: lead.fullname, email: lead.email, attributes: lead.attributes};
       winston.debug("userEmail  ",userEmail);
 
 
-      var token = jwt.sign(userEmail, configSecret, signOptions); //priv_jwt pp_jwt
+      let token = jwt.sign(userEmail, configSecret, signOptions); //priv_jwt pp_jwt
       winston.debug("token  "+token);
 
-      var sourcePage = widgetTestLocation + "?tiledesk_projectid=" 
+      let sourcePage = widgetTestLocation + "?tiledesk_projectid=" 
                   + projectid + "&project_name="+encodeURIComponent(project.name)                   
 
       if (message.request.sourcePage) {
@@ -344,7 +344,7 @@ sendToUserEmailChannelEmail(projectid, message) {
       winston.debug("sourcePage  "+sourcePage);
 
 
-      var tokenQueryString;      
+      let tokenQueryString;      
       if(sourcePage && sourcePage.indexOf('?')>-1) {  //controllo superfluo visto che lo metto prima? ma lascio comunque per indipendenza
         tokenQueryString =  encodeURIComponent("&tiledesk_jwt=JWT "+token)
       }else {
@@ -396,7 +396,7 @@ async notifyFollowers(savedRequest, project, message) {
   // Cannot read property '_id' of undefined at RequestNotification.notifyFollowers (/usr/src/app/pubmodules/emailNotification/requestNotification.js:358:62) at /usr/src/app
   // forse meglio .id
   
-  var reqWithFollowers = await Request.findById(savedRequest._id).populate('followers').exec();  // cache_attention
+  let reqWithFollowers = await Request.findById(savedRequest._id).populate('followers').exec();  // cache_attention
   winston.debug("reqWithFollowers");
   winston.debug("reqWithFollowers",reqWithFollowers);
   // console.log("reqWithFollowers",reqWithFollowers);
@@ -409,7 +409,7 @@ async notifyFollowers(savedRequest, project, message) {
        winston.debug("project_user", project_user); 
         //TODO skip participants from followers
 
-      var userid = project_user.id_user;
+      let userid = project_user.id_user;
       
        if (project_user.settings && project_user.settings.email && project_user.settings.email.notification && project_user.settings.email.notification.conversation && project_user.settings.email.notification.conversation.ticket && project_user.settings.email.notification.conversation.ticket.follower == false ) {
          return winston.verbose("RequestNotification email notification for the user with id " +  userid+ " the follower conversation ticket is disabled");
@@ -446,7 +446,7 @@ async notifyFollowers(savedRequest, project, message) {
 
 sendToFollower(projectid, message) {
   winston.debug("sendToFollower");            
-  var that = this;
+  let that = this;
     let savedRequest = message.request;
       // send email
       try {
@@ -484,7 +484,7 @@ sendToFollower(projectid, message) {
 }
 
 sendToAgentEmailChannelEmail(projectid, message) {
-  var that = this;
+  let that = this;
     let savedRequest = message.request;
       // send email
       try {
@@ -532,7 +532,7 @@ sendToAgentEmailChannelEmail(projectid, message) {
 
 
                     
-                    var snapshotAgents = await Request.findById(savedRequest.id).select({"snapshot":1}).exec();
+                    let snapshotAgents = await Request.findById(savedRequest.id).select({"snapshot":1}).exec();
 
                     winston.debug('snapshotAgents',snapshotAgents);                              
 
@@ -543,15 +543,15 @@ sendToAgentEmailChannelEmail(projectid, message) {
                       return winston.warn("RequestNotification snapshotAgents.snapshot.agents is null :(. You are closing an old request?", savedRequest);
                     }
                     
-                    //  var allAgents = savedRequest.agents;
-                     var allAgents = snapshotAgents.snapshot.agents;
+                    //  let allAgents = savedRequest.agents;
+                     let allAgents = snapshotAgents.snapshot.agents;
                     // winston.debug("allAgents", allAgents);
      
                      allAgents.forEach(project_user => {
                     //  winston.debug("project_user", project_user); //DON'T UNCOMMENT THIS. OTHERWISE this.agents.filter of models/request.js:availableAgentsCount has .filter not found.
      
   
-                    var userid = project_user.id_user;
+                    let userid = project_user.id_user;
                     
                      if (project_user.settings && project_user.settings.email && project_user.settings.email.notification && project_user.settings.email.notification.conversation && project_user.settings.email.notification.conversation.ticket && project_user.settings.email.notification.conversation.ticket.pooled == false ) {
                        return winston.verbose("RequestNotification email notification for the user with id " +  userid+ " the pooled conversation ticket is disabled");
@@ -588,7 +588,7 @@ sendToAgentEmailChannelEmail(projectid, message) {
                       }
   
   
-                      var assignedId = savedRequest.participants[0];
+                      let assignedId = savedRequest.participants[0];
   
                       //  winston.info("assignedId1:"+ assignedId);
   
@@ -696,7 +696,7 @@ sendEmailChannelTakingNotification(projectid, request) {
 
 sendUserEmail(projectid, message) {
   winston.debug("sendUserEmail");
-  var that = this;
+  let that = this;
 
  
   try {
@@ -751,13 +751,13 @@ sendUserEmail(projectid, message) {
       
       
 
-        var recipient = message.request.lead.lead_id;
+        let recipient = message.request.lead.lead_id;
         winston.debug("recipient:"+ recipient);
 
-        var isObjectId = mongoose.Types.ObjectId.isValid(recipient);
+        let isObjectId = mongoose.Types.ObjectId.isValid(recipient);
         winston.debug("isObjectId:"+ isObjectId);
 
-        var queryProjectUser ={ id_project: projectid, status: "active"};
+        let queryProjectUser ={ id_project: projectid, status: "active"};
 
         
         if (isObjectId) {          
@@ -785,14 +785,14 @@ sendUserEmail(projectid, message) {
               if (lead && lead.email) {
                   winston.debug("sending user email to  "+ lead.email);
 
-                  var signOptions = {
+                  let signOptions = {
                     issuer:  'https://tiledesk.com',
                     subject:  'guest',
                     audience:  'https://tiledesk.com',
                     jwtid: uuidv4()
                   };
 
-                  var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+                  let alg = process.env.GLOBAL_SECRET_ALGORITHM;
                   if (alg) {
                     signOptions.algorithm = alg;
                   }
@@ -801,10 +801,10 @@ sendUserEmail(projectid, message) {
                   winston.debug("userAnonym  ",userAnonym);
 
         
-                  var token = jwt.sign(userAnonym, configSecret, signOptions); //priv_jwt pp_jwt
+                  let token = jwt.sign(userAnonym, configSecret, signOptions); //priv_jwt pp_jwt
                   winston.debug("token  "+token);
 
-                  var sourcePage = widgetTestLocation + "?tiledesk_projectid=" 
+                  let sourcePage = widgetTestLocation + "?tiledesk_projectid=" 
                   + projectid + "&project_name="+encodeURIComponent(project.name)                   
 
                   if (message.request.sourcePage) {
@@ -823,7 +823,7 @@ sendUserEmail(projectid, message) {
 
                   winston.debug("sourcePage  "+sourcePage);
 
-                  var tokenQueryString;
+                  let tokenQueryString;
                   if(sourcePage && sourcePage.indexOf('?')>-1) {  //controllo superfluo visto che lo metto prima? ma lascio comunque per indipendenza
                     tokenQueryString =  encodeURIComponent("&tiledesk_jwt=JWT "+token)
                   }else {
@@ -890,7 +890,7 @@ sendAgentEmail(projectid, savedRequest) {
 
 
                  
-                  var snapshotAgents = savedRequest; //riassegno varibile cosi nn cambio righe successive
+                  let snapshotAgents = savedRequest; //riassegno varibile cosi nn cambio righe successive
 
                   
 
@@ -910,18 +910,18 @@ sendAgentEmail(projectid, savedRequest) {
                     return winston.warn("RequestNotification snapshotAgents.snapshot.agents is null :(. You are closing an old request?", savedRequest);
                   }
 
-                  //  var allAgents = savedRequest.agents;
-                   var allAgents = snapshotAgents.snapshot.agents;
+                  //  let allAgents = savedRequest.agents;
+                   let allAgents = snapshotAgents.snapshot.agents;
             
-                  // //  var allAgents = savedRequest.agents;
-                  //  var allAgents = savedRequest.snapshot.agents;
+                  // //  let allAgents = savedRequest.agents;
+                  //  let allAgents = savedRequest.snapshot.agents;
                   // // winston.debug("allAgents", allAgents);
    
                   allAgents.forEach(project_user => {
                   //  winston.debug("project_user", project_user); //DON'T UNCOMMENT THIS. OTHERWISE this.agents.filter of models/request.js:availableAgentsCount has .filter not found.
    
 
-                  var userid = project_user.id_user;
+                  let userid = project_user.id_user;
                   
                    if (project_user.settings && project_user.settings.email && project_user.settings.email.notification && project_user.settings.email.notification.conversation && project_user.settings.email.notification.conversation.pooled == false ) {
                      return winston.verbose("RequestNotification email notification for the user with id " +  userid+ " the pooled conversation is disabled");
@@ -960,7 +960,7 @@ sendAgentEmail(projectid, savedRequest) {
                     }
 
 
-                    var assignedId = savedRequest.participants[0];
+                    let assignedId = savedRequest.participants[0];
 
                     //  winston.info("assignedId1:"+ assignedId);
 
@@ -1004,7 +1004,7 @@ sendAgentEmail(projectid, savedRequest) {
                             //  if (user.emailverified) {    enable it?     send anyway to improve engagment for new account    
                             
                             
-                            // var signOptions = {
+                            // let signOptions = {
                             //   issuer:  'https://tiledesk.com',
                             //   subject:  'user',
                             //   audience:  'https://tiledesk.com',
@@ -1015,7 +1015,7 @@ sendAgentEmail(projectid, savedRequest) {
                             // winston.debug("userObject  ",userObject);
           
                   
-                            // var agentToken = jwt.sign(userObject, configSecret, signOptions);
+                            // let agentToken = jwt.sign(userObject, configSecret, signOptions);
                             // winston.debug("agentToken  "+agentToken);
 
                             
@@ -1101,7 +1101,7 @@ sendAgentEmail(projectid, savedRequest) {
  
  
  
-var requestNotification = new RequestNotification();
+let requestNotification = new RequestNotification();
 
 
 module.exports = requestNotification;

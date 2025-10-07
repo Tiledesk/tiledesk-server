@@ -1,6 +1,6 @@
 'use strict';
 
-var winston = require('../../config/winston');
+let winston = require('../../config/winston');
 
 const MaskData = require("maskdata");
 
@@ -16,15 +16,15 @@ const maskOptions = {
   };
 
 
-var firebaseConfig = require('./firebaseConfig');
+let firebaseConfig = require('./firebaseConfig');
 
-var firebaseConfigFilePath = process.env.FIREBASE_CONFIG_FILE || '../../.firebasekey.json';
+let firebaseConfigFilePath = process.env.FIREBASE_CONFIG_FILE || '../../.firebasekey.json';
 
 winston.info('Chat21 channel- FirebaseConnector firebaseConfig.databaseURL: '+ firebaseConfig.databaseUrl);
 
-var private_key = process.env.FIREBASE_PRIVATE_KEY;
+let private_key = process.env.FIREBASE_PRIVATE_KEY;
 
-var maskedprivate_key;
+let maskedprivate_key;
 if (private_key) {
   maskedprivate_key = MaskData.maskPhone(private_key, maskOptions);
 }else {
@@ -32,12 +32,12 @@ if (private_key) {
 }
 
 winston.info('Chat21 channel - FirebaseConnector private_key: '+ maskedprivate_key);
-// var private_key_masked = private_key.replace(/\d(?=\d{4})/g, "*");
+// let private_key_masked = private_key.replace(/\d(?=\d{4})/g, "*");
 // winston.info('firebaseConnector private_key:'+ private_key_masked);// <-- TODO obscure it
 
-var client_email = process.env.FIREBASE_CLIENT_EMAIL;
+let client_email = process.env.FIREBASE_CLIENT_EMAIL;
 
-var maskedclient_email;
+let maskedclient_email;
 if (client_email) {
   maskedclient_email = MaskData.maskEmail2(client_email, maskOptions);
 } else {
@@ -46,11 +46,11 @@ if (client_email) {
 winston.info('Chat21 channel - FirebaseConnector client_email: '+ maskedclient_email);
 
 
-var firebase_project_id = process.env.FIREBASE_PROJECT_ID;
+let firebase_project_id = process.env.FIREBASE_PROJECT_ID;
 winston.info('Chat21 channel - FirebaseConnector firebase_project_id: '+ firebase_project_id);
 
 // https://stackoverflow.com/questions/41287108/deploying-firebase-app-with-service-account-to-heroku-environment-variables-wit
-var serviceAccount;
+let serviceAccount;
 
 if (!private_key || !client_email) {
   serviceAccount = require(firebaseConfigFilePath);
@@ -73,7 +73,7 @@ const admin = require('firebase-admin');
     databaseURL: firebaseConfig.databaseURL
   });     
 
-//var firestore = admin.firestore();
+//let firestore = admin.firestore();
 //end firestore
 
 

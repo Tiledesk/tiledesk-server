@@ -1,24 +1,24 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
-var User = require('../models/user');
-var projectService = require('../services/projectService');
-var requestService = require('../services/requestService');
-var userService = require('../services/userService');
-var leadService = require('../services/leadService');
-var messageService = require('../services/messageService');
+let User = require('../models/user');
+let projectService = require('../services/projectService');
+let requestService = require('../services/requestService');
+let userService = require('../services/userService');
+let leadService = require('../services/leadService');
+let messageService = require('../services/messageService');
 
 //Require the dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
-var winston = require('../config/winston');
-var jwt = require('jsonwebtoken');
+let winston = require('../config/winston');
+let jwt = require('jsonwebtoken');
 // chai.config.includeStack = true;
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 chai.use(chaiHttp);
 
@@ -29,13 +29,13 @@ describe('MessageRoute', () => {
   it('create', function (done) {
     // this.timeout(10000);
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
      projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function(savedProjectAndPU) {
      
-      var savedProject = savedProjectAndPU.project;
+      let savedProject = savedProjectAndPU.project;
 
           chai.request(server)
             .post('/'+ savedProject._id + '/requests/req123/messages')
@@ -83,8 +83,8 @@ describe('MessageRoute', () => {
 it('getall', function (done) {
   // this.timeout(10000);
 
-  var email = "test-ssa-" + Date.now() + "@email.com";
-  var pwd = "pwd";
+  let email = "test-ssa-" + Date.now() + "@email.com";
+  let pwd = "pwd";
 
   userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
     projectService.create("message-create", savedUser._id).then(function(savedProject) {
@@ -150,8 +150,8 @@ describe('/SendMessageSigninWithCustomToken', () => {
   it('sendMessageSigninWithCustomTokenOk', (done) => {
 
       
-      var email = "test-sendMessageSigninWithCustomTokenOk-" + Date.now() + "@email.com";
-      var pwd = "pwd";
+      let email = "test-sendMessageSigninWithCustomTokenOk-" + Date.now() + "@email.com";
+      let pwd = "pwd";
 
       userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
           // create(name, createdBy, settings)
@@ -169,20 +169,20 @@ describe('/SendMessageSigninWithCustomToken', () => {
                   expect(res.body.jwtSecret).to.not.equal(null);                                                                              
               
                   // 'E11000 duplicate key error collection: tiledesk-test.users index: email_1 dup key: { email: "email@email.com" }' }
-                  var externalUserId = "123";
-                  var externalUserObj = {_id: externalUserId, firstname:"andrea", lastname:"leo", email: "email2@email.com"};
+                  let externalUserId = "123";
+                  let externalUserObj = {_id: externalUserId, firstname:"andrea", lastname:"leo", email: "email2@email.com"};
                   
                   console.log("externalUserObj", externalUserObj);
 
 // attento qui
-                  var signOptions = {                                                            
+                  let signOptions = {                                                            
                       subject:  'userexternal',                                                                 
                       audience:  '/projects/'+savedProject._id ,                                              
                       // audience:  'https://tiledesk.com/projects/'+savedProject._id ,                                              
                       };
 
 
-                  var jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret,signOptions);
+                  let jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret,signOptions);
               
                   console.log("jwtToken", jwtToken);
 
@@ -276,8 +276,8 @@ describe('/SendMessageSigninAnonym', () => {
   it('sendMessageSigninAnonym', (done) => {
 
       
-      var email = "test-sendMessageSigninAnonym-" + Date.now() + "@email.com";
-      var pwd = "pwd";
+      let email = "test-sendMessageSigninAnonym-" + Date.now() + "@email.com";
+      let pwd = "pwd";
 
       userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
           // create(name, createdBy, settings)
@@ -293,7 +293,7 @@ describe('/SendMessageSigninAnonym', () => {
                           console.log("res.body",  res.body);
                           res.should.have.status(200);
                           res.body.should.be.a('object');
-                          var userId = res.body.user._id;
+                          let userId = res.body.user._id;
                           expect(res.body.success).to.equal(true);                                                                                                                     
                           expect(res.body.user.email).to.equal(undefined);  
                           expect(res.body.user.firstname).to.equal("Guest");                                               

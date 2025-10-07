@@ -8,16 +8,16 @@ let chaiHttp = require('chai-http');
 chai.use(require('chai-string'));
 let server = require('../app');
 let should = chai.should();
-var fs = require('fs');
-var userService = require('../services/userService');
+let fs = require('fs');
+let userService = require('../services/userService');
 const projectService = require('../services/projectService');
 
 let log = false;
 
 // chai.config.includeStack = true;
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 chai.use(chaiHttp);
 
@@ -27,8 +27,8 @@ describe('ImagesRoute', () => {
 
         it('upload-user', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 
@@ -60,8 +60,8 @@ describe('ImagesRoute', () => {
         // mocha test/imageRoute.js  --grep 'upload-user-folder'
         it('upload-user-folder', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 
@@ -105,8 +105,8 @@ describe('ImagesRoute', () => {
         // mocha test/imageRoute.js  --grep 'upload-avatar'
         it('upload-avatar', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 
@@ -151,8 +151,8 @@ describe('ImagesRoute', () => {
         // mocha test/imageRoute.js  --grep 'upload-avatar-force'
         it('upload-avatar-force', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 
@@ -196,8 +196,8 @@ describe('ImagesRoute', () => {
         // mocha test/imageRoute.js  --grep 'upload-avatar-another-user'
         it('upload-avatar-another-user', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -210,7 +210,7 @@ describe('ImagesRoute', () => {
                             if (err) { console.error("err: ", err); }
                             if (log) { console.log("res.body: ", res.body); }
 
-                            //var bot = "bot_" + Date.now();
+                            //let bot = "bot_" + Date.now();
                             let bot_id = res.body._id;
 
                             chai.request(server)
@@ -261,8 +261,8 @@ describe('ImagesRoute', () => {
         // mocha test/imageRoute.js  --grep 'delete-user-folder'
         it('delete-user-folder', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 

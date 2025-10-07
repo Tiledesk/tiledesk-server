@@ -1,9 +1,9 @@
 // https://www.dofactory.com/javascript/singleton-design-pattern
-var Singleton = (function () {
-    var instance;
+let Singleton = (function () {
+    let instance;
  
     function createInstance() {
-        var object = new Object("I am the instance");
+        let object = new Object("I am the instance");
         return object;
     }
  

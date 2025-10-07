@@ -1,7 +1,7 @@
 const  Map  = require('immutable').Map;
 // import uuid from 'uuid/v1'
 const uuidv4 = require('uuid/v4');
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 
 class Subscription {
 
@@ -89,5 +89,5 @@ class Subscription {
   }
 }
 
-// var subscription = new Subscription();
+// let subscription = new Subscription();
 module.exports = Subscription;

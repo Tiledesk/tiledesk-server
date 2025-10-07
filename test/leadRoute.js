@@ -10,8 +10,8 @@ let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 
 let log = false;
@@ -24,13 +24,13 @@ describe('LeadRoute', () => {
     // mocha test/leadRoute.js  --grep 'add-tags-to-lead'
     it('add-tags-to-lead', function (done) {
         
-        var email = "test-request-create-" + Date.now() + "@email.com";
-        var pwd = "pwd";
-        var userid = "5badfe5d553d1844ad654072";
+        let email = "test-request-create-" + Date.now() + "@email.com";
+        let pwd = "pwd";
+        let userid = "5badfe5d553d1844ad654072";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
             projectService.create("request-create", savedUser._id, { email: { template: { assignedRequest: "123" } } }).then(function (savedProject) {
-                var attr = { myprop: 123 };
+                let attr = { myprop: 123 };
                 leadService.create("fullname", "email@email.com", savedProject._id, userid, attr).then(function (savedLead) {
 
                     savedLead.should.have.property('_id').not.eql(null);
@@ -92,13 +92,13 @@ describe('LeadRoute', () => {
     // mocha test/leadRoute.js  --grep 'remove-tags-from-lead'
     it('remove-tags-from-lead', function (done) {
         
-        var email = "test-request-create-" + Date.now() + "@email.com";
-        var pwd = "pwd";
-        var userid = "5badfe5d553d1844ad654072";
+        let email = "test-request-create-" + Date.now() + "@email.com";
+        let pwd = "pwd";
+        let userid = "5badfe5d553d1844ad654072";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
             projectService.create("request-create", savedUser._id, { email: { template: { assignedRequest: "123" } } }).then(function (savedProject) {
-                var attr = { myprop: 123 };
+                let attr = { myprop: 123 };
                 leadService.create("fullname", "email@email.com", savedProject._id, userid, attr).then(function (savedLead) {
 
                     savedLead.should.have.property('_id').not.eql(null);

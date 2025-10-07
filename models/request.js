@@ -1,27 +1,26 @@
-var mongoose = require('mongoose');
+let mongoose = require('mongoose');
 // mongoose.set("debug", true);
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
-var Channel = require('../models/channel');
-var winston = require('../config/winston');
-var RequestConstants = require("../models/requestConstants");
-var ChannelConstants = require("../models/channelConstants");
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
+let Channel = require('../models/channel');
+let RequestConstants = require("../models/requestConstants");
+let ChannelConstants = require("../models/channelConstants");
 
-var ProjectUserSchema = require("../models/project_user").schema;
-var RequestStatus = require("../models/requestStatus");
-var LeadSchema = require("../models/lead").schema; //it's not used but i you run test like (mocha departmentService.js) it throws this not blocking exception: error: error getting requestSchema hasn't been registered for model "lead".
-var NoteSchema = require("../models/note").schema;
-var TagSchema = require("../models/tag");
-var LocationSchema = require("../models/location");
-var RequestSnapshotSchema = require("../models/requestSnapshot");
+let ProjectUserSchema = require("../models/project_user").schema;
+let RequestStatus = require("../models/requestStatus");
+let LeadSchema = require("../models/lead").schema; //it's not used but i you run test like (mocha departmentService.js) it throws this not blocking exception: error: error getting requestSchema hasn't been registered for model "lead".
+let NoteSchema = require("../models/note").schema;
+let TagSchema = require("../models/tag");
+let LocationSchema = require("../models/location");
+let RequestSnapshotSchema = require("../models/requestSnapshot");
 
-var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
+let defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 winston.info("Request defaultFullTextLanguage: "+ defaultFullTextLanguage);
 
 const disableTicketIdSequence = process.env.DISABLE_TICKET_ID_SEQUENCE || false;
 winston.info("Request disableTicketIdSequence: "+ disableTicketIdSequence);
 
-// var autoIncrement = require('mongoose-auto-increment');
+// let autoIncrement = require('mongoose-auto-increment');
 
 //https://github.com/Automattic/mongoose/issues/5924
 mongoose.plugin(schema => { schema.options.usePushEach = true });
@@ -30,7 +29,7 @@ const AutoIncrement = require('mongoose-sequence')(mongoose);
 
 
 
-var RequestSchema = new Schema({
+let RequestSchema = new Schema({
 
   // find duplicate
   /*
@@ -364,8 +363,8 @@ RequestSchema.virtual('participatingAgents', {
   //   // &&  this.agents.filter
   //   ) {
 
-    var project_users_available = this.snapshot.agents.filter(function (projectUser) {
-      // var project_users_available = this.agents.filter(function (projectUser) {
+    let project_users_available = this.snapshot.agents.filter(function (projectUser) {
+      // let project_users_available = this.agents.filter(function (projectUser) {
       if (projectUser.user_available == true) {
         return true;
       }
@@ -386,7 +385,7 @@ RequestSchema.virtual('participatingAgents', {
 */
 
 // RequestSchema.virtual('availableAgents').get(function () {
-//     var project_users_available = this.agents.filter(function (projectUser) {
+//     let project_users_available = this.agents.filter(function (projectUser) {
 //       if (projectUser.user_available == true) {
 //         return true;
 //       }
@@ -418,10 +417,10 @@ RequestSchema.method("getBotId", function () {
       return null;
   }
 
-  var participants = this.participants;
+  let participants = this.participants;
   winston.debug("participants", participants);
 
-  var botIdTmp;
+  let botIdTmp;
   
   if (participants) {
     participants.forEach(function(participant) { 
@@ -519,7 +518,7 @@ RequestSchema.index({ id_project: 1, preflight: 1, smartAssignment: 1, "snapshot
 // Attention. https://docs.mongodb.com/manual/core/index-compound/ If you have a collection that has both a compound index and an index on its prefix (e.g. { a: 1, b: 1 } and { a: 1 }), if neither index has a sparse or unique constraint, then you can remove the index on the prefix (e.g. { a: 1 }). MongoDB will use the compound index in all of the situations that it would have used the prefix index.
 
 
-var request =  mongoose.model('request', RequestSchema);
+let request =  mongoose.model('request', RequestSchema);
 if (process.env.MONGOOSE_SYNCINDEX) {
   request.syncIndexes();
   winston.verbose("message syncIndexes")

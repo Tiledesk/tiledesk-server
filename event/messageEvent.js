@@ -1,13 +1,13 @@
 const EventEmitter = require('events');
-var winston = require('../config/winston');
-var Request = require("../models/request");
-var Message = require("../models/message");
-var Faq_kb = require("../models/faq_kb");
-var MessageConstants = require("../models/messageConstants");
-var message2Event = require("../event/message2Event");
+let winston = require('../config/winston');
+let Request = require("../models/request");
+let Message = require("../models/message");
+let Faq_kb = require("../models/faq_kb");
+let MessageConstants = require("../models/messageConstants");
+let message2Event = require("../event/message2Event");
 
-var cacheUtil = require('../utils/cacheUtil');
-var cacheEnabler = require("../services/cacheEnabler");
+let cacheUtil = require('../utils/cacheUtil');
+let cacheEnabler = require("../services/cacheEnabler");
 
 
 class MessageEvent extends EventEmitter { 
@@ -55,7 +55,7 @@ function populateMessageWithRequest(message, eventPrefix) {
   winston.debug("populateMessageWithRequest "+eventPrefix, message.toObject());
   winston.debug("populateMessageWithRequest "+eventPrefix +" "+ message.text);
   
-  var messageJson = message.toJSON();
+  let messageJson = message.toJSON();
 
   
     // cacherequest      // requestcachefarequi populaterequired cacheveryhightpriority
@@ -92,8 +92,8 @@ function populateMessageWithRequest(message, eventPrefix) {
   if (request) {
       winston.debug("request is defined in messageEvent",request );
       
-      // var requestJson = request.toJSON();
-      var requestJson = request;
+      // let requestJson = request.toJSON();
+      let requestJson = request;
     
       if (request.department && request.department.id_bot) {
         // if (request.department) {
@@ -186,7 +186,7 @@ messageEvent.on('message.update.simple', populateMessageUpdate);
 
 
 
-// var messageCreateKey = 'message.create';
+// let messageCreateKey = 'message.create';
 // if (messageEvent.queueEnabled) {
 //   messageCreateKey = 'message.create.queue';
 // }

@@ -1,7 +1,7 @@
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 const emailService = require("../services/emailService");
 const Project = require("../models/project");
-var handlebars = require('handlebars');
+let handlebars = require('handlebars');
 
 class SendEmailUtil {
     async sendEmailDirect(to, text, id_project, recipient, subject, message) {
@@ -13,13 +13,13 @@ class SendEmailUtil {
         winston.debug("recipient:"+ recipient);
         winston.debug("to:" + to);
 
-        var template = handlebars.compile(text);
+        let template = handlebars.compile(text);
 
-        var replacements = {        
+        let replacements = {        
             message: message,           
           };
         
-        var finaltext = template(replacements);
+        let finaltext = template(replacements);
         winston.debug("finaltext:" + finaltext);
 
 
@@ -29,6 +29,6 @@ class SendEmailUtil {
     }
 }
 
-var sendEmailUtil = new SendEmailUtil();
+let sendEmailUtil = new SendEmailUtil();
 
 module.exports = sendEmailUtil;

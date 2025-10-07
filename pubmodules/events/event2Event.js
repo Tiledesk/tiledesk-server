@@ -1,7 +1,7 @@
-var winston = require('../../config/winston');
+let winston = require('../../config/winston');
 
 
-var EventEmitter2 = require('eventemitter2').EventEmitter2;
+let EventEmitter2 = require('eventemitter2').EventEmitter2;
 
 
 class Event2Event extends EventEmitter2 {}

@@ -1,11 +1,11 @@
-var express = require('express');
-var router = express.Router();
-var Message = require("../models/message");
-var Request = require("../models/request");
-var User = require("../models/user");
-var winston = require('../config/winston');
+let express = require('express');
+let router = express.Router();
+let Message = require("../models/message");
+let Request = require("../models/request");
+let User = require("../models/user");
+let winston = require('../config/winston');
 
-var fonts = {
+let fonts = {
 	Roboto: {
 		normal: 'fonts/Roboto-Regular.ttf',
 		bold: 'fonts/Roboto-Medium.ttf',
@@ -14,9 +14,9 @@ var fonts = {
 	}
 };
 
-var PdfPrinter = require('pdfmake');
-var printer = new PdfPrinter(fonts);
-// var fs = require('fs');
+let PdfPrinter = require('pdfmake');
+let printer = new PdfPrinter(fonts);
+// let fs = require('fs');
 
 
 
@@ -81,7 +81,7 @@ var printer = new PdfPrinter(fonts);
 
       messages.forEach(function(element) {
 
-        var channel_name = "";
+        let channel_name = "";
         if (element.channel && element.channel.name) {
           channel_name = element.channel.name;
         }
@@ -114,7 +114,7 @@ var printer = new PdfPrinter(fonts);
       }
       
 
-      var text = "Chat transcript:\n" //+ req.project.name;
+      let text = "Chat transcript:\n" //+ req.project.name;
       
       messages.forEach(function(element) {
         text = text + "[ " + element.createdAt.toLocaleString('en', { timeZone: 'UTC' })+ "] " + element.senderFullname + ": " + element.text + "\n";
@@ -145,7 +145,7 @@ var printer = new PdfPrinter(fonts);
       }
 
 
-      var docDefinition = {
+      let docDefinition = {
         content: [
           { text: 'Chat Transcript', style: 'header' },
           {
@@ -176,7 +176,7 @@ var printer = new PdfPrinter(fonts);
 
       console.log(docDefinition);
    
-    var pdfDoc = printer.createPdfKitDocument(docDefinition);
+    let pdfDoc = printer.createPdfKitDocument(docDefinition);
     // pdfDoc.pipe(fs.createWriteStream('lists.pdf'));
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -203,15 +203,12 @@ var printer = new PdfPrinter(fonts);
         return res.status(500).send({success: false, msg: 'Error getting object.'});
       }
 
-      var messages = messages.filter(m => m.sender != "system" );
-
-
-      //skip info message
       if(!messages){
         return res.status(404).send({success: false, msg: 'Object not found.'});
       }
 
-      return res.render('messages', { title: 'Tiledesk', messages: messages});
+      let filteredMessages = messages.filter(m => m.sender != "system" );
+      return res.render('messages', { title: 'Tiledesk', messages: filteredMessages });
     });
 
   });
@@ -232,11 +229,11 @@ var printer = new PdfPrinter(fonts);
       }
       
 
-      var messages = messages.filter(m => m.sender != "system" );
+      let filteredMessages = messages.filter(m => m.sender != "system" );
 
-      var text = "Chat transcript:\n" //+ req.project.name;
+      let text = "Chat transcript:\n" //+ req.project.name;
 
-      messages.forEach(function(element) {
+      filteredMessages.forEach(function(element) {
         text = text + "[ " + element.createdAt.toLocaleString('en', { timeZone: 'UTC' })+ "] " + element.senderFullname + ": " + element.text + "\n";
       });
     
@@ -258,16 +255,17 @@ var printer = new PdfPrinter(fonts);
         return res.status(500).send({success: false, msg: 'Error getting object.'});
       }
 
-      var messages = messages.filter(m => m.sender != "system" );
-
-
-      //skip info message
       if(!messages){
         return res.status(404).send({success: false, msg: 'Object not found.'});
       }
 
+      let filteredMessages = messages.filter(m => m.sender != "system" );
 
-      var docDefinition = {
+
+      //skip info message
+
+
+      let docDefinition = {
         content: [
           { text: 'Chat Transcript', style: 'header' },
           {
@@ -292,13 +290,13 @@ var printer = new PdfPrinter(fonts);
 
       
 
-      messages.forEach(function(element) {
+      filteredMessages.forEach(function(element) {
         docDefinition.content[1].ul.push("[ " + element.createdAt.toLocaleString('en', { timeZone: 'UTC' })+ "] " + element.senderFullname + ": " + element.text );
       });
 
       console.log(docDefinition);
    
-    var pdfDoc = printer.createPdfKitDocument(docDefinition);
+    let pdfDoc = printer.createPdfKitDocument(docDefinition);
     // pdfDoc.pipe(fs.createWriteStream('lists.pdf'));
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -323,18 +321,19 @@ var printer = new PdfPrinter(fonts);
         return res.status(500).send({success: false, msg: 'Error getting object.'});
       }
 
-      var messages = messages.filter(m => m.sender != "system" );
-
-
-      //skip info message
       if(!messages){
         return res.status(404).send({success: false, msg: 'Object not found.'});
       }
 
+      let filteredMessages = messages.filter(m => m.sender != "system" );
 
-      messages.forEach(function(element) {
 
-        var channel_name = "";
+      //skip info message
+
+
+      filteredMessages.forEach(function(element) {
+
+        let channel_name = "";
         if (element.channel && element.channel.name) {
           channel_name = element.channel.name;
         }
@@ -348,7 +347,7 @@ var printer = new PdfPrinter(fonts);
       res.setHeader('Content-Type', 'applictext/csv');
       res.setHeader('Content-Disposition', 'attachment; filename=transcript.csv');
 
-      return res.csv(messages, true);
+      return res.csv(filteredMessages, true);
     });
 
   });

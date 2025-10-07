@@ -1,22 +1,22 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
-var projectService = require('../services/projectService');
-var requestService = require('../services/requestService');
-var userService = require('../services/userService');
-var leadService = require('../services/leadService');
-var faqService = require('../services/faqService');
+let projectService = require('../services/projectService');
+let requestService = require('../services/requestService');
+let userService = require('../services/userService');
+let leadService = require('../services/leadService');
+let faqService = require('../services/faqService');
 
-var Department = require('../models/department');
-var winston = require('../config/winston');
+let Department = require('../models/department');
+let winston = require('../config/winston');
 
 //Require the dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 // require('../services/mongoose-cache-fn')(mongoose);
 // chai.config.includeStack = true;
@@ -31,8 +31,8 @@ describe('RequestRoute', () => {
   it('createSimple', function (done) {
     // this.timeout(10000);
 
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.create("request-create", savedUser._id, { email: { template: { assignedRequest: "123" } } }).then(function (savedProject) {
@@ -85,8 +85,8 @@ describe('RequestRoute', () => {
   it('create-simple-new-note', function (done) {
     // this.timeout(10000);
 
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.create("request-create", savedUser._id, { email: { template: { assignedRequest: "123" } } }).then(function (savedProject) {
@@ -137,8 +137,8 @@ describe('RequestRoute', () => {
   it('createSimpleAndCloseForDuration', function (done) {
     // this.timeout(10000);
 
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.create("request-create", savedUser._id, { email: { template: { assignedRequest: "123" } } }).then(function (savedProject) {
@@ -188,9 +188,9 @@ describe('RequestRoute', () => {
   it('createUpperCaseEmail', function (done) {
     // this.timeout(10000);
 
-    var now = Date.now();
-    var email = "test-REQUEST-create-" + now + "@email.com";
-    var pwd = "pwd";
+    let now = Date.now();
+    let email = "test-REQUEST-create-" + now + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.create("request-create", savedUser._id).then(function (savedProject) {
@@ -243,13 +243,13 @@ describe('RequestRoute', () => {
   it('getbyid', function (done) {
     // this.timeout(10000);
 
-    var email = "test-signup-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-signup-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser._id).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
-        var now = Date.now();
+        let savedProject = savedProjectAndPU.project;
+        let now = Date.now();
 
         // leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
         // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
@@ -307,12 +307,12 @@ describe('RequestRoute', () => {
   it('getbyidWithPartecipatingBots', function (done) {
     // this.timeout(10000);
 
-    var email = "test-signup-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-signup-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser._id).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
 
         faqService.create(savedProject._id, savedUser._id, { name: "testbot", type: "internal" }).then(function (savedBot) {
@@ -323,7 +323,7 @@ describe('RequestRoute', () => {
 
             winston.error("err", err);
             winston.info("updatedDepartment", updatedDepartment.toObject());
-            var now = Date.now();
+            let now = Date.now();
 
 
             // leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
@@ -381,8 +381,8 @@ describe('RequestRoute', () => {
   it('getallSimple', function (done) {
     // this.timeout(10000);
 
-    var email = "test-getallsimple-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-getallsimple-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 
@@ -390,7 +390,7 @@ describe('RequestRoute', () => {
 
       projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         if (log) { console.log("savedProjectAndPU", savedProjectAndPU); }
 
@@ -398,9 +398,9 @@ describe('RequestRoute', () => {
 
           if (log) { console.log("createdLead", createdLead); }
 
-          var now = Date.now();
+          let now = Date.now();
 
-          var new_request = {
+          let new_request = {
             request_id: "request_id-getallSimple-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
             id_project: savedProject._id, first_text: "first_text",
             lead: createdLead, requester: savedProjectAndPU.project_user
@@ -467,20 +467,20 @@ describe('RequestRoute', () => {
   it('getallNoPopulate', function (done) {
     // this.timeout(10000);
 
-    var email = "test-signup-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-signup-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("createWithId-getallNoPopulate", savedUser._id).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
 
         leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
           // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
           //  requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
-          var now = Date.now();
+          let now = Date.now();
 
-          var request = {
+          let request = {
             request_id: "request_getallNoPopulate-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
             id_project: savedProject._id, first_text: "first_text",
             lead: createdLead, requester: savedProjectAndPU.project_user
@@ -544,8 +544,8 @@ describe('RequestRoute', () => {
   it('getallFilter-snap_department_routing', function (done) {
     // this.timeout(10000);
 
-    var email = "test-getallfilter-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-getallfilter-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 
@@ -553,17 +553,17 @@ describe('RequestRoute', () => {
 
       projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         if (log) { console.log("savedProjectAndPU", savedProjectAndPU); }
 
         leadService.createIfNotExists("leadfullname", "email-getallfilter@email.com", savedProject._id).then(function (createdLead) {
 
           if (log) { console.log("createdLead", createdLead); }
-          var now = Date.now();
+          let now = Date.now();
 
 
-          var new_request = {
+          let new_request = {
             request_id: "request_id-getallFilter-snap_department_routing-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
             id_project: savedProject._id, first_text: "first_text",
             lead: createdLead, requester: savedProjectAndPU.project_user
@@ -629,8 +629,8 @@ describe('RequestRoute', () => {
   it('getallFilter-snap_department_default', function (done) {
     // this.timeout(10000);
 
-    var email = "test-getallfilter-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-getallfilter-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 
@@ -638,7 +638,7 @@ describe('RequestRoute', () => {
 
       projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         if (log) { console.log("savedProjectAndPU", savedProjectAndPU); }
 
@@ -646,9 +646,9 @@ describe('RequestRoute', () => {
 
           if (log) { console.log("createdLead", createdLead); }
 
-          var now = Date.now();
+          let now = Date.now();
 
-          var new_request = {
+          let new_request = {
             request_id: "request_id-getallFilter-snap_department_routing-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
             id_project: savedProject._id, first_text: "first_text",
             lead: createdLead, requester: savedProjectAndPU.project_user
@@ -714,8 +714,8 @@ describe('RequestRoute', () => {
   it('getallFilter-snap_department_id_bot_exists', function (done) {
     // this.timeout(10000);
 
-    var email = "test-getallfilter-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-getallfilter-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 
@@ -723,7 +723,7 @@ describe('RequestRoute', () => {
 
       projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         if (log) { console.log("savedProjectAndPU", savedProjectAndPU); }
 
@@ -731,9 +731,9 @@ describe('RequestRoute', () => {
 
           if (log) { console.log("createdLead", createdLead); }
 
-          var now = Date.now();
+          let now = Date.now();
 
-          var new_request = {
+          let new_request = {
             request_id: "request_id-getallFilter-snap_department_id_bot_exists-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
             id_project: savedProject._id, first_text: "first_text",
             lead: createdLead, requester: savedProjectAndPU.project_user
@@ -800,18 +800,18 @@ describe('RequestRoute', () => {
   it('getallcsv', function (done) {
     // this.timeout(10000);
 
-    var email = "test-signup-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-signup-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("getallcsv", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
         leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
 
           winston.info("createdLead", createdLead.toObject());
           // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight, channel, location) {
-          var now = Date.now();
+          let now = Date.now();
 
           requestService.create({
             request_id: "request_id-getallcsv-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id, id_project: savedProject._id,
@@ -849,19 +849,19 @@ describe('RequestRoute', () => {
   it('getallWithLoLead', function (done) {
     // this.timeout(10000);
 
-    var email = "test-signup-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-signup-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 
       projectService.createAndReturnProjectAndProjectUser("getallcsv", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
         leadService.createIfNotExists("request_id1-getallWithLoLead", "email@getallWithLoLead.com", savedProject._id).then(function (createdLead) {
 
           winston.info("createdLead", createdLead.toObject());
           // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight, channel, location) {
-          var now = Date.now();
+          let now = Date.now();
 
           requestService.createWithIdAndRequester("request_id-getallWithLoLead-" + now, savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function (savedRequest) {
 
@@ -901,8 +901,8 @@ describe('RequestRoute', () => {
   it('countConversations', function (done) {
     // this.timeout(10000);
 
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.create("request-create", savedUser._id, { email: { template: { assignedRequest: "123" } } }).then(function (savedProject) {
@@ -942,8 +942,8 @@ describe('RequestRoute', () => {
   // mocha test/requestRoute.js  --grep 'exludeDraftConversations'
   it('exludeDraftConversations', (done) => {
 
-    var email = "test-signup-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-signup-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
       projectService.createAndReturnProjectAndProjectUser("test-draft-conversation", savedUser._id).then((savedProjectAndPU) => {
@@ -1008,8 +1008,8 @@ describe('RequestRoute', () => {
   // mocha test/requestRoute.js  --grep 'add-tag-to-conversation'
   it('add-tag-to-conversation', function (done) {
 
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.create("request-create", savedUser._id, { email: { template: { assignedRequest: "123" } } }).then(function (savedProject) {
@@ -1086,8 +1086,8 @@ describe('RequestRoute', () => {
   // mocha test/requestRoute.js  --grep 'remove-tag-from-conversation'
   it('remove-tag-from-conversation', function (done) {
 
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.create("request-create", savedUser._id, { email: { template: { assignedRequest: "123" } } }).then(function (savedProject) {
@@ -1181,8 +1181,8 @@ describe('RequestRoute', () => {
 
   it('remove-tag-from-unexistent-conversation', function (done) {
 
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.create("request-create", savedUser._id, { email: { template: { assignedRequest: "123" } } }).then(function (savedProject) {
@@ -1259,8 +1259,8 @@ describe('RequestRoute', () => {
     it('createAndReassign', function (done) {
       // this.timeout(10000);
 
-      var email = "test-request-create-" + Date.now() + "@email.com";
-      var pwd = "pwd";
+      let email = "test-request-create-" + Date.now() + "@email.com";
+      let pwd = "pwd";
 
       userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
         projectService.create("request-create", savedUser._id).then(function (savedProject) {
@@ -1340,8 +1340,8 @@ describe('RequestRoute', () => {
     it('createAndReassignAndNoPopulate', function (done) {
       // this.timeout(10000);
 
-      var email = "test-request-create-" + Date.now() + "@email.com";
-      var pwd = "pwd";
+      let email = "test-request-create-" + Date.now() + "@email.com";
+      let pwd = "pwd";
 
       userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
         projectService.create("request-create", savedUser._id).then(function (savedProject) {
@@ -1420,8 +1420,8 @@ describe('RequestRoute', () => {
     it('createAndAssign2', function (done) {
       // this.timeout(10000);
 
-      var email = "test-request-create-" + Date.now() + "@email.com";
-      var pwd = "pwd";
+      let email = "test-request-create-" + Date.now() + "@email.com";
+      let pwd = "pwd";
 
       userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
         projectService.create("request-create", savedUser._id).then(function (savedProject) {
@@ -1500,21 +1500,21 @@ describe('RequestRoute', () => {
     it('removeParticipant', function (done) {
       // this.timeout(10000);
 
-      var email = "test-request-create-" + Date.now() + "@email.com";
-      var pwd = "pwd";
+      let email = "test-request-create-" + Date.now() + "@email.com";
+      let pwd = "pwd";
 
       userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
         projectService.createAndReturnProjectAndProjectUser("request-removeParticipant", savedUser._id).then(function (savedProjectAndPU) {
-          var savedProject = savedProjectAndPU.project;
+          let savedProject = savedProjectAndPU.project;
 
           leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
             winston.info("savedProjectAndPU.project_user._id:" + savedProjectAndPU.project_user._id);
 
-            var now = Date.now();
+            let now = Date.now();
 
             //  projectService.create("request-removeParticipant", savedUser._id).then(function(savedProject) {
             // requestService.removeParticipantByRequestId(savedRequest.request_id, savedProject._id, userid).then(function(savedRequestParticipant) {
-            var request = {
+            let request = {
               request_id: "request_id1-removeParticipant-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
               id_project: savedProject._id, first_text: "first_text",
               lead: createdLead, requester: savedProjectAndPU.project_user
@@ -1577,14 +1577,14 @@ describe('RequestRoute', () => {
 
     // //   this.timeout();
 
-    //    var email = "test-signup-" + Date.now() + "@email.com";
-    //    var pwd = "pwd";
+    //    let email = "test-signup-" + Date.now() + "@email.com";
+    //    let pwd = "pwd";
 
     //     userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
     //         projectService.create("test-join-member", savedUser._id).then(function(savedProject) {
     //             requestService.createWithId("join-member", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
 
-    //                 var webhookContent =     { "assignee": 'assignee-member'}
+    //                 let webhookContent =     { "assignee": 'assignee-member'}
 
 
     //                 chai.request(server)
@@ -1616,8 +1616,8 @@ describe('RequestRoute', () => {
     it('requestParameterFromChatbot', function (done) {
       // this.timeout(10000);
   
-      var email = "test-request-create-" + Date.now() + "@email.com";
-      var pwd = "pwd";
+      let email = "test-request-create-" + Date.now() + "@email.com";
+      let pwd = "pwd";
   
       userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
         projectService.create("request-create", savedUser._id, { email: { template: { assignedRequest: "123" } } }).then(function (savedProject) {

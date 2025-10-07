@@ -1,4 +1,4 @@
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 
 
 class MongooseCache {
@@ -16,7 +16,7 @@ class MongooseCache {
 
 
 
-// var mongooseCache = new MongooseCache();
+// let mongooseCache = new MongooseCache();
 // module.exports = mongooseCache;
 
 module.exports = MongooseCache;

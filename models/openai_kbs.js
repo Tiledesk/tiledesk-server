@@ -1,8 +1,8 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
 
-var OpenaiKbsSchema = new Schema({
+let OpenaiKbsSchema = new Schema({
   name: {
     type: String,
     required: true

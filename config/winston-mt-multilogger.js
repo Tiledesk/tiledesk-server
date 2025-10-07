@@ -1,10 +1,10 @@
 // UNUSED
-var appRoot = require('app-root-path');
-var winston = require('winston');
-var config = require('./database');
+let appRoot = require('app-root-path');
+let winston = require('winston');
+let config = require('./database');
 
 // https://github.com/winstonjs/winston/issues/736
-var loggers = {}
+let loggers = {}
 
 function getLogger(moduleName) {
   if (!loggers[moduleName]) {
@@ -15,7 +15,7 @@ function getLogger(moduleName) {
 }
 
 
-var level = process.env.LOG_LEVEL || 'info'
+let level = process.env.LOG_LEVEL || 'info'
 // console.log("level",level);
 
 
@@ -23,7 +23,7 @@ var level = process.env.LOG_LEVEL || 'info'
 
   function createNewLogger(moduleName) {  
 
-    var options = {
+    let options = {
       file: {
         level:level ,
         filename: `${appRoot}/logs/${moduleName}.log`,
@@ -55,9 +55,9 @@ var level = process.env.LOG_LEVEL || 'info'
 
 
   //   if (process.env.NODE_ENV == 'test')  {
-  //     var logsDb = config.databasetest;
+  //     let logsDb = config.databasetest;
   //   }else {
-  //     var logsDb = config.database;
+  //     let logsDb = config.database;
   //   }
  
 

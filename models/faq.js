@@ -1,13 +1,13 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
-var { nanoid } = require("nanoid");
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
+let { nanoid } = require("nanoid");
 const uuidv4 = require('uuid/v4');
 
-var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
+let defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 let trashExpirationTime = Number(process.env.CHATBOT_TRASH_TTL_SECONDS) || 60 * 60 * 24 * 30; // 30 days
 
-var FaqSchema = new Schema({
+let FaqSchema = new Schema({
   // _id: {
   //   type: mongoose.Schema.Types.ObjectId,
   //   index: true,
@@ -197,7 +197,7 @@ FaqSchema.index(
   { expireAfterSeconds: trashExpirationTime }
 );
 
-var faq = mongoose.model('faq', FaqSchema);
+let faq = mongoose.model('faq', FaqSchema);
 
 faq.on('index', function (error) {
   // "_id index cannot be sparse"

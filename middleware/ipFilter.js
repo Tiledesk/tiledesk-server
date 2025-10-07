@@ -1,9 +1,9 @@
 const ipfilter = require('express-ipfilter').IpFilter
-var winston = require('../config/winston');
-var jwt = require('jsonwebtoken');
+let winston = require('../config/winston');
+let jwt = require('jsonwebtoken');
 
 
-var customDetection = function (req)  {
+let customDetection = function (req)  {
     // const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;  
     // const ip = (req.headers['x-forwarded-for'] || '').split(',').pop().trim() ||        //https://stackoverflow.com/questions/8107856/how-to-determine-a-users-ip-address-in-node
     //   req.socket.remoteAddress
@@ -26,10 +26,10 @@ var customDetection = function (req)  {
     return ip;
 }
 
-var getToken = function (headers) {
+let getToken = function (headers) {
   winston.debug("getToken",headers);
   if (headers && headers.authorization) {
-    var parted = headers.authorization.split(' ');
+    let parted = headers.authorization.split(' ');
     if (parted.length === 2) {
       return parted[1];
     } else {
@@ -57,7 +57,7 @@ class IPFilter {
   
   
 projectIpFilter (req, res, next) {
-    var that = this;
+    let that = this;
     // console.log("that", that)
   
     const nextIp = function(err) {
@@ -78,16 +78,16 @@ projectIpFilter (req, res, next) {
       return next();
     }
     
-    var projectIpFilterEnabled = req.project.ipFilterEnabled;
+    let projectIpFilterEnabled = req.project.ipFilterEnabled;
     winston.debug("project projectIpFilterEnabled: " +projectIpFilterEnabled)
   
-    var projectIpFilter =  req.project.ipFilter
+    let projectIpFilter =  req.project.ipFilter
     winston.debug("project ipFilter: " + projectIpFilter)
     
     if (projectIpFilterEnabled === true && projectIpFilter && projectIpFilter.length > 0) {
       winston.debug("filtering project IpFilter with ", projectIpFilter );
-      var ip = ipfilter(projectIpFilter, { detectIp: customDetection, mode: 'allow' })
-      // var ip = ipfilter(projectIpFilter, { mode: 'allow' })
+      let ip = ipfilter(projectIpFilter, { detectIp: customDetection, mode: 'allow' })
+      // let ip = ipfilter(projectIpFilter, { mode: 'allow' })
        ip(req, res, nextIp);
     } else {
       next();
@@ -114,16 +114,16 @@ projectIpFilter (req, res, next) {
       return next();
     }
     
-    var projectIpFilterDenyEnabled = req.project.ipFilterDenyEnabled;
+    let projectIpFilterDenyEnabled = req.project.ipFilterDenyEnabled;
     winston.debug("project projectIpFilterDenyEnabled: " +projectIpFilterDenyEnabled)
   
-    var projectIpFilterDeny =  req.project.ipFilterDeny
+    let projectIpFilterDeny =  req.project.ipFilterDeny
     winston.debug("project IpFilterDeny: " + projectIpFilterDeny)
   
   
     if (projectIpFilterDenyEnabled === true && projectIpFilterDeny && projectIpFilterDeny.length > 0) {
       winston.debug("filtering project projectIpFilterDeny with ", projectIpFilterDeny );
-      var ip = ipfilter(projectIpFilterDeny, { detectIp: customDetection, mode: 'deny' })
+      let ip = ipfilter(projectIpFilterDeny, { detectIp: customDetection, mode: 'deny' })
       ip(req, res, nextIp);
     } else {
       next();
@@ -154,14 +154,14 @@ projectBanUserFilter(req, res, next) {
       return next();
     }
     
-    var bannedUsers =  req.project.bannedUsers
+    let bannedUsers =  req.project.bannedUsers
     winston.debug("project bannedUsers: " + bannedUsers)
   
     if (bannedUsers && bannedUsers.length > 0) {
   
       let bannedUsersArr = [];
       let bannedUsersIdUserArr = [];
-      for (var i =0; i < bannedUsers.length; i++) {
+      for (let i =0; i < bannedUsers.length; i++) {
         bannedUsersArr.push(bannedUsers[i].ip);
         bannedUsersIdUserArr.push(bannedUsers[i].id);
       }
@@ -177,7 +177,7 @@ projectBanUserFilter(req, res, next) {
 
 
       // winston.debug("filtering project bannedUsers with ", bannedUsersArr );
-      // var ip = ipfilter(bannedUsersArr, { detectIp: customDetection, mode: 'deny' })
+      // let ip = ipfilter(bannedUsersArr, { detectIp: customDetection, mode: 'deny' })
       // ip(req, res, nextIp);
       next();
     } else {
@@ -198,7 +198,7 @@ projectBanUserFilter(req, res, next) {
     if (token) {
 
       try {
-        var decoded = jwt.decode(token);
+        let decoded = jwt.decode(token);
         winston.debug("filtering decoded ", decoded);
         req.preDecodedJwt = decoded;
       }catch(e) {
@@ -216,5 +216,5 @@ projectBanUserFilter(req, res, next) {
 
   
 }
-var iPFilter = new IPFilter();
+let iPFilter = new IPFilter();
 module.exports = iPFilter;

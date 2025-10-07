@@ -1,10 +1,10 @@
 'use strict';
 
-var Request = require("../models/request");
-var messageService = require('../services/messageService');
+let Request = require("../models/request");
+let messageService = require('../services/messageService');
 const requestEvent = require('../event/requestEvent');
 const leadEvent = require('../event/leadEvent');
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 
 class UpdateLeadQueued {
 
@@ -23,7 +23,7 @@ class UpdateLeadQueued {
 
   updateSnapshotLead() {
 
-    var leadUpdateKey = 'lead.update';
+    let leadUpdateKey = 'lead.update';
     if (leadEvent.queueEnabled) {
       leadUpdateKey = 'lead.update.queue';
     }
@@ -33,7 +33,7 @@ class UpdateLeadQueued {
       setImmediate(() => {
         winston.debug("updateSnapshotLead on lead.update ", lead);
 
-        var query = { lead: lead._id, id_project: lead.id_project };
+        let query = { lead: lead._id, id_project: lead.id_project };
         winston.debug("query ", query);
 
         Request.updateMany(query, { "$set": { "snapshot.lead": lead } }, function (err, updates) {
@@ -71,7 +71,7 @@ class UpdateLeadQueued {
 
   sendMessageUpdateLead() {
 
-    var leadUpdateEmailKey = 'lead.fullname.email.update';
+    let leadUpdateEmailKey = 'lead.fullname.email.update';
     if (leadEvent.queueEnabled) {
       leadUpdateEmailKey = 'lead.fullname.email.update.queue';
     }
@@ -102,7 +102,7 @@ class UpdateLeadQueued {
 
           // requests.forEach(function (request) {
 
-          var request = requests[0];
+          let request = requests[0];
 
           winston.debug("sendMessageUpdateLead request ", request);
 
@@ -142,7 +142,7 @@ class UpdateLeadQueued {
 }
 
 
-var updateLeadQueued = new UpdateLeadQueued();
+let updateLeadQueued = new UpdateLeadQueued();
 
 
 module.exports = updateLeadQueued;

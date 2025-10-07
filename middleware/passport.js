@@ -1,31 +1,31 @@
-var passportJWT = require("passport-jwt");  
-var JwtStrategy = passportJWT.Strategy;
-var ExtractJwt = passportJWT.ExtractJwt;
+let passportJWT = require("passport-jwt");  
+let JwtStrategy = passportJWT.Strategy;
+let ExtractJwt = passportJWT.ExtractJwt;
 
-var passportHttp = require("passport-http");  
-var BasicStrategy = passportHttp.BasicStrategy;
-var GoogleStrategy = require('passport-google-oidc');
+let passportHttp = require("passport-http");  
+let BasicStrategy = passportHttp.BasicStrategy;
+let GoogleStrategy = require('passport-google-oidc');
 
-var winston = require('../config/winston');
-// var AnonymousStrategy = require('passport-anonymous').Strategy;
+let winston = require('../config/winston');
+// let AnonymousStrategy = require('passport-anonymous').Strategy;
 
 // load up the user model
-var User = require('../models/user');
-var config = require('../config/database'); // get db config file
-var Faq_kb = require("../models/faq_kb");
-var Project = require('../models/project');
-var Subscription = require('../models/subscription');
+let User = require('../models/user');
+let config = require('../config/database'); // get db config file
+let Faq_kb = require("../models/faq_kb");
+let Project = require('../models/project');
+let Subscription = require('../models/subscription');
 
-var Auth = require('../models/auth');
-var userService = require('../services/userService');
+let Auth = require('../models/auth');
+let userService = require('../services/userService');
 
-var UserUtil = require('../utils/userUtil');
-var jwt = require('jsonwebtoken');
+let UserUtil = require('../utils/userUtil');
+let jwt = require('jsonwebtoken');
 const url = require('url');
-var cacheUtil = require('../utils/cacheUtil');
-var cacheEnabler = require("../services/cacheEnabler");
+let cacheUtil = require('../utils/cacheUtil');
+let cacheEnabler = require("../services/cacheEnabler");
 
-var uniqid = require('uniqid');
+let uniqid = require('uniqid');
 
 
 const MaskData = require("maskdata");
@@ -41,14 +41,14 @@ const maskOptions = {
   unmaskedEndDigits : 3 // Should be positive Integer
   };
 
-var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+let alg = process.env.GLOBAL_SECRET_ALGORITHM;
 winston.info('Authentication Global Algorithm : ' + alg);
 
 // TODO STAMPA ANCHE PUBLIC
 
-var configSecret = process.env.GLOBAL_SECRET || config.secret;
+let configSecret = process.env.GLOBAL_SECRET || config.secret;
 
-var pKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
+let pKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
 // console.log("pKey",pKey);
 
 if (pKey) {
@@ -62,10 +62,10 @@ if (pKey) {
 //   console.log("GLOBAL_SECRET_OR_PUB_KEY undefined");
 // }
 
-var maskedconfigSecret = MaskData.maskPhone(configSecret, maskOptions);
+let maskedconfigSecret = MaskData.maskPhone(configSecret, maskOptions);
 winston.info('Authentication Global Secret : ' + maskedconfigSecret);
 
-var enableGoogleSignin = false;
+let enableGoogleSignin = false;
 if (process.env.GOOGLE_SIGNIN_ENABLED=="true" || process.env.GOOGLE_SIGNIN_ENABLED == true) {
   enableGoogleSignin = true;
 }
@@ -73,14 +73,14 @@ winston.info('Authentication Google Signin enabled : ' + enableGoogleSignin);
 
 
 
-var enableOauth2Signin = false;
+let enableOauth2Signin = false;
 if (process.env.OAUTH2_SIGNIN_ENABLED=="true" || process.env.OAUTH2_SIGNIN_ENABLED == true) {
   enableOauth2Signin = true;
 }
 winston.info('Authentication Oauth2 Signin enabled : ' + enableOauth2Signin);
 
 
-var jwthistory = undefined;
+let jwthistory = undefined;
 try {
   jwthistory = require('@tiledesk-ent/tiledesk-server-jwthistory');
 } catch(err) {
@@ -99,7 +99,7 @@ module.exports = function(passport) {
     //     done(null, user);
     //   });
 
-  var opts = {
+  let opts = {
             // jwtFromRequest: ExtractJwt.fromAuthHeader(),
             jwtFromRequest:ExtractJwt.fromExtractors([ExtractJwt.fromAuthHeaderWithScheme("jwt"), ExtractJwt.fromUrlQueryParameter('secret_token')]),            
             //this will help you to pass request body to passport
@@ -115,7 +115,7 @@ module.exports = function(passport) {
               // winston.info("secretOrKeyProvider: "+request.project.name );
               // winston.info("secretOrKeyProvider: "+rawJwtToken );
               
-              var decoded = request.preDecodedJwt
+              let decoded = request.preDecodedJwt
               winston.debug("decoded: ", decoded );
               if (!decoded) { //fallback
                 winston.debug("load decoded after: ");
@@ -255,7 +255,7 @@ module.exports = function(passport) {
 
 
     if (jwt_payload._id == undefined  && (jwt_payload._doc == undefined || (jwt_payload._doc && jwt_payload._doc._id==undefined))) {
-      var err = "jwt_payload._id or jwt_payload._doc._id can t be undefined" ;
+      let err = "jwt_payload._id or jwt_payload._doc._id can t be undefined" ;
       winston.error(err);
       return done(null, false);
     }
@@ -270,7 +270,7 @@ module.exports = function(passport) {
 
     winston.debug("passport identifier: " + identifier + " subject " + subject);
 
-    var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
+    let fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
     winston.debug("fullUrl:"+ fullUrl);
 
     winston.debug("req.disablePassportEntityCheck:"+req.disablePassportEntityCheck);
@@ -284,7 +284,7 @@ module.exports = function(passport) {
 
     //TODO check into DB if JWT is revoked 
     if (jwthistory) {
-      var jwtRevoked = await jwthistory.isJWTRevoked(jwt_payload.jti);
+      let jwtRevoked = await jwthistory.isJWTRevoked(jwt_payload.jti);
       winston.debug("passport jwt jwtRevoked: "+ jwtRevoked);
       if (jwtRevoked) {
         winston.warn("passport jwt is revoked with jti: "+ jwt_payload.jti);
@@ -358,12 +358,12 @@ module.exports = function(passport) {
 
 
           winston.debug("Passport JWT userexternal", jwt_payload);
-          var userM = UserUtil.decorateUser(jwt_payload);
+          let userM = UserUtil.decorateUser(jwt_payload);
           winston.debug("Passport JWT userexternal userM", userM);
 
           return done(null, userM );
         }  else {
-          var err = {msg: "No jwt_payload passed. Its required"};
+          let err = {msg: "No jwt_payload passed. Its required"};
           winston.error("Passport JWT userexternal err", err);
           return done(err, false);
         }                
@@ -373,11 +373,11 @@ module.exports = function(passport) {
      
         if (jwt_payload) {
           winston.debug("Passport JWT guest", jwt_payload);
-          var userM = UserUtil.decorateUser(jwt_payload);
+          let userM = UserUtil.decorateUser(jwt_payload);
           winston.debug("Passport JWT guest userM", userM);
           return done(null, userM );
         }  else {
-          var err = {msg: "No jwt_payload passed. Its required"};
+          let err = {msg: "No jwt_payload passed. Its required"};
           winston.error("Passport JWT guest err", err);
           return done(err, false);
         }                   
@@ -419,7 +419,7 @@ module.exports = function(passport) {
       winston.debug("BasicStrategy: " + userid);
       
 
-      var email = userid.toLowerCase();
+      let email = userid.toLowerCase();
       winston.debug("email lowercase: " + email);
 
       User.findOne({ email: email, status: 100}, 'email firstname lastname password emailverified id') //TODO user_cache_here. NOT used frequently. ma attento select. ATTENTO QUI NN USEREI LA SELECT altrimenti con JWT ho tuttto USER mentre con basich auth solo aluni campi
@@ -476,10 +476,10 @@ if (enableGoogleSignin==true) {
     winston.debug("profile", profile)
     // winston.info("cb", cb)
 
-    var email = profile.emails[0].value;
+    let email = profile.emails[0].value;
     winston.debug("email: "+email)   
 
-    var query = {providerId : issuer, subject: profile.id};
+    let query = {providerId : issuer, subject: profile.id};
     winston.debug("query", query)
 
     Auth.findOne(query, function(err, cred){     
@@ -506,7 +506,7 @@ if (enableGoogleSignin==true) {
         //   profile.displayName
         // ], function(err) {
 
-          var password = uniqid()
+          let password = uniqid()
 
           
           // signup ( email, password, firstname, lastname, emailverified) {
@@ -518,7 +518,7 @@ if (enableGoogleSignin==true) {
 
           winston.debug("savedUser", savedUser)    
 
-          var auth = new Auth({
+          let auth = new Auth({
             providerId: issuer,
             email: email,
             subject: profile.id,
@@ -536,11 +536,11 @@ if (enableGoogleSignin==true) {
 
             winston.debug("authSaved", authSaved)    
 
-            // var user = {
+            // let user = {
             //   id: id.toString(),
             //   name: profile.displayName
             // };
-            // var user = {
+            // let user = {
             //   id: "1232321321321321",
             //   name: "Google andrea"
             // };
@@ -660,10 +660,10 @@ if (enableOauth2Signin==true) {
 
     winston.debug("refreshToken", refreshToken);
 
-    var issuer = token.iss;
-    var email = profile.email;
+    let issuer = token.iss;
+    let email = profile.email;
 
-    var query = {providerId : issuer, subject: profile.keycloakId};
+    let query = {providerId : issuer, subject: profile.keycloakId};
     winston.debug("query", query)
 
     Auth.findOne(query, function(err, cred){     
@@ -672,14 +672,14 @@ if (enableOauth2Signin==true) {
       if (!cred) {
         // The oauth account has not logged in to this app before.  Create a
         // new user record and link it to the oauth account.
-          var password = uniqid()
+          let password = uniqid()
         // signup ( email, password, firstname, lastname, emailverified) {
           userService.signup(email, password,  profileInfo.name || profileInfo.preferred_username, "", true)
           .then(function (savedUser) {
 
           winston.debug("savedUser", savedUser)    
 
-          var auth = new Auth({
+          let auth = new Auth({
             providerId: issuer,
             email: email,
             subject: profile.keycloakId,
@@ -757,10 +757,10 @@ if (enableOauth2Signin==true) {
     
 //       console.log("refreshToken", refreshToken);
     
-//       var issuer = token.iss;
-//       var email = profile.email;
+//       let issuer = token.iss;
+//       let email = profile.email;
     
-//       var query = {providerId : issuer, subject: profile.keycloakId};
+//       let query = {providerId : issuer, subject: profile.keycloakId};
 //       winston.info("query", query)
     
 //       Auth.findOne(query, function(err, cred){     
@@ -769,14 +769,14 @@ if (enableOauth2Signin==true) {
 //         if (!cred) {
 //           // The oauth account has not logged in to this app before.  Create a
 //           // new user record and link it to the oauth account.
-//             var password = uniqid()
+//             let password = uniqid()
 //            // signup ( email, password, firstname, lastname, emailverified) {
 //             userService.signup(email, password,  profile.displayName, "", true)
 //             .then(function (savedUser) {
     
 //             winston.info("savedUser", savedUser)    
     
-//             var auth = new Auth({
+//             let auth = new Auth({
 //               providerId: issuer,
 //               email: email,
 //               subject: profile.keycloakId,
@@ -825,7 +825,7 @@ if (enableOauth2Signin==true) {
 
 
 
-  // var OidcStrategy = require('passport-openidconnect').Strategy;
+  // let OidcStrategy = require('passport-openidconnect').Strategy;
 
 
   

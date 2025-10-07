@@ -1,28 +1,28 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
-var expect = require('chai').expect;
+let expect = require('chai').expect;
 
-var assert = require('chai').assert;
-var config = require('../config/database');
-var mongoose = require('mongoose');
-var winston = require('../config/winston');
+let assert = require('chai').assert;
+let config = require('../config/database');
+let mongoose = require('mongoose');
+let winston = require('../config/winston');
 
 mongoose.connect(config.databasetest);
 
-var leadService = require('../services/leadService');
-var projectService = require("../services/projectService");
+let leadService = require('../services/leadService');
+let projectService = require("../services/projectService");
 
 let log = false;
 
 describe('LeadService()', function () {
 
-  var userid = "5badfe5d553d1844ad654072";
+  let userid = "5badfe5d553d1844ad654072";
 
   it('create', function (done) {
     projectService.create("test1", userid).then(function (savedProject) {
       // create(fullname, email, id_project, createdBy)
-      var attr = { myprop: 123 };
+      let attr = { myprop: 123 };
       leadService.create("fullname", "email@email.com", savedProject._id, userid, attr).then(function (savedLead) {
         winston.debug("resolve", savedLead.toObject());
         expect(savedLead.fullname).to.equal("fullname");
@@ -45,7 +45,7 @@ describe('LeadService()', function () {
   it('update', function (done) {
     projectService.create("test1", userid).then(function (savedProject) {
       // create(fullname, email, id_project, createdBy)
-      var attr = { myprop: 123 };
+      let attr = { myprop: 123 };
       leadService.create("fullname", "email@email.com", savedProject._id, userid, attr).then(function (savedLead) {
         winston.debug("resolve", savedLead.toObject());
         expect(savedLead.fullname).to.equal("fullname");
@@ -145,7 +145,7 @@ describe('LeadService()', function () {
   it('createIfNotExistsWithId-already-exists', function (done) {
     projectService.create("test1", userid).then(function (savedProject) {
       // create(fullname, email, id_project, createdBy)
-      var lead_id = "lead_id_" + savedProject._id;
+      let lead_id = "lead_id_" + savedProject._id;
       leadService.createWitId(lead_id, "fullname", "email@email.com", savedProject._id, userid).then(function (savedLead) {
         if (log) { console.log("savedLead", savedLead); }
         leadService.createIfNotExistsWithLeadId(lead_id, "fullname", "email@email.com", savedProject._id, userid).then(function (savedLeadIfNotExists) {

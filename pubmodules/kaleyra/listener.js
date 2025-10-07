@@ -1,6 +1,6 @@
 const kaleyra = require("@tiledesk/tiledesk-kaleyra-proxy");
-var winston = require('../../config/winston');
-var configGlobal = require('../../config/global');
+let winston = require('../../config/winston');
+let configGlobal = require('../../config/global');
 
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 winston.info("Kaleyra apiUrl: " + apiUrl);
@@ -31,6 +31,6 @@ class Listener {
     }
 }
 
-var listener = new Listener();
+let listener = new Listener();
 
 module.exports = listener;

@@ -1,5 +1,5 @@
 const  Map  = require('immutable').Map;
-var _ = require('lodash');
+let _ = require('lodash');
 //const util = require('util')
 
 // import _ from 'lodash'
@@ -8,7 +8,7 @@ const uuidv4 = require('uuid/v4');
 
 const Subscription = require('./subscription');
 // winston.debug("Subscription", Subscription);
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 
 
 
@@ -57,7 +57,7 @@ class PubSub {
      
       if (this.callbacks && this.callbacks.onConnect) {
         try {
-          var resCallBack =  await await this.callbacks.onConnect(client, req);
+          let resCallBack =  await await this.callbacks.onConnect(client, req);
           winston.debug("resCallBack onConnect",resCallBack);
         } catch(e) {
           winston.warn("resCallBack onConnect err",e);
@@ -86,7 +86,7 @@ class PubSub {
        
         if (this.callbacks && this.callbacks.onDisconnect) {          
           try {
-            var resCallBack =  await this.callbacks.onDisconnect(id, userSubscriptions);
+            let resCallBack =  await this.callbacks.onDisconnect(id, userSubscriptions);
             winston.debug("resCallBack onDisconnect",resCallBack);
           } catch(e) {
             winston.warn("resCallBack onDisconnect err",e);
@@ -107,7 +107,7 @@ class PubSub {
       //https://stackoverflow.com/questions/46755493/websocket-ping-with-node-js
      // ws.on('pong',function(mess) { winston.debug(ws.id+' receive a pong : '+mess); });
 
-      var thatThis = this;
+      let thatThis = this;
       //winston.debug("heartbeat timer");
       ws.timer=setInterval(function(){thatThis.ping(ws);},30000);
 
@@ -131,7 +131,7 @@ class PubSub {
     //     message: message,
     //   },
     // })
-    var message = {action: "heartbeat", payload: {message: {text: "ping"}}};
+    let message = {action: "heartbeat", payload: {message: {text: "ping"}}};
     ws.send(JSON.stringify(message));
   }
   
@@ -194,7 +194,7 @@ class PubSub {
 
       if (sub.topic == topic) {
         winston.debug("handleUnsubscribe  remove",sub.id);
-        var index = clientSubscriptions.indexOf(sub.id);
+        let index = clientSubscriptions.indexOf(sub.id);
         winston.debug("handleUnsubscribe  index",index);
         if (index > -1) {
           clientSubscriptions.splice(index, 1);
@@ -298,7 +298,7 @@ class PubSub {
     }*/
     if (this.callbacks && this.callbacks.onMessage) {      
       try {
-        var resCallBack =  await this.callbacks.onMessage(clientId, message);
+        let resCallBack =  await this.callbacks.onMessage(clientId, message);
         winston.debug("resCallBack onMessage",resCallBack);
       } catch(e) {
         winston.warn("resCallBack onMessage err",e);
@@ -336,7 +336,7 @@ class PubSub {
           const text = _.get(message, 'payload.message.text', null);
           winston.debug('received heartbeat with text ',text);
           if (text=='ping') {
-            var messageToSend = {action: 'heartbeat', payload: {message: {text: 'pong'}}};
+            let messageToSend = {action: 'heartbeat', payload: {message: {text: 'pong'}}};
             // rispondi pong solo su ping e non su pong
             winston.debug('received heartbeat from ',clientId," i send a  message: ",  messageToSend);         
             this.send(clientId, messageToSend)
@@ -355,7 +355,7 @@ class PubSub {
 
             if (this.callbacks && this.callbacks.onSubscribe) {
               try {
-                var resCallBack =  await this.callbacks.onSubscribe(topic, clientId, req);
+                let resCallBack =  await this.callbacks.onSubscribe(topic, clientId, req);
                 winston.debug("resCallBack onSubscribe",resCallBack);
                 //console.log("resCallBack onSubscribe",resCallBack);
               } catch(e) {
@@ -401,7 +401,7 @@ class PubSub {
 
             if (this.callbacks && this.callbacks.onUnsubscribe) {              
               try {
-                var resCallBack =  await this.callbacks.onUnsubscribe(unsubscribeTopic, clientId, req);
+                let resCallBack =  await this.callbacks.onUnsubscribe(unsubscribeTopic, clientId, req);
                 winston.debug("resCallBack onUnsubscribe",resCallBack);
               } catch(e) {
                 winston.warn("resCallBack onUnsubscribe err",e);
@@ -423,7 +423,7 @@ class PubSub {
 
             if (this.callbacks && this.callbacks.onPublish) {              
               try {
-                var resCallBack =  await this.callbacks.onPublish(publishTopic, publishMessage, from, req);
+                let resCallBack =  await this.callbacks.onPublish(publishTopic, publishMessage, from, req);
                 winston.debug("resCallBack onPublish",resCallBack);
               } catch(e) {
                 winston.warn("resCallBack onPublish err",e);
@@ -443,7 +443,7 @@ class PubSub {
           if (broadcastTopicName) {
             if (this.callbacks && this.callbacks.onBroadcast) {              
               try {
-                var resCallBack =  await this.callbacks.onBroadcast(broadcastTopicName, broadcastMessage, clientId, req);
+                let resCallBack =  await this.callbacks.onBroadcast(broadcastTopicName, broadcastMessage, clientId, req);
                 winston.debug("resCallBack onPublish",resCallBack);
               } catch(e) {
                 winston.warn("resCallBack onPublish err",e);
@@ -547,5 +547,5 @@ class PubSub {
 
 }
 
-// var pubSub = new PubSub();
+// let pubSub = new PubSub();
 module.exports = PubSub;

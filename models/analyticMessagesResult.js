@@ -1,15 +1,15 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
 
-var AnalyticMessagesResultSchema = new Schema({
+let AnalyticMessagesResultSchema = new Schema({
   count: {
     type: Number,
      required: true
   }}, { collection: 'messages' }
 );
 
-var analyticMessagesResult= mongoose.model('analyticMessagesResultSchema', AnalyticMessagesResultSchema);
+let analyticMessagesResult= mongoose.model('analyticMessagesResultSchema', AnalyticMessagesResultSchema);
 
 
 

@@ -1,7 +1,7 @@
-// var Trigger = require("../models/request");
-var mongoose = require('mongoose');
+// let Trigger = require("../models/request");
+let mongoose = require('mongoose');
 
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 
 /**
  * Make any changes you need to make to the database here

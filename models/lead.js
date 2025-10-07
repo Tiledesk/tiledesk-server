@@ -1,9 +1,9 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
-var LeadConstants = require('./leadConstants');
-var TagSchema = require("../models/tag");
-var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
+let LeadConstants = require('./leadConstants');
+let TagSchema = require("../models/tag");
+let defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 
 
 /*
@@ -12,7 +12,7 @@ As soon as a visitor starts a conversation with you, or replies to a visitor aut
 You can follow up with leads via email if they share their email address with you.
 */
 
-var LeadSchema = new Schema({
+let LeadSchema = new Schema({
   
   lead_id: { 
     type: String,
@@ -107,7 +107,7 @@ LeadSchema.index({status: 1, id_project: 1, createdAt: -1});
 
 
 
- var lead = mongoose.model('lead', LeadSchema);
+ let lead = mongoose.model('lead', LeadSchema);
 
  if (process.env.MONGOOSE_SYNCINDEX) {
   lead.syncIndexes();

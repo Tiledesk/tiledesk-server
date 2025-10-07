@@ -4,17 +4,17 @@
  * Module dependencies.
  */
 
-var app = require('../app');
-var debug = require('debug')('tiledesk-server:server');
-var http = require('http');
-var version = require('../package.json').version
-var mongoose = require('mongoose');
+let app = require('../app');
+let debug = require('debug')('tiledesk-server:server');
+let http = require('http');
+let version = require('../package.json').version
+let mongoose = require('mongoose');
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
+let port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
 /**
@@ -22,9 +22,9 @@ app.set('port', port);
  */
 
 
-var httpServer = http.createServer(app);
+let httpServer = http.createServer(app);
 
-var webSocketServer = require('../websocket/webSocketServer');
+let webSocketServer = require('../websocket/webSocketServer');
 webSocketServer.init(httpServer);
 
 
@@ -33,9 +33,9 @@ webSocketServer.init(httpServer);
  */
 
 // use ipv4 or ipv6 https://stackoverflow.com/questions/50855419/get-only-ipv4-ips-via-nodejs-express
-// var listener = httpServer.listen(port,'0.0.0.0', function(){      
+// let listener = httpServer.listen(port,'0.0.0.0', function(){      
 
-var listener = httpServer.listen(port, function(){      
+let listener = httpServer.listen(port, function(){      
     console.log('Listening tiledesk-server ver:'+version+' on port ' + listener.address().port); //Listening on port 8888
 });
 
@@ -47,7 +47,7 @@ httpServer.on('listening', onListening);
  */
 
 function normalizePort(val) {
-  var port = parseInt(val, 10);
+  let port = parseInt(val, 10);
 
   if (isNaN(port)) {
     // named pipe
@@ -71,7 +71,7 @@ function onError(error) {
     throw error;
   }
 
-  var bind = typeof port === 'string'
+  let bind = typeof port === 'string'
     ? 'Pipe ' + port
     : 'Port ' + port;
 
@@ -95,8 +95,8 @@ function onError(error) {
  */
 
 function onListening() {
-  var addr = httpServer.address();
-  var bind = typeof addr === 'string'
+  let addr = httpServer.address();
+  let bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;
   debug('Listening on ' + bind);

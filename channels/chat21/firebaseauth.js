@@ -2,15 +2,15 @@
 'use strict';
 
 const express = require('express');
-var router = express.Router();
-var firebaseService = require("./firebaseService");
-var winston = require('../../config/winston');
+let router = express.Router();
+let firebaseService = require("./firebaseService");
+let winston = require('../../config/winston');
 
 
 
 router.post('/createCustomToken', function (req, res) {
-        // var uid = req.projectid + '-' + req.user.id;
-        var uid = req.user.id;
+        // let uid = req.projectid + '-' + req.user.id;
+        let uid = req.user.id;
         winston.debug("uid",uid);
 
         firebaseService.createCustomToken(uid).then(customAuthToken => {

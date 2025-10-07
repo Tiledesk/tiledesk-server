@@ -2,11 +2,11 @@
 process.env.NODE_ENV = 'test';
 process.env.ADMIN_EMAIL = "admin@tiledesk.com";
 process.env.LOG_LEVEL = 'critical';
-//var User = require('../models/user');
-var projectService = require('../services/projectService');
-var requestService = require('../services/requestService');
-var userService = require('../services/userService');
-var leadService = require('../services/leadService');
+//let User = require('../models/user');
+let projectService = require('../services/projectService');
+let requestService = require('../services/requestService');
+let userService = require('../services/userService');
+let leadService = require('../services/leadService');
 
 //Require the dev-dependencies
 let chai = require('chai');
@@ -16,15 +16,15 @@ let should = chai.should();
 
 // chai.config.includeStack = true;
 
-var expect = chai.expect;
-var assert = chai.assert;
-var jwt = require('jsonwebtoken');
+let expect = chai.expect;
+let assert = chai.assert;
+let jwt = require('jsonwebtoken');
 
-var config = require('../config/database');
+let config = require('../config/database');
 
 let log = false;
 
-var mongoose = require('mongoose');
+let mongoose = require('mongoose');
 mongoose.connect(config.databasetest);
 
 
@@ -39,8 +39,8 @@ describe('Authentication', () => {
 
         it('signinOk', (done) => {
 
-            var email = "test-signin-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signin-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 
@@ -68,8 +68,8 @@ describe('Authentication', () => {
 
         it('signinkO', (done) => {
 
-            var email = "test-signinko-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signinko-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             chai.request(server)
                 .post('/auth/signin')
@@ -89,8 +89,8 @@ describe('Authentication', () => {
 
         it('signinValidation', (done) => {
 
-            var email = "test-signinko-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signinko-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             chai.request(server)
                 .post('/auth/signin')
@@ -111,8 +111,8 @@ describe('Authentication', () => {
         // mocha test/authentication.js  --grep 'signinLowercase'
         it('signinLowercase', (done) => {
 
-            var email = "Test-SigninKO-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "Test-SigninKO-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 
@@ -155,8 +155,8 @@ describe('Authentication', () => {
 
         it('signupOk', (done) => {
 
-            var email = "test-signuook-" + Date.now() + "@email.com";
-            var pwd = "Pwd1234!";
+            let email = "test-signuook-" + Date.now() + "@email.com";
+            let pwd = "Pwd1234!";
 
             chai.request(server)
                 .post('/auth/signup')
@@ -200,8 +200,8 @@ describe('Authentication', () => {
 
         // it('signUpAdminNoVerificationEmail', (done) => {
 
-        //     var email = "test-signup-" + Date.now() + "@email.com";
-        //     var pwd = "pwd";
+        //     let email = "test-signup-" + Date.now() + "@email.com";
+        //     let pwd = "pwd";
 
         //     chai.request(server)
         //         .post("/auth/signin")
@@ -230,9 +230,9 @@ describe('Authentication', () => {
 
         it('signupUpperCaseEmail', (done) => {
 
-            var now = Date.now();
-            var email = "test-signupUpperCaseEmail-" + now + "@email.com";
-            var pwd = "Pwd1234!";
+            let now = Date.now();
+            let email = "test-signupUpperCaseEmail-" + now + "@email.com";
+            let pwd = "Pwd1234!";
 
             chai.request(server)
                 .post('/auth/signup')
@@ -255,8 +255,8 @@ describe('Authentication', () => {
         // mocha test/authentication.js  --grep 'signupkOWrongEmail'
         it('signupkOWrongEmail', (done) => {
 
-            var email = "test-signuoOk-" + Date.now() + "@email";
-            var pwd = "Pwd1234!";
+            let email = "test-signuoOk-" + Date.now() + "@email";
+            let pwd = "Pwd1234!";
 
             chai.request(server)
                 .post('/auth/signup')
@@ -294,8 +294,8 @@ describe('Authentication', () => {
 
         it('signInAnonymouslyOk', (done) => {
 
-            var email = "test-signInAnonymouslyOk-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signInAnonymouslyOk-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 // create(name, createdBy, settings)
@@ -325,8 +325,8 @@ describe('Authentication', () => {
         // it('signInAnonymouslyReLoginSameProject', (done) => {
 
 
-        //     var email = "test-signInAnonymouslyReLogin-" + Date.now() + "@email.com";
-        //     var pwd = "pwd";
+        //     let email = "test-signInAnonymouslyReLogin-" + Date.now() + "@email.com";
+        //     let pwd = "pwd";
 
         //     userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
         //         // create(name, createdBy, settings)
@@ -345,10 +345,10 @@ describe('Authentication', () => {
         //                         expect(res.body.token).to.not.equal(undefined);                                               
         //                         expect(res.body.user._id).to.not.equal(undefined);                                               
 
-        //                         var uuid = res.body.user._id.toString();
+        //                         let uuid = res.body.user._id.toString();
         //                         console.log("uuid", uuid);
 
-        //                         var token = res.body.token;
+        //                         let token = res.body.token;
         //                         console.log("token", token);
 
         //                         chai.request(server)
@@ -381,8 +381,8 @@ describe('Authentication', () => {
         // it('signInAnonymouslyReLoginDifferentProject', (done) => {
 
 
-        //     var email = "test-signInAnonymouslyReLogin-" + Date.now() + "@email.com";
-        //     var pwd = "pwd";
+        //     let email = "test-signInAnonymouslyReLogin-" + Date.now() + "@email.com";
+        //     let pwd = "pwd";
 
         //     userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
         //         // create(name, createdBy, settings)
@@ -403,10 +403,10 @@ describe('Authentication', () => {
         //                         expect(res.body.token).to.not.equal(undefined);                                               
         //                         expect(res.body.user._id).to.not.equal(undefined);                                               
 
-        //                         var uuid = res.body.user._id.toString();
+        //                         let uuid = res.body.user._id.toString();
         //                         console.log("uuid", uuid);
 
-        //                         var token = res.body.token;
+        //                         let token = res.body.token;
         //                         console.log("token", token);
 
         //                         chai.request(server)
@@ -439,8 +439,8 @@ describe('Authentication', () => {
 
         it('signinWithCustomTokenOk', (done) => {
 
-            var email = "test-signinwithcustomtoken-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signinwithcustomtoken-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 // create(name, createdBy, settings)
@@ -460,15 +460,15 @@ describe('Authentication', () => {
                             expect(res.body.jwtSecret).to.not.equal(null);
 
                             // 'E11000 duplicate key error collection: tiledesk-test.users index: email_1 dup key: { email: "email@email.com" }' }
-                            var externalUserObj = { _id: "123", firstname: "andrea", lastname: "leo", email: "email2@email.com", customAttr: "c1" };
+                            let externalUserObj = { _id: "123", firstname: "andrea", lastname: "leo", email: "email2@email.com", customAttr: "c1" };
                             if (log) { console.log("externalUserObj", externalUserObj); }
 
-                            var signOptions = {
+                            let signOptions = {
                                 subject: 'userexternal',
                                 audience: 'https://tiledesk.com/projects/' + savedProject._id,
                             };
 
-                            var jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
+                            let jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
                             if (log) { console.log("jwtToken", jwtToken); }
 
                             chai.request(server)
@@ -500,8 +500,8 @@ describe('Authentication', () => {
 
         it('signinWithCustomTokenKO', (done) => {
 
-            var email = "test-signinwithcustomtoken-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signinwithcustomtoken-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 // create(name, createdBy, settings)
@@ -520,16 +520,16 @@ describe('Authentication', () => {
                             res.body.should.be.a('object');
                             expect(res.body.jwtSecret).to.not.equal(null);
 
-                            var externalUserObj = { _id: "123", name: "andrea", surname: "leo", customAttr: "c1" };
+                            let externalUserObj = { _id: "123", name: "andrea", surname: "leo", customAttr: "c1" };
                             if (log) { console.log("externalUserObj", externalUserObj); }
 
-                            var signOptions = {
+                            let signOptions = {
                                 subject: 'userexternal',
                                 audience: 'https://tiledesk.com/projects/' + savedProject._id,
                             };
 
 
-                            var jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret + "1234567KOOOOOOO", signOptions);
+                            let jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret + "1234567KOOOOOOO", signOptions);
                             if (log) { console.log("jwtToken", jwtToken); }
 
                             chai.request(server)
@@ -553,8 +553,8 @@ describe('Authentication', () => {
 
         it('signinWithCustomTokenKONoID', (done) => {
 
-            var email = "test-signinwithcustomtokenkonoid-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signinwithcustomtokenkonoid-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 // create(name, createdBy, settings)
@@ -574,15 +574,15 @@ describe('Authentication', () => {
                             expect(res.body.jwtSecret).to.not.equal(null);
 
                             // 'E11000 duplicate key error collection: tiledesk-test.users index: email_1 dup key: { email: "email@email.com" }' }
-                            var externalUserObj = { firstname: "andrea", lastname: "leo", email: "email2@email.com" };
+                            let externalUserObj = { firstname: "andrea", lastname: "leo", email: "email2@email.com" };
                             if (log) { console.log("externalUserObj", externalUserObj); }
 
-                            var signOptions = {
+                            let signOptions = {
                                 subject: 'userexternal',
                                 audience: 'https://tiledesk.com/projects/' + savedProject._id,
                             };
 
-                            var jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
+                            let jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
                             if (log) { console.log("jwtToken", jwtToken); }
 
                             chai.request(server)
@@ -609,8 +609,8 @@ describe('Authentication', () => {
         // mocha test/authentication.js  --grep 'signinWithCustomTokenKONoAud'
         it('signinWithCustomTokenKONoAud', (done) => {
 
-            var email = "test-signinwithcustomtokenkowrongaud-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signinwithcustomtokenkowrongaud-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 // create(name, createdBy, settings)
@@ -630,15 +630,15 @@ describe('Authentication', () => {
                             expect(res.body.jwtSecret).to.not.equal(null);
 
                             // 'E11000 duplicate key error collection: tiledesk-test.users index: email_1 dup key: { email: "email@email.com" }' }
-                            var externalUserObj = { _id: 1234, firstname: "andrea", lastname: "leo", email: "email2@email.com" };
+                            let externalUserObj = { _id: 1234, firstname: "andrea", lastname: "leo", email: "email2@email.com" };
                             if (log) { console.log("externalUserObj", externalUserObj); }
 
-                            var signOptions = {
+                            let signOptions = {
                                 subject: 'userexternal',
                                 //audience:  'https://tiledesk.com/projects/'+savedProject._id ,                                              
                             };
 
-                            var jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
+                            let jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
                             if (log) { console.log("jwtToken", jwtToken); }
 
                             chai.request(server)
@@ -664,8 +664,8 @@ describe('Authentication', () => {
         // mocha test/authentication.js  --grep 'signinWithCustomTokenOkTwoSigninWithCT'
         it('signinWithCustomTokenOkTwoSigninWithCT', (done) => {
 
-            var email = "test-signinwithcustomtokenoktwosigninwithct-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signinwithcustomtokenoktwosigninwithct-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 // create(name, createdBy, settings)
@@ -685,15 +685,15 @@ describe('Authentication', () => {
                             expect(res.body.jwtSecret).to.not.equal(null);
 
                             // 'E11000 duplicate key error collection: tiledesk-test.users index: email_1 dup key: { email: "email@email.com" }' }
-                            var externalUserObj = { _id: "123", firstname: "andrea", lastname: "leo", email: "email2@email.com", customAttr: "c1" };
+                            let externalUserObj = { _id: "123", firstname: "andrea", lastname: "leo", email: "email2@email.com", customAttr: "c1" };
                             if (log) { console.log("externalUserObj", externalUserObj); }
 
-                            var signOptions = {
+                            let signOptions = {
                                 subject: 'userexternal',
                                 audience: 'https://tiledesk.com/projects/' + savedProject._id,
                             };
 
-                            var jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
+                            let jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
                             if (log) { console.log("jwtToken", jwtToken); }
 
                             chai.request(server)
@@ -747,9 +747,9 @@ describe('Authentication', () => {
         // mocha test/authentication.js  --grep 'signinWithCustomTokenRoleNew'
         it('signinWithCustomTokenRoleNew', (done) => {
 
-            var email = "test-signinWithCustomTokenRole-" + Date.now() + "@email.com";
-            var pwd = "pwd";
-            var emailToCheck = "emailrole" + Date.now() + "@email.com";
+            let email = "test-signinWithCustomTokenRole-" + Date.now() + "@email.com";
+            let pwd = "pwd";
+            let emailToCheck = "emailrole" + Date.now() + "@email.com";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 // create(name, createdBy, settings)
@@ -769,15 +769,15 @@ describe('Authentication', () => {
                             expect(res.body.jwtSecret).to.not.equal(null);
 
                             // 'E11000 duplicate key error collection: tiledesk-test.users index: email_1 dup key: { email: "email@email.com" }' }
-                            var externalUserObj = { _id: "123", firstname: "andrea", lastname: "leo", email: emailToCheck, role: "admin" };
+                            let externalUserObj = { _id: "123", firstname: "andrea", lastname: "leo", email: emailToCheck, role: "admin" };
                             if (log) { console.log("externalUserObj", externalUserObj); }
 
-                            var signOptions = {
+                            let signOptions = {
                                 subject: 'userexternal',
                                 audience: 'https://tiledesk.com/projects/' + savedProject._id,
                             };
 
-                            var jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
+                            let jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
                             if (log) { console.log("jwtToken", jwtToken); }
 
                             chai.request(server)
@@ -809,9 +809,9 @@ describe('Authentication', () => {
         // mocha test/authentication.js  --grep 'signinWithCustomTokenRole'
         it('signinWithCustomTokenRoleEmailAlreadyUsed', (done) => {
 
-            var email = "test-signinWithCustomTokenRoleEmailAlreadyUsed-" + Date.now() + "@email.com";
-            var pwd = "pwd";
-            var emailToCheck = "emailrole" + Date.now() + "@email.com";
+            let email = "test-signinWithCustomTokenRoleEmailAlreadyUsed-" + Date.now() + "@email.com";
+            let pwd = "pwd";
+            let emailToCheck = "emailrole" + Date.now() + "@email.com";
 
             userService.signup(emailToCheck, pwd, "andrea", "leo").then(function (savedUserToCheck) {
                 userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
@@ -831,15 +831,15 @@ describe('Authentication', () => {
                                 expect(res.body.jwtSecret).to.not.equal(null);
 
                                 // 'E11000 duplicate key error collection: tiledesk-test.users index: email_1 dup key: { email: "email@email.com" }' }
-                                var externalUserObj = { _id: "123", firstname: "andrea", lastname: "leo", email: emailToCheck, role: "admin" };
+                                let externalUserObj = { _id: "123", firstname: "andrea", lastname: "leo", email: emailToCheck, role: "admin" };
                                 if (log) { console.log("externalUserObj", externalUserObj); }
 
-                                var signOptions = {
+                                let signOptions = {
                                     subject: 'userexternal',
                                     audience: 'https://tiledesk.com/projects/' + savedProject._id,
                                 };
 
-                                var jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
+                                let jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
                                 if (log) { console.log("jwtToken", jwtToken); }
 
                                 chai.request(server)
@@ -872,9 +872,9 @@ describe('Authentication', () => {
         // mocha test/authentication.js  --grep 'signinWithCustomTokenRoleSameOwnerEmail'
         it('signinWithCustomTokenRoleSameOwnerEmail', (done) => {
 
-            var email = "test-sctrolesameowner-" + Date.now() + "@email.com";
-            var pwd = "pwd";
-            var emailToCheck = email;
+            let email = "test-sctrolesameowner-" + Date.now() + "@email.com";
+            let pwd = "pwd";
+            let emailToCheck = email;
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-signinWithCustomTokenRoleEmailAlreadyUsed", savedUser._id).then(function (savedProject) {
@@ -893,15 +893,15 @@ describe('Authentication', () => {
                             expect(res.body.jwtSecret).to.not.equal(null);
 
                             // 'E11000 duplicate key error collection: tiledesk-test.users index: email_1 dup key: { email: "email@email.com" }' }
-                            var externalUserObj = { _id: "123", firstname: "andrea", lastname: "leo", email: emailToCheck, role: "admin" };
+                            let externalUserObj = { _id: "123", firstname: "andrea", lastname: "leo", email: emailToCheck, role: "admin" };
                             if (log) { console.log("externalUserObj", externalUserObj); }
 
-                            var signOptions = {
+                            let signOptions = {
                                 subject: 'userexternal',
                                 audience: 'https://tiledesk.com/projects/' + savedProject._id,
                             };
 
-                            var jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
+                            let jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
                             if (log) { console.log("jwtToken", jwtToken); }
 
                             chai.request(server)

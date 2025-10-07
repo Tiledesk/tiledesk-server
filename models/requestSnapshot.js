@@ -1,11 +1,11 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
-var ProjectUserSchema = require("../models/project_user").schema;
-var DepartmentSchema = require("../models/department").schema;
-var LeadSchema = require("../models/lead").schema;
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
+let ProjectUserSchema = require("../models/project_user").schema;
+let DepartmentSchema = require("../models/department").schema;
+let LeadSchema = require("../models/lead").schema;
 
-var RequestSnapshotSchema = new Schema({
+let RequestSnapshotSchema = new Schema({
   
   requester: {
     type: ProjectUserSchema,  

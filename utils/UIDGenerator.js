@@ -12,7 +12,7 @@ class UIDGenerator {
     }
 }
 
- var uidGenerator = new UIDGenerator();
+ let uidGenerator = new UIDGenerator();
 
  module.exports = uidGenerator;
  

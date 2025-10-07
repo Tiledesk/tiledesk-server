@@ -10,7 +10,7 @@ let chaiHttp = require('chai-http');
 let server = require('../app');
 const projectService = require('../services/projectService');
 const userService = require('../services/userService');
-var RoleConstants = require("../models/roleConstants");
+let RoleConstants = require("../models/roleConstants");
 const Project_user = require('../models/project_user');
 let should = chai.should();
 
@@ -21,8 +21,8 @@ chai.use(chaiHttp);
 describe('CannedRoute', () => {
 
     it('new canned by owner/admin', (done) => {
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(savedUser => {
             projectService.create("test1", savedUser._id).then(savedProject => {
@@ -51,8 +51,8 @@ describe('CannedRoute', () => {
     })
 
     it('new canned by agent', (done) => {
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(savedUser => {
             projectService.create("test1", savedUser._id).then(savedProject => {
@@ -83,9 +83,9 @@ describe('CannedRoute', () => {
 
     it('get canned', (done) => {
 
-        var email_owner = "owner-signup-" + Date.now() + "@email.com";
-        var email_agent = "agent-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email_owner = "owner-signup-" + Date.now() + "@email.com";
+        let email_agent = "agent-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email_owner, pwd, "Owner Firstname", "Owner Lastname").then(savedOwner => {
             userService.signup(email_agent, pwd, "Agent Firstname", "Agent Lastname").then(savedAgent => {

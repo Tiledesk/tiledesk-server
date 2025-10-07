@@ -1,6 +1,6 @@
-var Project_user = require("../models/project_user");
-var Group = require("../models/group");
-var RoleConstants = require("../models/roleConstants");
+let Project_user = require("../models/project_user");
+let Group = require("../models/group");
+let RoleConstants = require("../models/roleConstants");
 
 
 class RecipientEmailUtil {
@@ -60,7 +60,7 @@ class RecipientEmailUtil {
     }
   }
   
-  var recipientEmailUtil = new RecipientEmailUtil();
+  let recipientEmailUtil = new RecipientEmailUtil();
 
   
   module.exports = recipientEmailUtil;  

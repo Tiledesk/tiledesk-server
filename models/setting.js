@@ -1,12 +1,12 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
-var config = require('../config/database');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
+let config = require('../config/database');
 
-var pjson = require('../package.json');
+let pjson = require('../package.json');
 // console.log(pjson.version);
 
-var SettingSchema = new Schema({
+let SettingSchema = new Schema({
   
   identifier: {
     type: String,
@@ -33,7 +33,7 @@ var SettingSchema = new Schema({
 
 
 
-var setting =  mongoose.model('Setting', SettingSchema);
+let setting =  mongoose.model('Setting', SettingSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   setting.syncIndexes();

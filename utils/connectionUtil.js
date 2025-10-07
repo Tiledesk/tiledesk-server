@@ -15,7 +15,7 @@ class ConnnectionUtil {
 
 }
 
-var connnectionUtil = new ConnnectionUtil();
+let connnectionUtil = new ConnnectionUtil();
 
 module.exports = connnectionUtil;
 

@@ -2,20 +2,20 @@
 process.env.NODE_ENV = 'test';
 process.env.LOG_LEVEL = 'critical';
 
-var expect = require('chai').expect;
+let expect = require('chai').expect;
 
-var assert = require('chai').assert;
-var config = require('../config/database');
-var mongoose = require('mongoose');
+let assert = require('chai').assert;
+let config = require('../config/database');
+let mongoose = require('mongoose');
 
 mongoose.connect(config.databasetest);
 
-var leadService = require('../services/leadService');
-var projectService = require("../services/projectService");
-var userService = require('../services/userService');
-var faqService = require('../services/faqService');
-var Faq = require('../models/faq');
-var winston = require('../config/winston');
+let leadService = require('../services/leadService');
+let projectService = require("../services/projectService");
+let userService = require('../services/userService');
+let faqService = require('../services/faqService');
+let Faq = require('../models/faq');
+let winston = require('../config/winston');
 
 let log = false;
 
@@ -24,14 +24,14 @@ describe('FaqService()', function () {
 
   it('createee-and-search', (done) => {
 
-    var email = "test-subscription-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-subscription-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.create("test-FaqService", savedUser._id).then(function (savedProject) {
         faqService.create(savedProject._id, savedUser._id, { name: "testbot" }).then(function (savedBot) {
 
-          var newFaq = new Faq({
+          let newFaq = new Faq({
             id_faq_kb: savedBot._id,
             question: "question",
             answer: "answer",
@@ -53,7 +53,7 @@ describe('FaqService()', function () {
             expect(savedFaq.intent_display_name).to.not.equal(undefined);
             expect(savedFaq.webhook_enabled).to.equal(false);
 
-            var query = { "id_faq_kb": savedBot._id };
+            let query = { "id_faq_kb": savedBot._id };
 
             // aggiunta qui 
             query.$text = { "$search": "question" };
@@ -80,14 +80,14 @@ describe('FaqService()', function () {
 
   it('create-with-intent_display_name-and-search', (done) => {
 
-    var email = "test-subscription-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-subscription-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.create("test-FaqService", savedUser._id).then(function (savedProject) {
         faqService.create(savedProject._id, savedUser._id, { name: "testbot" }).then(function (savedBot) {
 
-          var newFaq = new Faq({
+          let newFaq = new Faq({
             id_faq_kb: savedBot._id,
             question: "question",
             answer: "answer",
@@ -108,7 +108,7 @@ describe('FaqService()', function () {
             expect(savedFaq.intent_display_name).to.equal("question1");
             expect(savedFaq.webhook_enabled).to.equal(false);
 
-            var query = { "id_faq_kb": savedBot._id };
+            let query = { "id_faq_kb": savedBot._id };
 
             // aggiunta qui 
             query.$text = { "$search": "question" };
@@ -136,14 +136,14 @@ describe('FaqService()', function () {
 
   it('create-with-duplicated-intent_display_name-and-search', (done) => {
 
-    var email = "test-subscription-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-subscription-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.create("test-FaqService", savedUser._id).then(function (savedProject) {
         faqService.create(savedProject._id, savedUser._id, { name: "testbot" }).then(function (savedBot) {
 
-          var newFaq0 = new Faq({
+          let newFaq0 = new Faq({
             id_faq_kb: savedBot._id,
             question: "question",
             answer: "answer",
@@ -156,7 +156,7 @@ describe('FaqService()', function () {
 
           newFaq0.save(function (err, savedFaq0) {
 
-            var newFaq = new Faq({
+            let newFaq = new Faq({
               id_faq_kb: savedBot._id,
               question: "question",
               answer: "answer",

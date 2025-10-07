@@ -1,9 +1,9 @@
-var express = require('express');
-var router = express.Router();
-var Activity = require("../models/activity");
-var winston = require('../../../config/winston');
-var moment = require('moment');
-var ObjectId = require('mongoose').Types.ObjectId;
+let express = require('express');
+let router = express.Router();
+let Activity = require("../models/activity");
+let winston = require('../../../config/winston');
+let moment = require('moment');
+let ObjectId = require('mongoose').Types.ObjectId;
 
 csv = require('csv-express');
 csv.separator = ';';
@@ -16,7 +16,7 @@ csv.separator = ';';
 //   winston.debug(req.body);
 //   winston.debug("req.user", req.user);
 
-//   var newLead = new Lead({
+//   let newLead = new Lead({
 //     fullname: req.body.fullname,
 //     lead_id: req.body.lead_id,
 //     email: req.body.email,
@@ -51,21 +51,21 @@ csv.separator = ';';
 
 
 router.get('/', function (req, res) {
-  var limit = 40; // Number of activities per page
-  var page = 0;
+  let limit = 40; // Number of activities per page
+  let page = 0;
 
   if (req.query.page) {
     page = req.query.page;
   }
 
-  var skip = page * limit;
+  let skip = page * limit;
   winston.debug('Activity ROUTE - SKIP PAGE ', skip);
   // winston.debug('Activity ROUTE - SKIP PAGE ', skip);
 
   winston.debug('Activity ROUTE - QUERY ', req.query)
 
 
-  var query = { "id_project": req.projectid };
+  let query = { "id_project": req.projectid };
 
 
   /**
@@ -76,27 +76,27 @@ router.get('/', function (req, res) {
 
     /**
      * USING MOMENT      */
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-    var endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    let startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    let endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
     winston.debug('Activity ROUTE - REQ QUERY FORMATTED START DATE ', startDate);
     winston.debug('Activity ROUTE - REQ QUERY FORMATTED END DATE ', endDate);
 
     // ADD ONE DAY TO THE END DAY
-    var date = new Date(endDate);
-    var newdate = new Date(date);
-    var endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
+    let date = new Date(endDate);
+    let newdate = new Date(date);
+    let endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
     winston.debug('Activity ROUTE - REQ QUERY FORMATTED END DATE + 1 DAY ', endDate_plusOneDay);
-    // var endDate_plusOneDay =   moment('2018-09-03').add(1, 'd')
-    // var endDate_plusOneDay =   endDate.add(1).day();
-    // var toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
+    // let endDate_plusOneDay =   moment('2018-09-03').add(1, 'd')
+    // let endDate_plusOneDay =   endDate.add(1).day();
+    // let toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
 
     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString(), $lte: new Date(endDate_plusOneDay).toISOString() }
     winston.debug('Activity ROUTE - QUERY CREATED AT ', query.createdAt);
 
   } else if (req.query.start_date && !req.query.end_date) {
     winston.debug('Activity ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)');
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    let startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString() };
     winston.debug('Activity ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
@@ -127,19 +127,19 @@ router.get('/', function (req, res) {
   }
 
 
-  var direction = -1; //-1 descending , 1 ascending
+  let direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
   }
   winston.debug("direction", direction);
 
-  var sortField = "createdAt";
+  let sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   }
   winston.debug("sortField", sortField);
 
-  var sortQuery = {};
+  let sortQuery = {};
   sortQuery[sortField] = direction;
 
   winston.debug("sort query", sortQuery);
@@ -160,7 +160,7 @@ router.get('/', function (req, res) {
           return (err);
         }
 
-        var objectToReturn = {
+        let objectToReturn = {
           perPage: limit,
           count: totalRowCount,
           activities: activities
@@ -181,21 +181,21 @@ router.get('/', function (req, res) {
 
 // DOWNLOAD ACTIVITIES AS CSV
 router.get('/csv', function (req, res) {
-  var limit = 100000; // Number of activities per page
-  var page = 0;
+  let limit = 100000; // Number of activities per page
+  let page = 0;
 
   if (req.query.page) {
     page = req.query.page;
   }
 
-  var skip = page * limit;
+  let skip = page * limit;
   winston.debug('Activity ROUTE - SKIP PAGE ', skip);
   // winston.debug('Activity ROUTE - SKIP PAGE ', skip);
 
   winston.debug('Activity ROUTE - QUERY ', req.query)
 
 
-  var query = { "id_project": req.projectid };
+  let query = { "id_project": req.projectid };
 
   /**
    * DATE RANGE  */
@@ -205,27 +205,27 @@ router.get('/csv', function (req, res) {
 
     /**
      * USING MOMENT      */
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-    var endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    let startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    let endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
     winston.debug('Activity ROUTE - REQ QUERY FORMATTED START DATE ', startDate);
     winston.debug('Activity ROUTE - REQ QUERY FORMATTED END DATE ', endDate);
 
     // ADD ONE DAY TO THE END DAY
-    var date = new Date(endDate);
-    var newdate = new Date(date);
-    var endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
+    let date = new Date(endDate);
+    let newdate = new Date(date);
+    let endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
     winston.debug('Activity ROUTE - REQ QUERY FORMATTED END DATE + 1 DAY ', endDate_plusOneDay);
-    // var endDate_plusOneDay =   moment('2018-09-03').add(1, 'd')
-    // var endDate_plusOneDay =   endDate.add(1).day();
-    // var toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
+    // let endDate_plusOneDay =   moment('2018-09-03').add(1, 'd')
+    // let endDate_plusOneDay =   endDate.add(1).day();
+    // let toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
 
     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString(), $lte: new Date(endDate_plusOneDay).toISOString() }
     winston.debug('Activity ROUTE - QUERY CREATED AT ', query.createdAt);
 
   } else if (req.query.start_date && !req.query.end_date) {
     winston.debug('Activity ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)');
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    let startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString() };
     winston.debug('Activity ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
@@ -257,23 +257,23 @@ router.get('/csv', function (req, res) {
 
   if (req.query.lang) {
     winston.debug('req.query.lang:', req.query.lang);
-    var lang = req.query.lang;
+    let lang = req.query.lang;
   }
 
 
-  var direction = -1; //-1 descending , 1 ascending
+  let direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
   }
   winston.debug("direction", direction);
 
-  var sortField = "createdAt";
+  let sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   }
   winston.debug("sortField", sortField);
 
-  var sortQuery = {};
+  let sortQuery = {};
   sortQuery[sortField] = direction;
 
   winston.debug("sort query", sortQuery);
@@ -304,7 +304,7 @@ router.get('/csv', function (req, res) {
 
 
   function translateString(string, lang) {
-    var translatedString = ''
+    let translatedString = ''
 
     if (string === 'hasChanged') {
       if (lang === 'it') {
@@ -418,7 +418,7 @@ router.get('/csv', function (req, res) {
   }
 
   function buildMsg_PROJECT_USER_INVITE(actor_name, target_fullname, lang, activity) {
-    var action = '';
+    let action = '';
 
 
     action = translateString('HasInvited', lang) + ' ' + target_fullname
@@ -449,7 +449,7 @@ router.get('/csv', function (req, res) {
 
 
   function buildMsg_PROJECT_USER_DELETE(actor_name, target_fullname, lang) {
-    var action = '';
+    let action = '';
     action = translateString('HasRemoved', lang) + ' ' + target_fullname + translateString('FromTheProject', lang)
 
     return message = actor_name + action
@@ -458,7 +458,7 @@ router.get('/csv', function (req, res) {
 
   function buildMsg_PROJECT_USER_UPDATE(actor_name, target_fullname, lang, activity) {
 
-    var action = '';
+    let action = '';
 
     action = translateString('hasChanged', lang)
     // if (lang === 'it') {
@@ -473,7 +473,7 @@ router.get('/csv', function (req, res) {
         activity.target.object.id_user &&
         activity.target.object.id_user._id) {
 
-        var target_user_id = JSON.stringify(activity.target.object.id_user._id).replace(/['"]+/g, '')
+        let target_user_id = JSON.stringify(activity.target.object.id_user._id).replace(/['"]+/g, '')
 
         if (activity.actor.id === target_user_id) {
           // USE CASE 1: THE TARGET OF THE ACTION IS THE CURRENT USER (YOURSELF) 
@@ -575,8 +575,8 @@ router.get('/csv', function (req, res) {
       // if (lang) {
       winston.debug('buildCsv lang: ', lang);
 
-      var actor_name = '';
-      var target_fullname = '';
+      let actor_name = '';
+      let target_fullname = '';
       if (activity.actor) {
         actor_name = activity.actor.name;
 
@@ -597,77 +597,77 @@ router.get('/csv', function (req, res) {
       }
 
       if (activity.verb === "PROJECT_USER_UPDATE") {
-        var message = buildMsg_PROJECT_USER_UPDATE(actor_name, target_fullname, lang, activity)
+        let message = buildMsg_PROJECT_USER_UPDATE(actor_name, target_fullname, lang, activity)
       }
 
       if (activity.verb === "PROJECT_USER_DELETE") {
-        var message = buildMsg_PROJECT_USER_DELETE(actor_name, target_fullname, lang)
+        let message = buildMsg_PROJECT_USER_DELETE(actor_name, target_fullname, lang)
       }
 
       if (activity.verb === "PROJECT_USER_INVITE") {
-        var message = buildMsg_PROJECT_USER_INVITE(actor_name, target_fullname, lang, activity)
+        let message = buildMsg_PROJECT_USER_INVITE(actor_name, target_fullname, lang, activity)
       }
 
       if (activity.verb === "REQUEST_CREATE") {
-        var message = buildMsg_REQUEST_CREATE(lang, activity)
+        let message = buildMsg_REQUEST_CREATE(lang, activity)
       }
 
 
       if (activity.actionObj && activity.actionObj.email) {
-        var actionObj_email = activity.actionObj.email;
+        let actionObj_email = activity.actionObj.email;
       } else {
-        var actionObj_email = ""
+        let actionObj_email = ""
       }
 
       if (activity.actionObj && activity.actionObj.id_project) {
-        var actionObj_id_project = activity.actionObj.id_project;
+        let actionObj_id_project = activity.actionObj.id_project;
       } else {
-        var actionObj_id_project = ""
+        let actionObj_id_project = ""
       }
 
       if (activity.actionObj && activity.actionObj.project_name) {
-        var actionObj_project_name = activity.actionObj.project_name;
+        let actionObj_project_name = activity.actionObj.project_name;
       } else {
-        var actionObj_project_name = ""
+        let actionObj_project_name = ""
       }
 
       if (activity.actionObj && activity.actionObj.role) {
-        var actionObj_role = activity.actionObj.role;
+        let actionObj_role = activity.actionObj.role;
       } else {
-        var actionObj_role = ""
+        let actionObj_role = ""
       }
 
       if (activity.actionObj && activity.actionObj.user_available) {
-        var actionObj_user_available = activity.actionObj.user_available;
+        let actionObj_user_available = activity.actionObj.user_available;
       } else {
-        var actionObj_user_available = ""
+        let actionObj_user_available = ""
       }
 
       if (activity.target) {
-        var target_id = activity.target.id
-        var target_type = activity.target.type
+        let target_id = activity.target.id
+        let target_type = activity.target.type
       }
 
       if (activity.target && activity.target.object) {
-        var target_createdAt = activity.target.object.createdAt;
-        var target_createdBy = activity.target.object.createdBy;
-        var target_role = activity.target.object.role;
-        var target_user_available = activity.target.object.user_available;
-        // var target_id = activity.target.object._id;
+        let target_createdAt = activity.target.object.createdAt;
+        let target_createdBy = activity.target.object.createdBy;
+        let target_role = activity.target.object.role;
+        let target_user_available = activity.target.object.user_available;
+        // let target_id = activity.target.object._id;
       }
 
       if (activity.target && activity.target.object && activity.target.object.id_user) {
-        var target_user_fullname = activity.target.object.id_user.firstname + " " + activity.target.object.id_user.lastname;
-        var target_user_id = activity.target.object.id_user._id
+        let target_user_fullname = activity.target.object.id_user.firstname + " " + activity.target.object.id_user.lastname;
+        let target_user_id = activity.target.object.id_user._id
       } else {
-        var target_user_fullname = "";
-        var target_user_id = "";
+        let target_user_fullname = "";
+        let target_user_id = "";
       }
 
       if (activity.target && activity.target.object && activity.target.object.email) {
-        var target_email = activity.target.object.email;
+        let target_email = activity.target.object.email;
       } else {
-        var target_email = "";
+        let target_email = "";
       }
 
 

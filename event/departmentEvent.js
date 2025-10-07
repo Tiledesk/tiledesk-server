@@ -1,8 +1,8 @@
 const EventEmitter = require('events');
 
 class DepartmentEvent extends EventEmitter {}
-var winston = require('../config/winston');
-var Request = require('../models/request');
+let winston = require('../config/winston');
+let Request = require('../models/request');
 
 const departmentEvent = new DepartmentEvent();
 
@@ -10,8 +10,8 @@ const departmentEvent = new DepartmentEvent();
 // rules engine ascolta evento operators.select ed in base a regole custom riassegna oggetto operators
 
 DepartmentEvent.prototype.callNextEvent = function(nextEventName, res) {
-  var operatorSelectedEvent = res.result;
-  var count = departmentEvent.listenerCount(nextEventName);
+  let operatorSelectedEvent = res.result;
+  let count = departmentEvent.listenerCount(nextEventName);
   winston.debug('count', count);   
   if (count<1) {
     winston.debug('operator.select count <1 return default resolve');   

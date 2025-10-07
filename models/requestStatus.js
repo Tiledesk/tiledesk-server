@@ -1,9 +1,9 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
 
 
-var RequestStatusSchema = new Schema({ 
+let RequestStatusSchema = new Schema({ 
   closed : {
     type: Boolean,
     required: true,

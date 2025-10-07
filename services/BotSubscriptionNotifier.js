@@ -1,18 +1,18 @@
 const botEvent = require('../event/botEvent');
-var winston = require('../config/winston');
-var jwt = require('jsonwebtoken');
+let winston = require('../config/winston');
+let jwt = require('jsonwebtoken');
 const Faq_kb = require('../models/faq_kb');
 const uuidv4 = require('uuid/v4');
 
-var request = require('retry-request', {
+let request = require('retry-request', {
   request: require('request')
 });
 
-var webhook_origin = process.env.WEBHOOK_ORIGIN || "http://localhost:3000";
+let webhook_origin = process.env.WEBHOOK_ORIGIN || "http://localhost:3000";
 winston.debug("webhook_origin: "+webhook_origin);
 
-var cacheUtil = require('../utils/cacheUtil');
-var cacheEnabler = require("../services/cacheEnabler");
+let cacheUtil = require('../utils/cacheUtil');
+let cacheEnabler = require("../services/cacheEnabler");
 
 
 
@@ -25,7 +25,7 @@ class BotSubscriptionNotifier {
       winston.debug("BotSubscriptionNotifier bot", bot.toObject());
       winston.debug("BotSubscriptionNotifier payload", payload );
 
-      var url = bot.url;
+      let url = bot.url;
 
       if (bot.type == "tilebot" && payload.request && payload.request.attributes && payload.request.attributes.sourcePage  && payload.request.attributes.sourcePage.indexOf("&td_draft=true")>-1) {
           url = url.substr(0,url.lastIndexOf("/")+1)+bot.id;
@@ -40,13 +40,13 @@ class BotSubscriptionNotifier {
       //Removed snapshot from request 
       delete payload.request.snapshot
       
-      var json = {timestamp: Date.now(), payload: payload};
+      let json = {timestamp: Date.now(), payload: payload};
     
 
       json["hook"] = bot;
 
 
-      var signOptions = {
+      let signOptions = {
         issuer:  'https://tiledesk.com',
         subject:  'bot',
         audience:  'https://tiledesk.com/bots/'+bot._id,   
@@ -61,7 +61,7 @@ class BotSubscriptionNotifier {
       delete botPayload.description;
       delete botPayload.attributes;
 
-      var token = jwt.sign(botPayload, secret, signOptions);
+      let token = jwt.sign(botPayload, secret, signOptions);
       json["token"] = token;
 
 
@@ -95,8 +95,8 @@ class BotSubscriptionNotifier {
     winston.debug('BotSubscriptionNotifier start');
     //modify to async
     botEvent.on('bot.message.received.notify.external', function(botNotification) {
-      var bot = botNotification.bot;
-      var secret = bot.secret;
+      let bot = botNotification.bot;
+      let secret = bot.secret;
       winston.debug('bot.message.received.notify.external: '+secret);
 
     //   winston.debug('getting botWithSecret');
@@ -131,7 +131,7 @@ class BotSubscriptionNotifier {
 
 };
 
-var botSubscriptionNotifier = new BotSubscriptionNotifier();
+let botSubscriptionNotifier = new BotSubscriptionNotifier();
 
 
 module.exports = botSubscriptionNotifier;

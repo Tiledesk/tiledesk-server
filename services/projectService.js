@@ -1,11 +1,11 @@
 'use strict';
 
-var Project = require("../models/project");
-var Project_user = require("../models/project_user");
-var mongoose = require('mongoose');
-var departmentService = require('../services/departmentService');
-var projectEvent = require("../event/projectEvent");
-var winston = require('../config/winston');
+let Project = require("../models/project");
+let Project_user = require("../models/project_user");
+let mongoose = require('mongoose');
+let departmentService = require('../services/departmentService');
+let projectEvent = require("../event/projectEvent");
+let winston = require('../config/winston');
 const cacheEnabler = require("./cacheEnabler");
 const cacheUtil = require("../utils/cacheUtil");
 
@@ -15,7 +15,7 @@ class ProjectService {
     return new Promise(function (resolve, reject) {
 
     
-      var newProject = new Project({
+      let newProject = new Project({
           name: name,
           activeOperatingHours: false,
           settings: settings,
@@ -30,7 +30,7 @@ class ProjectService {
           }
       
           // PROJECT-USER POST
-          var newProject_user = new Project_user({
+          let newProject_user = new Project_user({
             id_project: savedProject._id,
             id_user: createdBy,
             role: 'owner',
@@ -63,7 +63,7 @@ class ProjectService {
   }
 
   create(name, createdBy, settings) {
-    var that = this;
+    let that = this;
     return new Promise(function (resolve, reject) {
       return that.createAndReturnProjectAndProjectUser(name, createdBy, settings).then(function(projectAndProjectUser){
         return resolve(projectAndProjectUser.project);
@@ -96,7 +96,7 @@ class ProjectService {
 
 }
 
-var projectService = new ProjectService();
+let projectService = new ProjectService();
 
 
 module.exports = projectService;

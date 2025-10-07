@@ -1,9 +1,9 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
 
 
-var LabelSingleSchema = new Schema({
+let LabelSingleSchema = new Schema({
   
   lang: { 
     type: String,
@@ -37,7 +37,7 @@ var LabelSingleSchema = new Schema({
 }
 );
 
- var label = mongoose.model('label', LabelSingleSchema);
+ let label = mongoose.model('label', LabelSingleSchema);
 
 
 module.exports = label;

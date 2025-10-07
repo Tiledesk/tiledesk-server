@@ -6,26 +6,26 @@ process.env.NODE_ENV = 'test';
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
-var projectService = require('../services/projectService');
-var userService = require('../services/userService');
+let projectService = require('../services/projectService');
+let userService = require('../services/userService');
 let should = chai.should();
-var messageService = require('../services/messageService');
-var requestService = require('../services/requestService');
-var faqService = require('../services/faqService');
-var Department = require('../models/department');
-var Faq = require('../models/faq');
-var faqBotSupport = require('../services/faqBotSupport');
+let messageService = require('../services/messageService');
+let requestService = require('../services/requestService');
+let faqService = require('../services/faqService');
+let Department = require('../models/department');
+let Faq = require('../models/faq');
+let faqBotSupport = require('../services/faqBotSupport');
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 //server client
-var express = require('express');
+let express = require('express');
 const bodyParser = require('body-parser');
 
-var leadService = require('../services/leadService');
+let leadService = require('../services/leadService');
 
-// var http = require('http');
+// let http = require('http');
 // const { parse } = require('querystring');
 
 //end server client
@@ -38,8 +38,8 @@ describe('botSubscriptionNotifier', () => {
 
     it('create', (done) => {
        
-        var email = "test-bot-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-bot-" + Date.now() + "@email.com";
+        let pwd = "pwd";
  
        
 
@@ -55,7 +55,7 @@ describe('botSubscriptionNotifier', () => {
                         
                                 
                             
-                                var serverClient = express();
+                                let serverClient = express();
                                 serverClient.use(bodyParser.json());
                                 serverClient.post('/', function (req, res) {
                                     console.log('serverClient req', JSON.stringify(req.body));                        
@@ -73,7 +73,7 @@ describe('botSubscriptionNotifier', () => {
                                     
                                                         
                                 });
-                                var listener = serverClient.listen(3036, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+                                let listener = serverClient.listen(3036, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
 
 
                                 leadService.createIfNotExists("leadfullname-subscription-message-sending", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {

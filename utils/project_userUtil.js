@@ -4,10 +4,10 @@ class ProjectUserUtil {
     isBusy(project_user, project_max_assigned_chat) {
        
         // console.log("project",project);
-        // var project_max_assigned_chat  = project && project.settings && project.settings.max_agent_assigned_chat;
-        // var project_max_assigned_chat  = 0;
+        // let project_max_assigned_chat  = project && project.settings && project.settings.max_agent_assigned_chat;
+        // let project_max_assigned_chat  = 0;
 
-        var maxAssignedChat=undefined;
+        let maxAssignedChat=undefined;
         // console.log("project_max_assigned_chat:", project_max_assigned_chat);
         if (project_max_assigned_chat == undefined) {
             return false;
@@ -34,7 +34,7 @@ class ProjectUserUtil {
 
 }
 
- var projectUserUtil = new ProjectUserUtil();
+ let projectUserUtil = new ProjectUserUtil();
 
  module.exports = projectUserUtil;
  

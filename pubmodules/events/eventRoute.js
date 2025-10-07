@@ -1,13 +1,13 @@
-var express = require('express');
-var router = express.Router({mergeParams: true});
-var Event = require("./event");
-var winston = require('../../config/winston');
-var validtoken = require('../../middleware/valid-token');
+let express = require('express');
+let router = express.Router({mergeParams: true});
+let Event = require("./event");
+let winston = require('../../config/winston');
+let validtoken = require('../../middleware/valid-token');
 const eventService = require('./eventService');
 const { check, validationResult } = require('express-validator');
-var passport = require('passport');
+let passport = require('passport');
 require('../../middleware/passport')(passport);
-var roleChecker = require('../../middleware/has-role');
+let roleChecker = require('../../middleware/has-role');
 
 const messageEvent = require('../../event/messageEvent');
 
@@ -34,7 +34,7 @@ router.post('/', [
   }
 
    
-    var pu = undefined;
+    let pu = undefined;
     if (req.projectuser) { //if the bot creates the event -> pu is undefined
       pu = req.projectuser.id
     }   
@@ -48,9 +48,9 @@ router.post('/', [
 
     // // message.senderFullname,     message.recipient, 
     //             // message.recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp, message.group
-    // var recipient = req.body.attributes.request_id;
+    // let recipient = req.body.attributes.request_id;
     // console.log("recipient",recipient);
-    // var sender = req.user.id;
+    // let sender = req.user.id;
     // console.log("sender",sender);
 
     // let message = {
@@ -117,37 +117,37 @@ router.get('/',   [passport.authenticate(['basic', 'jwt'],
   validtoken, 
   roleChecker.hasRole('agent')],
   function (req, res) {
-  var limit = 40; // Number of leads per page
-  var page = 0;
+  let limit = 40; // Number of leads per page
+  let page = 0;
 
   if (req.query.page) {
     page = req.query.page;
   }
 
-  var skip = page * limit;
+  let skip = page * limit;
   winston.debug('Event ROUTE - SKIP PAGE ', skip);
 
 
-  var query = { "id_project": req.projectid};
+  let query = { "id_project": req.projectid};
 
   if (req.query.project_user) {
-    var project_user = req.query.project_user;
+    let project_user = req.query.project_user;
     query.project_user = project_user;
   }
 
-  var direction = -1; //-1 descending , 1 ascending
+  let direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
   }
   //console.log("direction", direction);
 
-  var sortField = "createdAt";
+  let sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   }
   //console.log("sortField", sortField);
 
-  var sortQuery = {};
+  let sortQuery = {};
   sortQuery[sortField] = direction;
 
   winston.debug("sort query", sortQuery);
@@ -164,7 +164,7 @@ router.get('/',   [passport.authenticate(['basic', 'jwt'],
       //  collection.count is deprecated, and will be removed in a future version. Use Collection.countDocuments or Collection.estimatedDocumentCount instead
       return Event.countDocuments(query, function (err, totalRowCount) {
 
-        var objectToReturn = {
+        let objectToReturn = {
           perPage: limit,
           count: totalRowCount,
           events: events

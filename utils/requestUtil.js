@@ -3,7 +3,7 @@ class RequestUtil {
 
     getToken(headers) {
         if (headers && headers.authorization) {
-        var parted = headers.authorization.split(' ');
+        let parted = headers.authorization.split(' ');
         if (parted.length === 2) {
             return parted[1];
         } else {
@@ -40,7 +40,7 @@ class RequestUtil {
         // Please note that calling sort on an array will modify that array.
         // you might want to clone your array first.
       
-        for (var i = 0; i < a.length; ++i) {
+        for (let i = 0; i < a.length; ++i) {
           if (a[i] !== b[i]) return false;
         }
         return true;
@@ -48,7 +48,7 @@ class RequestUtil {
 
 }
 
- var requestUtil = new RequestUtil();
+ let requestUtil = new RequestUtil();
 
  module.exports = requestUtil;
  

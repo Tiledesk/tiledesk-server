@@ -1,13 +1,13 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-// var TriggerEventSchema = require('./triggerEvent').schema;
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+// let TriggerEventSchema = require('./triggerEvent').schema;
 
-// var ConditionSchema = require('./triggerCondition').schema;
-// var ActionSchema = require('./triggerAction').schema;
+// let ConditionSchema = require('./triggerCondition').schema;
+// let ActionSchema = require('./triggerAction').schema;
 
 
 
-var TriggerConditionSchema = new Schema({
+let TriggerConditionSchema = new Schema({
   key: { //ex: request.firsttext
     type: String,
     required: true
@@ -35,7 +35,7 @@ var TriggerConditionSchema = new Schema({
 },{ _id : false });
 
 
-var ConditionsSchema = new Schema({
+let ConditionsSchema = new Schema({
   all: [TriggerConditionSchema],
   any: [TriggerConditionSchema]
 });
@@ -43,7 +43,7 @@ var ConditionsSchema = new Schema({
 
 
 
-var ActionSchema = new Schema({
+let ActionSchema = new Schema({
   key: { //ex: message.send
       type: String,
       required: true,
@@ -71,7 +71,7 @@ var ActionSchema = new Schema({
 
 
 
-var TriggerEventSchema = new Schema({
+let TriggerEventSchema = new Schema({
   key: { //ex: request.create
     type: String,
     required: true,
@@ -89,7 +89,7 @@ var TriggerEventSchema = new Schema({
 
 
 
-var TriggerSchema = new Schema({
+let TriggerSchema = new Schema({
   name: {
     type: String,
     required: true

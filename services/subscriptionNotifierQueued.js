@@ -3,16 +3,16 @@ const messageEvent = require('../event/messageEvent');
 const leadEvent = require('../event/leadEvent');
 const authEvent = require('../event/authEvent');
 
-var Message = require("../models/message");
-var winston = require('../config/winston');
-var subscriptionNotifier = require('../services/subscriptionNotifier');
+let Message = require("../models/message");
+let winston = require('../config/winston');
+let subscriptionNotifier = require('../services/subscriptionNotifier');
 
 class SubscriptionNotifierQueued {
 
   start() {
     winston.debug('SubscriptionNotifierQueued start');
 
-    var enabled = process.env.RESTHOOK_ENABLED || "false";
+    let enabled = process.env.RESTHOOK_ENABLED || "false";
     winston.debug('SubscriptionNotifierQueued enabled:'+enabled);
 
     if (enabled==="true") {
@@ -23,7 +23,7 @@ class SubscriptionNotifierQueued {
     }
 
 
-    var messageCreateKey = 'message.create';
+    let messageCreateKey = 'message.create';
     if (messageEvent.queueEnabled) {
       messageCreateKey = 'message.create.queue';
     }
@@ -39,7 +39,7 @@ class SubscriptionNotifierQueued {
 
 
 
-    var requestCreateKey = 'request.create';
+    let requestCreateKey = 'request.create';
     if (requestEvent.queueEnabled) {
       requestCreateKey = 'request.create.queue';
     }
@@ -53,7 +53,7 @@ class SubscriptionNotifierQueued {
 
 
 
-    var requestUpdateKey = 'request.update';
+    let requestUpdateKey = 'request.update';
     if (requestEvent.queueEnabled) {
       requestUpdateKey = 'request.update.queue';
     }
@@ -67,7 +67,7 @@ class SubscriptionNotifierQueued {
     });
 
 
-    var requestCloseKey = 'request.close';   //request.close event here queued under job
+    let requestCloseKey = 'request.close';   //request.close event here queued under job
     if (requestEvent.queueEnabled) {
       requestCloseKey = 'request.close.queue';
     }
@@ -76,7 +76,7 @@ class SubscriptionNotifierQueued {
       winston.debug("request.close event here 1")
       setImmediate(() => {
         Message.find({recipient:  request.request_id, id_project: request.id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) {
-          var requestJson = request;
+          let requestJson = request;
           if (request.toJSON) {
             requestJson = request.toJSON();
           }
@@ -90,7 +90,7 @@ class SubscriptionNotifierQueued {
     });
 
 
-    var leadCreateKey = 'lead.create';   //lead.create event here queued under job
+    let leadCreateKey = 'lead.create';   //lead.create event here queued under job
     if (leadEvent.queueEnabled) {
       leadCreateKey = 'lead.create.queue';
     }
@@ -101,7 +101,7 @@ class SubscriptionNotifierQueued {
       });
     });
 
-    var authProjectUserUpdateKey = 'project_user.update';
+    let authProjectUserUpdateKey = 'project_user.update';
     if (authEvent.queueEnabled) {
       authProjectUserUpdateKey = 'project_user.update.queue';
     }
@@ -120,7 +120,7 @@ class SubscriptionNotifierQueued {
 
 };
 
-var subscriptionNotifierQueued = new SubscriptionNotifierQueued();
+let subscriptionNotifierQueued = new SubscriptionNotifierQueued();
 
 
 module.exports = subscriptionNotifierQueued;

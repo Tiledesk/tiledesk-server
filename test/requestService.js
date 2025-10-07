@@ -4,16 +4,16 @@ process.env.NODE_ENV = 'test';
 let chai = require('chai');
 chai.config.includeStack = true;
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 let should = chai.should();
-var config = require('../config/database');
-var mongoose = require('mongoose');
-var winston = require('../config/winston');
+let config = require('../config/database');
+let mongoose = require('mongoose');
+let winston = require('../config/winston');
 
 let log = false;
 
-// var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
+// let databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 // if (!databaseUri) {
 //   console.log('DATABASE_URI not specified, falling back to localhost.');
 // }
@@ -22,21 +22,21 @@ let log = false;
 mongoose.connect(config.databasetest);
 require('../services/mongoose-cache-fn')(mongoose);
 
-var requestService = require('../services/requestService');
-var messageService = require('../services/messageService');
-var projectService = require('../services/projectService');
-var projectUserService = require('../services/projectUserService');
-var departmentService = require('../services/departmentService');
-var leadService = require('../services/leadService');
-var userService = require('../services/userService');
+let requestService = require('../services/requestService');
+let messageService = require('../services/messageService');
+let projectService = require('../services/projectService');
+let projectUserService = require('../services/projectUserService');
+let departmentService = require('../services/departmentService');
+let leadService = require('../services/leadService');
+let userService = require('../services/userService');
 
-var Request = require("../models/request");
-var Group = require("../models/group");
-var Project_user = require("../models/project_user");
-// var Tag = require('../models/tag');
-var requestEvent = require('../event/requestEvent');
+let Request = require("../models/request");
+let Group = require("../models/group");
+let Project_user = require("../models/project_user");
+// let Tag = require('../models/tag');
+let requestEvent = require('../event/requestEvent');
 
-var { QuoteManager } = require('../services/QuoteManager');
+let { QuoteManager } = require('../services/QuoteManager');
 const projectMock = require('./mock/projectMock');
 
 // CONNECT REDIS - CHECK IT
@@ -49,8 +49,8 @@ let tdCache = new TdCache({
 
 tdCache.connect();
 
-// var redis = require('redis')
-// var redis_client;
+// let redis = require('redis')
+// let redis_client;
 
 // connectRedis();
 
@@ -73,26 +73,26 @@ tdCache.connect();
 
 describe('RequestService', function () {
 
-  // var userid = "5badfe5d553d1844ad654072";
+  // let userid = "5badfe5d553d1844ad654072";
 
   // mocha test/requestService.js  --grep 'createObjSimple'
   it('createObjSimpleQuote', function (done) {
     // this.timeout(10000);
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
 
     let qm = new QuoteManager({ tdCache: tdCache });
     qm.start();
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
       projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser.id).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
-          var now = Date.now();
-          var request = {
+          let now = Date.now();
+          let request = {
             request_id: "request_id-createObjSimple-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
             id_project: savedProject._id, first_text: "first_text",
             lead: createdLead, requester: savedProjectAndPU.project_user
@@ -153,21 +153,21 @@ describe('RequestService', function () {
 
   it('createObjSimple', function (done) {
     // this.timeout(10000);
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
 
     let qm = new QuoteManager({ tdCache: tdCache });
     qm.start();
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
       projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser.id).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
-          var now = Date.now();
-          var request = {
+          let now = Date.now();
+          let request = {
             request_id: "request_id-createObjSimple-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
             id_project: savedProject._id, first_text: "first_text",
             lead: createdLead, requester: savedProjectAndPU.project_user
@@ -236,17 +236,17 @@ describe('RequestService', function () {
 
   it('createObjSimpleUpdateLeadUpdateSnapshot', function (done) {
     // this.timeout(10000);
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
       projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
-          var now = Date.now();
-          var request = {
+          let now = Date.now();
+          let request = {
             request_id: "request_idcreateObjSimpleUpdateLeadUpdateSnapshot-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
             id_project: savedProject._id, first_text: "first_text",
             lead: createdLead, requester: savedProjectAndPU.project_user
@@ -329,17 +329,17 @@ describe('RequestService', function () {
 
   it('createObjParticipantsAgent', function (done) {
     // this.timeout(10000);
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
       projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
-          var now = Date.now();
-          var request = {
+          let now = Date.now();
+          let request = {
             request_id: "request_id-createObjParticipantsAgent-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
             id_project: savedProject._id, first_text: "first_text",
             lead: createdLead, requester: savedProjectAndPU.project_user,
@@ -401,17 +401,17 @@ describe('RequestService', function () {
 
   it('createObjTemp', function (done) {
     // this.timeout(10000);
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
       projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
-          var now = Date.now();
-          var request = {
+          let now = Date.now();
+          let request = {
             request_id: "request_id-createObjTemp-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
             id_project: savedProject._id, first_text: "first_text",
             lead: createdLead, requester: savedProjectAndPU.project_user,
@@ -462,16 +462,16 @@ describe('RequestService', function () {
 
   it('createWithIdAndCreateNewLead', function (done) {
     // this.timeout(10000);
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
       projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
-          var now = Date.now();
+          let now = Date.now();
           requestService.createWithIdAndRequester("request_id-createWithIdAndCreateNewLead-" + now, savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function (savedRequest) {
             winston.debug("resolve", savedRequest.toObject());
             expect(savedRequest.request_id).to.equal("request_id-createWithIdAndCreateNewLead-" + now);
@@ -519,15 +519,15 @@ describe('RequestService', function () {
   it('createWithIdAndCreateNewLeadAndCheckRequestEvent', function (done) {
     // this.timeout(10000);
 
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
 
       projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
-        var now = Date.now();
+        let savedProject = savedProjectAndPU.project;
+        let now = Date.now();
         leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
 
           requestEvent.on('request.create', function (savedRequest) {
@@ -628,14 +628,14 @@ describe('RequestService', function () {
   it('createWithIdAndCreatedBy', function (done) {
     // this.timeout(10000);
 
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
       projectService.createAndReturnProjectAndProjectUser("createWithIdAndCreatedBy", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
-        var now = Date.now();
+        let savedProject = savedProjectAndPU.project;
+        let now = Date.now();
         // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
         requestService.createWithIdAndRequester("request_id-createWithIdAndCreatedBy-" + now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text", null, null, null, null, null, "user1").then(function (savedRequest) {
           
@@ -675,14 +675,14 @@ describe('RequestService', function () {
   it('createWithWrongDepartmentId', function (done) {
     // this.timeout(10000);
 
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
       projectService.createAndReturnProjectAndProjectUser("createWithWrongDepartmentId", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
-        var now = Date.now();
+        let savedProject = savedProjectAndPU.project;
+        let now = Date.now();
         // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
         requestService.createWithIdAndRequester("request_idcreateWithWrongDepartmentId-" + now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text", "5ebd890b3f2702001915c89e", null, null, null, null, "user1").then(function (savedRequest) {
 
@@ -700,16 +700,16 @@ describe('RequestService', function () {
   it('createWithIdWithPooledDepartment', function (done) {
     // this.timeout(10000);
 
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
 
       projectService.createAndReturnProjectAndProjectUser("createWithIdWithPooledDepartment", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
         departmentService.create("PooledDepartment-for-createWithIdWith-createWithIdWithPooledDepartment", savedProject._id, 'pooled', userid).then(function (createdDepartment) {
-          var now = Date.now();
+          let now = Date.now();
           requestService.createWithIdAndRequester("request_id-createWithIdWithPooledDepartment-" + now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text", createdDepartment._id).then(function (savedRequest) {
             winston.debug("resolve savedRequest");
             expect(savedRequest.request_id).to.equal("request_id-createWithIdWithPooledDepartment-" + now);
@@ -738,16 +738,16 @@ describe('RequestService', function () {
 
   it('updateWaitingTimeRequest', function (done) {
     this.timeout(1000);
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
 
-      var messageSender = "5badfe5d553d1844ad654072";
+      let messageSender = "5badfe5d553d1844ad654072";
       projectService.createAndReturnProjectAndProjectUser("test1", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
-        var now = Date.now();
+        let savedProject = savedProjectAndPU.project;
+        let now = Date.now();
         requestService.createWithIdAndRequester("request_id-waitingTimeRequest-" + now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function (savedRequest) {
           setTimeout(function () {
             Promise.all([
@@ -756,7 +756,7 @@ describe('RequestService', function () {
               messageService.create(messageSender, "test sender", savedRequest.request_id, "hello2",
                 savedProject._id, messageSender)]).then(function (all) {
                   requestService.updateWaitingTimeByRequestId(savedRequest.request_id, savedProject._id, true).then(function (upRequest) {
-                    var maxWaitingTime = Date.now() - upRequest.createdAt;
+                    let maxWaitingTime = Date.now() - upRequest.createdAt;
                     if (log) { console.log("resolve closedRequest", upRequest.toObject(), maxWaitingTime); }
 
                     expect(upRequest.status).to.equal(200);
@@ -793,15 +793,15 @@ describe('RequestService', function () {
 
   it('closeRequest', function (done) {
 
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
 
       projectService.createAndReturnProjectAndProjectUser("test1", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
-        var now = Date.now();
+        let savedProject = savedProjectAndPU.project;
+        let now = Date.now();
         requestService.createWithIdAndRequester("request_id-closeRequest-" + now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function (savedRequest) {
           Promise.all([
             messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id, "hello1",
@@ -838,15 +838,15 @@ describe('RequestService', function () {
 
   it('closeRequestForce', function (done) {
 
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
 
       projectService.createAndReturnProjectAndProjectUser("test1", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
-        var now = Date.now();
+        let savedProject = savedProjectAndPU.project;
+        let now = Date.now();
         requestService.createWithIdAndRequester("request_id-closeRequest-" + now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function (savedRequest) {
           Promise.all([
             messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id, "hello1",
@@ -885,17 +885,17 @@ describe('RequestService', function () {
 
   it('closeRequestAndSendTranscript', function (done) {
 
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
 
       projectService.createAndReturnProjectAndProjectUser("test1", userid, { email: { autoSendTranscriptToRequester: true } }).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         leadService.createIfNotExists("leadfullname", "andrea.leo@frontiere21.it", savedProject._id).then(function (createdLead) {
-          var now = Date.now();
+          let now = Date.now();
           requestService.createWithIdAndRequester("request_id-closeRequestAndSendTranscript-" + now, savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function (savedRequest) {
             Promise.all([
               messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id, "hello1",
@@ -927,15 +927,15 @@ describe('RequestService', function () {
 
   it('reopenRequest', function (done) {
 
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
 
       projectService.createAndReturnProjectAndProjectUser("test1", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
-        var now = Date.now();
+        let savedProject = savedProjectAndPU.project;
+        let now = Date.now();
 
         requestService.createWithIdAndRequester("request_id-reopenRequest-" + now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function (savedRequest) {
 
@@ -972,22 +972,22 @@ describe('RequestService', function () {
 
   it('addparticipant', function (done) {
 
-    var email = "test-request-addparticipant-" + Date.now() + "@email.com";
-    var email2 = "test-request-addparticipant2-" + Date.now() + "@email.com";
+    let email = "test-request-addparticipant-" + Date.now() + "@email.com";
+    let email2 = "test-request-addparticipant2-" + Date.now() + "@email.com";
 
-    var pwd = "pwd";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
 
       projectService.createAndReturnProjectAndProjectUser("addparticipant-project", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         userService.signup(email2, pwd, "Test Firstname2", "Test lastname2").then(function (savedUser2) {
 
           // console.log("savedUser2",savedUser2);
 
-          var newProject_user = new Project_user({
+          let newProject_user = new Project_user({
             // _id: new mongoose.Types.ObjectId(),
             id_project: savedProject._id.toString(),
             id_user: savedUser2._id.toString(),
@@ -1001,11 +1001,11 @@ describe('RequestService', function () {
 
             if (err) { console.log("err", err); }
 
-            var now = Date.now();
+            let now = Date.now();
             requestService.createWithIdAndRequester("request_id-addparticipant-" + now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function (savedRequest) {
               //  inserisci id valido
-              //  var member = 'agent1';
-              var member = savedUser2._id.toString();
+              //  let member = 'agent1';
+              let member = savedUser2._id.toString();
               // console.log("member",member)
               //  addParticipantByRequestId(request_id, id_project, member) {
               requestService.addParticipantByRequestId(savedRequest.request_id, savedProject._id, member).then(function (savedRequestParticipant) {
@@ -1054,22 +1054,22 @@ describe('RequestService', function () {
 
   it('setParticipantsByRequestId', function (done) {
 
-    var email = "test-request-setParticipantsByRequestId-" + Date.now() + "@email.com";
-    var email2 = "test-request-setParticipantsByRequestId2-" + Date.now() + "@email.com";
+    let email = "test-request-setParticipantsByRequestId-" + Date.now() + "@email.com";
+    let email2 = "test-request-setParticipantsByRequestId2-" + Date.now() + "@email.com";
 
-    var pwd = "pwd";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
 
       projectService.createAndReturnProjectAndProjectUser("setParticipantsByRequestId-project", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         userService.signup(email2, pwd, "Test Firstname2", "Test lastname2").then(function (savedUser2) {
 
           // console.log("savedUser2",savedUser2);
 
-          var newProject_user = new Project_user({
+          let newProject_user = new Project_user({
             // _id: new mongoose.Types.ObjectId(),
             id_project: savedProject._id.toString(),
             id_user: savedUser2._id.toString(),
@@ -1082,15 +1082,15 @@ describe('RequestService', function () {
           return newProject_user.save(function (err, savedProject_user) {
 
             if (err) { console.log("err", err) }
-            var now = Date.now();
+            let now = Date.now();
 
             requestService.createWithIdAndRequester("request_id1-setParticipantsByRequestId-" + now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function (savedRequest) {
               expect(savedRequest.participants).to.contains(userid);
               expect(savedRequest.participantsAgents).to.contains(userid);
 
               //  inserisci id valido
-              //  var member = 'agent1';
-              var member = savedUser2._id.toString();
+              //  let member = 'agent1';
+              let member = savedUser2._id.toString();
               // console.log("member",member)
               // setParticipantsByRequestId(request_id, id_project, newparticipants) {
               requestService.setParticipantsByRequestId(savedRequest.request_id, savedProject._id, [member]).then(function (savedRequestParticipant) {
@@ -1134,15 +1134,15 @@ describe('RequestService', function () {
 
   it('removeparticipant', function (done) {
 
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
 
       projectService.createAndReturnProjectAndProjectUser("removeparticipant-project", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
-        var now = Date.now();
+        let savedProject = savedProjectAndPU.project;
+        let now = Date.now();
         requestService.createWithIdAndRequester("request_id-removeparticipant-" + now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function (savedRequest) {
           requestService.removeParticipantByRequestId(savedRequest.request_id, savedProject._id, userid).then(function (savedRequestParticipant) {
             winston.info("resolve", savedRequestParticipant.toObject());
@@ -1183,15 +1183,15 @@ describe('RequestService', function () {
   it('routeDepartmentSameAgentSameDepartmentSkipUpdate', function (done) {
     // this.timeout(10000);
 
-    var email = "test-route-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-route-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
 
       projectService.createAndReturnProjectAndProjectUser("routeDepartmentSameAgentSameDepartmentSkipUpdate", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
-        var now = Date.now();
+        let savedProject = savedProjectAndPU.project;
+        let now = Date.now();
         requestService.createWithIdAndRequester("routeDepartmentSameAgentSameDepartmentSkipUpdate-" + now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function (savedRequest) {
           winston.debug("resolve savedRequest");
           expect(savedRequest.request_id).to.equal("routeDepartmentSameAgentSameDepartmentSkipUpdate-" + now);
@@ -1248,15 +1248,15 @@ describe('RequestService', function () {
   it('routeDepartmentSameAgentDifferentDepartment', function (done) {
     // this.timeout(10000);
 
-    var email = "test-route-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-route-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
 
       projectService.createAndReturnProjectAndProjectUser("routeDepartmentSameAgentDifferentDepartment", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
-        var now = Date.now();
+        let savedProject = savedProjectAndPU.project;
+        let now = Date.now();
 
         requestService.createWithIdAndRequester("routeDepartmentSameAgentDifferentDepartment-" + now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function (savedRequest) {
           winston.debug("resolve savedRequest");
@@ -1315,26 +1315,26 @@ describe('RequestService', function () {
   it('routeDepartmentDifferentAgentDifferentDepartment', function (done) {
     // this.timeout(10000);
 
-    var email = "test-route-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-route-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
 
       projectService.createAndReturnProjectAndProjectUser("routeDepartmentDifferentAgentDifferentDepartment", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
 
 
 
-        var email2 = "test-route-create-" + Date.now() + "@email.com";
-        var pwd2 = "pwd";
+        let email2 = "test-route-create-" + Date.now() + "@email.com";
+        let pwd2 = "pwd";
 
         userService.signup(email2, pwd2, "Test Firstname", "Test lastname").then(function (savedUser2) {
-          var userid2 = savedUser2.id;
+          let userid2 = savedUser2.id;
 
 
-          var newProject_user = new Project_user({
+          let newProject_user = new Project_user({
             // _id: new mongoose.Types.ObjectId(),
             id_project: savedProject._id.toString(),
             id_user: savedUser2._id.toString(),
@@ -1349,7 +1349,7 @@ describe('RequestService', function () {
             if (err) {
               console.log("err", err)
             }
-            var now = Date.now();
+            let now = Date.now();
 
             requestService.createWithIdAndRequester("routeDepartmentDifferentAgentDifferentDepartment-" + now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function (savedRequest) {
               winston.debug("resolve savedRequest");
@@ -1369,7 +1369,7 @@ describe('RequestService', function () {
               // expect(savedRequest.department.name).to.equal("Default");
 
 
-              var newGroup = new Group({
+              let newGroup = new Group({
                 name: "group1",
                 members: [userid2],
                 trashed: false,
@@ -1433,15 +1433,15 @@ describe('RequestService', function () {
 
   it('reroute', function (done) {
 
-    var email = "test-request-reroute-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-reroute-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
 
       projectService.createAndReturnProjectAndProjectUser("reroute-project", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
-        var now = Date.now();
+        let savedProject = savedProjectAndPU.project;
+        let now = Date.now();
         requestService.createWithIdAndRequester("request_id1-reroute-" + now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function (savedRequest) {
 
           // reroute(request_id, id_project, nobot) {
@@ -1486,15 +1486,15 @@ describe('RequestService', function () {
 
   it('closeRequestAndRemoveParticipant', function (done) {
 
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
 
       projectService.createAndReturnProjectAndProjectUser("test1", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
-        var now = Date.now();
+        let savedProject = savedProjectAndPU.project;
+        let now = Date.now();
         requestService.createWithIdAndRequester("request_id-closeRequestAndRemoveParticipant-" + now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function (savedRequest) {
           Promise.all([
             messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id, "hello1",
@@ -1528,22 +1528,22 @@ describe('RequestService', function () {
 
   it('addTag', function (done) {
     // this.timeout(10000);
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
       projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
-          var now = Date.now();
+          let now = Date.now();
           requestService.createWithIdAndRequester("request_id1-addTag-" + now, savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function (savedRequest) {
             winston.debug("resolve", savedRequest.toObject());
             expect(savedRequest.request_id).to.equal("request_id1-addTag-" + now);
             expect(savedRequest.tags.length).to.equal(0);
 
-            var tag = { tag: "tag1" };
+            let tag = { tag: "tag1" };
             requestService.addTagByRequestId("request_id1-addTag-" + now, savedProject._id, tag).then(function (savedReqTag) {
               expect(savedReqTag.request_id).to.equal("request_id1-addTag-" + now);
               expect(savedReqTag.tags.length).to.equal(1);
@@ -1566,22 +1566,22 @@ describe('RequestService', function () {
 
   it('removeTag', function (done) {
     // this.timeout(10000);
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
       projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
-          var now = Date.now();
+          let now = Date.now();
           requestService.createWithIdAndRequester("request_id1-addTag-" + now, savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function (savedRequest) {
             winston.debug("resolve", savedRequest.toObject());
             expect(savedRequest.request_id).to.equal("request_id1-addTag-" + now);
             expect(savedRequest.tags.length).to.equal(0);
 
-            var tag = { tag: "tag1" };
+            let tag = { tag: "tag1" };
             requestService.addTagByRequestId("request_id1-addTag-" + now, savedProject._id, tag).then(function (savedReqTag) {
               expect(savedReqTag.request_id).to.equal("request_id1-addTag-" + now);
               expect(savedReqTag.tags.length).to.equal(1);
@@ -1619,25 +1619,25 @@ describe('RequestService', function () {
     // this.timeout(10000);
 
 
-    var microLanguageTransformerInterceptor = require('../pubmodules/messageTransformer/microLanguageAttributesTransformerInterceptor');
-    // var microLanguageTransformerInterceptor = require('../pubmodules/messageTransformer/microLanguageTransformerInterceptor');
+    let microLanguageTransformerInterceptor = require('../pubmodules/messageTransformer/microLanguageAttributesTransformerInterceptor');
+    // let microLanguageTransformerInterceptor = require('../pubmodules/messageTransformer/microLanguageTransformerInterceptor');
     if (log) { console.log("microLanguageTransformerInterceptor", microLanguageTransformerInterceptor); }
     microLanguageTransformerInterceptor.listen();
 
 
 
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
 
       projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
-          var now = Date.now();
-          var request = {
+          let now = Date.now();
+          let request = {
             request_id: "request_idcreateMessageMicroLanguageAttributes-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
             id_project: savedProject._id, first_text: "first_text",
             participants: [userid],
@@ -1686,28 +1686,28 @@ describe('RequestService', function () {
     // this.timeout(10000);
 
 
-    // var microLanguageTransformerInterceptor = require('../pubmodules/messageTransformer/microLanguageAttributesTransformerInterceptor');
-    var microLanguageTransformerInterceptor = require('../pubmodules/messageTransformer/microLanguageTransformerInterceptor');
+    // let microLanguageTransformerInterceptor = require('../pubmodules/messageTransformer/microLanguageAttributesTransformerInterceptor');
+    let microLanguageTransformerInterceptor = require('../pubmodules/messageTransformer/microLanguageTransformerInterceptor');
     if (log) { console.log("microLanguageTransformerInterceptor", microLanguageTransformerInterceptor); }
     microLanguageTransformerInterceptor.listen();
 
 
 
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
 
       projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
 
-          var now = Date.now();
+          let now = Date.now();
 
 
-          var request = {
+          let request = {
             request_id: "request_idcreateMessageMicroLanguageFromBot-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
             id_project: savedProject._id, first_text: "first_text",
             participants: ["bot_" + userid],
@@ -1748,20 +1748,20 @@ describe('RequestService', function () {
   it('selectSnapshot', function (done) {
     // this.timeout(10000);
     // return new Promise(function (resolve) {
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-request-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+      let userid = savedUser.id;
 
       projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
 
-          var now = Date.now();
+          let now = Date.now();
 
-          var request = {
+          let request = {
             request_id: "request_idselectSnapshot-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
             id_project: savedProject._id, first_text: "first_text",
             participants: ["bot_" + userid],
@@ -1771,7 +1771,7 @@ describe('RequestService', function () {
           requestService.create(request).then(async function (savedRequest) {
             winston.info("resolve", savedRequest.toObject());
 
-            var snapshotAgents = await Request.findById(savedRequest.id).select({ "snapshot": 1 }).exec();
+            let snapshotAgents = await Request.findById(savedRequest.id).select({ "snapshot": 1 }).exec();
 
             if (log) { console.log("snapshotAgents", snapshotAgents); }
 

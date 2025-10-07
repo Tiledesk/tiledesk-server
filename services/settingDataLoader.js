@@ -1,18 +1,18 @@
 'use strict';
 
-var Setting = require("../models/setting");
+let Setting = require("../models/setting");
 
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 
-var mongoose = require('mongoose');
+let mongoose = require('mongoose');
 
 class SettingDataLoader {
 
 
   save() {
-    var that = this;
+    let that = this;
     return new Promise(function (resolve, reject) {
-      var newSetting = new Setting({     
+      let newSetting = new Setting({     
       });
     
       return newSetting.save(function (err, savedSetting) {
@@ -37,7 +37,7 @@ class SettingDataLoader {
 }
 
 
-var settingDataLoader = new SettingDataLoader();
+let settingDataLoader = new SettingDataLoader();
 
 
 module.exports = settingDataLoader;

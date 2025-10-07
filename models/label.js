@@ -1,9 +1,9 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
 
 
-var LabelEntrySchema = new Schema({
+let LabelEntrySchema = new Schema({
   lang: { 
     type: String,
     required: true,
@@ -35,7 +35,7 @@ var LabelEntrySchema = new Schema({
   },
 });
 
-var LabelSchema = new Schema({
+let LabelSchema = new Schema({
   
   data: { 
     //type: Array,
@@ -60,7 +60,7 @@ var LabelSchema = new Schema({
 }
 );
 
- var label = mongoose.model('label', LabelSchema);
+ let label = mongoose.model('label', LabelSchema);
 
 
 module.exports = label;

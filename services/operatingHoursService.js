@@ -1,10 +1,10 @@
 'use strict';
 
-var Project = require("../models/project");
-var moment_tz = require('moment-timezone');
-var winston = require('../config/winston');
-var cacheUtil = require('../utils/cacheUtil');
-var cacheEnabler = require("../services/cacheEnabler");
+let Project = require("../models/project");
+let moment_tz = require('moment-timezone');
+let winston = require('../config/winston');
+let cacheUtil = require('../utils/cacheUtil');
+let cacheEnabler = require("../services/cacheEnabler");
 
 class OperatingHoursService {
 
@@ -79,11 +79,11 @@ class OperatingHoursService {
 
           // PROJECT OPERATING HOURS 
           if (project.operatingHours) {
-            var operatingHours = project.operatingHours
-            var operatingHoursPars = JSON.parse(operatingHours)
+            let operatingHours = project.operatingHours
+            let operatingHoursPars = JSON.parse(operatingHours)
             // winston.debug('O -----> [ OHS ] -> OPERATING HOURS PARSED: ', operatingHoursPars);
 
-            var prjcTimezoneName = operatingHoursPars.tzname;
+            let prjcTimezoneName = operatingHoursPars.tzname;
 
             if (prjcTimezoneName == undefined || prjcTimezoneName == '' || prjcTimezoneName == null) {
               // winston.debug('O ---> [ OHS ] -> PRJCT TIMEZONE NAME: ', prjcTimezoneName);
@@ -102,33 +102,33 @@ class OperatingHoursService {
               // 1) ADD or SUBSTRACT PRJCT TZ FROM DATE NOW (is the date @ UTC 0) TO OBTAIN:
               //    THE CURRENT DATE @ THE PROJECT TZ   
               try {
-                var dateNowAtPrjctTz = addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneName);
+                let dateNowAtPrjctTz = addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneName);
                 // winston.debug('O ---> [ OHS ] -> *** CURRENT DATE @ THE PROJECT TZ ***', dateNowAtPrjctTz);
 
                 // FOR DEBUG (TO VIEW, IN DEBUG, THE NAME OF THE DAY INSTEAD OF THE NUMBER OF THE DAY)
-                var days = { '0': 'Sunday', '1': 'Monday', '2': 'Tuesday', '3': 'Wednesday', '4': 'Thursday', '5': 'Friday', '6': 'Saturday' };
+                let days = { '0': 'Sunday', '1': 'Monday', '2': 'Tuesday', '3': 'Wednesday', '4': 'Thursday', '5': 'Friday', '6': 'Saturday' };
 
                 // WEEK DAY @ THE PROJECT TZ (note: the week day is represented as a number) 
-                var dayNowAtPrjctTz = dateNowAtPrjctTz.getDay();
+                let dayNowAtPrjctTz = dateNowAtPrjctTz.getDay();
                 // winston.debug('O ---> [ OHS ] -> *** DAY @ PRJCT TZ #', dayNowAtPrjctTz, '"', days[dayNowAtPrjctTz], '"');
 
                 // TRASFORM IN STRING THE DATE @ THE PRJCT TZ (IS THE DATE NOW TO WHICH I ADDED (OR SUBTRACT) THE TIMEZONE OFFSET (IN MS)
-                var dateNowAtPrjctTzToStr = dateNowAtPrjctTz.toISOString();
+                let dateNowAtPrjctTzToStr = dateNowAtPrjctTz.toISOString();
 
                 // GET THE NEW DATE NOE HOUR
-                var timeNowAtPrjctTz = dateNowAtPrjctTzToStr.substring(
+                let timeNowAtPrjctTz = dateNowAtPrjctTzToStr.substring(
                   dateNowAtPrjctTzToStr.lastIndexOf("T") + 1,
                   dateNowAtPrjctTzToStr.lastIndexOf(".")
                 );
                 // winston.debug('O ---> [ OHS ] -> **** TIME @ PRJCT TZ ', timeNowAtPrjctTz);
 
-                var currentDayMatchesOneOfTheOpeningPrjctDays = checkDay(operatingHoursPars, dayNowAtPrjctTz);
+                let currentDayMatchesOneOfTheOpeningPrjctDays = checkDay(operatingHoursPars, dayNowAtPrjctTz);
                 // winston.debug('O ---> [ OHS ] -> THE DAY MATCHES: ', currentDayMatchesOneOfTheOpeningPrjctDays, ' !!!' );
 
                 if (currentDayMatchesOneOfTheOpeningPrjctDays == true) {
 
 
-                  var currentTimeIsBetweenOperatingTimes = checkTimes(operatingHoursPars, dayNowAtPrjctTz, timeNowAtPrjctTz);
+                  let currentTimeIsBetweenOperatingTimes = checkTimes(operatingHoursPars, dayNowAtPrjctTz, timeNowAtPrjctTz);
                   // winston.debug('O ---> [ OHS ] -> THE TIMES MATCHES', currentTimeIsBetweenOperatingTimes, ' !!!');
                   if (currentTimeIsBetweenOperatingTimes == true) {
 
@@ -274,11 +274,11 @@ function slotCheck(currentTime, tzname, slot) {
 
 function addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneName) {
   // DATE NOW UTC(0) IN MILLISECONDS
-  var dateNowMillSec = Date.now();
+  let dateNowMillSec = Date.now();
   // winston.debug('O ---> [ OHS ] -> DATE NOW (UTC) in ms ', dateNowMillSec);
 
   // CONVERT DATE NOW UTC(0) FROM MS IN DATE FORMAT
-  var dateNow = new Date(dateNowMillSec);
+  let dateNow = new Date(dateNowMillSec);
   // winston.debug('O ---> [ OHS ] -> FOR DEBUG - DATE NOW (UTC): ', dateNow);
 
   // =====================================================================
@@ -294,46 +294,46 @@ function addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneName) {
   // =====================================================================
 
   // ============>> using * moment-timezone * library
-  var offset = moment_tz.tz(moment_tz.utc(), prjcTimezoneName).utcOffset()
+  let offset = moment_tz.tz(moment_tz.utc(), prjcTimezoneName).utcOffset()
   // winston.debug('O -----> [ OHS ] -> TIMEZONE OFFSET (USING MOMENT-TZ) ', offset);
 
   // winston.debug('O ---> [ OHS ] -> Timezone IN  ', prjcTimezoneName, ' IS ', offset, ' TyPE OF ', typeof (offset));
 
   if (offset < 0) {
     // winston.debug('O ---> [ OHS ] -> THE SIGN OF THE OFFSET RETURNED IS NEGATIVE: THE TZ IS BEFORE UTC -> OFFSET ', offset);
-    var _offset = offset * -1
+    let _offset = offset * -1
     // winston.debug('O ---> [ OHS ] -> OFFSET CONVERTED ', _offset);
     // winston.debug('O ---> [ OHS ] -> FOR DEBUG: ', prjcTimezoneName, 'is at "UTC(-', _offset / 60, ')"');
     // TIMEZONE OFFSET DIRECTION +
-    var timezoneDirection = '-'
+    let timezoneDirection = '-'
     // winston.debug('O ---> [ OHS ] -> TIMEZONE OFFSET DIRECTION: ', timezoneDirection);
 
-    var prjcTzOffsetMillsec = _offset * 60000;
+    let prjcTzOffsetMillsec = _offset * 60000;
     // winston.debug('O ---> [ OHS ] -> TIMEZONE OFFSET in MILLISECONDS: ', prjcTzOffsetMillsec);
   } else {
 
     // winston.debug('O ---> [ OHS ] -> THE SIGN OF THE OFFSET RETURNED IS ! NOT NEGATIVE: THE TZ IS AFTER UTC OR IS UTC -> OFFSET ', offset)
     // winston.debug('O ---> [ OHS ] -> FOR DEBUG: ', prjcTimezoneName, 'is at "UTC(+', offset / 60, ')"');
-    var timezoneDirection = '+'
+    let timezoneDirection = '+'
     // winston.debug('O ---> [ OHS ] -> TIMEZONE OFFSET DIRECTION: ', timezoneDirection);
 
-    var prjcTzOffsetMillsec = offset * 60000;
+    let prjcTzOffsetMillsec = offset * 60000;
     // winston.debug('O ---> [ OHS ] -> TIMEZONE OFFSET in MILLISECONDS: ', prjcTzOffsetMillsec);
   }
 
 
   // https://stackoverflow.com/questions/5834318/are-variable-operators-possible
-  var operators = {
+  let operators = {
     '+': function (dateNowMs, tzMs) { return dateNowMs + tzMs },
     '-': function (dateNowMs, tzMs) { return dateNowMs - tzMs },
   }
 
   // ON THE BASIS OF 'TIMEZONE DIRECTION' ADDS OR SUBSTRATES THE 'TIMEZONE OFFSET' (IN MILLISECONDS) OF THE PROJECT TO THE 'DATE NOW' (IN MILLISECONDS)
-  var newDateNowMs = operators[timezoneDirection](dateNowMillSec, prjcTzOffsetMillsec)
+  let newDateNowMs = operators[timezoneDirection](dateNowMillSec, prjcTzOffsetMillsec)
   // winston.debug('O ---> [ OHS ] -> DATE@PRJCT TZ (in ms):', newDateNowMs, ' IS = TO THE DATE NOW UTC ', dateNowMillSec, ' (in ms)', timezoneDirection, 'PRJC TZ OFFSET (in ms): ', prjcTzOffsetMillsec)
 
   // TRANSFORM IN DATE THE DATE NOW (IN MILLSEC) TO WHICH I ADDED (OR SUBTRACT) THE TIMEZONE OFFSET (IN MS)
-  var newDateNow = new Date(newDateNowMs);
+  let newDateNow = new Date(newDateNowMs);
 
   return newDateNow
 
@@ -341,8 +341,8 @@ function addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneName) {
 
 function checkDay(operatingHoursPars, dayNowAtPrjctTz) {
   // FOR DEBUG (TO VIEW, IN DEBUG, THE NAME OF THE DAY INSTEAD OF THE NUMBER OF THE DAY)
-  var days = { '0': 'Sunday', '1': 'Monday', '2': 'Tuesday', '3': 'Wednesday', '4': 'Thursday', '5': 'Friday', '6': 'Saturday' };
-  for (var operatingHoursweekDay in operatingHoursPars) {
+  let days = { '0': 'Sunday', '1': 'Monday', '2': 'Tuesday', '3': 'Wednesday', '4': 'Thursday', '5': 'Friday', '6': 'Saturday' };
+  for (let operatingHoursweekDay in operatingHoursPars) {
     if (operatingHoursweekDay != 'tzname') {
       if (dayNowAtPrjctTz == operatingHoursweekDay) {
         winston.debug('O ---> [ OHS ] -> CURRENT DAY "', days[dayNowAtPrjctTz], '" (CALCUCATE @THE PRJCT TZ) MATCHES TO THE PRJCT OPENING DAY "', days[operatingHoursweekDay], '"');
@@ -356,34 +356,34 @@ function checkDay(operatingHoursPars, dayNowAtPrjctTz) {
 
 function checkTimes(operatingHoursPars, dayNowAtPrjctTz, timeNowAtPrjctTz) {
 
-  for (var operatingHoursweekDay in operatingHoursPars) {
+  for (let operatingHoursweekDay in operatingHoursPars) {
     if (operatingHoursweekDay != 'tzname') {
       if (dayNowAtPrjctTz == operatingHoursweekDay) {
 
         // FOR DEBUG (TO VIEW, IN DEBUG, THE NAME OF THE DAY INSTEAD OF THE NUMBER OF THE DAY)
-        var days = { '0': 'Sunday', '1': 'Monday', '2': 'Tuesday', '3': 'Wednesday', '4': 'Thursday', '5': 'Friday', '6': 'Saturday' };
+        let days = { '0': 'Sunday', '1': 'Monday', '2': 'Tuesday', '3': 'Wednesday', '4': 'Thursday', '5': 'Friday', '6': 'Saturday' };
 
-        var result = false;
+        let result = false;
         operatingHoursPars[operatingHoursweekDay].forEach(operatingHour => {
           // winston.debug('O -----> [ OHS ] -> OPERATING HOUR ', operatingHour)
-          var startTime = operatingHour.start;
-          var endTime = operatingHour.end;
+          let startTime = operatingHour.start;
+          let endTime = operatingHour.end;
           // winston.debug('CURRENT TIME (@THE PRJCT TZ) ', timeNowAtPrjctTz);
           // winston.debug('O ---> [ OHS ] -> on', days[dayNowAtPrjctTz], 'the START OPERATING HOURS is AT: ', startTime);
           // winston.debug('O ---> [ OHS ] -> on', days[dayNowAtPrjctTz], 'the END OPERATING HOURS is AT: ', endTime);
 
           // MOMENT 
-          var moment = require('moment');
-          // var currentTime = moment();
+          let moment = require('moment');
+          // let currentTime = moment();
           // winston.debug('MOMEMT CURRENT TIME ', currentTime)
-          var moment_currentTime = moment(timeNowAtPrjctTz, "HH:mm");
-          var moment_StartTime = moment(startTime, "HH:mm");
-          var moment_EndTime = moment(endTime, "HH:mm");
+          let moment_currentTime = moment(timeNowAtPrjctTz, "HH:mm");
+          let moment_StartTime = moment(startTime, "HH:mm");
+          let moment_EndTime = moment(endTime, "HH:mm");
           // winston.debug('MOMENT REQUEST TIME (@THE PROJECT UTC)', moment_newDateNow_hour);
           // winston.debug('MOMENT START TIME ', moment_StartTime);
           // winston.debug('MOMENT ./END TIME ', moment_EndTime);
 
-          var currentTimeIsBetween = moment_currentTime.isBetween(moment_StartTime, moment_EndTime);
+          let currentTimeIsBetween = moment_currentTime.isBetween(moment_StartTime, moment_EndTime);
           // winston.debug('O ---> [ OHS ] -> CURRENT TIME', moment_currentTime, ' (@THE PRJCT TZ) IS BETWEEN OH-Start:', moment_StartTime, ' OH-End ', moment_EndTime, '->', currentTimeIsBetween);
 
           if (currentTimeIsBetween == true) {
@@ -403,6 +403,6 @@ function checkTimes(operatingHoursPars, dayNowAtPrjctTz, timeNowAtPrjctTz) {
 
 
 
-var operatingHoursService = new OperatingHoursService();
+let operatingHoursService = new OperatingHoursService();
 
 module.exports = operatingHoursService;

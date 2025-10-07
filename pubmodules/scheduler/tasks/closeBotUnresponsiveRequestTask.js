@@ -2,10 +2,10 @@
 'use strict';
 
 
-var schedule = require('node-schedule');
-var winston = require('../../../config/winston');
-var Request = require("../../../models/request");
-var requestService = require("../../../services/requestService");
+let schedule = require('node-schedule');
+let winston = require('../../../config/winston');
+let Request = require("../../../models/request");
+let requestService = require("../../../services/requestService");
 
 
 class CloseBotUnresponsiveRequestTask {
@@ -24,7 +24,7 @@ constructor() {
   }
 //  qui ha senso la query?????? nn viene piu ricaricata?
 
-    // var stringQuery = process.env.CLOSE_UNRESPONSIVE_REQUESTS_QUERY;
+    // let stringQuery = process.env.CLOSE_UNRESPONSIVE_REQUESTS_QUERY;
   // if (stringQuery) {
   //   this.query = JSON.parse(stringQuery) || {hasBot:true, status: { $lt: 1000 }, createdAt:  { $lte :new Date(Date.now() - this.queryAfterTimeout ).toISOString()} };
   // }else {
@@ -43,14 +43,14 @@ run() {
 }
 
 scheduleUnresponsiveRequests() {
-  var that = this;
+  let that = this;
   winston.info("CloseBotUnresponsiveRequestTask task scheduleUnresponsiveRequests launched with closeAfter : " + this.queryAfterTimeout + " milliseconds, cron expression: " + this.cronExp + " and query limit: " +this.queryLimit);
   // if (this.queryProject) {
   //   winston.info("CloseBotUnresponsiveRequestTask query altered: " + JSON.stringify(this.query));
   // }
 
  //https://crontab.guru/examples.html
- var s= schedule.scheduleJob(this.cronExp, function(fireDate){   //TODO aggiungi un bias random
+ let s= schedule.scheduleJob(this.cronExp, function(fireDate){   //TODO aggiungi un bias random
 
     let timeInMs = Math.random() * (1000);  // avoid cluster concurrent jobs in multiple nodes delay between 0 and 1sec
     winston.debug('timeInMs => '+ timeInMs);
@@ -64,14 +64,14 @@ scheduleUnresponsiveRequests() {
 
 
 findUnresponsiveRequests() {
-  var that = this;
+  let that = this;
 
   // db.getCollection('requests').find({"hasBot":true, "status": { "$lt": 1000 }, "createdAt":  { "$lte" :new ISODate("2020-11-28T20:15:31Z")} }).count()
     
 
   //   TODO escludi i ticket offline
-    // var query = { };
-    var query = {hasBot:true, status: { $lt: 1000 }, createdAt:  { $lte :new Date(Date.now() - this.queryAfterTimeout ).toISOString()} };
+    // let query = { };
+    let query = {hasBot:true, status: { $lt: 1000 }, createdAt:  { $lte :new Date(Date.now() - this.queryAfterTimeout ).toISOString()} };
 
     if (this.queryProject) {
       query.id_project = JSON.parse(this.queryProject);
@@ -147,7 +147,7 @@ findUnresponsiveRequests() {
  
  
  
-var closeBotUnresponsiveRequestTask = new CloseBotUnresponsiveRequestTask();
+let closeBotUnresponsiveRequestTask = new CloseBotUnresponsiveRequestTask();
 
 
 module.exports = closeBotUnresponsiveRequestTask;

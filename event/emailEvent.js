@@ -1,6 +1,6 @@
 const EventEmitter = require('events');
 const project_user = require('../models/project_user');
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 const user = require('../models/user');
 const roleConstants = require('../models/roleConstants');
 

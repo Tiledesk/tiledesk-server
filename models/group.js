@@ -1,9 +1,9 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
 
 
-var GroupSchema = new Schema({
+let GroupSchema = new Schema({
   name: {
     type: String,
     required: true
@@ -39,7 +39,7 @@ var GroupSchema = new Schema({
   }
 );
 
-// var Group = mongoose.model('Group', GroupSchema);
+// let Group = mongoose.model('Group', GroupSchema);
 
 // GroupSchema.statics.findByProjectId = function (projectId, callback) {
 //   group.find({ "id_project": projectId, trashed: false }, function (err, groups) {

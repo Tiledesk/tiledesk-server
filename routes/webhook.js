@@ -1,18 +1,18 @@
-var express = require('express');
-var router = express.Router();
+let express = require('express');
+let router = express.Router();
 const uuidv4 = require('uuid/v4');
-var { KB, Namespace } = require('../models/kb_setting');
-var winston = require('../config/winston');
+let { KB, Namespace } = require('../models/kb_setting');
+let winston = require('../config/winston');
 const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 const { Scheduler } = require('../services/Scheduler');
 const { AiReindexService } = require('../services/aiReindexService');
 const { Webhook } = require('../models/webhook');
 const httpUtil = require('../utils/httpUtil');
-var jwt = require('jsonwebtoken');
+let jwt = require('jsonwebtoken');
 const Faq_kb = require('../models/faq_kb');
 const webhookService = require('../services/webhookService');
 const errorCodes = require('../errorCodes');
-var ObjectId = require('mongoose').Types.ObjectId;
+let ObjectId = require('mongoose').Types.ObjectId;
 
 const port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/";;
@@ -295,7 +295,7 @@ async function generateChatbotToken(chatbot) {
   let botPayload = chatbot.toObject();
   let botSecret = botPayload.secret;
 
-  var bot_token = jwt.sign(botPayload, botSecret, signOptions);
+  let bot_token = jwt.sign(botPayload, botSecret, signOptions);
   return bot_token;
 }
 

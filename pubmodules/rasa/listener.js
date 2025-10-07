@@ -1,10 +1,10 @@
 const botEvent = require('../../event/botEvent');
-var Faq_kb = require("../../models/faq_kb");
-var winston = require('../../config/winston');
+let Faq_kb = require("../../models/faq_kb");
+let winston = require('../../config/winston');
 const rasa = require("@tiledesk/tiledesk-rasa-connector");
-var configGlobal = require('../../config/global');
+let configGlobal = require('../../config/global');
 
-var port = process.env.PORT || '3000';
+let port = process.env.PORT || '3000';
 
 const BOT_RASA_ENDPOINT = process.env.BOT_RASA_ENDPOINT || "http://localhost:" + port+ "/modules/rasa/rasabot";
 winston.debug("BOT_RASA_ENDPOINT: " + BOT_RASA_ENDPOINT);
@@ -26,7 +26,7 @@ class Listener {
         winston.debug("rasa config databaseUri: " + config.databaseUri);  
         
 
-        var that = this;
+        let that = this;
 
 
         rasa.startRasa(
@@ -67,7 +67,7 @@ class Listener {
 
 }
 
-var listener = new Listener();
+let listener = new Listener();
 
 
 module.exports = listener;

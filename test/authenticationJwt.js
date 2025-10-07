@@ -1,11 +1,11 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
-//var User = require('../models/user');
-var projectService = require('../services/projectService');
-var requestService = require('../services/requestService');
-var userService = require('../services/userService');
-var leadService = require('../services/leadService');
+//let User = require('../models/user');
+let projectService = require('../services/projectService');
+let requestService = require('../services/requestService');
+let userService = require('../services/userService');
+let leadService = require('../services/leadService');
 
 //Require the dev-dependencies
 let chai = require('chai');
@@ -15,11 +15,11 @@ let should = chai.should();
 
 // chai.config.includeStack = true;
 
-var expect = chai.expect;
-var assert = chai.assert;
-var jwt = require('jsonwebtoken');
-var config = require('../config/database'); // get db config file
-var faqService = require('../services/faqService');
+let expect = chai.expect;
+let assert = chai.assert;
+let jwt = require('jsonwebtoken');
+let config = require('../config/database'); // get db config file
+let faqService = require('../services/faqService');
 
 let log = false;
 
@@ -29,13 +29,13 @@ describe('AuthenticationJWT', () => {
 
     it('signinJWt-userNoAudNoSubject', (done) => {
 
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
             projectService.create("test-signinJWt-user", savedUser._id).then(function (savedProject) {
 
-                var jwtToken = jwt.sign(savedUser.toObject(), config.secret);
+                let jwtToken = jwt.sign(savedUser.toObject(), config.secret);
                 if (log) { console.log("jwtToken", jwtToken); }
 
                 chai.request(server)
@@ -58,22 +58,22 @@ describe('AuthenticationJWT', () => {
 
     it('signinJWt-userYESAudNoSubject', (done) => {
 
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
             projectService.create("test-signinJWt-user", savedUser._id).then(function (savedProject) {
 
-                var savedUserObj = savedUser.toObject();
+                let savedUserObj = savedUser.toObject();
                 if (log) { console.log("savedUserObj", savedUserObj); }
 
-                var signOptions = {
+                let signOptions = {
                     // subject:  'user',                                                                 
                     audience: 'https://tiledesk.com',
                 };
 
 
-                var jwtToken = jwt.sign(savedUserObj, config.secret, signOptions);
+                let jwtToken = jwt.sign(savedUserObj, config.secret, signOptions);
                 if (log) { console.log("jwtToken", jwtToken); }
 
                 chai.request(server)
@@ -97,21 +97,21 @@ describe('AuthenticationJWT', () => {
 
     it('signinJWt-userYESAudYesSubject', (done) => {
 
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
             projectService.create("test-signinJWt-user", savedUser._id).then(function (savedProject) {
 
-                var savedUserObj = savedUser.toObject();
+                let savedUserObj = savedUser.toObject();
                 if (log) { console.log("savedUserObj", savedUserObj); }
 
-                var signOptions = {
+                let signOptions = {
                     subject: 'user',
                     audience: 'https://tiledesk.com',
                 };
 
-                var jwtToken = jwt.sign(savedUserObj, config.secret, signOptions);
+                let jwtToken = jwt.sign(savedUserObj, config.secret, signOptions);
                 if (log) { console.log("jwtToken", jwtToken); }
 
                 chai.request(server)
@@ -134,8 +134,8 @@ describe('AuthenticationJWT', () => {
 
     it('signinJWt-Project-user-YESAudNoSubject', (done) => {
 
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
             projectService.create("test-signinJWt-user", savedUser._id).then(function (savedProject) {
@@ -153,15 +153,15 @@ describe('AuthenticationJWT', () => {
                         res.body.should.be.a('object');
                         expect(res.body.jwtSecret).to.not.equal(null);
 
-                        var savedUserObj = savedUser.toObject();
+                        let savedUserObj = savedUser.toObject();
                         if (log) { console.log("savedUserObj", savedUserObj); }
 
-                        var signOptions = {
+                        let signOptions = {
                             // subject:  'user',                                                                 
                             audience: 'https://tiledesk.com/projects/' + savedProject._id,
                         };
 
-                        var jwtToken = jwt.sign(savedUserObj, res.body.jwtSecret, signOptions);
+                        let jwtToken = jwt.sign(savedUserObj, res.body.jwtSecret, signOptions);
                         if (log) { console.log("jwtToken", jwtToken); }
 
                         chai.request(server)
@@ -187,8 +187,8 @@ describe('AuthenticationJWT', () => {
 
     it('signinJWt-Project-user-YESAudYesSubject', (done) => {
 
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
             projectService.create("test-signinJWt-user", savedUser._id).then(function (savedProject) {
@@ -206,15 +206,15 @@ describe('AuthenticationJWT', () => {
                         res.body.should.be.a('object');
                         expect(res.body.jwtSecret).to.not.equal(null);
 
-                        var savedUserObj = savedUser.toObject();
+                        let savedUserObj = savedUser.toObject();
                         if (log) { console.log("savedUserObj", savedUserObj); }
 
-                        var signOptions = {
+                        let signOptions = {
                             subject: 'user',
                             audience: 'https://tiledesk.com/projects/' + savedProject._id,
                         };
 
-                        var jwtToken = jwt.sign(savedUserObj, res.body.jwtSecret, signOptions);
+                        let jwtToken = jwt.sign(savedUserObj, res.body.jwtSecret, signOptions);
                         if (log) { console.log("jwtToken", jwtToken); }
                         
                         chai.request(server)
@@ -241,8 +241,8 @@ describe('AuthenticationJWT', () => {
 
         //   this.timeout();
 
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
             // create(name, createdBy, settings)
@@ -262,15 +262,15 @@ describe('AuthenticationJWT', () => {
                         expect(res.body.jwtSecret).to.not.equal(null);
 
 
-                        var externalUserObj = { _id: "123", name: "andrea", surname: "leo" };
+                        let externalUserObj = { _id: "123", name: "andrea", surname: "leo" };
                         if (log) { console.log("externalUserObj", externalUserObj); }
 
-                        var signOptions = {
+                        let signOptions = {
                             subject: 'userexternal',
                             audience: 'https://tiledesk.com/projects/' + savedProject._id,
                         };
 
-                        var jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
+                        let jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
                         if (log) { console.log("jwtToken", jwtToken); }
 
                         chai.request(server)
@@ -299,8 +299,8 @@ describe('AuthenticationJWT', () => {
 
 //         //   this.timeout();
     
-//             var email = "test-signup-" + Date.now() + "@email.com";
-//             var pwd = "pwd";
+//             let email = "test-signup-" + Date.now() + "@email.com";
+//             let pwd = "pwd";
     
 //             userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
 //                 // create(name, createdBy, settings)
@@ -318,18 +318,18 @@ describe('AuthenticationJWT', () => {
 //                         expect(res.body.jwtSecret).to.not.equal(null);                                                                              
                     
 
-//                         var externalUserObj = {_id:"123",name:"andrea", surname:"leo",role : 'agent'};
+//                         let externalUserObj = {_id:"123",name:"andrea", surname:"leo",role : 'agent'};
                         
 //                         console.log("externalUserObj", externalUserObj);
 
 
-//                         var signOptions = {                                                            
+//                         let signOptions = {                                                            
 //                             subject:  'userexternal',                                                                                     
 //                             audience:  'https://tiledesk.com/projects/'+savedProject._id ,                                              
 //                             };
 
 
-//                         var jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret,signOptions);
+//                         let jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret,signOptions);
 
                             
                                 
@@ -363,8 +363,8 @@ describe('AuthenticationJWT', () => {
 
     it('signinJWt-bot-YESAudYesSubject', (done) => {
 
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
             // create(name, createdBy, settings)
@@ -372,15 +372,15 @@ describe('AuthenticationJWT', () => {
                 // create(name, url, projectid, user_id, type, description, webhook_url, webhook_enabled, language) {                                         
                 faqService.create(savedProject._id, savedUser._id, { name: "testbot"}).then(function (savedBot) {
 
-                    var savedBotObj = savedBot.toObject();
+                    let savedBotObj = savedBot.toObject();
                     if (log) { console.log("savedBotObj", savedBotObj); }
 
-                    var signOptions = {
+                    let signOptions = {
                         subject: 'bot',
                         audience: 'https://tiledesk.com/bots/' + savedBot._id,
                     };
 
-                    var jwtToken = jwt.sign(savedBotObj, savedBot.secret, signOptions);
+                    let jwtToken = jwt.sign(savedBotObj, savedBot.secret, signOptions);
                     if (log) { console.log("jwtToken", jwtToken); }
 
                     chai.request(server)

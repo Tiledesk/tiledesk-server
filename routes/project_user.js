@@ -1,21 +1,21 @@
-var express = require('express');
-var router = express.Router({mergeParams: true});
-var Project_user = require("../models/project_user");
-var mongoose = require('mongoose');
-var User = require("../models/user");
-var emailService = require("../services/emailService");
-var Project = require("../models/project");
-var pendinginvitation = require("../services/pendingInvitationService");
+let express = require('express');
+let router = express.Router({mergeParams: true});
+let Project_user = require("../models/project_user");
+let mongoose = require('mongoose');
+let User = require("../models/user");
+let emailService = require("../services/emailService");
+let Project = require("../models/project");
+let pendinginvitation = require("../services/pendingInvitationService");
 const authEvent = require('../event/authEvent');
-var winston = require('../config/winston');
-var RoleConstants = require("../models/roleConstants");
-var ProjectUserUtil = require("../utils/project_userUtil");
+let winston = require('../config/winston');
+let RoleConstants = require("../models/roleConstants");
+let ProjectUserUtil = require("../utils/project_userUtil");
 const uuidv4 = require('uuid/v4');
 
-var passport = require('passport');
+let passport = require('passport');
 require('../middleware/passport')(passport);
-var validtoken = require('../middleware/valid-token')
-var roleChecker = require('../middleware/has-role');
+let validtoken = require('../middleware/valid-token')
+let roleChecker = require('../middleware/has-role');
 
 
 router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
@@ -41,7 +41,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
       // User not registered on Tiledesk Platform -> Save email and project_id in pending invitation
       // TODO req.user.firstname is null for bot visitor
       return pendinginvitation.saveInPendingInvitation(req.projectid, req.project.name, email, req.body.role, req.user._id, req.user.firstname, req.user.lastname).then(function (savedPendingInvitation) {
-        var eventData = { req: req, savedPendingInvitation: savedPendingInvitation };
+        let eventData = { req: req, savedPendingInvitation: savedPendingInvitation };
         winston.debug("eventData", eventData);
         authEvent.emit('project_user.invite.pending', eventData);
         return res.json({ msg: "User not found, save invite in pending ", pendingInvitation: savedPendingInvitation });
@@ -85,9 +85,9 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
             emailService.sendYouHaveBeenInvited(email, req.user.firstname, req.user.lastname, req.project.name, id_project, user.firstname, user.lastname, req.body.role)
 
             updatedPuser.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedPuserPopulated){
-              var pu = updatedPuserPopulated.toJSON();
+              let pu = updatedPuserPopulated.toJSON();
               pu.isBusy = ProjectUserUtil.isBusy(savedProject_userPopulated, req.project.settings && req.project.settings.max_agent_assigned_chat);
-              var eventData = {req:req, updatedPuserPopulated: pu};
+              let eventData = {req:req, updatedPuserPopulated: pu};
               winston.debug("eventData",eventData);
               authEvent.emit('project_user.invite', eventData);
             });
@@ -115,9 +115,9 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
             emailService.sendYouHaveBeenInvited(email, req.user.firstname, req.user.lastname, req.project.name, id_project, user.firstname, user.lastname, req.body.role)
 
             savedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, savedProject_userPopulated){
-              var pu = savedProject_userPopulated.toJSON();
+              let pu = savedProject_userPopulated.toJSON();
               pu.isBusy = ProjectUserUtil.isBusy(savedProject_userPopulated, req.project.settings && req.project.settings.max_agent_assigned_chat);
-              var eventData = {req:req, savedProject_userPopulated: pu};
+              let eventData = {req:req, savedProject_userPopulated: pu};
               winston.debug("eventData",eventData);
               authEvent.emit('project_user.invite', eventData);
             });
@@ -132,7 +132,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
 
 router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], function (req, res) {
 
-  var newProject_user = new Project_user({
+  let newProject_user = new Project_user({
     id_project: req.projectid, //il fullname????
     uuid_user: uuidv4(),
     // role: RoleConstants.USER,   
@@ -157,7 +157,7 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
 
   winston.debug("projectuser patch", req.body);
 
-  var update = {};
+  let update = {};
   
   if (req.body.user_available!=undefined) {
     update.user_available = req.body.user_available;
@@ -197,7 +197,7 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     }
     
     updatedProject_user.populate({ path:'id_user', select: { 'firstname': 1, 'lastname': 1 }}, function (err, updatedProject_userPopulated) {    
-      var pu = updatedProject_userPopulated.toJSON();
+      let pu = updatedProject_userPopulated.toJSON();
       pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, req.project.settings && req.project.settings.max_agent_assigned_chat);
       authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req});
     });
@@ -210,7 +210,7 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 
   winston.debug("project_userid update", req.body);
 
-  var update = {};
+  let update = {};
   
   if (req.body.role!=undefined) {
     update.role = req.body.role;
@@ -264,7 +264,7 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
         if (err) {
           winston.error("Error gettting updatedProject_userPopulated for update", err);
         }            
-        var pu = updatedProject_userPopulated.toJSON();
+        let pu = updatedProject_userPopulated.toJSON();
         pu.isBusy = ProjectUserUtil.isBusy(updatedProject_user, req.project.settings && req.project.settings.max_agent_assigned_chat);
         
           authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req});
@@ -363,7 +363,7 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
         return res.status(404).send({ success: false, msg: 'Object not found.' });
       }
       // res.json(project_user);
-      var pu = project_user.toJSON();
+      let pu = project_user.toJSON();
       pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_assigned_chat);
       res.json(pu);
     });
@@ -413,10 +413,10 @@ router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session
     return res.status(404).send({ success: false, msg: 'Project not found.' });
   }
 
-  var isObjectId = mongoose.Types.ObjectId.isValid(req.params.user_id);
+  let isObjectId = mongoose.Types.ObjectId.isValid(req.params.user_id);
   winston.debug("isObjectId:"+ isObjectId);
 
-  var queryProjectUser ={ id_project: req.projectid};
+  let queryProjectUser ={ id_project: req.projectid};
 
   
   if (isObjectId) {          
@@ -425,7 +425,7 @@ router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session
     queryProjectUser.uuid_user = req.params.user_id
   }
 
-  var q1 = Project_user.findOne(queryProjectUser);
+  let q1 = Project_user.findOne(queryProjectUser);
 
   if (isObjectId) {    
     q1.populate('id_user'); //qui cache importante ma populatevirtual
@@ -443,7 +443,7 @@ router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session
      }
     
      // res.json(project_user);
-     var pu = project_user.toJSON();
+     let pu = project_user.toJSON();
 
 
    
@@ -475,14 +475,14 @@ router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session
  */                                                                                       
 router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription'])], function (req, res) {
 
-  var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
+  let role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
 
   if (req.query.role) {
     role = req.query.role;
   }
   winston.debug("role", role);
 
-  var query = { id_project: req.projectid, role: { $in : role }, trashed: { $ne: true } };
+  let query = { id_project: req.projectid, role: { $in : role }, trashed: { $ne: true } };
 
   if (req.query.presencestatus) {
     query["presence.status"] = req.query.presencestatus;
@@ -503,10 +503,10 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
         return res.status(500).send({ success: false, msg: 'Error getting object.' });
       }
 
-      var ret = [];
+      let ret = [];
 
       project_users.forEach(function(project_user) {
-        var pu = project_user.toJSON();
+        let pu = project_user.toJSON();
         pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project && req.project.settings && req.project.settings.max_agent_assigned_chat);
         ret.push(pu);
       });

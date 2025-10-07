@@ -3,24 +3,24 @@ process.env.NODE_ENV = 'test';
 process.env.ADMIN_EMAIL = "admin@tiledesk.com";
 
 let log = false;
-var projectService = require('../services/projectService');
-var userService = require('../services/userService');
+let projectService = require('../services/projectService');
+let userService = require('../services/userService');
 
 //Require the dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
-var fs = require('fs');
+let fs = require('fs');
 const path = require('path');
 const departmentService = require('../services/departmentService');
 const routingConstants = require('../models/routingConstants');
-var Group = require('../models/group');
+let Group = require('../models/group');
 
 // chai.config.includeStack = true;
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 let operatingHours = '{"1":[{"start":"09:00","end":"13:00"},{"start":"14:00","end":"18:00"}],"2":[{"start":"09:00","end":"13:00"},{"start":"14:00","end":"18:00"}],"3":[{"start":"09:00","end":"11:00"},{"start":"14:00","end":"18:00"}],"4":[{"start":"09:00","end":"13:00"},{"start":"14:00","end":"18:00"}],"5":[{"start":"09:00","end":"13:00"},{"start":"14:00","end":"18:00"}],"tzname":"Europe/Rome"}';
 let timeSlotsSample = {
@@ -52,8 +52,8 @@ describe('ProjectRoute', () => {
 
         it('getAllProjectsWithSuperAdminCredential', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-project-create-1", savedUser._id).then(() => {
@@ -98,8 +98,8 @@ describe('ProjectRoute', () => {
         
         it('updateProjectProfileWithSuperAdminCredential', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-project-create", savedUser._id).then((savedProject) => {
@@ -143,8 +143,8 @@ describe('ProjectRoute', () => {
 
         it('denyUpdateProjectProfile', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-project-create", savedUser._id).then((savedProject) => {
@@ -173,8 +173,8 @@ describe('ProjectRoute', () => {
 
         it('updateProjectTimeSlots', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-project-create", savedUser._id).then((savedProject) => {
@@ -200,8 +200,8 @@ describe('ProjectRoute', () => {
 
         it('isOpenTimeSlot', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-project-create", savedUser._id).then((savedProject) => {
@@ -242,8 +242,8 @@ describe('ProjectRoute', () => {
 
         it('isOpenOperatingHours', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-project-create", savedUser._id).then((savedProject) => {
@@ -283,8 +283,8 @@ describe('ProjectRoute', () => {
         }).timeout(10000)
 
         it('availableUsers', (done) => {
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-project-create", savedUser._id).then((savedProject) => {
@@ -305,8 +305,8 @@ describe('ProjectRoute', () => {
 
         it('utcChecker', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-project-create", savedUser._id).then((savedProject) => {
@@ -347,8 +347,8 @@ describe('ProjectRoute', () => {
 
         it('departmentGroupAvailableUsers', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-project-create", savedUser._id).then((savedProject) => {

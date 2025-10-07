@@ -1,15 +1,15 @@
 
-var Department = require("../models/department");
-var Project_user = require("../models/project_user");
-var Project = require("../models/project");
-var Group = require("../models/group");
-var operatingHoursService = require("./operatingHoursService");
-var winston = require('../config/winston');
+let Department = require("../models/department");
+let Project_user = require("../models/project_user");
+let Project = require("../models/project");
+let Group = require("../models/group");
+let operatingHoursService = require("./operatingHoursService");
+let winston = require('../config/winston');
 const departmentEvent = require('../event/departmentEvent');
 const Request = require('../models/request');
 const RoleConstants = require ('../models/roleConstants')
-var cacheEnabler = require("../services/cacheEnabler");
-var cacheUtil = require("../utils/cacheUtil");
+let cacheEnabler = require("../services/cacheEnabler");
+let cacheUtil = require("../utils/cacheUtil");
 
 class DepartmentService {
 
@@ -23,9 +23,9 @@ class DepartmentService {
       isdefault = false;
     }
     
-    var that = this;
+    let that = this;
     return new Promise(function (resolve, reject) {
-        var newDepartment = new Department({
+        let newDepartment = new Department({
           routing: routing,
           name: name,
           id_project: id_project,
@@ -67,7 +67,7 @@ class DepartmentService {
 
 roundRobin(operatorSelectedEvent) {
 
-  var that = this;
+  let that = this;
  
 
   return new Promise(function (resolve, reject) {
@@ -105,9 +105,9 @@ roundRobin(operatorSelectedEvent) {
               return resolve(operatorSelectedEvent);
           }
 
-          // var start = Date.now();
-          // var res = sleep(5000);
-          // var end = Date.now();
+          // let start = Date.now();
+          // let res = sleep(5000);
+          // let end = Date.now();
           // // res is the actual time that we slept for
           // console.log(res + ' ~= ' + (end - start) + ' ~= 1000');
 
@@ -187,7 +187,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
   winston.debug('context0.0',context);
 
-  var that = this;
+  let that = this;
   return new Promise(function (resolve, reject) {
        // console.log("»»» »»» --> DEPT ID ", departmentid);
 
@@ -272,7 +272,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
           // console.log('OPERATORS - »»»» BOT IS DEFINED - !!! DEPT HAS NOT GROUP ID')
           // console.log('OPERATORS - »»»» BOT IS DEFINED -> ID BOT', department.id_bot);
           // console.log('OPERATORS - »»»» nobot ', nobot)
-          var role = [RoleConstants.OWNER, RoleConstants.ADMIN,RoleConstants.SUPERVISOR, RoleConstants.AGENT];
+          let role = [RoleConstants.OWNER, RoleConstants.ADMIN,RoleConstants.SUPERVISOR, RoleConstants.AGENT];
 // attento indice
           return Project_user.find({ id_project: projectid, role: { $in : role }, status: "active" }).exec(function (err, project_users) {
             if (err) {
@@ -337,7 +337,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 };
 
  findProjectUsersAllAndAvailableWithOperatingHours(projectid, department, disableWebHookCall, project, context) {
-  var that = this;
+  let that = this;
 
   return new Promise(function (resolve, reject) {
     // console.log('D-1 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, ' ], - ID GROUP', department.id_group);
@@ -356,7 +356,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 };
 
  findProjectUsersAllAndAvailableWithOperatingHours_group(projectid, department, disableWebHookCall, project, context) {
-  var that = this;
+  let that = this;
 
   return new Promise(function (resolve, reject) {
     return Group.find({ _id: department.id_group, $or: [ { enabled: true }, { enabled: { $exists: false } } ] }).exec(function (err, group) {
@@ -387,17 +387,16 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
             // console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT USER (IN THE GROUP) LENGHT ', project_users.length);
 
             return that.getAvailableOperatorsWithOperatingHours(project_users, projectid).then(function (_available_agents) {
-              var _available_agents = _available_agents
               // console.log('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> AVAILABLE AGENT ', _available_agents);
 
-              var selectedoperator = []
+              let selectedoperator = []
               if (department.routing === 'assigned') {                
                 selectedoperator = that.getRandomAvailableOperator(_available_agents);
               }
 
               let objectToReturn = { available_agents: _available_agents, agents: project_users, operators: selectedoperator, department: department, group: group, id_project: projectid, project: project,  context: context };
 
-              // var objectToReturnRoundRobin = objectToReturn;
+              // let objectToReturnRoundRobin = objectToReturn;
               that.roundRobin(objectToReturn).then(function(objectToReturnRoundRobin){
 
                 winston.debug("context2",context);
@@ -419,7 +418,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
            
           } else {
             // here subscription notifier??
-            var objectToReturn = { available_agents: [], agents: [], operators: [], context: context };
+            let objectToReturn = { available_agents: [], agents: [], operators: [], context: context };
             return resolve(objectToReturn);
           }
 
@@ -432,11 +431,11 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
  findProjectUsersAllAndAvailableWithOperatingHours_nogroup(projectid, department, disableWebHookCall, project, context) {
 
-  var that = this;
+  let that = this;
 
   return new Promise(function (resolve, reject) {
 
-    var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
+    let role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
     return Project_user.find({ id_project: projectid , role: { $in : role }, status: "active" }).exec(function (err, project_users) {
       if (err) {
         winston.error('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
@@ -449,17 +448,16 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
       if (project_users && project_users.length > 0) {
         
         return that.getAvailableOperatorsWithOperatingHours(project_users, projectid).then(function (_available_agents) {
-          var _available_agents = _available_agents
           // console.log('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> AVAILABLE AGENT ', _available_agents);
 
-          var selectedoperator = []
+          let selectedoperator = []
           if (department.routing === 'assigned') {
             selectedoperator = that.getRandomAvailableOperator(_available_agents);
           }
 
           let objectToReturn = { available_agents: _available_agents, agents: project_users, operators: selectedoperator, department: department, id_project: projectid, project: project, context: context };
 
-          // var objectToReturnRoundRobin = objectToReturn;
+          // let objectToReturnRoundRobin = objectToReturn;
 
           that.roundRobin(objectToReturn).then(function(objectToReturnRoundRobin) {
             winston.debug("context2",context);
@@ -498,7 +496,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
  getAvailableOperatorsWithOperatingHours(project_users, projectid) {
 
-  var that = this;
+  let that = this;
 
 
   return new Promise(function (resolve, reject) {
@@ -519,7 +517,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
         
         if (isOpen) {
 
-          var _available_agents = that.getAvailableOperator(project_users);
+          let _available_agents = that.getAvailableOperator(project_users);
 
           return resolve(_available_agents);
         } else {
@@ -536,7 +534,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
 // FILTER ALL THE PROJECT USERS FOR AVAILABLE = TRUE
  getAvailableOperator(project_users) {
-  var project_users_available = project_users.filter(function (projectUser) {
+  let project_users_available = project_users.filter(function (projectUser) {
     if (projectUser.user_available == true) {
       return true;
     }
@@ -585,10 +583,10 @@ getDefaultDepartment(projectid) {
     // // let randomIndex =  Math.floor(Math.random() * project_users_available.length);
     
     // console.log("randomIndex",randomIndex);
-    // var operator = project_users_available[randomIndex];
+    // let operator = project_users_available[randomIndex];
     // // console.log('OPERATORS - SELECTED MEMBER ID', operator.id_user);
 
-    var operator = project_users_available[Math.floor(Math.random() * project_users_available.length)];
+    let operator = project_users_available[Math.floor(Math.random() * project_users_available.length)];
 
 
     return [{ id_user: operator.id_user }];
@@ -622,7 +620,7 @@ getDefaultDepartment(projectid) {
 }
 
 
-var departmentService = new DepartmentService();
+let departmentService = new DepartmentService();
 
 
 module.exports = departmentService;

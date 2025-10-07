@@ -1,7 +1,7 @@
-var express = require('express');
-var router = express.Router();
-var winston = require('../config/winston');
-var Segment = require("../models/segment");
+let express = require('express');
+let router = express.Router();
+let winston = require('../config/winston');
+let Segment = require("../models/segment");
 
 
 router.post('/', function (req, res) {
@@ -9,7 +9,7 @@ router.post('/', function (req, res) {
   winston.debug(req.body);
   winston.debug("req.user", req.user);
 
-  var newSegment = new Segment({
+  let newSegment = new Segment({
     name: req.body.name,
     match: req.body.match,
     filters: req.body.filters,
@@ -33,7 +33,7 @@ router.post('/', function (req, res) {
 
 router.put('/:segmentid', function (req, res) {
   winston.debug(req.body);
-  var update = {};
+  let update = {};
   
     if (req.body.name!=undefined) {
       update.name = req.body.name;
@@ -91,36 +91,36 @@ router.get('/:segmentid', function (req, res) {
 
 router.get('/', function (req, res) {
 
-  var limit = 40; // Number of request per page
+  let limit = 40; // Number of request per page
 
   if (req.query.limit) {    
     limit = parseInt(req.query.limit);
     winston.debug('LEAD ROUTE - limit: '+limit);
   }
 
-  var page = 0;
+  let page = 0;
 
   if (req.query.page) {
     page = req.query.page;
   }
 
-  var skip = page * limit;
+  let skip = page * limit;
   winston.debug('LEAD ROUTE - SKIP PAGE ', skip);
 
 
-  var query = { "id_project": req.projectid, "status": 100};
+  let query = { "id_project": req.projectid, "status": 100};
 
-  var direction = -1; //-1 descending , 1 ascending
+  let direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
   }
 
-  var sortField = "createdAt";
+  let sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   }
 
-  var sortQuery = {};
+  let sortQuery = {};
   sortQuery[sortField] = direction;
 
   winston.debug("sort query", sortQuery);
@@ -140,7 +140,7 @@ router.get('/', function (req, res) {
       //  collection.count is deprecated, and will be removed in a future version. Use Collection.countDocuments or Collection.estimatedDocumentCount instead
       return Segment.countDocuments(query, function (err, totalRowCount) {
 
-        var objectToReturn = {
+        let objectToReturn = {
           perPage: limit,
           count: totalRowCount,
           segments: segments

@@ -2,9 +2,9 @@
 process.env.NODE_ENV = 'test';
 process.env.LOG_LEVEL = 'critical';
 
-var User = require('../models/user');
-var projectService = require('../services/projectService');
-var userService = require('../services/userService');
+let User = require('../models/user');
+let projectService = require('../services/projectService');
+let userService = require('../services/userService');
 const Project_user = require('../models/project_user');
 
 const example_data = require('./fixtures/example-json-multiple-operation-mock');
@@ -14,7 +14,7 @@ let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
-var fs = require('fs');
+let fs = require('fs');
 const path = require('path');
 const uuidv4 = require('uuid/v4');
 const project_user = require('../models/project_user');
@@ -23,8 +23,8 @@ const roleConstants = require('../models/roleConstants');
 
 // chai.config.includeStack = true;
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 let log = false;
 
@@ -38,8 +38,8 @@ describe('FaqKBRoute', () => {
     
             //   this.timeout();
     
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
     
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -58,7 +58,7 @@ describe('FaqKBRoute', () => {
                             expect(res.body.name).to.equal("testbot");
                             expect(res.body.public).to.exist;
                             expect(res.body.public).to.equal(false);
-                            var id_faq_kb = res.body._id;
+                            let id_faq_kb = res.body._id;
     
                             chai.request(server)
                                 .post('/' + savedProject._id + '/faq')
@@ -93,8 +93,8 @@ describe('FaqKBRoute', () => {
     
             //   this.timeout();
     
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
             let example_form = {
                 fields: [
                     {
@@ -128,7 +128,7 @@ describe('FaqKBRoute', () => {
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
                             expect(res.body.language).to.equal("fr");
-                            var id_faq_kb = res.body._id;
+                            let id_faq_kb = res.body._id;
     
                             chai.request(server)
                                 .post('/' + savedProject._id + '/faq')
@@ -162,8 +162,8 @@ describe('FaqKBRoute', () => {
     
             //   this.timeout();
     
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
     
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -180,7 +180,7 @@ describe('FaqKBRoute', () => {
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
                             expect(res.body.language).to.equal("it");
-                            var id_faq_kb = res.body._id;
+                            let id_faq_kb = res.body._id;
     
                             chai.request(server)
                                 .post('/' + savedProject._id + '/faq')
@@ -215,8 +215,8 @@ describe('FaqKBRoute', () => {
     
             //   this.timeout();
     
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
     
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -233,7 +233,7 @@ describe('FaqKBRoute', () => {
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
-                            var id_faq_kb = res.body._id;
+                            let id_faq_kb = res.body._id;
     
                             chai.request(server)
                                 .post('/' + savedProject._id + '/faq')
@@ -269,8 +269,8 @@ describe('FaqKBRoute', () => {
 
         it('Get faqs with role agent', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -358,8 +358,8 @@ describe('FaqKBRoute', () => {
 
         it('searchFaqs', (done) => {
     
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
     
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-search-faqs", savedUser._id).then((savedProject) => {
@@ -376,7 +376,7 @@ describe('FaqKBRoute', () => {
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
-                            var id_faq_kb = res.body._id;
+                            let id_faq_kb = res.body._id;
     
     
                             chai.request(server)
@@ -409,8 +409,8 @@ describe('FaqKBRoute', () => {
     
             //   this.timeout();
     
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
     
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -426,7 +426,7 @@ describe('FaqKBRoute', () => {
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
-                            var id_faq_kb = res.body._id;
+                            let id_faq_kb = res.body._id;
     
                             chai.request(server)
                                 .post('/' + savedProject._id + '/faq')
@@ -477,8 +477,8 @@ describe('FaqKBRoute', () => {
     
         it('update attributes', (done) => {
     
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
     
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -494,7 +494,7 @@ describe('FaqKBRoute', () => {
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
-                            var id_faq_kb = res.body._id;
+                            let id_faq_kb = res.body._id;
     
                             chai.request(server)
                                 .post('/' + savedProject._id + '/faq')
@@ -550,8 +550,8 @@ describe('FaqKBRoute', () => {
     
         it('updateBulkOperations', (done) => {
     
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
     
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-updatebulkops", savedUser._id).then((savedProject) => {
@@ -587,8 +587,8 @@ describe('FaqKBRoute', () => {
     
             //   this.timeout();
     
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
     
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-uploadcsv", savedUser._id).then(function (savedProject) {
@@ -605,7 +605,7 @@ describe('FaqKBRoute', () => {
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
-                            var id_faq_kb = res.body._id;
+                            let id_faq_kb = res.body._id;
     
                             chai.request(server)
                                 .post('/' + savedProject._id + '/faq/uploadcsv')
@@ -638,8 +638,8 @@ describe('FaqKBRoute', () => {
     
             //   this.timeout();
     
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
     
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-uploadcsv", savedUser._id).then(function (savedProject) {
@@ -657,7 +657,7 @@ describe('FaqKBRoute', () => {
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
                             expect(res.body.language).to.equal("it");
-                            var id_faq_kb = res.body._id;
+                            let id_faq_kb = res.body._id;
     
                             chai.request(server)
                                 .post('/' + savedProject._id + '/faq/uploadcsv')
@@ -691,8 +691,8 @@ describe('FaqKBRoute', () => {
 
         it('intentsEngine on', (done) => {
     
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
     
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-search-faqs", savedUser._id).then((savedProject) => {
@@ -709,7 +709,7 @@ describe('FaqKBRoute', () => {
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
-                            var id_faq_kb = res.body._id;
+                            let id_faq_kb = res.body._id;
     
     
                             chai.request(server)
@@ -737,8 +737,8 @@ describe('FaqKBRoute', () => {
 
         it('delete with _id', (done) => {
     
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
     
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-search-faqs", savedUser._id).then((savedProject) => {
@@ -755,7 +755,7 @@ describe('FaqKBRoute', () => {
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
-                            var id_faq_kb = res.body._id;
+                            let id_faq_kb = res.body._id;
     
                             chai.request(server)
                                 .post('/' + savedProject._id + '/faq')
@@ -790,8 +790,8 @@ describe('FaqKBRoute', () => {
     
         it('deleteWithIntentId', (done) => {
     
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
     
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-search-faqs", savedUser._id).then((savedProject) => {
@@ -808,7 +808,7 @@ describe('FaqKBRoute', () => {
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
-                            var id_faq_kb = res.body._id;
+                            let id_faq_kb = res.body._id;
     
                             chai.request(server)
                                 .post('/' + savedProject._id + '/faq')
@@ -843,8 +843,8 @@ describe('FaqKBRoute', () => {
     
         it('deleteWithIntentIdError', (done) => {
     
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
     
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-search-faqs", savedUser._id).then((savedProject) => {
@@ -861,7 +861,7 @@ describe('FaqKBRoute', () => {
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
-                            var id_faq_kb = res.body._id;
+                            let id_faq_kb = res.body._id;
     
                             chai.request(server)
                                 .post('/' + savedProject._id + '/faq')
@@ -897,8 +897,8 @@ describe('FaqKBRoute', () => {
     
         it('deleteWithIntentIdErroWrongChatbotId', (done) => {
     
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
     
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-search-faqs", savedUser._id).then((savedProject) => {
@@ -915,7 +915,7 @@ describe('FaqKBRoute', () => {
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
-                            var id_faq_kb = res.body._id;
+                            let id_faq_kb = res.body._id;
     
                             chai.request(server)
                                 .post('/' + savedProject._id + '/faq')

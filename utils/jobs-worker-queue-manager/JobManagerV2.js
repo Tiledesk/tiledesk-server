@@ -1,4 +1,4 @@
-var QueueManager = require("./queueManagerClassV2");
+let QueueManager = require("./queueManagerClassV2");
 
 class JobManager {
     constructor(queueUrl, options) {
@@ -18,7 +18,7 @@ class JobManager {
 
     }
     connectAndStartPublisher(callback) {
-        var that = this;
+        let that = this;
         if (this.info) {console.log("[JobWorker] JobManager publisher started");}
         
         this.queueManager.connect(function(status, err) {
@@ -36,7 +36,7 @@ class JobManager {
             that.queueManager.startPublisher(function() {
                 if (that.debug) {console.log("[JobWorker] Queue that.sendingJobs.length",that.sendingJobs.length);}
                 if (that.sendingJobs.length > 0) {
-                    for (var i = 0; i<that.sendingJobs.length; i++) {
+                    for (let i = 0; i<that.sendingJobs.length; i++) {
                         if (that.debug) {console.log("[JobWorker] Queue that.sendingJobs[i]",that.sendingJobs[i]);}
                         // that.queueManager.send(that.sendingJobs[i].toString(), "functions");
                         that.queueManager.sendJson(that.sendingJobs[i], "functions");
@@ -71,7 +71,7 @@ class JobManager {
     }
 
     connectAndStartWorker() {
-        var that = this;
+        let that = this;
         if (this.info) {console.log("[JobWorker] JobManager worker started");}
         
         this.queueManager.connect(function() {
@@ -86,7 +86,7 @@ class JobManager {
 
     publish(payload, callback) {
         
-        var packet = {payload: payload}
+        let packet = {payload: payload}
         // if (this.debug) {console.log("JobManager this.queueConnected",this.queueStarted);
         if (this.queuePublisherConnected == true) {
 
@@ -116,7 +116,7 @@ class JobManager {
     //Deprecated
     schedule(fn, payload) {
         
-        var func = {function: fn.toString(), payload: payload}
+        let func = {function: fn.toString(), payload: payload}
         // if (this.debug) {console.log("JobManager this.queueConnected",this.queueStarted);
         if (this.queuePublisherConnected == true) {
             if (this.debug) {console.log("[JobWorker] JobManager  this.queuePublisherConnected == true");}

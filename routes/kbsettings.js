@@ -1,9 +1,9 @@
-var express = require('express');
-var { KBSettings } = require('../models/kb_setting');
-// var { KB } = require('../models/kb_setting');
-// var KB = require('../models/kb_setting')
-var router = express.Router();
-var winston = require('../config/winston');
+let express = require('express');
+let { KBSettings } = require('../models/kb_setting');
+// let { KB } = require('../models/kb_setting');
+// let KB = require('../models/kb_setting')
+let router = express.Router();
+let winston = require('../config/winston');
 const aiService = require('../services/aiService');
 
 router.get('/', async (req, res) => {

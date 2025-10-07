@@ -1,10 +1,10 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var routingConstants = require('../models/routingConstants');
-var winston = require('../config/winston');
-var TagSchema = require("../models/tag");
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let routingConstants = require('../models/routingConstants');
+let winston = require('../config/winston');
+let TagSchema = require("../models/tag");
 
-var DepartmentSchema = new Schema({
+let DepartmentSchema = new Schema({
   id_bot: {
     type: String,
   },
@@ -85,7 +85,7 @@ DepartmentSchema.virtual('hasBot').get(function () {
 // query = { default: true, id_project: projectid };
 DepartmentSchema.index({ id_project: 1, default: 1 }); 
 
-var department = mongoose.model('department', DepartmentSchema);
+let department = mongoose.model('department', DepartmentSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   department.syncIndexes();

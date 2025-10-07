@@ -1,13 +1,13 @@
-var express = require('express');
-var router = express.Router();
-// var Setting = require("../models/setting");
+let express = require('express');
+let router = express.Router();
+// let Setting = require("../models/setting");
 
 
 
 router.get('/', function (req, res) {
   console.log('Config');
   
-    var config = {};
+    let config = {};
 
     if (process.env.FIREBASE_APIKEY) {
       config.apiKey = process.env.FIREBASE_APIKEY;

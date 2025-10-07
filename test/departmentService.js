@@ -2,29 +2,29 @@
 process.env.NODE_ENV = 'test';
 process.env.LOG_LEVEL = 'critical';
 
-var expect = require('chai').expect;
+let expect = require('chai').expect;
 
-var assert = require('chai').assert;
-var config = require('../config/database');
-var mongoose = require('mongoose');
-var winston = require('../config/winston');
-var roleConstants = require('../models/roleConstants');
-var Project_user = require("../models/project_user");
-var userService = require('../services/userService');
-var departmentService = require('../services/departmentService');
-var requestService = require('../services/requestService');
-var routingConstants = require('../models/routingConstants');
-var leadService = require('../services/leadService');
+let assert = require('chai').assert;
+let config = require('../config/database');
+let mongoose = require('mongoose');
+let winston = require('../config/winston');
+let roleConstants = require('../models/roleConstants');
+let Project_user = require("../models/project_user");
+let userService = require('../services/userService');
+let departmentService = require('../services/departmentService');
+let requestService = require('../services/requestService');
+let routingConstants = require('../models/routingConstants');
+let leadService = require('../services/leadService');
 
 mongoose.connect(config.databasetest);
 require('../services/mongoose-cache-fn')(mongoose);
 
-var projectService = require('../services/projectService');
+let projectService = require('../services/projectService');
 
 
 let log = false;
 
-// var appRules = require('../rules/appRules');
+// let appRules = require('../rules/appRules');
 // appRules.start();
 
 
@@ -33,8 +33,8 @@ describe('DepartmentService()', function () {
   it('createFirstWithAssignedDepartment', function (done) {
     // this.timeout(10000);
 
-    var email = "test-department-create" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-department-create" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       userService.signup(email + '2', pwd, "Test Firstname2", "Test lastname2").then(function (savedUser2) {
@@ -43,7 +43,7 @@ describe('DepartmentService()', function () {
 
 
 
-            var pu1 = new Project_user({
+            let pu1 = new Project_user({
               // _id: new mongoose.Types.ObjectId(),
               id_project: savedProject._id,
               id_user: savedUser2._id,
@@ -57,7 +57,7 @@ describe('DepartmentService()', function () {
               winston.debug("savedProject_user2", savedProject_user2.toObject());
 
 
-              var pu2 = new Project_user({
+              let pu2 = new Project_user({
                 // _id: new mongoose.Types.ObjectId(),
                 id_project: savedProject._id,
                 id_user: savedUser3._id,
@@ -111,17 +111,17 @@ describe('DepartmentService()', function () {
   it('createRoundRobinWithAssignedDepartment', function (done) {
     // this.timeout(10000);
 
-    var email = "test-department-create" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-department-create" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       userService.signup(email + '2', pwd, "Test Firstname2", "Test lastname2").then(function (savedUser2) {
         userService.signup(email + '3', pwd, "Test Firstname3", "Test lastname3").then(function (savedUser3) {
           // projectService.create("createWithAssignedDepartment", savedUser._id).then(function(savedProject) {
           projectService.createAndReturnProjectAndProjectUser("createWithAssignedDepartment", savedUser._id).then(function (savedProjectAndPU) {
-            var savedProject = savedProjectAndPU.project;
+            let savedProject = savedProjectAndPU.project;
 
-            var pu1 = new Project_user({
+            let pu1 = new Project_user({
               // _id: new mongoose.Types.ObjectId(),
               id_project: savedProject._id,
               id_user: savedUser2._id,
@@ -135,7 +135,7 @@ describe('DepartmentService()', function () {
               winston.debug("savedProject_user2", savedProject_user2.toObject());
 
 
-              // var pu2 =  new Project_user({
+              // let pu2 =  new Project_user({
               //   // _id: new mongoose.Types.ObjectId(),
               //   id_project: savedProject._id,
               //   id_user: savedUser3._id,
@@ -154,7 +154,7 @@ describe('DepartmentService()', function () {
 
                   // winston.info("createdLead", createdLead.toObject());
                   // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight, channel, location) {
-                  var now = Date.now();
+                  let now = Date.now();
 
                   requestService.createWithIdAndRequester("request_id1-" + now, savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text", createdDepartment._id).then(function (savedRequest) {
 
@@ -205,8 +205,8 @@ describe('DepartmentService()', function () {
   it('createRoundRobinWithAssignedDepartmentNoBeforeRequestOneAgent', function (done) {
     // this.timeout(10000);
 
-    var email = "test-department-create" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-department-create" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       userService.signup(email + '2', pwd, "Test Firstname2", "Test lastname2").then(function (savedUser2) {
@@ -232,18 +232,18 @@ describe('DepartmentService()', function () {
   it('createRoundRobinWithAssignedALLOFFLINEDepartment', function (done) {
     // this.timeout(10000);
 
-    var email = "test-department-create" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-department-create" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       userService.signup(email + '2', pwd, "Test Firstname2", "Test lastname2").then(function (savedUser2) {
         // projectService.create("createWithAssignedDepartment", savedUser._id).then(function(savedProject) {
         projectService.createAndReturnProjectAndProjectUser("createWithId-createWithAssignedDepartment", savedUser._id).then(function (savedProjectAndPU) {
-          var savedProject = savedProjectAndPU.project;
+          let savedProject = savedProjectAndPU.project;
           Project_user.findOneAndUpdate({ id_project: savedProject._id, id_user: savedUser._id, }, { user_available: false }, { new: true, upsert: false }, function (err, updatedProject_user) {
             winston.debug("updatedProject_user", updatedProject_user);
 
-            var pu1 = new Project_user({
+            let pu1 = new Project_user({
               id_project: savedProject._id,
               id_user: savedUser2._id,
               role: roleConstants.AGENT,
@@ -265,7 +265,7 @@ describe('DepartmentService()', function () {
 
                   // winston.info("createdLead", createdLead.toObject());
                   // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight, channel, location) {
-                  var now = Date.now();
+                  let now = Date.now();
                   requestService.createWithIdAndRequester("request_id1-" + now, savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text", createdDepartment._id).then(function (savedRequest) {
 
                     // getOperators(departmentid, projectid, nobot) {
@@ -312,16 +312,16 @@ describe('DepartmentService()', function () {
   it('createRoundRobinWithAssignedLastOperatorNotAvailableAndOtherNotAvailableDepartment', function (done) {
     // this.timeout(10000);
 
-    var email = "test-department-create" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-department-create" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       userService.signup(email + '2', pwd, "Test Firstname2", "Test lastname2").then(function (savedUser2) {
         projectService.createAndReturnProjectAndProjectUser("createWithAssignedDepartment", savedUser._id).then(function (savedProjectAndPU) {
 
-          var savedProject = savedProjectAndPU.project;
+          let savedProject = savedProjectAndPU.project;
 
-          var pu1 = new Project_user({
+          let pu1 = new Project_user({
             id_project: savedProject._id,
             id_user: savedUser2._id,
             role: roleConstants.AGENT,
@@ -335,7 +335,7 @@ describe('DepartmentService()', function () {
             winston.debug("savedProject_user2", savedProject_user2.toObject());
 
             departmentService.create("PooledDepartment-for-createWithIdWith-createRoundRobinWithAssignedLastOperatorNotAvailableAndOtherNotAvailableDepartment", savedProject._id, routingConstants.ASSIGNED, savedUser._id).then(function (createdDepartment) {
-              var now = Date.now();
+              let now = Date.now();
               leadService.createIfNotExists("request_id1-getallWithLoLead", "email@getallWithLoLead.com", savedProject._id).then(function (createdLead) {
                 requestService.createWithIdAndRequester("request_id1-" + now, savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text", createdDepartment._id).then(function (savedRequest) {
 

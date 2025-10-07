@@ -1,32 +1,32 @@
-var config = require('../config/database');
-var express = require('express');
-var jwt = require('jsonwebtoken');
-var router = express.Router();
-var User = require("../models/user");
-var Subscription = require("../models/subscription");
-var Project_user = require("../models/project_user");
-var RoleConstants = require("../models/roleConstants");
-var uniqid = require('uniqid');
-var emailService = require("../services/emailService");
-var pendinginvitation = require("../services/pendingInvitationService");
-var userService = require("../services/userService");
+let config = require('../config/database');
+let express = require('express');
+let jwt = require('jsonwebtoken');
+let router = express.Router();
+let User = require("../models/user");
+let Subscription = require("../models/subscription");
+let Project_user = require("../models/project_user");
+let RoleConstants = require("../models/roleConstants");
+let uniqid = require('uniqid');
+let emailService = require("../services/emailService");
+let pendinginvitation = require("../services/pendingInvitationService");
+let userService = require("../services/userService");
 
-var noentitycheck = require('../middleware/noentitycheck');
+let noentitycheck = require('../middleware/noentitycheck');
 
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 const uuidv4 = require('uuid/v4');
 
-var authEvent = require("../event/authEvent");
+let authEvent = require("../event/authEvent");
 
-var passport = require('passport');
+let passport = require('passport');
 require('../middleware/passport')(passport);
-var validtoken = require('../middleware/valid-token');
-var PendingInvitation = require("../models/pending-invitation");
+let validtoken = require('../middleware/valid-token');
+let PendingInvitation = require("../models/pending-invitation");
 const { check, validationResult } = require('express-validator');
-var UserUtil = require('../utils/userUtil');
+let UserUtil = require('../utils/userUtil');
 
 let configSecret = process.env.GLOBAL_SECRET || config.secret;
-var pKey = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY;
+let pKey = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY;
 // console.log("pKey",pKey);
 
 if (pKey) {
@@ -34,18 +34,18 @@ if (pKey) {
 }
 
 let pubConfigSecret = process.env.GLOBAL_SECRET || config.secret;
-var pubKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
+let pubKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
 if (pubKey) {
   pubConfigSecret = pubKey.replace(/\\n/g, '\n');
 }
 
-var recaptcha = require('../middleware/recaptcha');
+let recaptcha = require('../middleware/recaptcha');
 const errorCodes = require('../errorCodes');
 
 
 
 // const fs  = require('fs');
-// var configSecret = fs.readFileSync('private.key');
+// let configSecret = fs.readFileSync('private.key');
 
 
 router.post('/signup',
@@ -181,8 +181,8 @@ function (req, res) {
 
   let uid = uuidv4();
   let shortuid = uid.substring(0,4); 
-  var firstname = req.body.firstname || "guest#"+shortuid; // guest_here
-  // var firstname = req.body.firstname || "Guest"; // guest_here
+  let firstname = req.body.firstname || "guest#"+shortuid; // guest_here
+  // let firstname = req.body.firstname || "Guest"; // guest_here
   
   
 
@@ -193,7 +193,7 @@ function (req, res) {
 
   req.user = UserUtil.decorateUser(userAnonym);
 
-    var newProject_user = new Project_user({
+    let newProject_user = new Project_user({
       id_project: req.body.id_project, //attentoqui
       uuid_user: req.user._id,
       role: RoleConstants.GUEST,
@@ -209,19 +209,19 @@ function (req, res) {
           }
                   
 
-          var signOptions = {
+          let signOptions = {
             issuer:  'https://tiledesk.com',
             subject:  'guest',
             audience:  'https://tiledesk.com',
             jwtid: uuidv4() 
           };
 
-          var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+          let alg = process.env.GLOBAL_SECRET_ALGORITHM;
           if (alg) {
             signOptions.algorithm = alg;
           }
 
-          var token = jwt.sign(userAnonym, configSecret, signOptions); //priv_jwt pp_jwt
+          let token = jwt.sign(userAnonym, configSecret, signOptions); //priv_jwt pp_jwt
 
 
           authEvent.emit("user.signin", {user:userAnonym, req:req, jti:signOptions.jwtid, token: 'JWT ' + token});       
@@ -264,11 +264,11 @@ router.post('/signinWithCustomToken', [
     const AudienceType = path.split("/")[1];
     winston.debug("audUrl AudienceType: " + AudienceType );
 
-    var id_project;
+    let id_project;
      
     let userToReturn = req.user;
 
-    var role = RoleConstants.USER;
+    let role = RoleConstants.USER;
 
     //problema wp da testare
     if (AudienceType === "subscriptions") {
@@ -281,7 +281,7 @@ router.post('/signinWithCustomToken', [
         return res.status(400).send({ success: false, msg: 'JWT Aud.AudienceId field is required for AudienceType subscriptions' });
       }
 
-      var subscription = await Subscription.findById(AudienceId).exec();
+      let subscription = await Subscription.findById(AudienceId).exec();
       winston.debug("signinWithCustomToken subscription: ", subscription );
       id_project = subscription.id_project;
       winston.debug("signinWithCustomToken subscription req.user._id: "+ req.user._id );
@@ -340,7 +340,7 @@ router.post('/signinWithCustomToken', [
           if (role === RoleConstants.OWNER || role === RoleConstants.ADMIN || role === RoleConstants.AGENT) {            
            createNewUser = true;
            winston.debug('role owner or admin or agent');
-           var newUser;
+           let newUser;
            try {
 
             // Bug with email in camelcase
@@ -352,18 +352,18 @@ router.post('/signinWithCustomToken', [
               newUser = await User.findOne({email: req.user.email.toLowerCase(), status: 100}).exec();
               winston.debug('signup found')
                   // qui dovresti cercare pu sul progetto con id di newUser se c'è 
-              var  project_userUser = await Project_user.findOne({ id_project: id_project, id_user: newUser._id}).exec();
+              let  project_userUser = await Project_user.findOne({ id_project: id_project, id_user: newUser._id}).exec();
                   if (project_userUser) {
                     winston.debug('project user found')
                     if (project_userUser.status==="active") {
-                        var signOptions = {         
+                        let signOptions = {         
                           issuer:  'https://tiledesk.com',   
                           subject:  'user',
                           audience:  'https://tiledesk.com',
                           jwtid: uuidv4()
                         };
           
-                        var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+                        let alg = process.env.GLOBAL_SECRET_ALGORITHM;
                         if (alg) {
                           signOptions.algorithm = alg;
                         }
@@ -402,7 +402,7 @@ router.post('/signinWithCustomToken', [
 
           }
 
-            var newProject_user = new Project_user({
+            let newProject_user = new Project_user({
 
               id_project: id_project,
               uuid_user: req.user._id,
@@ -442,14 +442,14 @@ router.post('/signinWithCustomToken', [
 
 
 
-                var signOptions = {         
+                let signOptions = {         
                   issuer:  'https://tiledesk.com',   
                   subject:  'user',
                   audience:  'https://tiledesk.com',
                   jwtid: uuidv4()
                 };
 
-                var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+                let alg = process.env.GLOBAL_SECRET_ALGORITHM;
                 if (alg) {
                   signOptions.algorithm = alg;
                 }
@@ -490,14 +490,14 @@ router.post('/signinWithCustomToken', [
             if (req.user.role && (req.user.role === RoleConstants.OWNER || req.user.role === RoleConstants.ADMIN || req.user.role === RoleConstants.AGENT)) {
               let userFromDB = await User.findOne({email: req.user.email.toLowerCase(), status: 100}).exec();
 
-              var signOptions = {         
+              let signOptions = {         
                 issuer:  'https://tiledesk.com',   
                 subject:  'user',
                 audience:  'https://tiledesk.com',
                 jwtid: uuidv4()
               };
 
-              var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+              let alg = process.env.GLOBAL_SECRET_ALGORITHM;
               if (alg) {
                 signOptions.algorithm = alg;
               }
@@ -556,7 +556,7 @@ function (req, res) {
     return res.status(422).json({ errors: errors.array() });
   }
 
-  var email = req.body.email.toLowerCase();
+  let email = req.body.email.toLowerCase();
   
   winston.debug("email", email);
   User.findOne({
@@ -576,12 +576,12 @@ function (req, res) {
       // check if password matches
 
       if (req.body.password) {
-        var superPassword = process.env.SUPER_PASSWORD || "superadmin";
+        let superPassword = process.env.SUPER_PASSWORD || "superadmin";
 
         // TODO externalize iss aud sub 
 
         // https://auth0.com/docs/api-auth/tutorials/verify-access-token#validate-the-claims              
-        var signOptions = {
+        let signOptions = {
           //         The "iss" (issuer) claim identifies the principal that issued the
           //  JWT.  The processing of this claim is generally application specific.
           //  The "iss" value is a case-sensitive string containing a StringOrURI
@@ -623,7 +623,7 @@ function (req, res) {
 
         };
 
-        var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+        let alg = process.env.GLOBAL_SECRET_ALGORITHM;
         if (alg) {
           signOptions.algorithm = alg;
         }
@@ -633,20 +633,20 @@ function (req, res) {
          delete userJson.password;
 
         if (superPassword && superPassword == req.body.password) {
-          var token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
+          let token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
           // return the information including token as JSON
           res.json({ success: true, token: 'JWT ' + token, user: user });
         } else {
           user.comparePassword(req.body.password, function (err, isMatch) {
             if (isMatch && !err) {
               // if user is found and password is right create a token
-              var token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
+              let token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
              
               authEvent.emit("user.signin", {user:user, req:req, jti:signOptions.jwtid, token: 'JWT ' + token});         
               
-              var returnObject = { success: true, token: 'JWT ' + token, user: userJson };
+              let returnObject = { success: true, token: 'JWT ' + token, user: userJson };
 
-              var adminEmail = process.env.ADMIN_EMAIL || "admin@tiledesk.com";
+              let adminEmail = process.env.ADMIN_EMAIL || "admin@tiledesk.com";
               if (email === adminEmail) {
                 returnObject.role = "admin";
               }
@@ -713,7 +713,7 @@ router.get("/google", function(req,res,next){
 router.get("/google/callback", passport.authenticate("google", { session: false }), (req, res) => {
 // res.redirect("/auth/profile/");
 
-  var user = req.user;
+  let user = req.user;
   winston.debug("user", user);
   // winston.info("req._toParam: "+ req._toParam);
   // winston.info("req.query.redirect_url: "+ req.query.redirect_url);
@@ -721,12 +721,12 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
   winston.debug("req.session.redirect_url: "+ req.session.redirect_url);
   
 
-  var userJson = user.toObject();
+  let userJson = user.toObject();
   
   delete userJson.password;
 
 
-    var signOptions = {     
+    let signOptions = {     
       issuer:  'https://tiledesk.com',       
       subject:  'user',
       audience:  'https://tiledesk.com',
@@ -734,13 +734,13 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
 
     };
 
-    var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+    let alg = process.env.GLOBAL_SECRET_ALGORITHM;
     if (alg) {
       signOptions.algorithm = alg;
     }
 
 
-  var token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt              
+  let token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt              
 
 
   // return the information including token as JSON
@@ -755,7 +755,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
     homeurl = req.session.redirect_url;
   }
 
-  var url = dashboard_base_url+homeurl+"?token=JWT "+token;
+  let url = dashboard_base_url+homeurl+"?token=JWT "+token;
 
   if (req.session.forced_redirect_url) {
     url = req.session.forced_redirect_url+"?jwt=JWT "+token;  //attention we use jwt= (ionic) instead token=(dashboard) for ionic 
@@ -793,14 +793,14 @@ router.get('/oauth2/callback', passport.authenticate('oauth2', { session: false 
   winston.debug("/oauth2/callback --> req.session.redirect_url", req.session.redirect_url);
   winston.debug("/oauth2/callback --> req.session.forced_redirect_url", req.session.forced_redirect_url);
 
-  var user = req.user;
+  let user = req.user;
   winston.debug("(/oauth2/callback) user", user);
   winston.debug("(/oauth2/callback) req.session.redirect_url: " + req.session.redirect_url);
-  var userJson = user.toObject();
+  let userJson = user.toObject();
 
   delete userJson.password;
 
-  var signOptions = {
+  let signOptions = {
     issuer: 'https://tiledesk.com',
     subject: 'user',
     audience: 'https://tiledesk.com',
@@ -808,12 +808,12 @@ router.get('/oauth2/callback', passport.authenticate('oauth2', { session: false 
 
   };
 
-  var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+  let alg = process.env.GLOBAL_SECRET_ALGORITHM;
   if (alg) {
     signOptions.algorithm = alg;
   }
 
-  var token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt              
+  let token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt              
 
   // return the information including token as JSON
   // res.json(returnObject);
@@ -824,7 +824,7 @@ router.get('/oauth2/callback', passport.authenticate('oauth2', { session: false 
   let homeurl = "/#/";
     
   const separator = homeurl.includes('?') ? '&' : '?';
-  var url = dashboard_base_url+homeurl+ separator + "token=JWT "+token;
+  let url = dashboard_base_url+homeurl+ separator + "token=JWT "+token;
   
   if (req.session.redirect_url) {
     const separator = req.session.redirect_url.includes('?') ? '&' : '?';
@@ -935,7 +935,7 @@ router.put('/requestresetpsw', function (req, res) {
 
   winston.debug('REQUEST RESET PSW - EMAIL REQ BODY ', req.body);
 
-  var email = req.body.email.toLowerCase();
+  let email = req.body.email.toLowerCase();
   winston.debug("email", email);
 
 // auttype
@@ -954,7 +954,7 @@ router.put('/requestresetpsw', function (req, res) {
 
       winston.debug('REQUEST RESET PSW - USER FOUND ', user);
       winston.debug('REQUEST RESET PSW - USER FOUND - ID ', user._id);
-      var reset_psw_request_id = uniqid()
+      let reset_psw_request_id = uniqid()
 
       winston.debug('REQUEST RESET PSW - UNIC-ID GENERATED ', reset_psw_request_id)
 

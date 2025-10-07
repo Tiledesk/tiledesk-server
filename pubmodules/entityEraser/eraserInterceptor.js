@@ -1,10 +1,10 @@
 
 const authEvent = require('../../event/authEvent');
 const projectEvent = require('../../event/projectEvent');
-var winston = require('../../config/winston');
-var Project = require("../../models/project");
-var Project_user = require("../../models/project_user");
-var RoleConstants = require("../../models/roleConstants");
+let winston = require('../../config/winston');
+let Project = require("../../models/project");
+let Project_user = require("../../models/project_user");
+let RoleConstants = require("../../models/roleConstants");
 
 class EntityInterceptor {
 
@@ -13,14 +13,14 @@ class EntityInterceptor {
 
     listen() {
 
-        var that = this;
+        let that = this;
         winston.info("EntityInterceptor listener start ");
         
 
         authEvent.on('user.delete',  function(data) {          
 
-            var userid = data.user.id;
-            var query = { id_user: userid,  role: { $in : [RoleConstants.OWNER]} } ;
+            let userid = data.user.id;
+            let query = { id_user: userid,  role: { $in : [RoleConstants.OWNER]} } ;
 
             winston.debug("query: ", query);
 
@@ -53,5 +53,5 @@ class EntityInterceptor {
     
 }
 
-var entityInterceptor = new EntityInterceptor();
+let entityInterceptor = new EntityInterceptor();
 module.exports = entityInterceptor;

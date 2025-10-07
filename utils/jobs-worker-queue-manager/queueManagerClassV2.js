@@ -1,6 +1,6 @@
-var amqp = require('amqplib/callback_api');
+let amqp = require('amqplib/callback_api');
 
-var listeners = [];
+let listeners = [];
 
 
 class QueueManager {
@@ -40,7 +40,7 @@ constructor(url, options) {
 
 
 connect(callback) {
-  var that = this;
+  let that = this;
   // console.log("[JobWorker] connect", this.url);
   // return new Promise(function (resolve, reject) {
     amqp.connect(this.url, function(err, conn) {
@@ -88,7 +88,7 @@ close(callback) {
 }
 
 whenConnected(callback) {
-  var that = this;
+  let that = this;
   // that.startPublisher(callback);
   that.startPublisher();
   that.startWorker(callback);
@@ -96,7 +96,7 @@ whenConnected(callback) {
 
 
 startPublisher(callback) {
-  var that = this;
+  let that = this;
   that.amqpConn.createConfirmChannel(function (err, ch) {
     if (that.closeOnErr(err)) return;
     ch.on("error", function (err) {
@@ -110,7 +110,7 @@ startPublisher(callback) {
     that.pubChannel = ch;
     // console.log("[JobWorker] that.pubChannel",that.pubChannel);
     // while (true) {
-    //   var m = that.offlinePubQueue.shift();
+    //   let m = that.offlinePubQueue.shift();
     //   if (!m) break;
     //   that.publish(m[0], m[1], m[2]);
     // }
@@ -124,7 +124,7 @@ startPublisher(callback) {
 
 // method to publish a message, will queue messages internally if the connection is down and resend later
 publish(exchange, routingKey, content, callback) {
-  var that = this;
+  let that = this;
   if (that.debug) {console.log("[JobWorker] that", that);}
   if (that.debug) {console.log("[JobWorker] that.pubChannel", that.pubChannel);}
   that.pubChannel.publish(exchange, routingKey, content, { persistent: false },
@@ -156,9 +156,9 @@ publish(exchange, routingKey, content, callback) {
 }
 
 // A worker that acks messages only if processed succesfully
-// var channel;
+// let channel;
 startWorker(callback) {
-  var that = this;
+  let that = this;
 
     that.amqpConn.createChannel(function(err, ch) {
       if (that.closeOnErr(err)) return;
@@ -239,7 +239,7 @@ processMsg2(msg) {
     // if (this.debug) {console.log("Got msg2:"+ JSON.stringify(message_string) +  " topic:" + topic);}
     // console.log("Got msg2:"+ JSON.stringify(message_string) +  " topic:" + topic);
 
-    var fdata = JSON.parse(message_string)
+    let fdata = JSON.parse(message_string)
 
     // if (this.debug) {console.log("Got msg3:"+ fdata.function +  " fdata.function:",  fdata.payload);}
 
@@ -247,9 +247,9 @@ processMsg2(msg) {
 
     /*
 
-    // var fields = Object.keys(fdata.payload).map((key) => [key, fdata.payload[key]]);
+    // let fields = Object.keys(fdata.payload).map((key) => [key, fdata.payload[key]]);
     
-    // var fields = Object.keys(fdata.payload)
+    // let fields = Object.keys(fdata.payload)
 
     // if (this.debug) {console.log("Got fields:"+ fields );
 
@@ -258,25 +258,25 @@ processMsg2(msg) {
     */
    
     if (fdata.function) {
-      var fn = new Function("payload", fdata.function);
+      let fn = new Function("payload", fdata.function);
 
       // if (this.debug) {console.log("Got fn:"+ fn);}
 
     /*  
-      // var fn = new Function(fields, fdata.function);
+      // let fn = new Function(fields, fdata.function);
       
       // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function
-      // var fn = new Function("name",'if (this.debug) {console.log("ciao: " + name);');
+      // let fn = new Function("name",'if (this.debug) {console.log("ciao: " + name);');
       // fn("andrea")
 
-      // var dataArray = Object.keys(fdata.payload).map(function(k){return fdata.payload[k]});
+      // let dataArray = Object.keys(fdata.payload).map(function(k){return fdata.payload[k]});
       // if (this.debug) {console.log("Got dataArray:", dataArray );
 
       // fn(dataArray);
     */
 
 
-      var ret = fn(fdata.payload)
+      let ret = fn(fdata.payload)
       // if (this.debug) {console.log("Got ret:"+ ret);}
       // console.log("Got ret:"+ ret);
 
@@ -300,7 +300,7 @@ processMsg2(msg) {
   // if (this.debug) {console.log("listeners.length:" + listeners.length);}
 
   if (listeners && listeners.length>0) {
-    for( var i = 0; i< listeners.length; i++) {
+    for( let i = 0; i< listeners.length; i++) {
       // if (this.debug) {console.log("listeners[i]:" + listeners[i]);}
       listeners[i](fdata);
     }
@@ -311,7 +311,7 @@ processMsg2(msg) {
 // processMsg(msg) {
 //   if (this.debug) {console.log("processMsg msg:", msg);
 
-//   var that = this;
+//   let that = this;
 //   that.work(msg, function(ok) {
 //     try {
 //       if (ok)

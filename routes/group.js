@@ -1,8 +1,8 @@
-var express = require('express');
-var router = express.Router();
-var Group = require("../models/group");
-var groupEvent = require("../event/groupEvent");
-var winston = require('../config/winston');
+let express = require('express');
+let router = express.Router();
+let Group = require("../models/group");
+let groupEvent = require("../event/groupEvent");
+let winston = require('../config/winston');
 const departmentService = require('../services/departmentService');
 
 
@@ -10,7 +10,7 @@ const departmentService = require('../services/departmentService');
 router.post('/', function (req, res) {
 
   winston.debug('SAVE GROUP ', req.body);
-  var newGroup = new Group({
+  let newGroup = new Group({
     name: req.body.name,
     members: req.body.members,
     trashed: false,
@@ -35,7 +35,7 @@ router.put('/:groupid', function (req, res) {
 
   winston.debug(req.body);
 
-  var update = {};
+  let update = {};
   if (req.body.name!=undefined) {
     update.name = req.body.name;
   }
@@ -108,7 +108,7 @@ router.put('/disable/:groupid', async (req, res) => {
 
 //   winston.debug(req.body);
 
-//   var update = {};
+//   let update = {};
   
 //     update.name = req.body.name;
 //     update.members = req.body.members;
@@ -197,7 +197,7 @@ router.get('/', function (req, res) {
 
   winston.debug("req projectid", req.projectid);
 
-  var query = { "id_project": req.projectid, trashed: false };
+  let query = { "id_project": req.projectid, trashed: false };
 
   if (req.query.member) {
     query.members = { $in : req.query.member }

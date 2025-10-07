@@ -1,9 +1,9 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
 
 
-var RequesterSchema = new Schema({
+let RequesterSchema = new Schema({
   ref: {
     type: Schema.Types.ObjectId,
     // ref: 'department',
@@ -14,7 +14,7 @@ var RequesterSchema = new Schema({
     // required: true
   }
 });
-var requester = mongoose.model('requester', RequesterSchema);
+let requester = mongoose.model('requester', RequesterSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   requester.syncIndexes();

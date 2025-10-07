@@ -1,8 +1,8 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
-var userService = require('../services/userService');
-var projectService = require('../services/projectService');
+let userService = require('../services/userService');
+let projectService = require('../services/projectService');
 
 let log = false;
 
@@ -11,13 +11,13 @@ let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
-var fs = require('fs');
+let fs = require('fs');
 const path = require('path');
 
 // chai.config.includeStack = true;
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 chai.use(chaiHttp);
 
@@ -27,8 +27,8 @@ describe('KbSettingsRoute', () => {
 
         it('createKbSettings', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -73,8 +73,8 @@ describe('KbSettingsRoute', () => {
 
         it('createKbSettingsIfNotExists', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -104,8 +104,8 @@ describe('KbSettingsRoute', () => {
 
         it('addKbToKbSettings', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -164,8 +164,8 @@ describe('KbSettingsRoute', () => {
 
         it('updateKbSettings', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -206,8 +206,8 @@ describe('KbSettingsRoute', () => {
 
         // it('deleteKbFromList', (done) => {
 
-        //     var email = "test-signup-" + Date.now() + "@email.com";
-        //     var pwd = "pwd";
+        //     let email = "test-signup-" + Date.now() + "@email.com";
+        //     let pwd = "pwd";
 
         //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
         //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -273,8 +273,8 @@ describe('KbSettingsRoute', () => {
         // THE FOLLOWING TEST REQUIRES REAL REQUESTS
         // it('start scrape', (done) => {
 
-        //     var email = "test-signup-" + Date.now() + "@email.com";
-        //     var pwd = "pwd";
+        //     let email = "test-signup-" + Date.now() + "@email.com";
+        //     let pwd = "pwd";
 
         //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
         //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -326,8 +326,8 @@ describe('KbSettingsRoute', () => {
 
         // it('start scrape error - invalid key', (done) => {
 
-        //     var email = "test-signup-" + Date.now() + "@email.com";
-        //     var pwd = "pwd";
+        //     let email = "test-signup-" + Date.now() + "@email.com";
+        //     let pwd = "pwd";
 
         //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
         //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -379,8 +379,8 @@ describe('KbSettingsRoute', () => {
 
         // it('start scrape error - missing parameter', (done) => {
 
-        //     var email = "test-signup-" + Date.now() + "@email.com";
-        //     var pwd = "pwd";
+        //     let email = "test-signup-" + Date.now() + "@email.com";
+        //     let pwd = "pwd";
 
         //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
         //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -430,8 +430,8 @@ describe('KbSettingsRoute', () => {
 
         // it('check status error - missing parameter', (done) => {
 
-        //     var email = "test-signup-" + Date.now() + "@email.com";
-        //     var pwd = "pwd";
+        //     let email = "test-signup-" + Date.now() + "@email.com";
+        //     let pwd = "pwd";
 
         //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
         //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -481,8 +481,8 @@ describe('KbSettingsRoute', () => {
 
         // it('checkstatuserror - no db created for', (done) => {
 
-        //     var email = "test-signup-" + Date.now() + "@email.com";
-        //     var pwd = "pwd";
+        //     let email = "test-signup-" + Date.now() + "@email.com";
+        //     let pwd = "pwd";
 
         //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
         //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -530,8 +530,8 @@ describe('KbSettingsRoute', () => {
         
         // it('qa error', (done) => {
 
-        //     var email = "test-signup-" + Date.now() + "@email.com";
-        //     var pwd = "pwd";
+        //     let email = "test-signup-" + Date.now() + "@email.com";
+        //     let pwd = "pwd";
 
         //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
         //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {

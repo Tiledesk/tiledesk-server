@@ -1,6 +1,6 @@
-var express = require('express');
-var router = express.Router();
-var winston = require('../config/winston');
+let express = require('express');
+let router = express.Router();
+let winston = require('../config/winston');
 
 router.get('/headers', function(req, res) {
   winston.info("req.headers", req.headers);

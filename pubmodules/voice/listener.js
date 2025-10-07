@@ -1,6 +1,6 @@
 const voice = require("@tiledesk/tiledesk-vxml-connector");
-var winston = require('../../config/winston');
-var configGlobal = require('../../config/global');
+let winston = require('../../config/winston');
+let configGlobal = require('../../config/global');
 const mongoose = require("mongoose");
 
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
@@ -16,19 +16,19 @@ class Listener {
             winston.debug("Voice config databaseUri: " + config.databaseUri);
         }
 
-        var pooling_delay = process.env.BASE_POOLING_DELAY || 250;
+        let pooling_delay = process.env.BASE_POOLING_DELAY || 250;
         winston.debug("Pooling_delay: "+ pooling_delay);
 
-        var max_polling_time = process.env.MAX_POOLING_TIME || 30000;
+        let max_polling_time = process.env.MAX_POOLING_TIME || 30000;
         winston.debug("Pooling_delay: "+ pooling_delay);
 
-        var port = process.env.CACHE_REDIS_PORT || 6379;
+        let port = process.env.CACHE_REDIS_PORT || 6379;
         winston.debug("Redis port: "+ port);
 
-        var host = process.env.CACHE_REDIS_HOST || "127.0.0.1"
+        let host = process.env.CACHE_REDIS_HOST || "127.0.0.1"
         winston.debug("Redis host: "+ host);
 
-        var password = process.env.CACHE_REDIS_PASSWORD;
+        let password = process.env.CACHE_REDIS_PASSWORD;
         winston.debug("Redis password: "+ password);
 
         let brand_name = null;
@@ -61,6 +61,6 @@ class Listener {
     }
 }
 
-var listener = new Listener();
+let listener = new Listener();
 
 module.exports = listener;

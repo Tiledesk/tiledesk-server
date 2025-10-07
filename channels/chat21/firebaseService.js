@@ -1,7 +1,7 @@
-var admin = require('./firebaseConnector');
+let admin = require('./firebaseConnector');
 
 
-var winston = require('../../config/winston');
+let winston = require('../../config/winston');
 
 class FirebaseService {
 
@@ -34,7 +34,7 @@ class FirebaseService {
 
 }
 
-var firebaseService = new FirebaseService();
+let firebaseService = new FirebaseService();
 
 
 module.exports = firebaseService;

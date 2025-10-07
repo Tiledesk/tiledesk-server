@@ -1,31 +1,31 @@
-var express = require('express');
-var router = express.Router();
-var Request = require("../../models/request");
-var requestService = require('../../services/requestService');
-var messageService = require('../../services/messageService');
-var leadService = require('../../services/leadService');
-var eventService = require('../../pubmodules/events/eventService');
-var Project_user = require("../../models/project_user");
-var RequestConstants = require("../../models/requestConstants");
+let express = require('express');
+let router = express.Router();
+let Request = require("../../models/request");
+let requestService = require('../../services/requestService');
+let messageService = require('../../services/messageService');
+let leadService = require('../../services/leadService');
+let eventService = require('../../pubmodules/events/eventService');
+let Project_user = require("../../models/project_user");
+let RequestConstants = require("../../models/requestConstants");
 
-var cacheUtil = require('../../utils/cacheUtil');
-var cacheEnabler = require("../../services/cacheEnabler");
+let cacheUtil = require('../../utils/cacheUtil');
+let cacheEnabler = require("../../services/cacheEnabler");
 
 
-var mongoose = require('mongoose');
-var winston = require('../../config/winston');
-var MessageConstants = require("../../models/messageConstants");
-var ProjectUserUtil = require("../../utils/project_userUtil");
-var RequestUtil = require("../../utils/requestUtil");
+let mongoose = require('mongoose');
+let winston = require('../../config/winston');
+let MessageConstants = require("../../models/messageConstants");
+let ProjectUserUtil = require("../../utils/project_userUtil");
+let RequestUtil = require("../../utils/requestUtil");
 const authEvent = require('../../event/authEvent');
 
-var syncJoinAndLeaveGroupEvent =  false;
+let syncJoinAndLeaveGroupEvent =  false;
 if (process.env.SYNC_JOIN_LEAVE_GROUP_EVENT === true || process.env.SYNC_JOIN_LEAVE_GROUP_EVENT ==="true") {
   syncJoinAndLeaveGroupEvent = true;
 }
 winston.info("Chat21 Sync JoinAndLeave Support Group Event: " + syncJoinAndLeaveGroupEvent);
 
-var allowReopenChat =  false;   //It's work only with firebase chat engine
+let allowReopenChat =  false;   //It's work only with firebase chat engine
 if (process.env.ALLOW_REOPEN_CHAT === true || process.env.ALLOW_REOPEN_CHAT ==="true") {
   allowReopenChat = true;
 }
@@ -50,14 +50,14 @@ router.post('/', function (req, res) {
 
     winston.debug("event_type", "new-message");
 
-    var message = req.body.data;
+    let message = req.body.data;
     
     winston.debug("message text: " + message.text);
 
 
     // before request_id id_project unique commented
     /*
-    var projectid;
+    let projectid;
     if (message.attributes) {            
       projectid = message.attributes.projectId;
       winston.debug("chat21 projectid", projectid);
@@ -97,19 +97,19 @@ router.post('/', function (req, res) {
 
             winston.debug("request not exists with request_id: " + message.recipient);
 
-            var departmentid = "default";
+            let departmentid = "default";
 
 
-            var language = message.language;
+            let language = message.language;
             winston.debug("chat21 language", language);
 
-            var sourcePage;
-            var client;
-            var userEmail;
-            var userFullname;
-            var projectid;  // before request_id id_project unique - commented
+            let sourcePage;
+            let client;
+            let userEmail;
+            let userFullname;
+            let projectid;  // before request_id id_project unique - commented
 
-            var requestStatus = undefined;
+            let requestStatus = undefined;
 
             if (message.attributes) {
 
@@ -162,7 +162,7 @@ router.post('/', function (req, res) {
 
 
 
-            var leadAttributes = message.attributes;
+            let leadAttributes = message.attributes;
             leadAttributes["senderAuthInfo"] = message.senderAuthInfo;
 
             // winston.debug("userEmail is defined");
@@ -170,7 +170,7 @@ router.post('/', function (req, res) {
             return leadService.createIfNotExistsWithLeadId(message.sender, userFullname, userEmail, projectid, null, leadAttributes)
               .then(function (createdLead) {
 
-                var rAttributes = message.attributes;
+                let rAttributes = message.attributes;
                 rAttributes["senderAuthInfo"] = message.senderAuthInfo;
                 winston.debug("rAttributes", rAttributes);
 
@@ -179,10 +179,10 @@ router.post('/', function (req, res) {
 
                 // message.sender is the project_user id created with firebase custom auth
 
-                var isObjectId = mongoose.Types.ObjectId.isValid(message.sender);
+                let isObjectId = mongoose.Types.ObjectId.isValid(message.sender);
                 winston.debug("isObjectId:" + isObjectId);
 
-                var queryProjectUser = { id_project: projectid, status: "active" };
+                let queryProjectUser = { id_project: projectid, status: "active" };
 
                 if (isObjectId) {
                   queryProjectUser.id_user = message.sender;
@@ -196,7 +196,7 @@ router.post('/', function (req, res) {
                   // .cache(cacheUtil.defaultTTL, projectid+":project_users:request_id:"+requestid)
                   .exec(function (err, project_user) {
 
-                    var project_user_id = null;
+                    let project_user_id = null;
 
                     if (err) {
                       winston.error("Error getting the project_user_id", err);
@@ -212,7 +212,7 @@ router.post('/', function (req, res) {
                     }
 
 
-                    // var auto_close;
+                    // let auto_close;
 
                     // // qui projecy nn c'è devi leggerlo
                     // // if (req.project.attributes.auto_close === false) {
@@ -220,7 +220,7 @@ router.post('/', function (req, res) {
                     // // }
 
 
-                    var new_request = {
+                    let new_request = {
                       request_id: message.recipient, project_user_id: project_user_id, lead_id: createdLead._id, id_project: projectid, first_text: message.text,
                       departmentid: departmentid, sourcePage: sourcePage, language: language, userAgent: client, status: requestStatus, createdBy: undefined,
                       attributes: rAttributes, subject: undefined, preflight: false, channel: undefined, location: undefined,
@@ -237,7 +237,7 @@ router.post('/', function (req, res) {
                       // departmentid, sourcePage, language, client, requestStatus, null, rAttributes).then(function (savedRequest) {
 
 
-                      var messageId = undefined;
+                      let messageId = undefined;
                       if (message.attributes && message.attributes.tiledesk_message_id) {
                         messageId = message.attributes.tiledesk_message_id;
                       }
@@ -271,7 +271,7 @@ router.post('/', function (req, res) {
 
             winston.debug("request  exists", request.toObject());
 
-            // var projectid;
+            // let projectid;
             // if (message.attributes) {
         
             //   projectid = message.attributes.projectId;
@@ -288,8 +288,8 @@ router.post('/', function (req, res) {
               return res.status(400).send({success: false, msg: "recipient not starts with support-group. Not a support message"});
             }
         
-            var messageId = undefined;
-            var language = undefined;
+            let messageId = undefined;
+            let language = undefined;
             if (message.attributes) {
               if (message.attributes.tiledesk_message_id) {
                 messageId = message.attributes.tiledesk_message_id;
@@ -345,13 +345,13 @@ router.post('/', function (req, res) {
     } else if (req.body.event_type == "conversation-archived" || req.body.event_type == "deleted-conversation" ) {
       winston.debug("event_type deleted-conversation");
 
-      var conversation = req.body.data;
+      let conversation = req.body.data;
       winston.debug("conversation",conversation);
 
-      var user_id = req.body.user_id;
+      let user_id = req.body.user_id;
       winston.debug("user_id: "+user_id);
 
-      var recipient_id = req.body.convers_with;
+      let recipient_id = req.body.convers_with;
 
       if (!recipient_id && req.body.recipient_id) { //back compatibility
         recipient_id = req.body.recipient_id;
@@ -377,9 +377,9 @@ router.post('/', function (req, res) {
 
                 // prendi id progetto dal recipient_id e nn da attributes. facciamo release intermedia nel cloud con solo questa modifica
 
-              var projectId = RequestUtil.getProjectIdFromRequestId(recipient_id);
+              let projectId = RequestUtil.getProjectIdFromRequestId(recipient_id);
 
-              var isObjectId = mongoose.Types.ObjectId.isValid(projectId);
+              let isObjectId = mongoose.Types.ObjectId.isValid(projectId);
               winston.debug("isObjectId:"+ isObjectId);
 
               winston.debug("attributes",conversation.attributes);
@@ -395,7 +395,7 @@ router.post('/', function (req, res) {
                 return res.status(500).send({success: false, msg: "Error projectid is not presents in attributes " });
               }
               
-              var query = {request_id: recipient_id, id_project: projectId};
+              let query = {request_id: recipient_id, id_project: projectId};
               winston.debug('query:'+ projectId);
               
               winston.debug('conversation-archived Request.findOne(query);:');
@@ -458,13 +458,13 @@ router.post('/', function (req, res) {
         return res.status(200).send({success: true, msg: "syncJoinAndLeaveGroupEvent is disabled" });
       }
 
-      var data = req.body.data;
+      let data = req.body.data;
       //winston.debug("data",data);
 
-      var group = data.group;
+      let group = data.group;
       // winston.debug("group",group);
 
-      var new_member = req.body.member_id;
+      let new_member = req.body.member_id;
       winston.debug("new_member: " + new_member);
 
       if (new_member=="system") {
@@ -472,10 +472,10 @@ router.post('/', function (req, res) {
         return res.status(400).send({success: false, msg: "new_member "+ new_member+ " not added to participants" });
       }
 
-      var request_id = req.body.group_id;
+      let request_id = req.body.group_id;
       winston.debug("request_id: " + request_id);
 
-      var id_project;
+      let id_project;
       if (group && group.attributes) {
         id_project = group.attributes.projectId;
       }else {
@@ -535,20 +535,20 @@ router.post('/', function (req, res) {
 
 
 
-    var data = req.body.data;
+    let data = req.body.data;
     // winston.debug("data",data);
 
-    var group = data.group;
+    let group = data.group;
     winston.debug("group",group);
 
-    var new_member = req.body.member_id;
+    let new_member = req.body.member_id;
     winston.debug("new_member",new_member);
 
-    var request_id = req.body.group_id;
+    let request_id = req.body.group_id;
     winston.debug("request_id", request_id);
 
 
-    var id_project;
+    let id_project;
       if (group && group.attributes) {
         id_project = group.attributes.projectId;
       } else {
@@ -579,13 +579,13 @@ router.post('/', function (req, res) {
     }
 
 
-      var conversation = req.body.data; 
+      let conversation = req.body.data; 
       // winston.debug("conversation",conversation);
 
-      var user_id = req.body.user_id;
+      let user_id = req.body.user_id;
       winston.debug("user_id",user_id);
 
-      var recipient_id = req.body.recipient_id;
+      let recipient_id = req.body.recipient_id;
       winston.debug("recipient_id",recipient_id);
 
      
@@ -609,7 +609,7 @@ router.post('/', function (req, res) {
       // quando scrivo viene cancellato archived e nuovo messaggio crea conv ma senza project id... lineare che è cosi
       // si verifica solo se admin (da ionic ) archivia di nuovo senza che widget abbia scritto nulla (widget risetta projectid in properties)
 
-      var id_project;
+      let id_project;
       if (conversation && conversation.attributes) {
         id_project = conversation.attributes.projectId;
       }else {
@@ -635,10 +635,10 @@ else if (req.body.event_type == "typing-start") {
   winston.debug("typing-start req.body",req.body);
 
 
-  var recipient_id = req.body.recipient_id;
+  let recipient_id = req.body.recipient_id;
   winston.debug("recipient_id",recipient_id);
 
-  var writer_id = req.body.writer_id;
+  let writer_id = req.body.writer_id;
   winston.debug("writer_id",writer_id);
   
 
@@ -646,7 +646,7 @@ else if (req.body.event_type == "typing-start") {
     winston.debug("not saving system typings");
     return res.status(400).send({success: false, msg: "not saving system typings" });
   }
-  var data = req.body.data;
+  let data = req.body.data;
   winston.debug("data",data);
 
   if (!recipient_id.startsWith("support-group")){
@@ -674,10 +674,10 @@ else if (req.body.event_type == "typing-start") {
       return res.status(500).send({success: false, msg: 'Writer  writer_id starts with bot_' });
   }
 
-  var isObjectId = mongoose.Types.ObjectId.isValid(writer_id);
+  let isObjectId = mongoose.Types.ObjectId.isValid(writer_id);
   winston.debug("isObjectId:"+ isObjectId);
 
-  var queryProjectUser = {id_project: request.id_project, status: "active"};
+  let queryProjectUser = {id_project: request.id_project, status: "active"};
 
   if (isObjectId) {
     queryProjectUser.id_user = writer_id;
@@ -695,7 +695,7 @@ else if (req.body.event_type == "typing-start") {
     if (!pu) {
       return winston.warn("Project_user for typing not found", queryProjectUser);
     }
-    var attr = {recipient_id: recipient_id, writer_id:writer_id, data: data};
+    let attr = {recipient_id: recipient_id, writer_id:writer_id, data: data};
 
 
     //       emit(name, attributes, id_project, project_user, createdBy, status, user) {
@@ -722,20 +722,20 @@ else if (req.body.event_type == "presence-change") {
   winston.debug("req.body", req.body);
   
 
-  var data = req.body.data;
+  let data = req.body.data;
   winston.debug("data", data);
   
-  var user_id = req.body.user_id;
+  let user_id = req.body.user_id;
   winston.debug("user_id: "+ user_id);
 
-  var presence = req.body.presence;
+  let presence = req.body.presence;
   winston.debug("presence: "+  presence);
 
 
-  var isObjectId = mongoose.Types.ObjectId.isValid(user_id);
+  let isObjectId = mongoose.Types.ObjectId.isValid(user_id);
   winston.debug("isObjectId:"+ isObjectId);
 
-  var queryProjectUser = {status: "active"};
+  let queryProjectUser = {status: "active"};
 
   if (isObjectId) {
     queryProjectUser.id_user = user_id;
@@ -761,7 +761,7 @@ else if (req.body.event_type == "presence-change") {
 
     project_users.forEach(project_user => { 
       winston.debug("project_user:", project_user);
-      var update = {status:presence};
+      let update = {status:presence};
       update.changedAt = new Date();
 
       project_user.presence = update
@@ -794,7 +794,7 @@ else if (req.body.event_type == "presence-change") {
                   } else {
 
                     winston.debug("updatedProject_userPopulated:", updatedProject_userPopulated);
-                    var pu = updatedProject_userPopulated.toJSON();
+                    let pu = updatedProject_userPopulated.toJSON();
           
                     // urgente Cannot read property '_id' of null at /usr/src/app/channels/chat21/chat21WebHook.js:663:68 a
                     if (!updatedProject_userPopulated.id_project) {

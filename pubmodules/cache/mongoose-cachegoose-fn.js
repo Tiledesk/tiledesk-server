@@ -1,22 +1,22 @@
- var requestEvent = require("../../event/requestEvent");   
- var messageEvent = require("../../event/messageEvent");   
- var projectEvent = require("../../event/projectEvent");   
- var botEvent = require("../../event/botEvent");   
+ let requestEvent = require("../../event/requestEvent");   
+ let messageEvent = require("../../event/messageEvent");   
+ let projectEvent = require("../../event/projectEvent");   
+ let botEvent = require("../../event/botEvent");   
  const faqBotEvent = require('../../event/faqBotEvent');
- var departmentEvent = require("../../event/departmentEvent");   
- var authEvent = require("../../event/authEvent");   
- var labelEvent = require("../../event/labelEvent");
- var integrationEvent = require("../../event/integrationEvent");
+ let departmentEvent = require("../../event/departmentEvent");   
+ let authEvent = require("../../event/authEvent");   
+ let labelEvent = require("../../event/labelEvent");
+ let integrationEvent = require("../../event/integrationEvent");
 
- var triggerEventEmitter = require("../trigger/event/triggerEventEmitter");
- var subscriptionEvent = require("../../event/subscriptionEvent");   
+ let triggerEventEmitter = require("../trigger/event/triggerEventEmitter");
+ let subscriptionEvent = require("../../event/subscriptionEvent");   
 
- var winston = require('../../config/winston');
+ let winston = require('../../config/winston');
 
- var cachegoose = require('cachegoose');
+ let cachegoose = require('cachegoose');
 
- var cacheUtil = require('../../utils/cacheUtil');
- var RoleConstants = require("../../models/roleConstants");
+ let cacheUtil = require('../../utils/cacheUtil');
+ let RoleConstants = require("../../models/roleConstants");
 
  
  async function del(client, key, callback) {
@@ -41,12 +41,12 @@
     //     return callback(error);
     // });
 
-    var res = await client.del(key)
+    let res = await client.del(key)
     winston.debug("result: "+ res)
     if (res) {
         return callback(null, res); 
     } else {
-        var error = "error";
+        let error = "error";
         return callback(error);
     }
  }
@@ -55,7 +55,7 @@
 
     projectEvent.on("project.create", function(project) {
         setImmediate(() => {
-            var key = "projects:id:"+project.id;
+            let key = "projects:id:"+project.id;
             winston.verbose("Creating cache for project.create with key: " + key);
             client.set(key, project, cacheUtil.longTTL, (err, reply) => {
                 winston.verbose("Created cache for project.create",{err:err});
@@ -75,7 +75,7 @@
 
     projectEvent.on("project.update", function(project) {
         setImmediate(() => {
-            var key = "projects:id:"+project.id;
+            let key = "projects:id:"+project.id;
             winston.verbose("Updating cache for project.update with key: " + key);
             client.set(key, project, cacheUtil.longTTL, (err, reply) => {
                 winston.verbose("Updated cache for project.update",{err:err});
@@ -100,7 +100,7 @@
 
     projectEvent.on("project.delete", function(project) {
         setImmediate(() => {
-            var key = "projects:id:"+project.id;
+            let key = "projects:id:"+project.id;
             winston.verbose("Deleting cache for project.delete with key: " + key);
             // found del
             del(client._cache._engine.client, key, function (err, reply) {  //tested
@@ -125,7 +125,7 @@
 
     projectEvent.on("project.downgrade", function(project) {
         setImmediate(() => {
-            var key = "projects:id:"+project.id;
+            let key = "projects:id:"+project.id;
             winston.verbose("Updating cache for project.downgrade with key: " + key);
 
             client.set(key, project, cacheUtil.longTTL, (err, reply) => {
@@ -155,9 +155,9 @@
     authEvent.on('project_user.update', function(data) {
         setImmediate(() => {
 
-            var project_user = data.updatedProject_userPopulated;
+            let project_user = data.updatedProject_userPopulated;
 
-            var key = project_user.id_project+":project_users:id:"+project_user.id;
+            let key = project_user.id_project+":project_users:id:"+project_user.id;
             winston.verbose("Updating cache for project_user.update with key: " + key);
             client.set(key, project_user, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Updated cache for project_user.update",reply);
@@ -165,7 +165,7 @@
             });
 
             if (project_user.id_user) {
-                var key = project_user.id_project+":project_users:iduser:"+project_user.id_user;
+                let key = project_user.id_project+":project_users:iduser:"+project_user.id_user;
                 winston.verbose("Updating cache for project_user.update with key: " + key);
                 client.set(key, project_user, cacheUtil.defaultTTL, (err, reply) => {
                     winston.debug("Updated cache for project_user.update",reply);
@@ -174,7 +174,7 @@
             }
 
             if (project_user.uuid_user) {
-                var key = project_user.id_project+":project_users:uuid_user:"+project_user.uuid_user;
+                let key = project_user.id_project+":project_users:uuid_user:"+project_user.uuid_user;
                 winston.verbose("Updating cache for project_user.update with key: " + key);
                 client.set(key, project_user, cacheUtil.defaultTTL, (err, reply) => {
                     winston.debug("Updated cache for project_user.update",reply);
@@ -184,21 +184,21 @@
             
 
 
-            var role = project_user.role;
+            let role = project_user.role;
 
-            var TEAMMATE_ROLES =  {       
+            let TEAMMATE_ROLES =  {       
                 "agent": ["guest","user","agent"],
                 "admin": ["guest","user","agent", "admin",],
                 "owner": ["guest","user","agent", "admin", "owner"],
             }
             // controllare bene
 
-            var hierarchicalRoles = TEAMMATE_ROLES[role];
+            let hierarchicalRoles = TEAMMATE_ROLES[role];
             winston.debug("hierarchicalRoles", hierarchicalRoles);
         
             if ( hierarchicalRoles && hierarchicalRoles.includes(role)) {
 
-                var key = project_user.id_project+":project_users:role:teammate:"+project_user.id;
+                let key = project_user.id_project+":project_users:role:teammate:"+project_user.id;
                 winston.verbose("Updating cache for project_user.update with key: " + key);
                 client.set(key, project_user, cacheUtil.defaultTTL, (err, reply) => {
                     winston.debug("Updated cache for project_user.update",reply);
@@ -226,9 +226,9 @@
 
     authEvent.on('user.signup', function(data) {
         setImmediate(() => {
-            var user = data.savedUser;
+            let user = data.savedUser;
 
-            var key = "users:id:"+user.id;
+            let key = "users:id:"+user.id;
             winston.verbose("Creating cache for user.signup with key: " + key);
             client.set(key, user, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for user.signup",reply);
@@ -236,7 +236,7 @@
             });
 
             // NOT IN USE (TESTED)
-            // var key = "users:email:"+user.email;
+            // let key = "users:email:"+user.email;
             // winston.verbose("Creating cache for user.signup with key: " + key);
             // client.set(key, user, cacheUtil.defaultTTL, (err, reply) => {
             //     winston.debug("Created cache for user.signup",reply);
@@ -248,9 +248,9 @@
 
     authEvent.on('user.update', function(data) {
         setImmediate(() => {
-            var user = data.updatedUser;
+            let user = data.updatedUser;
 
-            var key = "users:id:"+user.id;
+            let key = "users:id:"+user.id;
             winston.verbose("Updating cache for user.update with key: " + key);
             client.set(key, user, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Updated cache for user.update",reply);
@@ -258,7 +258,7 @@
             });
 
             // NOT IN USE (TESTED)
-            // var key = "users:email:"+user.email;
+            // let key = "users:email:"+user.email;
             // winston.verbose("Updating cache for user.update with key: " + key);
             // client.set(key, user, cacheUtil.defaultTTL, (err, reply) => {
             //     winston.debug("Updated cache for user.update",reply);
@@ -269,9 +269,9 @@
    
     authEvent.on('user.delete', function(data) {
         setImmediate(() => {
-            var user = data.user;
+            let user = data.user;
 
-            var key = "users:id:"+user.id;
+            let key = "users:id:"+user.id;
             winston.verbose("Deleting cache for user.delete with key: " + key);
             // found del
             del(client._cache._engine.client, key, function (err, reply) {  //tested
@@ -281,7 +281,7 @@
             });
 
             // NOT IN USE (TESTED)
-            // var key = "users:email:"+user.email;
+            // let key = "users:email:"+user.email;
             // winston.verbose("Deleting cache for user.delete with key: " + key);
             // client.del(key, (err, reply) => {
             //     winston.debug("Deleted cache for user.delete",reply);
@@ -295,7 +295,7 @@
 
     requestEvent.on("request.create.simple", function(request) {
         setImmediate(() => {
-            var key = request.id_project+":requests:id:"+request.id+":simple";
+            let key = request.id_project+":requests:id:"+request.id+":simple";
             winston.verbose("Creating cache for request.create.simple with key: " + key);
 
             client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
@@ -304,7 +304,7 @@
             });
 
 
-            var key = "requests:request_id:"+request.request_id+":simple";  //without project for chat21 webhook
+            let key = "requests:request_id:"+request.request_id+":simple";  //without project for chat21 webhook
             winston.verbose("Creating cache for request.create.simple without project with key : " + key);
 
             client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
@@ -312,7 +312,7 @@
                 winston.verbose("Created cache for request.create.simple",{err:err});
             });
 
-            var key = request.id_project+":requests:request_id:"+request.request_id+":simple";
+            let key = request.id_project+":requests:request_id:"+request.request_id+":simple";
             winston.verbose("Creating cache for request.create.simple with key: " + key);
             client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for request.create.simple",reply);
@@ -323,7 +323,7 @@
     });
 
     function invalidatRequestSimple(client, project_id, rid, request_id) {
-        var key = project_id+":requests:id:"+rid+":simple";
+        let key = project_id+":requests:id:"+rid+":simple";
         winston.verbose("Deleting cache for widgets with key: " + key);
 
         // found del
@@ -359,7 +359,7 @@
 
     requestEvent.on("request.create", function(request) {
         setImmediate(() => {
-            var key = request.id_project+":requests:id:"+request.id;
+            let key = request.id_project+":requests:id:"+request.id;
             winston.verbose("Creating cache for request.create with key: " + key);
 
             client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
@@ -367,7 +367,7 @@
                 winston.verbose("Created cache for request.create",{err:err});
             });
 
-            var key = request.id_project+":requests:request_id:"+request.request_id;
+            let key = request.id_project+":requests:request_id:"+request.request_id;
             winston.verbose("Creating cache for request.create with key: " + key);
             client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for request.create",reply);
@@ -389,14 +389,14 @@
 
     requestEvent.on("request.update", function(request) {  
         setImmediate(() => {
-            var key = request.id_project+":requests:id:"+request.id;
+            let key = request.id_project+":requests:id:"+request.id;
             winston.verbose("Creating cache for request.update with key: " + key);
             client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for request.update",reply);
                 winston.verbose("Created cache for request.update",{err:err});
             });
 
-            var key = request.id_project+":requests:request_id:"+request.request_id;
+            let key = request.id_project+":requests:request_id:"+request.request_id;
             winston.verbose("Creating cache for request.update with key: " + key);
             client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for request.update",reply);
@@ -419,14 +419,14 @@
 
     requestEvent.on("request.close", function(request) { 
         setImmediate(() => {
-            var key = request.id_project+":requests:id:"+request.id;
+            let key = request.id_project+":requests:id:"+request.id;
             winston.verbose("Creating cache for request.close with key: " + key);
             client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for request.close",reply);
                 winston.verbose("Created cache for request.close",{err:err});
             });
 
-            var key = request.id_project+":requests:request_id:"+request.request_id;
+            let key = request.id_project+":requests:request_id:"+request.request_id;
             winston.verbose("Creating cache for request.close with key: " + key);
             client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for request.close",reply);
@@ -452,13 +452,13 @@
 // non serve tanto
     // messageEvent.on("message.create", function(message) { 
     //     setImmediate(() => {
-    //         var key = message.id_project+":requests:id:"+message.request._id + ":messages:id:" + message._id;
+    //         let key = message.id_project+":requests:id:"+message.request._id + ":messages:id:" + message._id;
     //         winston.verbose("Creating cache for message.create with key: " + key);
     //         client.set(key, message, cacheUtil.defaultTTL, (err, reply) => {
     //             winston.verbose("Created cache for message.create",{err:err, reply:reply});
     //         });
 
-    //         var key = message.id_project+":requests:request_id:"+message.request.request_id + ":messages:id:" + message._id;        
+    //         let key = message.id_project+":requests:request_id:"+message.request.request_id + ":messages:id:" + message._id;        
     //         winston.verbose("Creating cache for message.create with key: " + key);
     //         client.set(key, message, cacheUtil.defaultTTL, (err, reply) => {
     //             winston.verbose("Created cache for message.create",{err:err, reply:reply});
@@ -473,7 +473,7 @@
             let clonedbot = Object.assign({}, faq_kb);
             delete clonedbot.secret;
 
-            var key = faq_kb.id_project+":faq_kbs:id:"+faq_kb._id;
+            let key = faq_kb.id_project+":faq_kbs:id:"+faq_kb._id;
             winston.verbose("Creating cache for faq_kb.create with key: " + key);
             client.set(key, clonedbot, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for faq_kb.create",reply);
@@ -490,7 +490,7 @@
 
     botEvent.on("faqbot.update", function(faq_kb) { 
         setImmediate(() => {
-            var key = faq_kb.id_project+":faq_kbs:id:"+faq_kb._id;
+            let key = faq_kb.id_project+":faq_kbs:id:"+faq_kb._id;
             winston.verbose("Creating cache for faq_kb.update with key: " + key);
             client.set(key, faq_kb, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for faq_kb.create",reply);
@@ -527,7 +527,7 @@
 
     botEvent.on("faqbot.delete", function(faq_kb) {   //LOGIC deletion for chatbot is used
         setImmediate(() => {
-            var key = faq_kb.id_project+":faq_kbs:id:"+faq_kb._id;
+            let key = faq_kb.id_project+":faq_kbs:id:"+faq_kb._id;
             winston.verbose("Deleting cache for faqbot.delete with key: " + key);
             // found del
             del(client._cache._engine.client, key, function (err, reply) {  //tested
@@ -597,7 +597,7 @@
 
     departmentEvent.on("department.create", function(department) {
         setImmediate(() => {
-            var key = department.id_project+":departments:id:"+department._id;
+            let key = department.id_project+":departments:id:"+department._id;
             winston.verbose("Creating cache for department.create with key: " + key);
             client.set(key, department, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for department.create",reply);
@@ -622,7 +622,7 @@
 
     departmentEvent.on("department.update", function(department) {  
         setImmediate(() => {
-            var key = department.id_project+":departments:id:"+department._id;
+            let key = department.id_project+":departments:id:"+department._id;
             winston.verbose("Creating cache for department.update with key: " + key);
             client.set(key, department, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for department.update",reply);
@@ -646,7 +646,7 @@
 
     departmentEvent.on("department.delete", function(department) { 
         setImmediate(() => {
-            var key = department.id_project+":departments:id:"+department._id;
+            let key = department.id_project+":departments:id:"+department._id;
             winston.verbose("Deleting cache for department.delete with key: " + key);
             // found del
             del(client._cache._engine.client, key, function (err, reply) {  //tested
@@ -674,7 +674,7 @@
         setImmediate(() => {    
 
             // TODO COMMENTA NON USATO
-            // var key = label.id_project+":labels:query:*";        
+            // let key = label.id_project+":labels:query:*";        
             // winston.verbose("Deleting cache for label.create with key: " + key);
             // client.del(key, function (err, reply) {
             //     winston.debug("Deleted cache for label.create",reply);
@@ -689,7 +689,7 @@
         setImmediate(() => {    
 
             // TODO COMMENTA NON USATO
-            // var key = label.id_project+":labels:query:*";        
+            // let key = label.id_project+":labels:query:*";        
             // winston.verbose("Deleting cache for label.update with key: " + key);
             // client.del(key, function (err, reply) {
             //     winston.debug("Deleted cache for label.update",reply);
@@ -703,7 +703,7 @@
         setImmediate(() => {       
             
             // TODO COMMENTA NON USATO
-            // var key = label.id_project+":labels:query:*";        
+            // let key = label.id_project+":labels:query:*";        
             // winston.verbose("Deleting cache for label.clone with key: " + key);
             // client.del(key, function (err, reply) {
             //     winston.debug("Deleted cache for label.clone",reply);
@@ -717,7 +717,7 @@
         setImmediate(() => {         
 
             // TODO COMMENTA NON USATO
-            // var key = label.id_project+":labels:query:*";        
+            // let key = label.id_project+":labels:query:*";        
             // winston.verbose("Deleting cache for label.delete with key: " + key);
             // client.del(key, function (err, reply) {
             //     winston.debug("Deleted cache for label.delete",reply);
@@ -746,9 +746,9 @@
                 
                 //TODO i think you must clone trigger and remove .secret before caching
                 // q.cache(cacheUtil.longTTL, id_project+":subscriptions:event:"+event);  //CACHE_SUBSCRIPTION
-                var key =subscription.id_project+":subscriptions:event:"+subscription.event;    
+                let key =subscription.id_project+":subscriptions:event:"+subscription.event;    
 
-                // var key =trigger.id_project+":subscriptions:*";        //wildcardcache //tested
+                // let key =trigger.id_project+":subscriptions:*";        //wildcardcache //tested
                 winston.verbose("Deleting cache for subscription.create with key: " + key);
                 // found del
                 del(client._cache._engine.client, key, function (err, reply) {  //tested
@@ -761,9 +761,9 @@
     
         subscriptionEvent.on('subscription.update', function(subscription) {   
             setImmediate(() => {         
-                var key =subscription.id_project+":subscriptions:event:"+subscription.event;    
+                let key =subscription.id_project+":subscriptions:event:"+subscription.event;    
 
-                // var key =subscription.id_project+":subscriptions:*";         //wildcardcache //tested
+                // let key =subscription.id_project+":subscriptions:*";         //wildcardcache //tested
                 winston.verbose("Deleting cache for subscription.update with key: " + key);
                 // found del
                 del(client._cache._engine.client, key, function (err, reply) {  //tested
@@ -776,9 +776,9 @@
     
         subscriptionEvent.on("subscription.delete", function(subscription) {     
             setImmediate(() => {         
-                var key =subscription.id_project+":subscriptions:event:"+subscription.event;    
+                let key =subscription.id_project+":subscriptions:event:"+subscription.event;    
 
-                // var key =subscription.id_project+":subscriptions:*";          //wildcardcache //tested
+                // let key =subscription.id_project+":subscriptions:*";          //wildcardcache //tested
                 winston.verbose("Deleting cache for subscription.delete with key: " + key);
                 // found del
                 del(client._cache._engine.client, key, function (err, reply) {  //tested
@@ -795,9 +795,9 @@
     if (triggerEventEmitter) {
         triggerEventEmitter.on('trigger.create', function(trigger) {   
             setImmediate(() => {    
-                var key =trigger.id_project+":triggers:trigger.key:"+trigger.trigger.key;
+                let key =trigger.id_project+":triggers:trigger.key:"+trigger.trigger.key;
 
-                // var key =trigger.id_project+":triggers:*";         //wildcardcache //tested
+                // let key =trigger.id_project+":triggers:*";         //wildcardcache //tested
                 winston.verbose("Deleting cache for trigger.create with key: " + key);
                 // found del
                 del(client._cache._engine.client, key, function (err, reply) {  //tested
@@ -810,8 +810,8 @@
     
         triggerEventEmitter.on('trigger.update', function(trigger) {   
             setImmediate(() => {         
-                var key =trigger.id_project+":triggers:trigger.key:"+trigger.trigger.key;
-                // var key =trigger.id_project+":triggers:*";         //wildcardcache //tested
+                let key =trigger.id_project+":triggers:trigger.key:"+trigger.trigger.key;
+                // let key =trigger.id_project+":triggers:*";         //wildcardcache //tested
 
                 winston.verbose("Deleting cache for trigger.update with key: " + key);
                 // found del
@@ -825,9 +825,9 @@
     
         triggerEventEmitter.on("trigger.delete", function(trigger) {     
             setImmediate(() => {      
-                var key =trigger.id_project+":triggers:trigger.key:"+trigger.trigger.key;
+                let key =trigger.id_project+":triggers:trigger.key:"+trigger.trigger.key;
 
-                // var key =trigger.id_project+":triggers:*";          //wildcardcache
+                // let key =trigger.id_project+":triggers:*";          //wildcardcache
                 winston.verbose("Deleting cache for trigger.delete with key: " + key);
                 // found del
                 del(client._cache._engine.client, key, function (err, reply) {  //tested
@@ -890,19 +890,19 @@
 module.exports = function (mongoose, option) {
 
     if (process.env.CACHE_ENABLED == true || process.env.CACHE_ENABLED == "true") {
-        var engine = process.env.CACHE_ENGINE;
+        let engine = process.env.CACHE_ENGINE;
         winston.debug("Redis engine: "+ engine);
 
-        // var endPoint = process.env.CACHE_REDIS_ENDPOINT || "redis://127.0.0.1:6379";
+        // let endPoint = process.env.CACHE_REDIS_ENDPOINT || "redis://127.0.0.1:6379";
         // winston.debug("Redis endpoint: "+ endPoint);
 
-        var port = process.env.CACHE_REDIS_PORT || 6379;
+        let port = process.env.CACHE_REDIS_PORT || 6379;
         winston.debug("Redis port: "+ port);
 
-        var host = process.env.CACHE_REDIS_HOST || "127.0.0.1"
+        let host = process.env.CACHE_REDIS_HOST || "127.0.0.1"
         winston.debug("Redis host: "+ host);
 
-        var password = process.env.CACHE_REDIS_PASSWORD;
+        let password = process.env.CACHE_REDIS_PASSWORD;
         winston.debug("Redis password: "+ password);
         
         winston.info("Mongoose Cachegoose fn initialized, engine: " + engine + ", port: "+ port + ", host: "+ host  + " defaultTTL: " +cacheUtil.defaultTTL + ", password: "+ password);
@@ -920,7 +920,7 @@ module.exports = function (mongoose, option) {
             password: password           
           });
 
-        var client = cachegoose._cache;
+        let client = cachegoose._cache;
         // winston.info("client client", client);
         // winston.info("client _cache._engine", client._cache._engine);
         // winston.info("client _cache._engine.client", client._cache._engine.client);

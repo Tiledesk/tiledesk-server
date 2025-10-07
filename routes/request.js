@@ -1,28 +1,28 @@
-var express = require('express');
-var router = express.Router();
-var Request = require("../models/request");
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema,
+let express = require('express');
+let router = express.Router();
+let Request = require("../models/request");
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema,
   ObjectId = Schema.ObjectId;
-var moment = require('moment');
-var requestService = require('../services/requestService');
-var emailService = require('../services/emailService');
+let moment = require('moment');
+let requestService = require('../services/requestService');
+let emailService = require('../services/emailService');
 
-var departmentService = require('../services/departmentService');
-var winston = require('../config/winston');
+let departmentService = require('../services/departmentService');
+let winston = require('../config/winston');
 const requestEvent = require('../event/requestEvent');
-var Subscription = require("../models/subscription");
-var leadService = require('../services/leadService');
-var messageService = require('../services/messageService');
+let Subscription = require("../models/subscription");
+let leadService = require('../services/leadService');
+let messageService = require('../services/messageService');
 const uuidv4 = require('uuid/v4');
-var MessageConstants = require("../models/messageConstants");
-var Message = require("../models/message");
-var cacheUtil = require('../utils/cacheUtil');
-var RequestConstants = require("../models/requestConstants");
-var cacheEnabler = require("../services/cacheEnabler");
-var Project_user = require("../models/project_user");
-var Lead = require("../models/lead");
-var UIDGenerator = require("../utils/UIDGenerator");
+let MessageConstants = require("../models/messageConstants");
+let Message = require("../models/message");
+let cacheUtil = require('../utils/cacheUtil');
+let RequestConstants = require("../models/requestConstants");
+let cacheEnabler = require("../services/cacheEnabler");
+let Project_user = require("../models/project_user");
+let Lead = require("../models/lead");
+let UIDGenerator = require("../utils/UIDGenerator");
 let { Publisher } = require("@tiledesk/tiledesk-multi-worker");
 
 csv = require('csv-express');
@@ -35,7 +35,7 @@ const { Scheduler } = require('../services/Scheduler');
 const faq_kb = require('../models/faq_kb');
 //const JobManager = require('../utils/jobs-worker-queue-manager-v2/JobManagerV2');
 
-// var messageService = require('../services/messageService');
+// let messageService = require('../services/messageService');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 
@@ -58,7 +58,7 @@ jobManager.connectAndStartPublisher((status, error) => {
 
 router.post('/simple', [check('first_text').notEmpty()], async (req, res) => {
 
-  var startTimestamp = new Date();
+  let startTimestamp = new Date();
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -69,7 +69,7 @@ router.post('/simple', [check('first_text').notEmpty()], async (req, res) => {
     winston.debug("req.projectuser", req.projectuser);
   }
 
-  var project_user = req.projectuser;
+  let project_user = req.projectuser;
 })
 
 // undocumented, used by test
@@ -81,7 +81,7 @@ router.post('/',
   ],
   async (req, res) => {
 
-    var startTimestamp = new Date();
+    let startTimestamp = new Date();
     winston.debug("request create timestamp: " + startTimestamp);
 
     winston.debug("req.body", req.body);
@@ -99,24 +99,24 @@ router.post('/',
       winston.debug("req.projectuser", req.projectuser);
     }
 
-    var project_user = req.projectuser;
+    let project_user = req.projectuser;
 
-    var sender = req.body.sender;
-    var fullname = req.body.senderFullname || req.user.fullName;
-    var email = req.body.email || req.user.email;
+    let sender = req.body.sender;
+    let fullname = req.body.senderFullname || req.user.fullName;
+    let email = req.body.email || req.user.email;
 
     let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
     winston.debug('messageStatus: ' + messageStatus);
 
-    var request_id = req.body.request_id || 'support-group-' + req.projectid + "-" + UIDGenerator.generate();
+    let request_id = req.body.request_id || 'support-group-' + req.projectid + "-" + UIDGenerator.generate();
     winston.debug('request_id: ' + request_id);
 
     if (sender) {
 
-      var isObjectId = mongoose.Types.ObjectId.isValid(sender);
+      let isObjectId = mongoose.Types.ObjectId.isValid(sender);
       winston.debug("isObjectId:" + isObjectId);
 
-      var queryProjectUser = { id_project: req.projectid, status: "active" };
+      let queryProjectUser = { id_project: req.projectid, status: "active" };
 
       if (isObjectId) {
         queryProjectUser.id_user = sender;
@@ -139,7 +139,7 @@ router.post('/',
         email = project_user.id_user.email;
         winston.debug("pu email: " + email);
       } else if (project_user.uuid_user) {
-        var lead = await Lead.findOne({ lead_id: project_user.uuid_user, id_project: req.projectid });
+        let lead = await Lead.findOne({ lead_id: project_user.uuid_user, id_project: req.projectid });
         winston.debug("lead: ", lead);
         if (lead) {
           fullname = lead.fullname;
@@ -163,7 +163,7 @@ router.post('/',
 
 
 
-        var new_request = {
+        let new_request = {
           request_id: request_id,
           project_user_id: req.projectuser._id,
           lead_id: createdLead._id,
@@ -202,7 +202,7 @@ router.post('/',
 
 
           winston.debug('res.json(savedRequest)');
-          var endTimestamp = new Date();
+          let endTimestamp = new Date();
           winston.verbose("request create end: " + (endTimestamp - startTimestamp));
           return res.json(savedRequest);
           // });
@@ -421,11 +421,11 @@ error: uncaughtException: Cannot set property 'participants' of null
 router.put('/:requestid/participants', function (req, res) {
   winston.debug("req.body", req.body);
 
-  var participants = [];
+  let participants = [];
   req.body.forEach(function (participant, index) {
     participants.push(participant);
   });
-  winston.debug("var participants", participants);
+  winston.debug("let participants", participants);
 
   //setParticipantsByRequestId(request_id, id_project, participants)
   return requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then(function (updatedRequest) {
@@ -598,18 +598,18 @@ router.put('/:requestid/agent', async (req, res) => {
   //route(request_id, departmentid, id_project) { 
 
 
-  var request = await Request.findOne({ "request_id": req.params.requestid, id_project: req.projectid })
+  let request = await Request.findOne({ "request_id": req.params.requestid, id_project: req.projectid })
     .exec();
 
   if (!request) {
     return res.status(404).send({ success: false, msg: 'Object not found.' });
   }
 
-  var departmentid = request.department;
+  let departmentid = request.department;
   winston.debug("departmentid before: " + departmentid);
 
   if (!departmentid) {
-    var defaultDepartment = await departmentService.getDefaultDepartment(req.projectid);
+    let defaultDepartment = await departmentService.getDefaultDepartment(req.projectid);
     winston.debug("defaultDepartment: ", defaultDepartment);
     departmentid = defaultDepartment.id;
   }
@@ -675,8 +675,8 @@ router.put('/:requestid/agent', async (req, res) => {
 
 
 router.patch('/:requestid/attributes', function (req, res) {
-  var data = req.body;
-  var id_project = req.projectid;
+  let data = req.body;
+  let id_project = req.projectid;
 
   // TODO use service method
 
@@ -703,7 +703,7 @@ router.patch('/:requestid/attributes', function (req, res) {
       winston.debug(" req attributes", request.attributes)
 
       Object.keys(data).forEach(function (key) {
-        var val = data[key];
+        let val = data[key];
         winston.debug("data attributes " + key + " " + val)
         request.attributes[key] = val;
       });
@@ -733,7 +733,7 @@ router.patch('/:requestid/attributes', function (req, res) {
 router.post('/:requestid/notes', async function (req, res) {
   
   let request_id = req.params.requestid
-  var note = {};
+  let note = {};
   note.text = req.body.text;
   note.createdBy = req.user.id;
 
@@ -912,11 +912,11 @@ router.post('/:requestid/followers',
 router.put('/:requestid/followers', function (req, res) {
   winston.debug("req.body", req.body);
 
-  var followers = [];
+  let followers = [];
   req.body.forEach(function (follower, index) {
     followers.push(follower);
   });
-  winston.debug("var followers", followers);
+  winston.debug("let followers", followers);
 
   // setFollowersByRequestId(request_id, id_project, newfollowers)
   return requestService.setFollowersByRequestId(req.params.requestid, req.projectid, followers).then(function (updatedRequest) {
@@ -1053,7 +1053,7 @@ router.delete('/:requestid/tag/:tag_id', async (req, res) => {
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.delete('/:requestid', function (req, res) {
 
-  var projectuser = req.projectuser;
+  let projectuser = req.projectuser;
 
 
   if (projectuser.role != "owner") {
@@ -1109,7 +1109,7 @@ router.delete('/:requestid', function (req, res) {
 
 router.delete('/id/:id', function (req, res) {
 
-  var projectuser = req.projectuser;
+  let projectuser = req.projectuser;
 
 
   if (projectuser.role != "owner") {
@@ -1148,12 +1148,11 @@ router.get('/', function (req, res, next) {
 
   const DEFAULT_LIMIT = 40;
   
-  var page = 0;
-  var limit = DEFAULT_LIMIT; // Number of request per page
-  var page = 0;
-  var skip = 0;
+  let page = 0;
+  let limit = DEFAULT_LIMIT; // Number of request per page
+  let skip = 0;
   let statusArray = [];
-  var projectuser = req.projectuser;
+  let projectuser = req.projectuser;
 
   if (req.query.limit) {
     limit = parseInt(req.query.limit);
@@ -1169,7 +1168,7 @@ router.get('/', function (req, res, next) {
   skip = page * limit;
 
   // Default query
-  var query = { "id_project": req.projectid, "status": { $lt: 1000, $nin: [50, 150] }, preflight: false };
+  let query = { "id_project": req.projectid, "status": { $lt: 1000, $nin: [50, 150] }, preflight: false };
 
   if (req.user instanceof Subscription) {
     // All request 
@@ -1195,7 +1194,7 @@ router.get('/', function (req, res, next) {
     query.$text = { "$search": req.query.full_text };
   }
 
-  var history_search = false;
+  let history_search = false;
 
   // Multiple status management
   if (req.query.status) {
@@ -1264,13 +1263,13 @@ router.get('/', function (req, res, next) {
   //fixato. secondo me qui manca un parentesi tonda per gli or
   if (history_search === true && req.project && req.project.profile && ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false))) {
 
-    var startdate = moment().subtract(14, "days").format("YYYY-MM-DD");
-    var enddate = moment().format("YYYY-MM-DD");
+    let startdate = moment().subtract(14, "days").format("YYYY-MM-DD");
+    let enddate = moment().format("YYYY-MM-DD");
 
     winston.debug('»»» REQUEST ROUTE - startdate ', startdate);
     winston.debug('»»» REQUEST ROUTE - enddate ', enddate);
 
-    var enddatePlusOneDay = moment(new Date()).add(1, 'days').toDate()
+    let enddatePlusOneDay = moment(new Date()).add(1, 'days').toDate()
     winston.debug('»»» REQUEST ROUTE - enddate + 1 days: ', enddatePlusOneDay);
 
     query.createdAt = { $gte: new Date(Date.parse(startdate)).toISOString(), $lte: new Date(enddatePlusOneDay).toISOString() }
@@ -1288,22 +1287,22 @@ router.get('/', function (req, res, next) {
 
     /**
      * USING TIMESTAMP  in MS    */
-    // var formattedStartDate = new Date(+req.query.start_date);
-    // var formattedEndDate = new Date(+req.query.end_date);
+    // let formattedStartDate = new Date(+req.query.start_date);
+    // let formattedEndDate = new Date(+req.query.end_date);
     // query.createdAt = { $gte: formattedStartDate, $lte: formattedEndDate }
 
     /**
      * USING MOMENT      */
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-    var endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    let startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    let endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
     winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED START DATE ', startDate);
     winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE ', endDate);
 
     // ADD ONE DAY TO THE END DAY
-    var date = new Date(endDate);
-    var newdate = new Date(date);
-    var endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
+    let date = new Date(endDate);
+    let newdate = new Date(date);
+    let endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
     winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE + 1 DAY ', endDate_plusOneDay);
 
     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString(), $lte: new Date(endDate_plusOneDay).toISOString() }
@@ -1311,9 +1310,9 @@ router.get('/', function (req, res, next) {
 
   } else if (req.query.start_date && !req.query.end_date) {
     winston.debug('REQUEST ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)');
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    let startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
-    var range = { $gte: new Date(Date.parse(startDate)).toISOString() };
+    let range = { $gte: new Date(Date.parse(startDate)).toISOString() };
     if (req.query.filterRangeField) {
       query[req.query.filterRangeField] = range;
     } else {
@@ -1367,17 +1366,17 @@ router.get('/', function (req, res, next) {
   }
 
 
-  var direction = -1; //-1 descending , 1 ascending
+  let direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
   }
 
-  var sortField = "createdAt";
+  let sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   }
 
-  var sortQuery = {};
+  let sortQuery = {};
   sortQuery[sortField] = direction;
 
   // VOICE FILTERS - Start
@@ -1411,7 +1410,7 @@ router.get('/', function (req, res, next) {
     query.draft = { $in: [false, null] }
   }
 
-  var projection = undefined;
+  let projection = undefined;
 
   if (req.query.full_text) {
     if (req.query.no_textscore != "true" && req.query.no_textscore != true) {
@@ -1422,7 +1421,7 @@ router.get('/', function (req, res, next) {
 
   winston.verbose('REQUEST ROUTE - REQUEST FIND QUERY ', query);
   
-  var q1 = Request.find(query, projection).
+  let q1 = Request.find(query, projection).
     skip(skip).limit(limit);
 
   if (req.query.no_populate != "true" && req.query.no_populate != true) {
@@ -1446,17 +1445,17 @@ router.get('/', function (req, res, next) {
   // TODO if ?onlycount=true do not perform find query but only 
   // set q1 to undefined; to skip query
 
-  var q2 = Request.countDocuments(query).exec();
+  let q2 = Request.countDocuments(query).exec();
 
   if (req.query.no_count && req.query.no_count == "true") {
     winston.info('REQUEST ROUTE - no_count ');
     q2 = 0;
   }
 
-  var promises = [ q1, q2 ];
+  let promises = [ q1, q2 ];
 
   Promise.all(promises).then(function (results) {
-    var objectToReturn = {
+    let objectToReturn = {
       perPage: limit,
       count: results[1],
       requests: results[0]
@@ -1487,7 +1486,7 @@ router.get('/', function (req, res, next) {
 
 //   const DEFAULT_LIMIT = 40;
 
-//   var limit = DEFAULT_LIMIT; // Number of request per page
+//   let limit = DEFAULT_LIMIT; // Number of request per page
 
 //   if (req.query.limit) {
 //     limit = parseInt(req.query.limit);
@@ -1497,19 +1496,19 @@ router.get('/', function (req, res, next) {
 //   }
 
 
-//   var page = 0;
+//   let page = 0;
 
 //   if (req.query.page) {
 //     page = req.query.page;
 //   }
 
-//   var skip = page * limit;
+//   let skip = page * limit;
 //   winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
 
 
-//   var query = { "id_project": req.projectid, "status": { $lt: 1000 }, preflight: false };
+//   let query = { "id_project": req.projectid, "status": { $lt: 1000 }, preflight: false };
 
-//   var projectuser = req.projectuser;
+//   let projectuser = req.projectuser;
 
 
 //   if (req.user instanceof Subscription) {
@@ -1542,7 +1541,7 @@ router.get('/', function (req, res, next) {
 //     query.$text = { "$search": req.query.full_text };
 //   }
 
-//   var history_search = false;
+//   let history_search = false;
 
 //   if (req.query.status) {
 //     winston.debug('req.query.status', req.query.status);
@@ -1613,17 +1612,17 @@ router.get('/', function (req, res, next) {
 //   if (history_search === true && req.project && req.project.profile && ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false))) {
 
 
-//     var startdate = moment().subtract(14, "days").format("YYYY-MM-DD");
+//     let startdate = moment().subtract(14, "days").format("YYYY-MM-DD");
 
-//     var enddate = moment().format("YYYY-MM-DD");
+//     let enddate = moment().format("YYYY-MM-DD");
 
 //     winston.debug('»»» REQUEST ROUTE - startdate ', startdate);
 //     winston.debug('»»» REQUEST ROUTE - enddate ', enddate);
 
-//     var enddatePlusOneDay = moment(new Date()).add(1, 'days').toDate()
+//     let enddatePlusOneDay = moment(new Date()).add(1, 'days').toDate()
 //     winston.debug('»»» REQUEST ROUTE - enddate + 1 days: ', enddatePlusOneDay);
 
-//     // var enddatePlusOneDay = "2019-09-17T00:00:00.000Z"
+//     // let enddatePlusOneDay = "2019-09-17T00:00:00.000Z"
 
 //     query.createdAt = { $gte: new Date(Date.parse(startdate)).toISOString(), $lte: new Date(enddatePlusOneDay).toISOString() }
 //     winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
@@ -1641,35 +1640,35 @@ router.get('/', function (req, res, next) {
 
 //     /**
 //      * USING TIMESTAMP  in MS    */
-//     // var formattedStartDate = new Date(+req.query.start_date);
-//     // var formattedEndDate = new Date(+req.query.end_date);
+//     // let formattedStartDate = new Date(+req.query.start_date);
+//     // let formattedEndDate = new Date(+req.query.end_date);
 //     // query.createdAt = { $gte: formattedStartDate, $lte: formattedEndDate }
 
 //     /**
 //      * USING MOMENT      */
-//     var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-//     var endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+//     let startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+//     let endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
 //     winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED START DATE ', startDate);
 //     winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE ', endDate);
 
 //     // ADD ONE DAY TO THE END DAY
-//     var date = new Date(endDate);
-//     var newdate = new Date(date);
-//     var endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
+//     let date = new Date(endDate);
+//     let newdate = new Date(date);
+//     let endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
 //     winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE + 1 DAY ', endDate_plusOneDay);
-//     // var endDate_plusOneDay =   moment('2018-09-03').add(1, 'd')
-//     // var endDate_plusOneDay =   endDate.add(1).day();
-//     // var toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
+//     // let endDate_plusOneDay =   moment('2018-09-03').add(1, 'd')
+//     // let endDate_plusOneDay =   endDate.add(1).day();
+//     // let toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
 
 //     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString(), $lte: new Date(endDate_plusOneDay).toISOString() }
 //     winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
 
 //   } else if (req.query.start_date && !req.query.end_date) {
 //     winston.debug('REQUEST ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)');
-//     var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+//     let startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
-//     var range = { $gte: new Date(Date.parse(startDate)).toISOString() };
+//     let range = { $gte: new Date(Date.parse(startDate)).toISOString() };
 //     if (req.query.filterRangeField) {
 //       query[req.query.filterRangeField] = range;
 //     } else {
@@ -1735,19 +1734,19 @@ router.get('/', function (req, res, next) {
 //   }
 
 
-//   var direction = -1; //-1 descending , 1 ascending
+//   let direction = -1; //-1 descending , 1 ascending
 //   if (req.query.direction) {
 //     direction = req.query.direction;
 //   }
 //   winston.debug("direction", direction);
 
-//   var sortField = "createdAt";
+//   let sortField = "createdAt";
 //   if (req.query.sort) {
 //     sortField = req.query.sort;
 //   }
 //   winston.debug("sortField", sortField);
 
-//   var sortQuery = {};
+//   let sortQuery = {};
 //   sortQuery[sortField] = direction;
 //   winston.debug("sort query", sortQuery);
 
@@ -1757,7 +1756,7 @@ router.get('/', function (req, res, next) {
 
 //   winston.debug('REQUEST ROUTE - REQUEST FIND ', query);
 
-//   var projection = undefined;
+//   let projection = undefined;
 
 //   if (req.query.full_text) {
 
@@ -1768,7 +1767,7 @@ router.get('/', function (req, res, next) {
 
 //   }
 //   // requestcachefarequi populaterequired
-//   var q1 = Request.find(query, projection).
+//   let q1 = Request.find(query, projection).
 //     skip(skip).limit(limit);
 
 
@@ -1813,20 +1812,20 @@ router.get('/', function (req, res, next) {
 //   // TODO if ?onlycount=true do not perform find query but only 
 //   // set q1 to undefined; to skip query
 
-//   var q2 = Request.countDocuments(query).exec();
+//   let q2 = Request.countDocuments(query).exec();
 
 //   if (req.query.no_count && req.query.no_count == "true") {
 //     winston.info('REQUEST ROUTE - no_count ');
 //     q2 = 0;
 //   }
 
-//   var promises = [
+//   let promises = [
 //     q1,
 //     q2
 //   ];
 
 //   Promise.all(promises).then(function (results) {
-//     var objectToReturn = {
+//     let objectToReturn = {
 //       perPage: limit,
 //       count: results[1],
 //       requests: results[0]
@@ -1856,19 +1855,19 @@ router.get('/csv', function (req, res, next) {
   winston.debug("req.query.sort", req.query.sort);
   winston.debug('REQUEST ROUTE - QUERY ', req.query)
 
-  var limit = 100000; // Number of request per page
-  var page = 0;
+  let limit = 100000; // Number of request per page
+  let page = 0;
 
   if (req.query.page) {
     page = req.query.page;
   }
 
-  var skip = page * limit;
+  let skip = page * limit;
   winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
 
   let statusArray = [];
 
-  var query = { "id_project": req.projectid };
+  let query = { "id_project": req.projectid };
 
   if (req.query.dept_id) {
     query.department = req.query.dept_id;
@@ -1936,53 +1935,53 @@ router.get('/csv', function (req, res, next) {
 
     /**
      * USING TIMESTAMP  in MS    */
-    // var formattedStartDate = new Date(+req.query.start_date);
-    // var formattedEndDate = new Date(+req.query.end_date);
+    // let formattedStartDate = new Date(+req.query.start_date);
+    // let formattedEndDate = new Date(+req.query.end_date);
     // query.createdAt = { $gte: formattedStartDate, $lte: formattedEndDate }
 
 
     /**
      * USING MOMENT      */
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-    var endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    let startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    let endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
     winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED START DATE ', startDate);
     winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE ', endDate);
 
     // ADD ONE DAY TO THE END DAY
-    var date = new Date(endDate);
-    var newdate = new Date(date);
-    var endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
+    let date = new Date(endDate);
+    let newdate = new Date(date);
+    let endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
     winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE + 1 DAY ', endDate_plusOneDay);
-    // var endDate_plusOneDay =   moment('2018-09-03').add(1, 'd')
-    // var endDate_plusOneDay =   endDate.add(1).day();
-    // var toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
+    // let endDate_plusOneDay =   moment('2018-09-03').add(1, 'd')
+    // let endDate_plusOneDay =   endDate.add(1).day();
+    // let toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
 
     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString(), $lte: new Date(endDate_plusOneDay).toISOString() }
     winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
 
   } else if (req.query.start_date && !req.query.end_date) {
     winston.debug('REQUEST ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)');
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    let startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString() };
     winston.debug('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
   }
   winston.debug("csv query", query);
 
-  var direction = 1; //-1 descending , 1 ascending
+  let direction = 1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
   }
   winston.debug("direction", direction);
 
-  var sortField = "createdAt";
+  let sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   }
   winston.debug("sortField", sortField);
 
-  var sortQuery = {};
+  let sortQuery = {};
   sortQuery[sortField] = direction;
 
   winston.debug("sort query", sortQuery);
@@ -2054,36 +2053,36 @@ router.get('/csv', function (req, res, next) {
 
       requests.forEach(function (element) {
 
-        var channel_name = "";
+        let channel_name = "";
         if (element.channel && element.channel.name) {
           channel_name = element.channel.name;
         }
         delete element.channel;
         element.channel_name = channel_name;
 
-        var department_name = "";
+        let department_name = "";
         if (element.department && element.department.name) {
           department_name = element.department.name;
         }
         delete element.department;
         element.department_name = department_name;
 
-        var lead_fullname = "";
+        let lead_fullname = "";
         if (element.lead && element.lead.fullname) {
           lead_fullname = element.lead.fullname
         }
         element.lead_fullname = lead_fullname;
 
 
-        var lead_email = "";
+        let lead_email = "";
         if (element.lead && element.lead.email) {
           lead_email = element.lead.email
         }
 
         element.lead_email = lead_email;
 
-        var tags = [];
-        var tagsString = "";
+        let tags = [];
+        let tagsString = "";
         if (element.tags && element.tags.length > 0) {
 
           element.tags.forEach(function (tag) {
@@ -2098,7 +2097,7 @@ router.get('/csv', function (req, res, next) {
         element.tags = tagsString;
 
 
-        // var participatingAgents = "";
+        // let participatingAgents = "";
         // if (element.participatingAgents && element.participatingAgents.length>0) {
         //   element.participatingAgents.forEach(function(agent) {                
         //     participatingAgents = participatingAgents + ", " + agent;
@@ -2297,7 +2296,7 @@ router.get('/count', async (req, res) => {
 
 router.get('/:requestid', function (req, res) {
 
-  var requestid = req.params.requestid;
+  let requestid = req.params.requestid;
   winston.debug("get request by id: " + requestid);
 
 

@@ -1,5 +1,5 @@
 
-var winston = require('./config/winston');
+let winston = require('./config/winston');
 
 class JobsManager {
     constructor(jobWorkerEnabled, geoService, botEvent, subscriptionNotifierQueued, botSubscriptionNotifier, updateLeadQueued) {
@@ -78,15 +78,15 @@ class JobsManager {
         this.activityArchiver.listen();
     }
 
-    listenWhatsappQueue(whatsappQueue) {
-        console.log("JobsManager listenWhatsappQueue started");
-        console.log("whatsappQueue is: ", whatsappQueue)
-        if ( this.jobWorkerEnabled == true) {
-            return winston.info("JobsManager jobWorkerEnabled is enabled. Skipping listener for Whatsapp Queue");  
-        }
-        // this.whatsappWorker = whatsappQueue;
-        // this.whatsappQueue.listen(); // oppure codice
-    }
+    // listenWhatsappQueue(whatsappQueue) {
+    //     console.log("JobsManager listenWhatsappQueue started");
+    //     console.log("whatsappQueue is: ", whatsappQueue)
+    //     if ( this.jobWorkerEnabled == true) {
+    //         return winston.info("JobsManager jobWorkerEnabled is enabled. Skipping listener for Whatsapp Queue");  
+    //     }
+    //     // this.whatsappWorker = whatsappQueue;
+    //     // this.whatsappQueue.listen(); // oppure codice
+    // }
 
     listenMultiWorker(multiWorkerQueue) {
         console.log("JobsManager multiWorkerQueue started");

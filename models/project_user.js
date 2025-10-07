@@ -1,15 +1,15 @@
 'use strict';
 
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
-var RoleConstants = require('./roleConstants');
-var PresenceSchema = require('./presence');
-var TagSchema = require("../models/tag");
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
+let RoleConstants = require('./roleConstants');
+let PresenceSchema = require('./presence');
+let TagSchema = require("../models/tag");
 
 
 
-  var Project_userSchema = new Schema({
+  let Project_userSchema = new Schema({
     id_project: {
       type: Schema.Types.ObjectId,
       ref: 'project',
@@ -105,7 +105,7 @@ Project_userSchema.virtual('isAuthenticated').get(function () {
 
 
 
-  // var query = { id_project: req.params.projectid, id_user: req.user._id};
+  // let query = { id_project: req.params.projectid, id_user: req.user._id};
   // if (req.user.sub && (req.user.sub=="userexternal" || req.user.sub=="guest")) {
   //   query = { id_project: req.params.projectid, uuid_user: req.user._id};
   // }

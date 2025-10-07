@@ -1,9 +1,9 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
 // mongoose.set('debug', true);
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 
-var AnalyticResultSchema = new Schema({
+let AnalyticResultSchema = new Schema({
   // _id: {
   //   type: String,
   //   required: true
@@ -14,7 +14,7 @@ var AnalyticResultSchema = new Schema({
   }}, { collection: 'requests' }
 );
 
-var analyticResult= mongoose.model('analyticResult', AnalyticResultSchema);
+let analyticResult= mongoose.model('analyticResult', AnalyticResultSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   analyticResult.syncIndexes();

@@ -1,5 +1,5 @@
-var dotenvPath = undefined;
-
+let dotenvPath = undefined;
+process.setMaxListeners(20);
 if (process.env.DOTENV_PATH) {
   dotenvPath = process.env.DOTENV_PATH;
   console.log("load dotenv form DOTENV_PATH", dotenvPath);
@@ -13,31 +13,31 @@ if (process.env.LOAD_DOTENV_SUBFOLDER ) {
 require('dotenv').config({ path: dotenvPath});
 
 
-var express = require('express');
-var path = require('path');
-// var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var morgan = require('morgan');
-var mongoose = require('mongoose');
+let express = require('express');
+let path = require('path');
+// let logger = require('morgan');
+let cookieParser = require('cookie-parser');
+let bodyParser = require('body-parser');
+let morgan = require('morgan');
+let mongoose = require('mongoose');
 
-var passport = require('passport');
+let passport = require('passport');
 require('./middleware/passport')(passport);
 
-var config = require('./config/database');
-var cors = require('cors');
-var Project = require("./models/project");
-var validtoken = require('./middleware/valid-token');
-var roleChecker = require('./middleware/has-role');
+let config = require('./config/database');
+let cors = require('cors');
+let Project = require("./models/project");
+let validtoken = require('./middleware/valid-token');
+let roleChecker = require('./middleware/has-role');
 
 const MaskData = require("maskdata");
-var winston = require('./config/winston');
+let winston = require('./config/winston');
 
 
 // DATABASE CONNECTION
 
 // https://bretkikehara.wordpress.com/2013/05/02/nodejs-creating-your-first-global-module/
-var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
+let databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
 
 if (!databaseUri) { //TODO??
   winston.warn('DATABASE_URI not specified, falling back to localhost.');
@@ -60,14 +60,14 @@ if (process.env.DISABLE_MONGO_PASSWORD_MASK ==true || process.env.DISABLE_MONGO_
 }
 
 
-var autoIndex = true;
+let autoIndex = true;
 if (process.env.MONGOOSE_AUTOINDEX) {
   autoIndex = process.env.MONGOOSE_AUTOINDEX;
 }
 
 winston.info("DB AutoIndex: " + autoIndex);
 
-var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex }, function(err) {
+let connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex }, function(err) {
   if (err) { 
     winston.error('Failed to connect to MongoDB on ' + databaseUri + " ", err);
     process.exit(1);
@@ -92,67 +92,67 @@ let tdCache = new TdCache({
 tdCache.connect();
 
 // ROUTES DECLARATION
-var troubleshooting = require('./routes/troubleshooting');
-var auth = require('./routes/auth');
-var authtest = require('./routes/authtest');
-var authtestWithRoleCheck = require('./routes/authtestWithRoleCheck');
+let troubleshooting = require('./routes/troubleshooting');
+let auth = require('./routes/auth');
+let authtest = require('./routes/authtest');
+let authtestWithRoleCheck = require('./routes/authtestWithRoleCheck');
 
-var lead = require('./routes/lead');
-var message = require('./routes/message');
-var messagesRootRoute = require('./routes/messagesRoot');
-var department = require('./routes/department');
-var group = require('./routes/group');
-var resthook = require('./routes/subscription');
-var tag = require('./routes/tag');
-var faq = require('./routes/faq');
-var faq_kb = require('./routes/faq_kb');
-var project = require('./routes/project');
-var project_user = require('./routes/project_user');
-var project_users_test = require('./routes/project_user_test');
-var request = require('./routes/request');
-// var setting = require('./routes/setting');
-var users = require('./routes/users');
-var usersUtil = require('./routes/users-util');
-var publicRequest = require('./routes/public-request');
-var userRequest = require('./routes/user-request');
-var publicAnalytics = require('./routes/public-analytics');
-var pendinginvitation = require('./routes/pending-invitation');
-var jwtroute = require('./routes/jwt');
-var key = require('./routes/key');
-var widgets = require('./routes/widget');
-var widgetsLoader = require('./routes/widgetLoader');
-var openai = require('./routes/openai');
-var llm = require('./routes/llm');
-var quotes = require('./routes/quotes');
-var integration = require('./routes/integration')
-var kbsettings = require('./routes/kbsettings');
-var kb = require('./routes/kb');
-var unanswered = require('./routes/unanswered');
+let lead = require('./routes/lead');
+let message = require('./routes/message');
+let messagesRootRoute = require('./routes/messagesRoot');
+let department = require('./routes/department');
+let group = require('./routes/group');
+let resthook = require('./routes/subscription');
+let tag = require('./routes/tag');
+let faq = require('./routes/faq');
+let faq_kb = require('./routes/faq_kb');
+let project = require('./routes/project');
+let project_user = require('./routes/project_user');
+let project_users_test = require('./routes/project_user_test');
+let request = require('./routes/request');
+// let setting = require('./routes/setting');
+let users = require('./routes/users');
+let usersUtil = require('./routes/users-util');
+let publicRequest = require('./routes/public-request');
+let userRequest = require('./routes/user-request');
+let publicAnalytics = require('./routes/public-analytics');
+let pendinginvitation = require('./routes/pending-invitation');
+let jwtroute = require('./routes/jwt');
+let key = require('./routes/key');
+let widgets = require('./routes/widget');
+let widgetsLoader = require('./routes/widgetLoader');
+let openai = require('./routes/openai');
+let llm = require('./routes/llm');
+let quotes = require('./routes/quotes');
+let integration = require('./routes/integration')
+let kbsettings = require('./routes/kbsettings');
+let kb = require('./routes/kb');
+let unanswered = require('./routes/unanswered');
 
-// var admin = require('./routes/admin');
-var faqpub = require('./routes/faqpub');
-var labels = require('./routes/labels');
-var fetchLabels = require('./middleware/fetchLabels');
-var cacheUtil = require("./utils/cacheUtil");
-var orgUtil = require("./utils/orgUtil");
-var images = require('./routes/images');
-var files = require('./routes/files');
-var campaigns = require('./routes/campaigns');
-var logs = require('./routes/logs');
-var requestUtilRoot = require('./routes/requestUtilRoot');
-var urls = require('./routes/urls');
-var email = require('./routes/email');
-var property = require('./routes/property');
-var segment = require('./routes/segment');
-var webhook = require('./routes/webhook');
-var webhooks = require('./routes/webhooks');
-var copilot = require('./routes/copilot');
+// let admin = require('./routes/admin');
+let faqpub = require('./routes/faqpub');
+let labels = require('./routes/labels');
+let fetchLabels = require('./middleware/fetchLabels');
+let cacheUtil = require("./utils/cacheUtil");
+let orgUtil = require("./utils/orgUtil");
+let images = require('./routes/images');
+let files = require('./routes/files');
+let campaigns = require('./routes/campaigns');
+let logs = require('./routes/logs');
+let requestUtilRoot = require('./routes/requestUtilRoot');
+let urls = require('./routes/urls');
+let email = require('./routes/email');
+let property = require('./routes/property');
+let segment = require('./routes/segment');
+let webhook = require('./routes/webhook');
+let webhooks = require('./routes/webhooks');
+let copilot = require('./routes/copilot');
 
-var bootDataLoader = require('./services/bootDataLoader');
-var settingDataLoader = require('./services/settingDataLoader');
-var schemaMigrationService = require('./services/schemaMigrationService');
-var RouterLogger = require('./models/routerLogger');
-var cacheEnabler = require("./services/cacheEnabler");
+let bootDataLoader = require('./services/bootDataLoader');
+let settingDataLoader = require('./services/settingDataLoader');
+let schemaMigrationService = require('./services/schemaMigrationService');
+let RouterLogger = require('./models/routerLogger');
+let cacheEnabler = require("./services/cacheEnabler");
 const session = require('express-session');
 const RedisStore = require("connect-redis").default
 const botEvent = require('./event/botEvent');
@@ -160,26 +160,26 @@ const botEvent = require('./event/botEvent');
 require('./services/mongoose-cache-fn')(mongoose);
 
 
-var subscriptionNotifier = require('./services/subscriptionNotifier');
+let subscriptionNotifier = require('./services/subscriptionNotifier');
 subscriptionNotifier.start();
 
-var subscriptionNotifierQueued = require('./services/subscriptionNotifierQueued');
+let subscriptionNotifierQueued = require('./services/subscriptionNotifierQueued');
 
 
-var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
+let botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start(); //queued but disabled
 
 botEvent.listen(); //queued but disabled
 
-var trainingService = require('./services/trainingService');
+let trainingService = require('./services/trainingService');
 trainingService.start();
 
 // job_here
 
-var geoService = require('./services/geoService');
+let geoService = require('./services/geoService');
 // geoService.listen(); //queued
 
-var updateLeadQueued = require('./services/updateLeadQueued');
+let updateLeadQueued = require('./services/updateLeadQueued');
 
 let JobsManager = require('./jobsManager');
 
@@ -191,29 +191,33 @@ winston.info("JobsManager jobWorkerEnabled: "+ jobWorkerEnabled);
 
 let jobsManager = new JobsManager(jobWorkerEnabled, geoService, botEvent, subscriptionNotifierQueued, botSubscriptionNotifier, updateLeadQueued);
 
-var faqBotHandler = require('./services/faqBotHandler');
+let faqBotHandler = require('./services/faqBotHandler');
 faqBotHandler.listen();
 
-var pubModulesManager = require('./pubmodules/pubModulesManager');
+let pubModulesManager = require('./pubmodules/pubModulesManager');
 pubModulesManager.init({express:express, mongoose:mongoose, passport:passport, databaseUri:databaseUri, routes:{}, jobsManager:jobsManager});
   
 jobsManager.listen(); //listen after pubmodules to enabled queued *.queueEnabled events
 
-let whatsappQueue = require('@tiledesk/tiledesk-whatsapp-jobworker');
-winston.info("whatsappQueue");
-jobsManager.listenWhatsappQueue(whatsappQueue);
+// let whatsappQueue = require('@tiledesk/tiledesk-whatsapp-jobworker');
+// winston.info("whatsappQueue");
+// jobsManager.listenWhatsappQueue(whatsappQueue);
 
-let multiWorkerQueue = require('@tiledesk/tiledesk-multi-worker');
-winston.info("multiWorkerQueue from App")
-jobsManager.listenMultiWorker(multiWorkerQueue);
+if (process.env.NODE_ENV !== 'test' && jobWorkerEnabled !== true) {
+  let multiWorkerQueue = require('@tiledesk/tiledesk-multi-worker');
+  winston.info("multiWorkerQueue from App")
+  jobsManager.listenMultiWorker(multiWorkerQueue);
+} else {
+  winston.info("Skipping multi-worker in test or when JOB_WORKER_ENABLED=true");
+}
 
-var channelManager = require('./channels/channelManager');
+let channelManager = require('./channels/channelManager');
 channelManager.listen(); 
 
-var IPFilter = require('./middleware/ipFilter');
+let IPFilter = require('./middleware/ipFilter');
 
 // job_here
-var BanUserNotifier = require('./services/banUserNotifier');
+let BanUserNotifier = require('./services/banUserNotifier');
 BanUserNotifier.listen();
 const { ChatbotService } = require('./services/chatbotService');
 const { QuoteManager } = require('./services/QuoteManager');
@@ -221,7 +225,7 @@ const { QuoteManager } = require('./services/QuoteManager');
 let qm = new QuoteManager({ tdCache: tdCache });
 qm.start();
 
-var modulesManager = undefined;
+let modulesManager = undefined;
 try {
   modulesManager = require('./services/modulesManager');
   modulesManager.init({express:express, mongoose:mongoose, passport:passport, routes: {departmentsRoute: department, projectsRoute: project, widgetsRoute: widgets} });
@@ -246,7 +250,7 @@ if (process.env.CREATE_INITIAL_DATA !== "false") {
 
 
 
-var app = express();
+let app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -261,7 +265,7 @@ app.set('quote_manager', qm);
 if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {  
   app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*"); //qui dice cequens attento
-    // var request_cors_header = req.headers[""]
+    // let request_cors_header = req.headers[""]
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, x-xsrf-token");
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
     next();
@@ -289,7 +293,7 @@ winston.debug("JSON_BODY_LIMIT : " + JSON_BODY_LIMIT);
 
 app.use(bodyParser.json({limit: JSON_BODY_LIMIT,
   verify: function (req, res, buf) {
-    // var url = req.originalUrl;
+    // let url = req.originalUrl;
     // if (url.indexOf('/stripe/')) {
       req.rawBody = buf.toString();
       winston.debug("bodyParser verify stripe", req.rawBody);
@@ -397,17 +401,17 @@ if (process.env.ROUTELOGGER_ENABLED==="true") {
     // winston.error("log ", req);
 
       try {
-        var projectid = req.projectid;
+        let projectid = req.projectid;
         winston.debug("RouterLogger projectIdSetter projectid:" + projectid);
 
-      var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
+      let fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
       winston.debug("fullUrl:"+ fullUrl);
       winston.debug(" req.get('host'):"+  req.get('host'));
      
       winston.debug("req.get('origin'):" + req.get('origin'));
       winston.debug("req.get('referer'):" + req.get('referer'));
 
-      var routerLogger = new RouterLogger({
+      let routerLogger = new RouterLogger({
         origin: req.get('origin'),
         fullurl: fullUrl,    
         url: req.originalUrl.split("?").shift(),    
@@ -438,8 +442,8 @@ app.get('/', function (req, res) {
 
 
 
-var projectIdSetter = function (req, res, next) {
-  var projectid = req.params.projectid;
+let projectIdSetter = function (req, res, next) {
+  let projectid = req.params.projectid;
   winston.debug("projectIdSetter projectid: "+ projectid);
 
   // if (projectid) {
@@ -452,8 +456,8 @@ var projectIdSetter = function (req, res, next) {
 
 
 
-var projectSetter = function (req, res, next) {
-  var projectid = req.params.projectid;
+let projectSetter = function (req, res, next) {
+  let projectid = req.params.projectid;
   winston.debug("projectSetter projectid:" + projectid);
 
   if (projectid) {
@@ -641,7 +645,7 @@ if (modulesManager) {
 // REENABLEIT
 // catch 404 and forward to error handler
 // app.use(function (req, res, next) {
-//   var err = new Error('Not Found');
+//   let err = new Error('Not Found');
 //   err.status = 404;
 //   next(err);
 // });

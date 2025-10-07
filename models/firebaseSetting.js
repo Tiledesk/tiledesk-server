@@ -1,7 +1,7 @@
-// var mongoose = require('mongoose');
-// var Schema = mongoose.Schema;
+// let mongoose = require('mongoose');
+// let Schema = mongoose.Schema;
 
-// var FirebaseSettingSchema = new Schema({
+// let FirebaseSettingSchema = new Schema({
   
 
 //   private_key: {

@@ -1,6 +1,6 @@
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 
-var Recaptcha = require('express-recaptcha').RecaptchaV3;
+let Recaptcha = require('express-recaptcha').RecaptchaV3;
 
 const recaptcha_key = process.env.RECAPTCHA_KEY;
 const recaptcha_secret = process.env.RECAPTCHA_SECRET;

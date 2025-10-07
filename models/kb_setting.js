@@ -1,9 +1,9 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
 let expireAfterSeconds = process.env.UNANSWERED_QUESTION_EXPIRATION_TIME || 7 * 24 * 60 * 60; // 7 days
 
-var EngineSchema = new Schema({
+let EngineSchema = new Schema({
   name: {
     type: String,
     required: true
@@ -28,7 +28,7 @@ var EngineSchema = new Schema({
   _id: false  // This is schema is always used as an embedded object inside NamespaceSchema
 })
 
-var NamespaceSchema = new Schema({
+let NamespaceSchema = new Schema({
   id_project: {
     type: String,
     required: true
@@ -61,7 +61,7 @@ var NamespaceSchema = new Schema({
   timestamps: true
 })
 
-var KBSchema = new Schema({
+let KBSchema = new Schema({
   id_project: {
     type: String,
     required: true,
@@ -158,7 +158,7 @@ const UnansweredQuestionSchema = new Schema({
 UnansweredQuestionSchema.index({ created_at: 1 }, { expireAfterSeconds: expireAfterSeconds }); // 30 days
 
 // DEPRECATED !! - Start
-var KBSettingSchema = new Schema({
+let KBSettingSchema = new Schema({
   id_project: {
     type: String,
     required: true,

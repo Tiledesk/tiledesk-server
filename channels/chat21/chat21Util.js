@@ -5,33 +5,33 @@
 class Chat21Util {
     
     getButtonFromText(message, bot, qna) { 
-            var that = this;
-            var text = message.text;
+            let that = this;
+            let text = message.text;
             return new Promise(function(resolve, reject) {
     
-                var repl_message = Object.assign({}, message);
+                let repl_message = Object.assign({}, message);
                
                 // cerca i bottoni eventualmente definiti
-                var button_pattern = /^\*.*/mg; // buttons are defined as a line starting with an asterisk
-                var text_buttons = text.match(button_pattern);
+                let button_pattern = /^\*.*/mg; // buttons are defined as a line starting with an asterisk
+                let text_buttons = text.match(button_pattern);
 
 
-                var image_pattern = /^\\image:.*/mg; 
-                var imagetext = text.match(image_pattern);
+                let image_pattern = /^\\image:.*/mg; 
+                let imagetext = text.match(image_pattern);
 
-                var webhook_pattern = /^\\webhook:.*/mg; 
-                var webhooktext = text.match(webhook_pattern);
+                let webhook_pattern = /^\\webhook:.*/mg; 
+                let webhooktext = text.match(webhook_pattern);
 
 
                 if (text_buttons) {
-                    var text_with_removed_buttons = text.replace(button_pattern,"").trim();
+                    let text_with_removed_buttons = text.replace(button_pattern,"").trim();
                     repl_message.text = text_with_removed_buttons
-                    var buttons = []
+                    let buttons = []
                     text_buttons.forEach(element => {
                     // console.log("button ", element)
-                    var remove_extra_from_button = /^\*/mg;
-                    var button_text = element.replace(remove_extra_from_button, "").trim()
-                    var button = {}
+                    let remove_extra_from_button = /^\*/mg;
+                    let button_text = element.replace(remove_extra_from_button, "").trim()
+                    let button = {}
                     button["type"] = "text"
                     button["value"] = button_text
                     buttons.push(button)
@@ -47,9 +47,9 @@ class Chat21Util {
     
                 
                 }  else if (imagetext && imagetext.length>0) {
-                    var imageurl = imagetext[0].replace("\\image:","").trim();
+                    let imageurl = imagetext[0].replace("\\image:","").trim();
                     // console.log("imageurl ", imageurl)
-                    var text_with_removed_image = text.replace(image_pattern,"").trim();
+                    let text_with_removed_image = text.replace(image_pattern,"").trim();
                     repl_message.text = text_with_removed_image + " " + imageurl
                     repl_message.metadata = {src: imageurl, width:200, height:200};
                     repl_message.type = "image";
@@ -58,7 +58,7 @@ class Chat21Util {
     
                
                 else if (webhooktext && webhooktext.length>0) {
-                    var webhookurl = webhooktext[0].replace("\\webhook:","").trim();
+                    let webhookurl = webhooktext[0].replace("\\webhook:","").trim();
                     // console.log("webhookurl ", webhookurl)
     
                     return request({                        
@@ -96,31 +96,31 @@ class Chat21Util {
 
 
         findSplits(result) {
-            var commands = []
+            let commands = []
             const text = result['fulfillmentText'] // "parte 1\\splittesto12\\split\npt2.capone detto\\split:4000\npt.3. muggio\\split\npt. 4.Andtonino Mustacchio"
             // const text = "parte 1NO\\splittesto12\\split\npt2.capone detto\\split:4000\npt.3. muggio\\split\npt. 4.Dammi la tua email"
             const split_pattern = /^(\\split[:0-9]*)/mg //ex. \split:500
-            var parts = text.split(split_pattern)
-            for (var i=0; i < parts.length; i++) {
+            let parts = text.split(split_pattern)
+            for (let i=0; i < parts.length; i++) {
                 let p = parts[i]
                 console.log("part: " + p)
                 if (i % 2 != 0) {
                 // split command
                 console.log("split command: " + p)
-                var split_parts = p.split(":")
-                var wait_time = 1000
+                let split_parts = p.split(":")
+                let wait_time = 1000
                 if (split_parts.length == 2) {
                     wait_time = split_parts[1]
                 }
                 console.log("wait time: " + wait_time)
-                var command = {}
+                let command = {}
                 command.type = "wait"
                 command.time = parseInt(wait_time, 10)
                 commands.push(command)
                 }
                 else {
                 // message command
-                var command = {}
+                let command = {}
                 command.type = "message"
                 command.text = p.trim()
                 commands.push(command)
@@ -148,20 +148,20 @@ class Chat21Util {
             let METADATA_KEY = "metadata"
             let TYPE_IMAGE = 'image'
     
-            var reply = {}
+            let reply = {}
           
             console.log("TEXT: ", text)
             reply[TEXT_KEY] = text
             reply[ATTRIBUTES_KEY] = null
           
             // looks for images
-            var image_pattern = /^\\image:.*/mg; // images are defined as a line starting with \image:IMAGE_URL
+            let image_pattern = /^\\image:.*/mg; // images are defined as a line starting with \image:IMAGE_URL
             // console.log("Searching images with image_pattern: ", image_pattern)
-            var images = text.match(image_pattern);
+            let images = text.match(image_pattern);
             // console.log("images: ", images)
             if (images && images.length > 0) {
               const image_text = images[0]
-              var text = text.replace(image_text,"").trim()
+              let text = text.replace(image_text,"").trim()
               const image_url = image_text.replace("\\image:", "")
               reply[TEXT_KEY] = text
               reply[TYPE_KEY] = TYPE_IMAGE
@@ -173,18 +173,18 @@ class Chat21Util {
             }
           
             // looks for bullet buttons
-            var button_pattern = /^\*.*/mg; // button pattern is a line that starts with *TEXT_OF_BUTTON (every button on a line)
-            var text_buttons = text.match(button_pattern);
+            let button_pattern = /^\*.*/mg; // button pattern is a line that starts with *TEXT_OF_BUTTON (every button on a line)
+            let text_buttons = text.match(button_pattern);
             if (text_buttons) {
               // ricava il testo rimuovendo i bottoni
-              var text_with_removed_buttons = text.replace(button_pattern,"").trim();
+              let text_with_removed_buttons = text.replace(button_pattern,"").trim();
               reply[TEXT_KEY] = text_with_removed_buttons
               // estrae i bottoni
-              var buttons = []
+              let buttons = []
               text_buttons.forEach(element => {
-                var remove_extra_from_button = /^\*/mg; // removes initial "*"
-                var button_text = element.replace(remove_extra_from_button, "").trim()
-                var button = {}
+                let remove_extra_from_button = /^\*/mg; // removes initial "*"
+                let button_text = element.replace(remove_extra_from_button, "").trim()
+                let button = {}
                 button[TYPE_KEY] = "text"
                 button["value"] = button_text
                 buttons.push(button)
@@ -205,5 +205,5 @@ class Chat21Util {
         
 }
 
-var chat21Util = new Chat21Util();
+let chat21Util = new Chat21Util();
 module.exports = chat21Util;

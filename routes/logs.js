@@ -1,6 +1,6 @@
-var express = require('express');
-var router = express.Router();
-var winston = require('../config/winston');
+let express = require('express');
+let router = express.Router();
+let winston = require('../config/winston');
 const { MessageLog } = require('../models/whatsappLog');
 const { Transaction } = require('../models/transaction');
 const logsService = require('../services/logsService');
@@ -133,7 +133,7 @@ router.get('/flows/auth/:request_id', async (req, res) => {
     const now = Math.round(new Date().getTime() / 1000);
     const exp = now + 60 * 60 * 24 * 30;
 
-    var payload = {
+    let payload = {
         "jti": uuidv4(),
         "sub": request_id,
         scope: scope,
@@ -151,7 +151,7 @@ router.get('/flows/auth/:request_id', async (req, res) => {
         "kid": "tiledesk-key",
     }
 
-    var token = jwt.sign(
+    let token = jwt.sign(
         payload,
         jwtSecret,
         {

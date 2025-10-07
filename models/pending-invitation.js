@@ -1,9 +1,9 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
 
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 
-var PendingInvitation = new Schema({
+let PendingInvitation = new Schema({
   
   email: {
     type: String,
@@ -31,7 +31,7 @@ var PendingInvitation = new Schema({
 );
 
 
-var pending= mongoose.model('pending-invitation', PendingInvitation);
+let pending= mongoose.model('pending-invitation', PendingInvitation);
 
 
 if (process.env.MONGOOSE_SYNCINDEX) {

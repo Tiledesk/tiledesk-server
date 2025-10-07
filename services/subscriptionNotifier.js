@@ -1,5 +1,5 @@
-var Subscription = require('../models/subscription');
-var SubscriptionLog = require('../models/subscriptionLog');
+let Subscription = require('../models/subscription');
+let SubscriptionLog = require('../models/subscriptionLog');
 const requestEvent = require('../event/requestEvent');
 const messageEvent = require('../event/messageEvent');
 const message2Event = require('../event/message2Event');
@@ -13,26 +13,26 @@ const eventEvent = require('../pubmodules/events/eventEvent');
 const event2Event = require('../pubmodules/events/event2Event');
 const projectEvent = require('../event/projectEvent');
 
-// var Request = require("../models/request");
-var Message = require("../models/message");
-// var Faq_kb = require("../models/faq_kb");
-var winston = require('../config/winston');
-var jwt = require('jsonwebtoken');
-var config = require('../config/database'); // get db config file
-var cacheUtil = require("../utils/cacheUtil");
+// let Request = require("../models/request");
+let Message = require("../models/message");
+// let Faq_kb = require("../models/faq_kb");
+let winston = require('../config/winston');
+let jwt = require('jsonwebtoken');
+let config = require('../config/database'); // get db config file
+let cacheUtil = require("../utils/cacheUtil");
 
-var cacheEnabler = require("../services/cacheEnabler");
+let cacheEnabler = require("../services/cacheEnabler");
 
-var webhook_origin = process.env.WEBHOOK_ORIGIN || "http://localhost:3000";
+let webhook_origin = process.env.WEBHOOK_ORIGIN || "http://localhost:3000";
 winston.debug("webhook_origin: "+webhook_origin);
 
 
-var request = require('retry-request', {
+let request = require('retry-request', {
   request: require('request')
 });
 
 class SubscriptionNotifier {
-  // var SubscriptionNotifier = {
+  // let SubscriptionNotifier = {
 
    
   findSubscriber(event, id_project) {
@@ -62,14 +62,14 @@ class SubscriptionNotifier {
     //   }
 
     
-      //var json = {event: event, timestamp: Date.now(), payload: item};
+      //let json = {event: event, timestamp: Date.now(), payload: item};
       winston.debug("subscriptions",subscriptions);
-      var json = {timestamp: Date.now(), payload: payload};
+      let json = {timestamp: Date.now(), payload: payload};
       subscriptions.forEach(function(s) {
           
         // winston.debug("s",s);
-          var secret = s.secret;
-          var xHookSecret = secret;
+          let secret = s.secret;
+          let xHookSecret = secret;
 
           let sJson = s.toObject();
           delete sJson.secret;
@@ -79,7 +79,7 @@ class SubscriptionNotifier {
 
     
 
-          var signOptions = {
+          let signOptions = {
             issuer:  'https://tiledesk.com',
             subject:  'subscription',        
             audience:  'https://tiledesk.com/subscriptions/'+s._id,        
@@ -88,12 +88,12 @@ class SubscriptionNotifier {
           if (s.global==true){
             signOptions.audience = 'https://tiledesk.com';
 
-            var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+            let alg = process.env.GLOBAL_SECRET_ALGORITHM;
             if (alg) {
               signOptions.algorithm = alg;
             }
             secret = process.env.GLOBAL_SECRET || config.secret;   
-            var pKey = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY;
+            let pKey = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY;
             // console.log("pKey",pKey);
 
             if (pKey) {
@@ -102,7 +102,7 @@ class SubscriptionNotifier {
 
           }
     
-          var token = jwt.sign(sJson, secret, signOptions); //priv_jwt pp_jwt
+          let token = jwt.sign(sJson, secret, signOptions); //priv_jwt pp_jwt
           json["token"] = token;
 
           winston.debug("Calling subscription " + s.event + " TO " + s.target + " with secret " +secret+ " with json " , json);
@@ -124,7 +124,7 @@ class SubscriptionNotifier {
             winston.debug("SubscriptionLog response", response);
             winston.debug("SubscriptionLog jsonResponse", jsonResponse);
 
-              var subscriptionLog = new SubscriptionLog({event: s.event, target: s.target, 
+              let subscriptionLog = new SubscriptionLog({event: s.event, target: s.target, 
                 response: JSON.stringify(response),
                 body: JSON.stringify(jsonResponse),
                 jsonRequest: JSON.stringify(json),
@@ -158,7 +158,7 @@ class SubscriptionNotifier {
 }
   // https://mongoosejs.com/docs/middleware.html#post-async
   decorate(model, modelName) {
-    var isNew = false;
+    let isNew = false;
 
     model.pre('save', function(next) {
       isNew = this.isNew;
@@ -172,7 +172,7 @@ class SubscriptionNotifier {
     model.post('save', function(doc, next) {
      
        // If we have isNew flag then it's an update
-       var event = (isNew) ? 'create' : 'update';
+       let event = (isNew) ? 'create' : 'update';
        winston.debug("Subscription.notify."+event);
       next(null, doc);
       SubscriptionNotifier.notify(modelName+'.'+event, doc);
@@ -192,7 +192,7 @@ class SubscriptionNotifier {
   start() {
     winston.debug('SubscriptionNotifier start');
 
-    var enabled = process.env.RESTHOOK_ENABLED || "false";
+    let enabled = process.env.RESTHOOK_ENABLED || "false";
     winston.debug('SubscriptionNotifier enabled:'+enabled);
 
     if (enabled==="true") {
@@ -203,7 +203,7 @@ class SubscriptionNotifier {
     }
 
 // queued 
-    // var messageCreateKey = 'message.create';
+    // let messageCreateKey = 'message.create';
     // if (messageEvent.queueEnabled) {
     //   messageCreateKey = 'message.create.queue';
     // }
@@ -242,7 +242,7 @@ class SubscriptionNotifier {
 
 
 // queued 
-    // var requestCreateKey = 'request.create';
+    // let requestCreateKey = 'request.create';
     // if (requestEvent.queueEnabled) {
     //   requestCreateKey = 'request.create.queue';
     // }
@@ -255,7 +255,7 @@ class SubscriptionNotifier {
 
 
 // queued 
-    // var requestUpdateKey = 'request.update';
+    // let requestUpdateKey = 'request.update';
     // if (requestEvent.queueEnabled) {
     //   requestUpdateKey = 'request.update.queue';
     // }
@@ -268,7 +268,7 @@ class SubscriptionNotifier {
 
 
     // queued 
-    // var requestCloseKey = 'request.close';   //request.close event here queued under job
+    // let requestCloseKey = 'request.close';   //request.close event here queued under job
     // if (requestEvent.queueEnabled) {
     //   requestCloseKey = 'request.close.queue';
     // }
@@ -277,7 +277,7 @@ class SubscriptionNotifier {
     //   winston.info("request.close event here 1")
     //   setImmediate(() => {
     //     Message.find({recipient:  request.request_id, id_project: request.id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) {
-    //       var requestJson = request;
+    //       let requestJson = request;
     //       if (request.toJSON) {
     //         requestJson = request.toJSON();
     //       }
@@ -290,7 +290,7 @@ class SubscriptionNotifier {
 
 
     // queued 
-    // var leadCreateKey = 'lead.create';   //request.close event here queued under job
+    // let leadCreateKey = 'lead.create';   //request.close event here queued under job
     // if (leadEvent.queueEnabled) {
     //   leadCreateKey = 'lead.create.queue';
     // }
@@ -338,7 +338,7 @@ class SubscriptionNotifier {
 
       authEvent.on('user.signup',  function(event) {    //notqueued
         setImmediate(() => {
-          var user = event.savedUser;
+          let user = event.savedUser;
           delete user.password;
 
           subscriptionNotifier.subscribe('user.signup', user);         
@@ -358,7 +358,7 @@ class SubscriptionNotifier {
 
 
       // queued 
-      // var authProjectUserUpdateKey = 'project_user.update';
+      // let authProjectUserUpdateKey = 'project_user.update';
       // if (authEvent.queueEnabled) {
       //   authProjectUserUpdateKey = 'project_user.update.queue';
       // }
@@ -382,14 +382,14 @@ class SubscriptionNotifier {
     departmentEvent.on('operator.select',  function(result) {     //notqueued
       winston.debug("departmentEvent.on(operator.select");
 
-      var operatorSelectedEvent = result.result;
-      var resolve = result.resolve;
-      var reject = result.reject;
+      let operatorSelectedEvent = result.result;
+      let resolve = result.resolve;
+      let reject = result.reject;
 
       // aggiungere context. lascio lo passso già a result.result
       // operatorSelectedEvent["context"] = result.context;
 
-      var disableWebHookCall = result.disableWebHookCall;
+      let disableWebHookCall = result.disableWebHookCall;
       winston.debug("subscriptionNotifier disableWebHookCall: "+ disableWebHookCall);
 
       if (disableWebHookCall === true) {      
@@ -474,7 +474,7 @@ class SubscriptionNotifier {
 
     projectEvent.on('project.create',  function(project) {              //notqueued
       setImmediate(() => {
-        var projectJson = project.toJSON();
+        let projectJson = project.toJSON();
         projectJson.id_project = projectJson._id;
         subscriptionNotifier.subscribe('project.create', projectJson);         
       });
@@ -482,7 +482,7 @@ class SubscriptionNotifier {
 
     projectEvent.on('project.update',  function(project) {              //notqueued
       setImmediate(() => {
-        var projectJson = project.toJSON();
+        let projectJson = project.toJSON();
         projectJson.id_project = projectJson._id;
         subscriptionNotifier.subscribe('project.update', projectJson);         
       });
@@ -490,7 +490,7 @@ class SubscriptionNotifier {
 
     projectEvent.on('project.downgrade',  function(project) {           //notqueued
       setImmediate(() => {
-        var projectJson = project.toJSON();
+        let projectJson = project.toJSON();
         projectJson.id_project = projectJson._id;
         subscriptionNotifier.subscribe('project.downgrade', projectJson);         
       });
@@ -498,7 +498,7 @@ class SubscriptionNotifier {
 
     projectEvent.on('project.delete',  function(project) {              //notqueued
       setImmediate(() => {
-        var projectJson = project.toJSON();
+        let projectJson = project.toJSON();
         projectJson.id_project = projectJson._id;
         subscriptionNotifier.subscribe('project.delete', projectJson);         
       });
@@ -526,7 +526,7 @@ class SubscriptionNotifier {
         subscriptionNotifier.notify(subscriptions, payload, callback);           
       } else {
         if (callback) {
-          var err = {msg:"No subscriptions found", code:404};
+          let err = {msg:"No subscriptions found", code:404};
           callback(err, undefined);
         }
       }
@@ -538,7 +538,7 @@ class SubscriptionNotifier {
 
 };
 
-var subscriptionNotifier = new SubscriptionNotifier();
+let subscriptionNotifier = new SubscriptionNotifier();
 
 // winston.debug('messageEvent', messageEvent);
 

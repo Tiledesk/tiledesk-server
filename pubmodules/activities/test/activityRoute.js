@@ -1,23 +1,23 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
-var Activity = require('../models/activity');
-var projectService = require('../../../services/projectService');
-var userService = require('../../../services/userService');
+let Activity = require('../models/activity');
+let projectService = require('../../../services/projectService');
+let userService = require('../../../services/userService');
 
 //Require the dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../../../app');
 let should = chai.should();
-var winston = require('../../../config/winston');
+let winston = require('../../../config/winston');
 
 let log = false;
 
 // chai.config.includeStack = true;
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 chai.use(chaiHttp);
 
@@ -32,13 +32,13 @@ describe('ActivityRoute', () => {
         
     //   this.timeout();
 
-       var email = "test-signup-" + Date.now() + "@email.com";
-       var pwd = "pwd";
+       let email = "test-signup-" + Date.now() + "@email.com";
+       let pwd = "pwd";
 
         userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
             projectService.create("test-activity-create", savedUser._id).then(function(savedProject) {
              
-                var activity = new Activity(
+                let activity = new Activity(
                     {
                         actor: {type:"user", id: savedUser._id},
                         verb: "PROJECT_USER_UPDATE", 

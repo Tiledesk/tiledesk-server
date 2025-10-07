@@ -1,9 +1,9 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var bcrypt = require('bcrypt-nodejs');
-var winston = require('../config/winston');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let bcrypt = require('bcrypt-nodejs');
+let winston = require('../config/winston');
 
-var UserSchema = new Schema({
+let UserSchema = new Schema({
     _id: Schema.Types.ObjectId,
     email: {
         type: String,
@@ -96,7 +96,7 @@ var UserSchema = new Schema({
 // });
 
 UserSchema.pre('save', function (next) {
-    var user = this;
+    let user = this;
     if (this.isModified('password') || this.isNew) {
         bcrypt.genSalt(10, function (err, salt) {
             if (err) {
@@ -131,7 +131,7 @@ UserSchema.virtual('fullName').get(function () {
 
 //UserSchema.index({ email: 1, authType: 1 }, { unique: true }); 
 
-var UserModel = mongoose.model('user', UserSchema);
+let UserModel = mongoose.model('user', UserSchema);
 
 
 // UserModel.getFullname = function () {

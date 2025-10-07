@@ -1,9 +1,9 @@
 
 
 'use strict';
-var global = require('../config/global');
-var email = require('../config/email');
-var winston = require('../config/winston');
+let global = require('../config/global');
+let email = require('../config/email');
+let winston = require('../config/winston');
 
 
 
@@ -68,7 +68,7 @@ class OrgUtil {
 }
 
 
-var orgUtil = new OrgUtil();
+let orgUtil = new OrgUtil();
 
 
 module.exports = orgUtil;

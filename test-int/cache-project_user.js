@@ -6,16 +6,16 @@ process.env.NODE_ENV = 'test';
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
-var projectService = require('../services/projectService');
-var userService = require('../services/userService');
+let projectService = require('../services/projectService');
+let userService = require('../services/userService');
 let should = chai.should();
-var Project_user = require("../models/project_user");
+let Project_user = require("../models/project_user");
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 //server client
-var express = require('express');
+let express = require('express');
 const bodyParser = require('body-parser');
 
 //end server client
@@ -37,8 +37,8 @@ describe('Cache', () => {
     // mocha test-int/bot.js  --grep 'createSimpleExatMatch'
     it('getCurrentProjectUser', (done) => {
        
-        var email = "test-bot-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-bot-" + Date.now() + "@email.com";
+        let pwd = "pwd";
  
        
 

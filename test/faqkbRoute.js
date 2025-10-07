@@ -2,10 +2,10 @@
 process.env.NODE_ENV = 'test';
 process.env.LOG_LEVEL = 'error';
 
-var Faq = require('../models/faq');
-var projectService = require('../services/projectService');
-var userService = require('../services/userService');
-var faqService = require('../services/faqService');
+let Faq = require('../models/faq');
+let projectService = require('../services/projectService');
+let userService = require('../services/userService');
+let faqService = require('../services/faqService');
 
 let chatbot_mock = require('./mock/chatbotMock');
 let log = false;
@@ -16,15 +16,15 @@ let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
-var fs = require('fs');
+let fs = require('fs');
 const path = require('path');
 const Project_user = require('../models/project_user');
 const roleConstants = require('../models/roleConstants');
 
 // chai.config.includeStack = true;
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 chai.use(chaiHttp);
 
@@ -34,8 +34,8 @@ describe('FaqKBRoute', () => {
 
         it('get-all-chatbot-with-role-admin-or-owner', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -75,8 +75,8 @@ describe('FaqKBRoute', () => {
 
         it('get-all-chatbot-with-role-agent', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -123,8 +123,8 @@ describe('FaqKBRoute', () => {
 
         it('create-new-chatbot', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -164,8 +164,8 @@ describe('FaqKBRoute', () => {
 
         it('create-new-chatbot-auto-slug', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -252,8 +252,8 @@ describe('FaqKBRoute', () => {
 
         it('create-new-chatbot-agent-role', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -283,8 +283,8 @@ describe('FaqKBRoute', () => {
 
         it('create-with-template-example', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-faqkb-create", savedUser._id).then((savedProject) => {
@@ -301,7 +301,7 @@ describe('FaqKBRoute', () => {
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
-                            var id_faq_kb = res.body._id;
+                            let id_faq_kb = res.body._id;
 
                             setTimeout(() => {
 
@@ -330,8 +330,8 @@ describe('FaqKBRoute', () => {
 
         it('create-with-template-blank', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-faqkb-create", savedUser._id).then((savedProject) => {
@@ -348,7 +348,7 @@ describe('FaqKBRoute', () => {
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
-                            var id_faq_kb = res.body._id;
+                            let id_faq_kb = res.body._id;
 
                             chai.request(server)
                                 .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
@@ -374,8 +374,8 @@ describe('FaqKBRoute', () => {
 
         it('create-new-webhook', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -422,8 +422,8 @@ describe('FaqKBRoute', () => {
 
         it('update-chatbot-no-slug', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -469,8 +469,8 @@ describe('FaqKBRoute', () => {
 
         it('update-chatbot-slug-with-existing-one', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -535,8 +535,8 @@ describe('FaqKBRoute', () => {
 
         it('update-chatbot-and-intents-language', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-faqkb-create", savedUser._id).then((savedProject) => {
@@ -553,7 +553,7 @@ describe('FaqKBRoute', () => {
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
-                            var id_faq_kb = res.body._id;
+                            let id_faq_kb = res.body._id;
 
                             chai.request(server)
                                 .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
@@ -611,8 +611,8 @@ describe('FaqKBRoute', () => {
 
         it('fork-chatbot-private', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("current-project", savedUser._id).then(function (currentProject) {
@@ -674,9 +674,9 @@ describe('FaqKBRoute', () => {
         })
 
         it('fork-chatbot-private-not-permitted', (done) => {
-            var email_user1 = "user1-signup-" + Date.now() + "@email.com";
-            var email_user2 = "user2-signup-" + (Date.now() + 1) + "@email.com";
-            var pwd = "pwd";
+            let email_user1 = "user1-signup-" + Date.now() + "@email.com";
+            let email_user2 = "user2-signup-" + (Date.now() + 1) + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email_user1, pwd, "User1 Firstname", "User1 lastname").then(function (user1) {
                 userService.signup(email_user2, pwd, "User2 Firstname", "User2 lastname").then(function (user2) {
@@ -740,9 +740,9 @@ describe('FaqKBRoute', () => {
         });
 
         it('fork-chatbot-public', (done) => {
-            var email_user1 = "user1-signup-" + Date.now() + "@email.com";
-            var email_user2 = "user2-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email_user1 = "user1-signup-" + Date.now() + "@email.com";
+            let email_user2 = "user2-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email_user1, pwd, "User1 Firstname", "User1 lastname").then(function (user1) {
                 userService.signup(email_user2, pwd, "User2 Firstname", "User2 lastname").then(function (user2) {
@@ -804,8 +804,8 @@ describe('FaqKBRoute', () => {
 
         it('create-bot-and-import-json', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -851,8 +851,8 @@ describe('FaqKBRoute', () => {
 
         it('import-json-in-an-existing-bot', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(((savedUser) => {
                 projectService.create('test-faqkb-create', savedUser._id).then((savedProject) => {
@@ -896,8 +896,8 @@ describe('FaqKBRoute', () => {
 
         it('import-json-in-an-existing-bot-and-replace-all-intents', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(((savedUser) => {
                 projectService.create('test-faqkb-create', savedUser._id).then((savedProject) => {
@@ -956,8 +956,8 @@ describe('FaqKBRoute', () => {
 
         it('import-json', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -1014,8 +1014,8 @@ describe('FaqKBRoute', () => {
 
         it('export-json', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -1081,8 +1081,8 @@ describe('FaqKBRoute', () => {
 
         it('export-json-intents-only)', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -1136,8 +1136,8 @@ describe('FaqKBRoute', () => {
 
         it('import-webhook-json', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -1186,8 +1186,8 @@ describe('FaqKBRoute', () => {
 
         it('logical-delete-with-ttl', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -1247,8 +1247,8 @@ describe('FaqKBRoute', () => {
 
         it('logical-webhook-delete-with-ttl', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -1325,14 +1325,14 @@ describe('FaqKBRoute', () => {
 
     //     it('train', (done) => {
 
-    //         var email = "test-signup-" + Date.now() + "@email.com";
-    //         var pwd = "pwd";
+    //         let email = "test-signup-" + Date.now() + "@email.com";
+    //         let pwd = "pwd";
 
     //         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
     //             projectService.create("test-faqkb-train", savedUser._id).then(function (savedProject) {
     //                 faqService.create("testbot", "http://54.228.177.1644", savedProject._id, savedUser._id).then(function (savedBot) {
 
-    //                     var newFaq = new Faq({
+    //                     let newFaq = new Faq({
     //                         id_faq_kb: savedBot._id,
     //                         question: "question1\nquestion2",
     //                         answer: "answer",
@@ -1382,8 +1382,8 @@ describe('FaqKBRoute', () => {
 */
 // it('createMaximumNumberExceeded', (done) => {
 
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
+//     let email = "test-signup-" + Date.now() + "@email.com";
+//     let pwd = "pwd";
 
 //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -1445,8 +1445,8 @@ describe('FaqKBRoute', () => {
 
 
 // it('train with tiledesk-ai', (done) => {
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
+//     let email = "test-signup-" + Date.now() + "@email.com";
+//     let pwd = "pwd";
 
 //     userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
 //         projectService.create("test-faqkb-create", savedUser._id).then((savedProject) => {
@@ -1462,7 +1462,7 @@ describe('FaqKBRoute', () => {
 //                     res.should.have.status(200);
 //                     res.body.should.be.a('object');
 //                     expect(res.body.name).to.equal("testbot");
-//                     var id_faq_kb = res.body._id;
+//                     let id_faq_kb = res.body._id;
 
 //                     chai.request(server)
 //                         .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
@@ -1495,8 +1495,8 @@ describe('FaqKBRoute', () => {
 // DEPRECATED
 // it('import json (simple)', (done) => {
 
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
+//     let email = "test-signup-" + Date.now() + "@email.com";
+//     let pwd = "pwd";
 
 //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -1551,8 +1551,8 @@ describe('FaqKBRoute', () => {
 // DEPRECATED
 // it('import json (intents only) (overwrite true)', (done) => {
 
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
+//     let email = "test-signup-" + Date.now() + "@email.com";
+//     let pwd = "pwd";
 
 //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -1607,8 +1607,8 @@ describe('FaqKBRoute', () => {
 // DEPRECATED
 // it('import json (intents only) (overwrite false)', (done) => {
 
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
+//     let email = "test-signup-" + Date.now() + "@email.com";
+//     let pwd = "pwd";
 
 //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -1661,8 +1661,8 @@ describe('FaqKBRoute', () => {
 
 // it('publishChatbot', (done) => {
 
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
+//     let email = "test-signup-" + Date.now() + "@email.com";
+//     let pwd = "pwd";
 
 //     userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(function (savedUser) {
 //         projectService.create("current-project", savedUser._id).then(function (currentProject) {
@@ -1726,8 +1726,8 @@ describe('FaqKBRoute', () => {
 // DEPRECATED
 // it('import-json-overwrite-true', (done) => {
 
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
+//     let email = "test-signup-" + Date.now() + "@email.com";
+//     let pwd = "pwd";
 
 //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {

@@ -1,11 +1,11 @@
-var express = require('express');
-var router = express.Router();
-var winston = require('../config/winston');
+let express = require('express');
+let router = express.Router();
+let winston = require('../config/winston');
 const { Webhook } = require('../models/webhook');
 const httpUtil = require('../utils/httpUtil');
 const { customAlphabet } = require('nanoid');
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 32);
-var ObjectId = require('mongoose').Types.ObjectId;
+let ObjectId = require('mongoose').Types.ObjectId;
 // const port = process.env.PORT || '3000';
 // let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/ext/";;
 // if (process.env.TILEBOT_ENDPOINT) {

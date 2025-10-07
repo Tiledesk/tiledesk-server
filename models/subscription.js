@@ -1,10 +1,10 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
 const uuidv4 = require('uuid/v4');
 
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 
-var SubscriptionSchema = new Schema({
+let SubscriptionSchema = new Schema({
   event: {
     type: String,
     required: true,
@@ -45,7 +45,7 @@ SubscriptionSchema.index({ event: 1, id_project: 1, global: 1  });
 
 SubscriptionSchema.index({ id_project: 1, event: 1, target: 1  }, { unique: true }); 
 
-var subscription = mongoose.model('subscription', SubscriptionSchema);
+let subscription = mongoose.model('subscription', SubscriptionSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   subscription.syncIndexes();

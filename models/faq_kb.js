@@ -1,13 +1,13 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
 const uuidv4 = require('uuid/v4');
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 const { stringify } = require('uuid');
 
-var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
+let defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 let trashExpirationTime = Number(process.env.CHATBOT_TRASH_TTL_SECONDS) || 60 * 60 * 24 * 30; // 30 days
 
-var Faq_kbSchema = new Schema({
+let Faq_kbSchema = new Schema({
   name: {
     type: String,
     required: true,
@@ -254,7 +254,7 @@ Faq_kbSchema.index(
 );
 
 
-var faq_kb = mongoose.model('faq_kb', Faq_kbSchema);
+let faq_kb = mongoose.model('faq_kb', Faq_kbSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   faq_kb.syncIndexes();

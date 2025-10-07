@@ -1,8 +1,8 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var bcrypt = require('bcrypt-nodejs');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let bcrypt = require('bcrypt-nodejs');
 
-var AuthSchema = new Schema({
+let AuthSchema = new Schema({
     // fullname: {
     //     type: String,
     //     required: false
@@ -36,7 +36,7 @@ var AuthSchema = new Schema({
 );
 
 AuthSchema.pre('save', function (next) {
-    var user = this;
+    let user = this;
     if (this.isModified('password') || this.isNew) {
         bcrypt.genSalt(10, function (err, salt) {
             if (err) {

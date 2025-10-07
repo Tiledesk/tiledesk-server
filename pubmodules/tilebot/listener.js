@@ -1,9 +1,9 @@
 const botEvent = require('../../event/botEvent');
-var Faq_kb = require("../../models/faq_kb");
-var winston = require('../../config/winston');
-var configGlobal = require('../../config/global');
+let Faq_kb = require("../../models/faq_kb");
+let winston = require('../../config/winston');
+let configGlobal = require('../../config/global');
 
-var port = process.env.PORT || '3000';
+let port = process.env.PORT || '3000';
 
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/ext/";;
 if (process.env.TILEBOT_ENDPOINT) {
@@ -30,15 +30,15 @@ class Listener {
         winston.debug("Tilebot config databaseUri: " + config.databaseUri);  
         
 
-        var that = this;
+        let that = this;
 
-        var port = process.env.CACHE_REDIS_PORT || 6379;
+        let port = process.env.CACHE_REDIS_PORT || 6379;
         winston.debug("Redis port: "+ port);
 
-        var host = process.env.CACHE_REDIS_HOST || "127.0.0.1"
+        let host = process.env.CACHE_REDIS_HOST || "127.0.0.1"
         winston.debug("Redis host: "+ host);
 
-        var password = process.env.CACHE_REDIS_PASSWORD;
+        let password = process.env.CACHE_REDIS_PASSWORD;
         winston.debug("Redis password: "+ password);
 
         // console.log("Using: REDIS_HOST:", process.env.CACHE_REDIS_HOST);
@@ -85,7 +85,7 @@ class Listener {
 
 }
 
-var listener = new Listener();
+let listener = new Listener();
 
 
 module.exports = listener;

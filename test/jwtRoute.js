@@ -1,23 +1,23 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
-var User = require('../models/user');
-var projectService = require('../services/projectService');
-var userService = require('../services/userService');
+let User = require('../models/user');
+let projectService = require('../services/projectService');
+let userService = require('../services/userService');
 
 //Require the dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
-var jwt = require('jsonwebtoken');
+let jwt = require('jsonwebtoken');
 
 let log = false;
 
 // chai.config.includeStack = true;
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 chai.use(chaiHttp);
 
@@ -27,8 +27,8 @@ describe('JWTRoute', () => {
 
     it('decodeWithIatExp', (done) => {
 
-      var email = "test-signup-" + Date.now() + "@email.com";
-      var pwd = "pwd";
+      let email = "test-signup-" + Date.now() + "@email.com";
+      let pwd = "pwd";
 
       userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
         projectService.create("test-join-member", savedUser._id).then(function (savedProject) {
@@ -58,7 +58,7 @@ describe('JWTRoute', () => {
                   res.body.should.be.a('object');
                   expect(res.body.token).to.not.equal(null);
 
-                  var jwtToken = res.body.token;
+                  let jwtToken = res.body.token;
                   if (log) { console.log("jwtToken", jwtToken); }
                   
                   chai.request(server)
@@ -86,8 +86,8 @@ describe('JWTRoute', () => {
 
     it('decodeWithIatNoExp', (done) => {
 
-      var email = "test-signup-" + Date.now() + "@email.com";
-      var pwd = "pwd";
+      let email = "test-signup-" + Date.now() + "@email.com";
+      let pwd = "pwd";
 
       userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
         projectService.create("test-join-member", savedUser._id).then(function (savedProject) {
@@ -104,7 +104,7 @@ describe('JWTRoute', () => {
               res.body.should.be.a('object');
               expect(res.body.jwtSecret).to.not.equal(null);
 
-              var jwtToken = jwt.sign({ "name": "andrea", "surname": "leo" }, res.body.jwtSecret);
+              let jwtToken = jwt.sign({ "name": "andrea", "surname": "leo" }, res.body.jwtSecret);
               if (log) { console.log("jwtToken", jwtToken); }
 
               chai.request(server)
@@ -128,8 +128,8 @@ describe('JWTRoute', () => {
 
     it('decodeWithIatTooHightExp', (done) => {
 
-      var email = "test-signup-" + Date.now() + "@email.com";
-      var pwd = "pwd";
+      let email = "test-signup-" + Date.now() + "@email.com";
+      let pwd = "pwd";
 
       userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
         projectService.create("test-join-member", savedUser._id).then(function (savedProject) {
@@ -146,7 +146,7 @@ describe('JWTRoute', () => {
               res.body.should.be.a('object');
               expect(res.body.jwtSecret).to.not.equal(null);
 
-              var jwtToken = jwt.sign({ "name": "andrea", "surname": "leo" }, res.body.jwtSecret, { expiresIn: 800 });
+              let jwtToken = jwt.sign({ "name": "andrea", "surname": "leo" }, res.body.jwtSecret, { expiresIn: 800 });
               if (log) { console.log("jwtToken", jwtToken); }
 
               chai.request(server)

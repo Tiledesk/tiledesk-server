@@ -1,9 +1,9 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../../config/winston');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../../config/winston');
 
 
-var EventSchema = new Schema({
+let EventSchema = new Schema({
   
   name: { 
     type: String,
@@ -48,7 +48,7 @@ var EventSchema = new Schema({
 
 EventSchema.index({ id_project: 1, name: 1, createdAt: -1 });
 
-var event = mongoose.model('event', EventSchema);
+let event = mongoose.model('event', EventSchema);
 
 
 module.exports = event;

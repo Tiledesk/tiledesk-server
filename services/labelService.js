@@ -1,10 +1,10 @@
-var Label = require("../models/label");
-var winston = require('../config/winston');
-var fs = require('fs');
-var path = require('path');
-var labelsDir = __dirname+"/../config/labels/";
+let Label = require("../models/label");
+let winston = require('../config/winston');
+let fs = require('fs');
+let path = require('path');
+let labelsDir = __dirname+"/../config/labels/";
 winston.debug('labelsDir: ' + labelsDir);
-var cacheUtil = require('../utils/cacheUtil');
+let cacheUtil = require('../utils/cacheUtil');
 
 class LabelService {
     
@@ -16,25 +16,25 @@ class LabelService {
 
 // get a specific key of a project language but if not found return Pivot 
 async get(id_project, language, key) {
-   var ret = await this.getLanguage(id_project, language);
-   var value = ret.data[key];
+   let ret = await this.getLanguage(id_project, language);
+   let value = ret.data[key];
    return value;
 }
 
  // get a specific project language, if not found return FALLBACK_LANGUAGE, if not found return default FALLBACK_LANGUAGE
 
  async getLanguage(id_project, language) {
-    var that = this;
-    var returnval = await that.getAll(id_project);
+    let that = this;
+    let returnval = await that.getAll(id_project);
     winston.debug("getLanguage returnval: ",returnval);
 
     if (!returnval) {
-        var retPiv = await that.fetchPivotDefault();
+        let retPiv = await that.fetchPivotDefault();
         winston.debug("retPiv",retPiv);
         return retPiv;
     }
 
-    var pickedLang = returnval.data.find(l => l.lang === language);
+    let pickedLang = returnval.data.find(l => l.lang === language);
 
     winston.debug("getLanguage pickedLang"+  language,pickedLang);
 
@@ -42,17 +42,17 @@ async get(id_project, language, key) {
         return pickedLang; 
     } else {
 
-        var defaultLang = returnval.data.find(l => l.default === true);
+        let defaultLang = returnval.data.find(l => l.default === true);
 
         if (defaultLang) {
             return defaultLang; 
         }
 
-        var pivotLang = returnval.data.find(l => l.lang === that.FALLBACK_LANGUAGE);   // <-- NOT necessary but nice
+        let pivotLang = returnval.data.find(l => l.lang === that.FALLBACK_LANGUAGE);   // <-- NOT necessary but nice
         if (pivotLang) {
             return pivotLang; 
         } else {
-            var retPiv = await that.fetchPivotDefault();
+            let retPiv = await that.fetchPivotDefault();
             winston.debug("retPiv",retPiv);
             return retPiv;
         }
@@ -62,13 +62,13 @@ async get(id_project, language, key) {
 
 
 getAll(id_project) {
-    var that = this;
+    let that = this;
     return new Promise(function (resolve, reject) {
         
         // return that.fetchPivotDefault().then(function(def) {
 
 
-                var query = {"id_project": id_project};
+                let query = {"id_project": id_project};
                     
                 winston.debug("query /", query);
 
@@ -99,11 +99,11 @@ getAll(id_project) {
 
 // fetch pivot default language (FALLBACK_LANGUAGE)
 fetchPivotDefault() {
-    var that = this;
+    let that = this;
     return new Promise(function (resolve, reject) {
         that.fetchDefault().then(function (def) {
             // console.log("def", def)
-            var pivot = def.find(l => l.lang === that.FALLBACK_LANGUAGE);
+            let pivot = def.find(l => l.lang === that.FALLBACK_LANGUAGE);
             return resolve(pivot);        
         });
     });
@@ -113,10 +113,10 @@ fetchPivotDefault() {
 // fetch all widget.json languages
 fetchDefault() {
      
-    var that = this;
+    let that = this;
     return new Promise(function (resolve, reject) {
 
-        var filePath = path.join(labelsDir, 'widget.json');
+        let filePath = path.join(labelsDir, 'widget.json');
     
         fs.readFile(filePath, {encoding: 'utf-8'}, function(err,data){
         if (err) {
@@ -133,5 +133,5 @@ fetchDefault() {
   
 
 }
-var labelService = new LabelService();
+let labelService = new LabelService();
 module.exports = labelService;

@@ -2,14 +2,14 @@
 process.env.NODE_ENV = 'test';
 process.env.LOG_LEVEL = 'critical';
 
-var User = require('../models/user');
-var projectService = require('../services/projectService');
-var requestService = require('../services/requestService');
-var userService = require('../services/userService');
-var leadService = require('../services/leadService');
-var messageService = require('../services/messageService');
-var Project_user = require("../models/project_user");
-var roleConstants = require('../models/roleConstants');
+let User = require('../models/user');
+let projectService = require('../services/projectService');
+let requestService = require('../services/requestService');
+let userService = require('../services/userService');
+let leadService = require('../services/leadService');
+let messageService = require('../services/messageService');
+let Project_user = require("../models/project_user");
+let roleConstants = require('../models/roleConstants');
 const uuidv4 = require('uuid/v4');
 
 //Require the dev-dependencies
@@ -17,13 +17,13 @@ let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
-var winston = require('../config/winston');
-var jwt = require('jsonwebtoken');
+let winston = require('../config/winston');
+let jwt = require('jsonwebtoken');
 // chai.config.includeStack = true;
 let log = false;
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 chai.use(chaiHttp);
 
@@ -32,13 +32,13 @@ describe('MessageRoute', () => {
   // mocha test/messageRoute.js  --grep 'createSimple'
   it('createSimple', function (done) {
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
         let request_id = "req_" + Date.now();
 
         chai.request(server)
@@ -88,13 +88,13 @@ describe('MessageRoute', () => {
   // mocha test/messageRoute.js  --grep 'createSimpleEmptyText'
   it('createSimpleEmptyText', function (done) {
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
         let request_id = "req_" + Date.now();
 
         chai.request(server)
@@ -118,13 +118,13 @@ describe('MessageRoute', () => {
   // mocha test/messageRoute.js  --grep 'createSimpleNoText'
   it('createSimpleNoText', function (done) {
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
         let request_id = "req_" + Date.now();
 
         chai.request(server)
@@ -148,13 +148,13 @@ describe('MessageRoute', () => {
   // mocha test/messageRoute.js  --grep 'createSimpleWithAttributes'
   it('createSimpleWithAttributes', function (done) {
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
         let request_id = "req-createSimpleWithAttributes-" + Date.now();
 
         chai.request(server)
@@ -206,20 +206,20 @@ describe('MessageRoute', () => {
   // mocha test/messageRoute.js  --grep 'createWithSender'
   it('createWithSender', function (done) {
 
-    var email = "test-message-createwithsender-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-createwithsender-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 
-      var email2 = "test-message-createwithsender22-" + Date.now() + "@email.com";
-      var pwd2 = "pwd";
+      let email2 = "test-message-createwithsender22-" + Date.now() + "@email.com";
+      let pwd2 = "pwd";
 
       userService.signup(email2, pwd2, "Test Firstname22", "Test lastname22").then(function (savedUser2) {
         projectService.createAndReturnProjectAndProjectUser("message-createwithsender", savedUser._id).then(function (savedProjectAndPU) {
 
-          var savedProject = savedProjectAndPU.project;
+          let savedProject = savedProjectAndPU.project;
 
-          var pu2 = new Project_user({
+          let pu2 = new Project_user({
             // _id: new mongoose.Types.ObjectId(),
             id_project: savedProject._id,
             id_user: savedUser2._id,
@@ -285,16 +285,16 @@ describe('MessageRoute', () => {
   // mocha test/messageRoute.js  --grep 'createWithSenderFromLead'
   it('createWithSenderFromLead', function (done) {
 
-    var email = "test-message-createwithsenderfromlead-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-createwithsenderfromlead-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("message-createwithsender", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
-        var uid = uuidv4();
-        var pu = new Project_user({
+        let uid = uuidv4();
+        let pu = new Project_user({
           // _id: new mongoose.Types.ObjectId(),
           id_project: savedProject._id,
           uuid_user: uid,
@@ -307,7 +307,7 @@ describe('MessageRoute', () => {
           // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes, status) {
           leadService.createIfNotExistsWithLeadId(uid, "leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
 
-            var now = Date.now();
+            let now = Date.now();
             chai.request(server)
               .post('/' + savedProject._id + '/requests/req123-createwithsender-' + now + '/messages')
               .auth(email, pwd)
@@ -361,13 +361,13 @@ describe('MessageRoute', () => {
   // mocha test/messageRoute.js  --grep 'createWithLocation'
   it('createWithLocation', function (done) {
     
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
         let request_id = "req-createWithLocation-" + Date.now();
 
         chai.request(server)
@@ -410,13 +410,13 @@ describe('MessageRoute', () => {
   // mocha test/messageRoute.js  --grep 'createWithLocationAsAttributes'
   it('createWithLocationAsAttributes', function (done) {
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
         let request_id = "req-createWithLocationAsAttributes-" + Date.now();
 
         chai.request(server)
@@ -472,13 +472,13 @@ describe('MessageRoute', () => {
 
   it('createDifferentChannel', function (done) {
 
-    var email = "test-message-createdifferentchannel-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-createdifferentchannel-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
         let request_id = "req-channel1-" + Date.now();
 
         chai.request(server)
@@ -527,13 +527,13 @@ describe('MessageRoute', () => {
   // mocha test/messageRoute.js  --grep 'createWithMessageStatus'
   it('createWithMessageStatus', function (done) {
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
         let request_id = "req_createWithMessageStatus-" + Date.now();
         chai.request(server)
           .post('/' + savedProject._id + '/requests/' + request_id + '/messages')
@@ -582,13 +582,13 @@ describe('MessageRoute', () => {
   // mocha test/messageRoute.js  --grep 'createWithParticipants'
   it('createWithParticipants', function (done) {
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
         let request_id = "req_createWithParticipants-" + Date.now();
         chai.request(server)
           .post('/' + savedProject._id + '/requests/' + request_id + '/messages')
@@ -640,14 +640,14 @@ describe('MessageRoute', () => {
   // mocha test/messageRoute.js  --grep 'createWithPriority'
   it('createWithPriority', function (done) {
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("message-createWithPriority", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
-        var reqid = 'req123-createWithPriority' + Date.now();
+        let savedProject = savedProjectAndPU.project;
+        let reqid = 'req123-createWithPriority' + Date.now();
 
         chai.request(server)
           .post('/' + savedProject._id + '/requests/' + reqid + '/messages')
@@ -696,13 +696,13 @@ describe('MessageRoute', () => {
   // mocha test/messageRoute.js  --grep 'createSimpleWithFollowers'
   it('createSimpleWithFollowers', function (done) {
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
         let request_id = "req_createSimpleWithFollowers-" + Date.now();
         chai.request(server)
           .post('/' + savedProject._id + '/requests/' + request_id + '/messages')
@@ -751,13 +751,13 @@ describe('MessageRoute', () => {
   // mocha test/messageRoute.js  --grep 'createMultiTextNoSender1'
   it('createMultiTextNoSender1', function (done) {
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("message-createMultiText", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         chai.request(server)
           .post('/' + savedProject._id + '/requests')
@@ -771,7 +771,7 @@ describe('MessageRoute', () => {
             res.body.should.be.a('object');
             res.body.should.have.property('first_text').eql('first_text');
 
-            var request_id = res.body.request_id;
+            let request_id = res.body.request_id;
             if (log) { console.log("request_id", request_id); }
 
             chai.request(server)
@@ -814,13 +814,13 @@ describe('MessageRoute', () => {
   // mocha test/messageRoute.js  --grep 'createMultiTextNoSenderNoText'
   it('createMultiTextNoSenderNoText', function (done) {
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("message-createMultiText", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         chai.request(server)
           .post('/' + savedProject._id + '/requests')
@@ -834,7 +834,7 @@ describe('MessageRoute', () => {
             res.body.should.be.a('object');
             res.body.should.have.property('first_text').eql('first_text');
 
-            var request_id = res.body.request_id;
+            let request_id = res.body.request_id;
             if (log) { console.log("request_id", request_id); }
 
             chai.request(server)
@@ -858,20 +858,20 @@ describe('MessageRoute', () => {
   // mocha test/messageRoute.js  --grep 'createMultiTextWithSender'
   it('createMultiTextWithSender', function (done) {
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 
-      var email2 = "test-message-createwithsender22-" + Date.now() + "@email.com";
-      var pwd2 = "pwd";
+      let email2 = "test-message-createwithsender22-" + Date.now() + "@email.com";
+      let pwd2 = "pwd";
 
       userService.signup(email2, pwd2, "Test Firstname22", "Test lastname22").then(function (savedUser2) {
         projectService.createAndReturnProjectAndProjectUser("message-createMultiText", savedUser._id).then(function (savedProjectAndPU) {
 
-          var savedProject = savedProjectAndPU.project;
+          let savedProject = savedProjectAndPU.project;
 
-          var pu2 = new Project_user({
+          let pu2 = new Project_user({
             // _id: new mongoose.Types.ObjectId(),
             id_project: savedProject._id,
             id_user: savedUser2._id,
@@ -895,7 +895,7 @@ describe('MessageRoute', () => {
 
                 res.body.should.have.property('first_text').eql('first_text');
 
-                var request_id = res.body.request_id;
+                let request_id = res.body.request_id;
                 if (log) { console.log("request_id", request_id); }
 
                 chai.request(server)
@@ -942,13 +942,13 @@ describe('MessageRoute', () => {
   // mocha test/messageRoute.js  --grep 'createMultiTextWithHardcodedSender'
   it('createMultiTextWithHardcodedSender', function (done) {
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("message-createMultiTextWithHardcodedSender", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         chai.request(server)
           .post('/' + savedProject._id + '/requests')
@@ -962,7 +962,7 @@ describe('MessageRoute', () => {
             res.body.should.be.a('object');
             res.body.should.have.property('first_text').eql('first_text');
 
-            var request_id = res.body.request_id;
+            let request_id = res.body.request_id;
             if (log) { console.log("request_id", request_id); }
 
             chai.request(server)
@@ -1007,13 +1007,13 @@ describe('MessageRoute', () => {
   // mocha test/messageRoute.js  --grep 'createMultiTextWithHardcodedSenderAndSenderFullname'
   it('createMultiTextWithHardcodedSenderAndSenderFullname', function (done) {
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("message-createMultiTextWithHardcodedSenderAndSenderFullname", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         chai.request(server)
           .post('/' + savedProject._id + '/requests')
@@ -1028,7 +1028,7 @@ describe('MessageRoute', () => {
 
             res.body.should.have.property('first_text').eql('first_text');
 
-            var request_id = res.body.request_id;
+            let request_id = res.body.request_id;
             if (log) { console.log("request_id", request_id); }
 
             chai.request(server)
@@ -1071,13 +1071,13 @@ describe('MessageRoute', () => {
 
   it('getall', function (done) {
 
-    var email = "test-ssa-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-ssa-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       // projectService.create("message-create", savedUser._id).then(function(savedProject) {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
         leadService.createIfNotExists("leadfullname-message-getall", "andrea.leo@-subscription-message-getall.it", savedProject._id).then(function (createdLead) {
           // requestService.createWithId("request_id-message-getall", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
           let request_id = "req_message-getall-" + Date.now();
@@ -1132,8 +1132,8 @@ describe('MessageRoute', () => {
     // mocha test/messageRoute.js  --grep 'sendMessageSigninWithCustomTokenOk'
     it('sendMessageSigninWithCustomTokenOk', (done) => {
 
-      var email = "test-sendmessagesigninwithcustomtokenok-" + Date.now() + "@email.com";
-      var pwd = "pwd";
+      let email = "test-sendmessagesigninwithcustomtokenok-" + Date.now() + "@email.com";
+      let pwd = "pwd";
 
       userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
         // create(name, createdBy, settings)
@@ -1151,16 +1151,16 @@ describe('MessageRoute', () => {
               expect(res.body.jwtSecret).to.not.equal(null);
 
               // 'E11000 duplicate key error collection: tiledesk-test.users index: email_1 dup key: { email: "email@email.com" }' }
-              var externalUserId = "123";
-              var externalUserObj = { _id: externalUserId, firstname: "andrea", lastname: "leo", email: "email2@email.com" };
+              let externalUserId = "123";
+              let externalUserObj = { _id: externalUserId, firstname: "andrea", lastname: "leo", email: "email2@email.com" };
               if (log) { console.log("externalUserObj", externalUserObj); }
 
-              var signOptions = {
+              let signOptions = {
                 subject: 'userexternal',
                 audience: 'https://tiledesk.com/projects/' + savedProject._id,
               };
 
-              var jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
+              let jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
               if (log) { console.log("jwtToken", jwtToken); }
 
               chai.request(server)
@@ -1239,8 +1239,8 @@ describe('MessageRoute', () => {
     // mocha test/messageRoute.js  --grep 'sendMessageSigninWithCustomTokenModified'
     it('sendMessageSigninWithCustomTokenModified', (done) => {
 
-      var email = "test-sendmessagesigninwithcustomtokenModified-" + Date.now() + "@email.com";
-      var pwd = "pwd";
+      let email = "test-sendmessagesigninwithcustomtokenModified-" + Date.now() + "@email.com";
+      let pwd = "pwd";
 
       userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
         // create(name, createdBy, settings)
@@ -1258,18 +1258,18 @@ describe('MessageRoute', () => {
               expect(res.body.jwtSecret).to.not.equal(null);
 
               // 'E11000 duplicate key error collection: tiledesk-test.users index: email_1 dup key: { email: "email@email.com" }' }
-              var externalUserId = "123";
-              var externalUserObj = { _id: externalUserId, firstname: "andrea", lastname: "leo", email: "email2@email.com" };
+              let externalUserId = "123";
+              let externalUserObj = { _id: externalUserId, firstname: "andrea", lastname: "leo", email: "email2@email.com" };
 
               if (log) { console.log("externalUserObj", externalUserObj); }
 
-              var signOptions = {
+              let signOptions = {
                 subject: 'userexternal',
                 audience: 'https://tiledesk.com/projects/' + savedProject._id,
               };
 
-              var secret = res.body.jwtSecret;
-              var jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
+              let secret = res.body.jwtSecret;
+              let jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret, signOptions);
 
               if (log) { console.log("jwtToken", jwtToken); }
 
@@ -1391,8 +1391,8 @@ describe('MessageRoute', () => {
 
     it('sendMessageSigninAnonym', (done) => {
 
-      var email = "test-sendmessagesigninanonym-" + Date.now() + "@email.com";
-      var pwd = "pwd";
+      let email = "test-sendmessagesigninanonym-" + Date.now() + "@email.com";
+      let pwd = "pwd";
 
       userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
         // create(name, createdBy, settings)
@@ -1409,13 +1409,13 @@ describe('MessageRoute', () => {
               res.should.have.status(200);
               res.body.should.be.a('object');
               
-              var userId = res.body.user._id;
+              let userId = res.body.user._id;
               expect(res.body.success).to.equal(true);
               expect(res.body.user.email).to.equal(undefined);
               expect(res.body.user.firstname).to.contains("guest#");      // guest_here                                          
               expect(res.body.token).to.not.equal(undefined);
 
-              var rid = 'support-group-' + Date.now();
+              let rid = 'support-group-' + Date.now();
 
               chai.request(server)
                 .post('/' + savedProject._id + '/requests/' + rid + '/messages')

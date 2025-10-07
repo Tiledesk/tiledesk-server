@@ -2,9 +2,9 @@
 'use strict';
 
 
-var winston = require('../../config/winston');
-var closeBotUnresponsiveRequestTask = require('./tasks/closeBotUnresponsiveRequestTask');
-var closeAgentUnresponsiveRequestTask = require('./tasks/closeAgentUnresponsiveRequestTask');
+let winston = require('../../config/winston');
+let closeBotUnresponsiveRequestTask = require('./tasks/closeBotUnresponsiveRequestTask');
+let closeAgentUnresponsiveRequestTask = require('./tasks/closeAgentUnresponsiveRequestTask');
 
 class TaskRunner {
 
@@ -13,7 +13,7 @@ constructor() {
 }
 
 start() {
-    // var that = this;
+    // let that = this;
     if (this.enabled == "true") {
       winston.info("TaskRunner started" );
       closeBotUnresponsiveRequestTask.run();
@@ -31,7 +31,7 @@ start() {
  
  
  
-var taskRunner = new TaskRunner();
+let taskRunner = new TaskRunner();
 
 
 module.exports = taskRunner;

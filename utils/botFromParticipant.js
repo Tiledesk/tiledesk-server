@@ -1,11 +1,11 @@
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 
 
 class BotFromParticipant {
 
      //TODO use request. getBotId
  getBotFromParticipants(participants) {
-    var botIdTmp;
+    let botIdTmp;
   
     if (participants) {
       participants.forEach(function(participant) { 
@@ -27,14 +27,14 @@ class BotFromParticipant {
 
 //TODO use request. getBotId
  getBotId(message) {
-    var sender = message.sender;
+    let sender = message.sender;
     winston.debug("sender", sender);
  
     if (sender=="sytem") {
          return null;
     }
  
-    var recipient = message.recipient;
+    let recipient = message.recipient;
     winston.debug("recipient", recipient);
  
     // botprefix
@@ -42,17 +42,17 @@ class BotFromParticipant {
       // botprefix
         return recipient.replace('bot_','');
     }
-    // var text = message.text;
+    // let text = message.text;
     // winston.debug("text", text);
     
     if ( message.request== null || message.request.participants == null) {
         return null;
     }
 
-    var participants = message.request.participants;
+    let participants = message.request.participants;
     winston.debug("participants", participants);
  
-    var botId = this.getBotFromParticipants(participants);
+    let botId = this.getBotFromParticipants(participants);
     winston.debug("botId: " + botId);
  
    if (botId) {
@@ -65,7 +65,7 @@ class BotFromParticipant {
 
 }
 
- var botFromParticipant = new BotFromParticipant();
+ let botFromParticipant = new BotFromParticipant();
 
  module.exports = botFromParticipant;
  

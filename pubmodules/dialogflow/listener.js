@@ -1,10 +1,10 @@
 const botEvent = require('../../event/botEvent');
-var Faq_kb = require("../../models/faq_kb");
-var winston = require('../../config/winston');
+let Faq_kb = require("../../models/faq_kb");
+let winston = require('../../config/winston');
 const df = require("@tiledesk/tiledesk-dialogflow-connector");
-var configGlobal = require('../../config/global');
+let configGlobal = require('../../config/global');
 
-var port = process.env.PORT || '3000';
+let port = process.env.PORT || '3000';
 
 const BOT_DIALOGFLOW_ENDPOINT = process.env.BOT_DIALOGFLOW_ENDPOINT || "http://localhost:" + port+ "/modules/dialogflow/tdbot/";
 winston.debug("BOT_DIALOGFLOW_ENDPOINT: " + BOT_DIALOGFLOW_ENDPOINT);
@@ -25,7 +25,7 @@ class Listener {
 
         winston.debug('dialogflow Listener listen');   
 
-        var that = this;
+        let that = this;
 
 
         df.startApp(
@@ -61,7 +61,7 @@ class Listener {
 
 }
 
-var listener = new Listener();
+let listener = new Listener();
 
 
 module.exports = listener;

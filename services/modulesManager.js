@@ -1,8 +1,8 @@
 
-var winston = require('../config/winston');
-var validtoken = require('../middleware/valid-token');
-var roleChecker = require('../middleware/has-role');
-var passport = require('passport');
+let winston = require('../config/winston');
+let validtoken = require('../middleware/valid-token');
+let roleChecker = require('../middleware/has-role');
+let passport = require('passport');
 require('../middleware/passport')(passport);
 
 const MaskData = require("maskdata");
@@ -19,10 +19,10 @@ const maskOptions = {
   };
 
 
-var licenseKey = process.env.LICENSE_KEY;
+let licenseKey = process.env.LICENSE_KEY;
 
 if (licenseKey) {
-    var maskedLicenseKey = MaskData.maskPhone(licenseKey, maskOptions);
+    let maskedLicenseKey = MaskData.maskPhone(licenseKey, maskOptions);
     winston.info("LicenseKey: " + maskedLicenseKey);    
     // winston.info("LicenseKey: " + licenseKey);    
 }
@@ -46,7 +46,7 @@ class ModulesManager {
 
     injectBefore(app) {
         winston.verbose("ModulesManager injectBefore");
-        var res;
+        let res;
         try {
             // this.graphql = require('../../../modules/graphql/apollo-express');   
             this.graphql = require('@tiledesk-ent/tiledesk-server-graphql').apolloExpress;
@@ -76,7 +76,7 @@ class ModulesManager {
     }
 
     use(app) {
-        var that = this;
+        let that = this;
         // winston.info("ModulesManager using controllers");  
 
         if (this.stripe) {
@@ -93,7 +93,7 @@ class ModulesManager {
         
     }
     useUnderProjects(app) {
-        var that = this;
+        let that = this;
         winston.debug("ModulesManager using controllers");       
             
              
@@ -305,5 +305,5 @@ class ModulesManager {
     
 }
 
-var modulesManager = new ModulesManager();
+let modulesManager = new ModulesManager();
 module.exports = modulesManager;

@@ -1,7 +1,7 @@
-var fs = require('fs');
+let fs = require('fs');
 
-var util = require('util');
-var mongoose = require('mongoose');
+let util = require('util');
+let mongoose = require('mongoose');
 
 
 const methods = [ 'add',
@@ -41,7 +41,7 @@ const methods = [ 'add',
     'updateMany',
     'where'
 ];
-var FILE = '/Users/andrealeo/dev/chat21/project.json';
+let FILE = '/Users/andrealeo/dev/chat21/project.json';
 
 class Project {
 
@@ -92,7 +92,7 @@ class Project {
   }
 
   static findOne(q,c) {
-    var data  = JSON.parse(fs.readFileSync(FILE, 'utf8'));
+    let data  = JSON.parse(fs.readFileSync(FILE, 'utf8'));
     // console.log("data", data);
 
     // if (data.name) {
@@ -114,13 +114,13 @@ class Project {
 }
 
 
-// var project = new Project();
+// let project = new Project();
 // // console.log("project",project);
 
 // project.save({"name": "name1"},function(err, data) {
 //   console.log("saved data",data, err);
 
-//   var a = project.findOne({},function(err, data) {
+//   let a = project.findOne({},function(err, data) {
 //     console.log("read data",data, err);
 //   });
   // console.log("a",a);
@@ -130,14 +130,14 @@ class Project {
 
 
 
-// var MongooseModel = require('../utils/mongooseModel');
+// let MongooseModel = require('../utils/mongooseModel');
 // console.log("MongooseModel",MongooseModel);
 
-// var a = MongooseModel.findOne({ name: 'whiskers' }, (err, doc) => {
+// let a = MongooseModel.findOne({ name: 'whiskers' }, (err, doc) => {
 //   console.log("doc",doc);
 // });
 // console.log("a",a);
 
 
-// var mM=mongooseModel(project);
+// let mM=mongooseModel(project);
 module.exports = Project;

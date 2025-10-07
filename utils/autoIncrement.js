@@ -1,5 +1,5 @@
 // Module Scope
-var mongoose = require('mongoose'),
+let mongoose = require('mongoose'),
 extend = require('extend'),
 counterSchema,
 IdentityCounter;
@@ -36,7 +36,7 @@ exports.plugin = function (schema, options) {
   if (!counterSchema || !IdentityCounter) throw new Error("mongoose-auto-increment has not been initialized");
 
   // Default settings and plugin scope variables.
-  var settings = {
+  let settings = {
     model: null, // The model to configure the plugin for.
     field: '_id', // The field the plugin should track.
     startAt: 0, // The number the count should start at.
@@ -87,7 +87,7 @@ exports.plugin = function (schema, options) {
   );
 
   // Declare a function to get the next counter for the model/schema.
-  var nextCount = function (callback) {
+  let nextCount = function (callback) {
     IdentityCounter.findOne({
       model: settings.model,
       field: settings.field
@@ -101,7 +101,7 @@ exports.plugin = function (schema, options) {
   schema.static('nextCount', nextCount);
 
   // Declare a function to reset counter at the start value - increment value.
-  var resetCount = function (callback) {
+  let resetCount = function (callback) {
     IdentityCounter.findOneAndUpdate(
       { model: settings.model, field: settings.field },
       { count: settings.startAt - settings.incrementBy },
@@ -119,7 +119,7 @@ exports.plugin = function (schema, options) {
   // Every time documents in this schema are saved, run this logic.
   schema.pre('save', function (next) {
     // Get reference to the document being saved.
-    var doc = this;
+    let doc = this;
 
     // Only do this if it is a new document (see http://mongoosejs.com/docs/api.html#document_Document-isNew)
     if (doc.isNew) {

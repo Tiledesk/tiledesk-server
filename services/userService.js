@@ -1,7 +1,7 @@
-var User = require("../models/user");
-// var Auth = require("../models/auth");
-var mongoose = require('mongoose');
-var winston = require('../config/winston');
+let User = require("../models/user");
+// let Auth = require("../models/auth");
+let mongoose = require('mongoose');
+let winston = require('../config/winston');
 
 class UserService {
 
@@ -9,13 +9,13 @@ class UserService {
         return new Promise(function (resolve, reject) {
                 
             // winston.info("email: " + email);
-            // var emailLowerCase = email;
+            // let emailLowerCase = email;
             
             // if (email) {
-            var   emailLowerCase = email.toLowerCase();
+            let   emailLowerCase = email.toLowerCase();
             // }
 
-            var newUser = new User({
+            let newUser = new User({
                 _id: new mongoose.Types.ObjectId(),
                 email: emailLowerCase,
                 password: password,
@@ -45,6 +45,6 @@ class UserService {
 
 }
 
-var userService = new UserService();
+let userService = new UserService();
 
 module.exports = userService;

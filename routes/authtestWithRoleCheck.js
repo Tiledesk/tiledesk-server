@@ -1,9 +1,9 @@
-var express = require('express');
+let express = require('express');
 
-var router = express.Router({mergeParams: true});
-var roleChecker = require('../middleware/has-role');
+let router = express.Router({mergeParams: true});
+let roleChecker = require('../middleware/has-role');
 
-var noentitycheck = require('../middleware/noentitycheck');
+let noentitycheck = require('../middleware/noentitycheck');
 
 
 router.get('/',  function (req, res) {

@@ -1,7 +1,7 @@
 
 'use strict';
 
-var request = require('retry-request', {
+let request = require('retry-request', {
   request: require('request')
 });
 const axios = require("axios").default;
@@ -60,11 +60,11 @@ class HttpUtil {
 }
 
 
-var httpUtil = new HttpUtil();
+let httpUtil = new HttpUtil();
 
 /*
 async function ciao() {
-    var res = await httpUtil.call("https://webhook.site/bd710929-9b43-4065-88db-78ee17f84aec", undefined, {c:1}, "POST")
+    let res = await httpUtil.call("https://webhook.site/bd710929-9b43-4065-88db-78ee17f84aec", undefined, {c:1}, "POST")
     console.log("res", res);
     
 }

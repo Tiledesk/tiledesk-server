@@ -1,12 +1,12 @@
 'use strict';
 
 const nodemailer = require('nodemailer');
-var config = require('../config/email');
-var configGlobal = require('../config/global');
-var winston = require('../config/winston');
-var marked = require('marked');
-var handlebars = require('handlebars');
-var encode = require('html-entities').encode;
+let config = require('../config/email');
+let configGlobal = require('../config/global');
+let winston = require('../config/winston');
+let marked = require('marked');
+let handlebars = require('handlebars');
+let encode = require('html-entities').encode;
 const emailEvent = require('../event/emailEvent');
 
 const createDOMPurify = require('dompurify');
@@ -21,7 +21,7 @@ handlebars.registerHelper('ifEquals', function (arg1, arg2, options) {
 handlebars.registerHelper('dateFormat', require('handlebars-dateformat'));
 
 
-// var options = {};
+// let options = {};
 // handlebars.registerHelper('markdown', markdown(options));
 
 // handlebars.registerHelper('ifCond', function(v1, v2, options) {
@@ -32,8 +32,8 @@ handlebars.registerHelper('dateFormat', require('handlebars-dateformat'));
 // });
 
 
-var fs = require('fs');
-var appRoot = require('app-root-path');
+let fs = require('fs');
+let appRoot = require('app-root-path');
 
 const MaskData = require("maskdata");
 
@@ -97,7 +97,7 @@ class EmailService {
 
     this.pass = process.env.EMAIL_PASSWORD;
 
-    var maskedemailPassword;
+    let maskedemailPassword;
     if (this.pass) {
       maskedemailPassword = MaskData.maskPhone(this.pass, maskOptions);
     } else {
@@ -151,19 +151,19 @@ class EmailService {
 
   readTemplate(templateName, settings, environmentVariableKey) {
     // aggiunsta questo
-    var that = this;
+    let that = this;
     winston.debug('EmailService readTemplate: ' + templateName + ' environmentVariableKey:  ' + environmentVariableKey + ' setting ' + JSON.stringify(settings));
 
     if (settings && settings.email && settings.email.templates) {
 
-      var templates = settings.email.templates;
+      let templates = settings.email.templates;
       winston.debug('EmailService templates: ', templates);
 
-      var templateDbName = templateName.replace(".html", "");
+      let templateDbName = templateName.replace(".html", "");
       winston.debug('EmailService templateDbName: ' + templateDbName);
 
 
-      var template = templates[templateDbName];
+      let template = templates[templateDbName];
       winston.debug('EmailService template: ' + template);
 
       if (template) {
@@ -173,7 +173,7 @@ class EmailService {
         });
       } 
       else {
-        var envTemplate = process.env[environmentVariableKey];
+        let envTemplate = process.env[environmentVariableKey];
         winston.debug('EmailService envTemplate: ' + envTemplate);
 
         if (envTemplate) {
@@ -191,7 +191,7 @@ class EmailService {
       //   return that.readTemplateFile(templateName);
       // }
     } else {
-      var envTemplate = process.env[environmentVariableKey];
+      let envTemplate = process.env[environmentVariableKey];
       winston.debug('EmailService envTemplate: ' + envTemplate);
 
       if (envTemplate) {
@@ -207,7 +207,7 @@ class EmailService {
     }
   }
   readTemplateFile(templateName) {
-    // var that = this;
+    // let that = this;
     return new Promise(function (resolve, reject) {
       fs.readFile(appRoot + '/template/email/' + templateName, { encoding: 'utf-8' }, function (err, html) {
         if (err) {
@@ -364,17 +364,17 @@ class EmailService {
 
   async sendTest(to, configEmail, callback) {
 
-    var that = this;
+    let that = this;
 
-    // var html = await this.readTemplate('test.html', { "email": { "templates": { test: "123" } } }, "EMAIL_TEST_HTML_TEMPLATE");
-    var html = await this.readTemplate('test.html', undefined, "EMAIL_TEST_HTML_TEMPLATE");
+    // let html = await this.readTemplate('test.html', { "email": { "templates": { test: "123" } } }, "EMAIL_TEST_HTML_TEMPLATE");
+    let html = await this.readTemplate('test.html', undefined, "EMAIL_TEST_HTML_TEMPLATE");
 
-    var template = handlebars.compile(html);
+    let template = handlebars.compile(html);
 
-    var replacements = {
+    let replacements = {
     };
 
-    var html = template(replacements);
+    html = template(replacements);
 
     return that.send({ to: to, subject: `${this.brand_name} test email`, config: configEmail, html: html, callback: callback });
 
@@ -384,7 +384,7 @@ class EmailService {
 
   async sendNewAssignedRequestNotification(to, request, project) {
 
-    var that = this;
+    let that = this;
 
     //if the request came from rabbit mq?
     if (request.toJSON) {
@@ -395,13 +395,13 @@ class EmailService {
       project = project.toJSON();
     }
 
-    var html = await this.readTemplate('assignedRequest.html', project.settings, "EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE");
+    let html = await this.readTemplate('assignedRequest.html', project.settings, "EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
-    var template = handlebars.compile(html);
+    let template = handlebars.compile(html);
 
-    var baseScope = JSON.parse(JSON.stringify(that));
+    let baseScope = JSON.parse(JSON.stringify(that));
     delete baseScope.pass;
 
     // passa anche tutti i messages in modo da stampare tutto
@@ -419,7 +419,7 @@ class EmailService {
 
     winston.debug("msgText: " + msgText);
 
-    var replacements = {
+    let replacements = {
       request: request,
       project: project,
       msgText: msgText,
@@ -429,7 +429,7 @@ class EmailService {
 
     winston.debug("replacements ", replacements);
 
-    var html = template(replacements);
+    html = template(replacements);
     winston.debug("html after: " + html);
 
 
@@ -537,7 +537,7 @@ class EmailService {
 
   async sendNewAssignedAgentMessageEmailNotification(to, request, project, message) {
 
-    var that = this;
+    let that = this;
 
     //if the request came from rabbit mq?
     if (request.toJSON) {
@@ -548,13 +548,13 @@ class EmailService {
       project = project.toJSON();
     }
 
-    var html = await this.readTemplate('assignedEmailMessage.html', project.settings, "EMAIL_ASSIGN_MESSAGE_EMAIL_HTML_TEMPLATE");
+    let html = await this.readTemplate('assignedEmailMessage.html', project.settings, "EMAIL_ASSIGN_MESSAGE_EMAIL_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
-    var template = handlebars.compile(html);
+    let template = handlebars.compile(html);
 
-    var baseScope = JSON.parse(JSON.stringify(that));
+    let baseScope = JSON.parse(JSON.stringify(that));
     delete baseScope.pass;
 
     // passa anche tutti i messages in modo da stampare tutto
@@ -568,7 +568,7 @@ class EmailService {
 
     winston.debug("msgText: " + msgText);
 
-    var replacements = {
+    let replacements = {
       request: request,
       project: project,
       message: message,
@@ -578,7 +578,7 @@ class EmailService {
 
     winston.debug("replacements ", replacements);
 
-    var html = template(replacements);
+    html = template(replacements);
     winston.debug("html after: " + html);
 
 
@@ -690,15 +690,15 @@ class EmailService {
       project = project.toJSON();
     }
 
-    var that = this;
+    let that = this;
 
-    var html = await this.readTemplate('pooledRequest.html', project.settings, "EMAIL_POOLED_REQUEST_HTML_TEMPLATE");
+    let html = await this.readTemplate('pooledRequest.html', project.settings, "EMAIL_POOLED_REQUEST_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
-    var template = handlebars.compile(html);
+    let template = handlebars.compile(html);
 
-    var baseScope = JSON.parse(JSON.stringify(that));
+    let baseScope = JSON.parse(JSON.stringify(that));
     delete baseScope.pass;
 
     // passa anche tutti i messages in modo da stampare tutto
@@ -712,14 +712,14 @@ class EmailService {
 
     winston.debug("msgText: " + msgText);
 
-    var replacements = {
+    let replacements = {
       request: request,
       project: project,
       msgText: msgText,
       baseScope: baseScope
     };
 
-    var html = template(replacements);
+    html = template(replacements);
 
 
     let messageId = "notification-pooled" + new Date().getTime() + "@" + MESSAGE_ID_DOMAIN;
@@ -810,7 +810,7 @@ class EmailService {
 
   async sendNewPooledMessageEmailNotification(to, request, project, message) {
 
-    var that = this;
+    let that = this;
 
 
     //if the request came from rabbit mq?
@@ -822,13 +822,13 @@ class EmailService {
       project = project.toJSON();
     }
 
-    var html = await this.readTemplate('pooledEmailMessage.html', project.settings, "EMAIL_POOLED_MESSAGE_EMAIL_HTML_TEMPLATE");
+    let html = await this.readTemplate('pooledEmailMessage.html', project.settings, "EMAIL_POOLED_MESSAGE_EMAIL_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
-    var template = handlebars.compile(html);
+    let template = handlebars.compile(html);
 
-    var baseScope = JSON.parse(JSON.stringify(that));
+    let baseScope = JSON.parse(JSON.stringify(that));
     delete baseScope.pass;
 
     let msgText = message.text;//.replace(/[\n\r]/g, '<br>');
@@ -842,7 +842,7 @@ class EmailService {
     // passa anche tutti i messages in modo da stampare tutto
     // Stampa anche contact.email
 
-    var replacements = {
+    let replacements = {
       request: request,
       project: project,
       message: message,
@@ -852,7 +852,7 @@ class EmailService {
 
     winston.debug("replacements ", replacements);
 
-    var html = template(replacements);
+    html = template(replacements);
     winston.debug("html after: " + html);
 
 
@@ -955,7 +955,7 @@ class EmailService {
 
   async sendNewMessageNotification(to, message, project, tokenQueryString, sourcePage) {
 
-    var that = this;
+    let that = this;
 
     //if the request came from rabbit mq?
 
@@ -963,13 +963,13 @@ class EmailService {
       project = project.toJSON();
     }
 
-    var html = await this.readTemplate('newMessage.html', project.settings, "EMAIL_NEW_MESSAGE_HTML_TEMPLATE");
+    let html = await this.readTemplate('newMessage.html', project.settings, "EMAIL_NEW_MESSAGE_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
-    var template = handlebars.compile(html);
+    let template = handlebars.compile(html);
 
-    var baseScope = JSON.parse(JSON.stringify(that));
+    let baseScope = JSON.parse(JSON.stringify(that));
     delete baseScope.pass;
 
     let msgText = message.text;//.replace(/[\n\r]/g, '<br>');
@@ -980,7 +980,7 @@ class EmailService {
 
     winston.debug("msgText: " + msgText);
 
-    var replacements = {
+    let replacements = {
       message: message,
       project: project,
       msgText: msgText,
@@ -989,7 +989,7 @@ class EmailService {
       baseScope: baseScope
     };
 
-    var html = template(replacements);
+    html = template(replacements);
     winston.debug("html: " + html);
 
 
@@ -1080,21 +1080,21 @@ class EmailService {
 
   async sendEmailChannelNotification(to, message, project, tokenQueryString, sourcePage) {
 
-    var that = this;
+    let that = this;
 
 
     if (project.toJSON) {
       project = project.toJSON();
     }
 
-    var html = await this.readTemplate('ticket.html', project.settings, "EMAIL_TICKET_HTML_TEMPLATE");
+    let html = await this.readTemplate('ticket.html', project.settings, "EMAIL_TICKET_HTML_TEMPLATE");
     // this.readTemplateFile('ticket.txt', function(err, html) {
 
     winston.debug("html: " + html);
 
-    var template = handlebars.compile(html);
+    let template = handlebars.compile(html);
 
-    var baseScope = JSON.parse(JSON.stringify(that));
+    let baseScope = JSON.parse(JSON.stringify(that));
     delete baseScope.pass;
 
 
@@ -1108,7 +1108,7 @@ class EmailService {
     winston.debug("baseScope: " + JSON.stringify(baseScope));
 
 
-    var replacements = {
+    let replacements = {
       message: message,
       project: project,
       seamlessPage: sourcePage,
@@ -1117,7 +1117,7 @@ class EmailService {
       baseScope: baseScope
     };
 
-    var html = template(replacements);
+    html = template(replacements);
     winston.debug("html: " + html);
 
 
@@ -1257,20 +1257,20 @@ class EmailService {
 
   async sendFollowerNotification(to, message, project) {
 
-    var that = this;
+    let that = this;
 
 
     if (project.toJSON) {
       project = project.toJSON();
     }
 
-    var html = await this.readTemplate('newMessageFollower.html', project.settings, "EMAIL_FOLLOWER_HTML_TEMPLATE");
+    let html = await this.readTemplate('newMessageFollower.html', project.settings, "EMAIL_FOLLOWER_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
-    var template = handlebars.compile(html);
+    let template = handlebars.compile(html);
 
-    var baseScope = JSON.parse(JSON.stringify(that));
+    let baseScope = JSON.parse(JSON.stringify(that));
     delete baseScope.pass;
 
 
@@ -1284,14 +1284,14 @@ class EmailService {
     winston.debug("baseScope: " + JSON.stringify(baseScope));
 
 
-    var replacements = {
+    let replacements = {
       message: message,
       project: project,
       msgText: msgText,
       baseScope: baseScope
     };
 
-    var html = template(replacements);
+    html = template(replacements);
     winston.debug("html: " + html);
 
     const fs = require('fs');
@@ -1412,13 +1412,13 @@ class EmailService {
   /*
     sendEmailChannelTakingNotification(to, request, project, tokenQueryString) {
   
-      var that = this;
+      let that = this;
   
       this.readTemplateFile('ticket-taking.txt', function(err, html) {
         // this.readTemplateFile('ticket.html', function(err, html) {
   
   
-        var envTemplate = process.env.EMAIL_TICKET_HTML_TEMPLATE;
+        let envTemplate = process.env.EMAIL_TICKET_HTML_TEMPLATE;
          winston.debug("envTemplate: " + envTemplate);
   
         if (envTemplate) {
@@ -1427,19 +1427,19 @@ class EmailService {
   
         winston.debug("html: " + html);
   
-        var template = handlebars.compile(html);
+        let template = handlebars.compile(html);
   
-        var baseScope = JSON.parse(JSON.stringify(that));
+        let baseScope = JSON.parse(JSON.stringify(that));
         delete baseScope.pass;
   
-        var replacements = {        
+        let replacements = {        
           request: request,
           project: project.toJSON(),
           tokenQueryString: tokenQueryString,
           baseScope: baseScope    
         };
   
-        var html = template(replacements);
+        let html = template(replacements);
         winston.debug("html: " + html);
   
   
@@ -1464,21 +1464,21 @@ class EmailService {
 
   async sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage, payload, replyTo, quoteManager) {
 
-    var that = this;
+    let that = this;
 
 
     if (project.toJSON) {
       project = project.toJSON();
     }
 
-    var html = await this.readTemplate('emailDirect.html', project.settings, "EMAIL_DIRECT_HTML_TEMPLATE");
+    let html = await this.readTemplate('emailDirect.html', project.settings, "EMAIL_DIRECT_HTML_TEMPLATE");
 
 
     winston.debug("html: " + html);
 
-    var template = handlebars.compile(html);
+    let template = handlebars.compile(html);
 
-    var baseScope = JSON.parse(JSON.stringify(that));
+    let baseScope = JSON.parse(JSON.stringify(that));
     delete baseScope.pass;
 
     let msgText = text;
@@ -1494,7 +1494,7 @@ class EmailService {
     winston.debug("baseScope: " + JSON.stringify(baseScope));
 
 
-    var replacements = {
+    let replacements = {
       project: project,
       request_id: request_id,
       seamlessPage: sourcePage,
@@ -1504,7 +1504,7 @@ class EmailService {
       payload: payload
     };
 
-    var html = template(replacements);
+    html = template(replacements);
     winston.debug("html: " + html);
 
 
@@ -1557,26 +1557,26 @@ class EmailService {
   // ok
   async sendPasswordResetRequestEmail(to, resetPswRequestId, userFirstname, userLastname) {
 
-    var that = this;
+    let that = this;
 
-    var html = await this.readTemplate('resetPassword.html', undefined, "EMAIL_RESET_PASSWORD_HTML_TEMPLATE");
+    let html = await this.readTemplate('resetPassword.html', undefined, "EMAIL_RESET_PASSWORD_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
-    var template = handlebars.compile(html);
+    let template = handlebars.compile(html);
 
-    var baseScope = JSON.parse(JSON.stringify(that));
+    let baseScope = JSON.parse(JSON.stringify(that));
     delete baseScope.pass;
 
 
-    var replacements = {
+    let replacements = {
       resetPswRequestId: resetPswRequestId,
       userFirstname: userFirstname,
       userLastname: userLastname,
       baseScope: baseScope
     };
 
-    var html = template(replacements);
+    html = template(replacements);
 
 
     that.send({ to: to, subject: `[${this.brand_name}] Password reset request`, html: html });
@@ -1587,26 +1587,26 @@ class EmailService {
   // ok
   async sendYourPswHasBeenChangedEmail(to, userFirstname, userLastname) {
 
-    var that = this;
+    let that = this;
 
-    var html = await this.readTemplate('passwordChanged.html', undefined, "EMAIL_PASSWORD_CHANGED_HTML_TEMPLATE");
+    let html = await this.readTemplate('passwordChanged.html', undefined, "EMAIL_PASSWORD_CHANGED_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
-    var template = handlebars.compile(html);
+    let template = handlebars.compile(html);
 
-    var baseScope = JSON.parse(JSON.stringify(that));
+    let baseScope = JSON.parse(JSON.stringify(that));
     delete baseScope.pass;
 
 
-    var replacements = {
+    let replacements = {
       userFirstname: userFirstname,
       userLastname: userLastname,
       to: to,
       baseScope: baseScope
     };
 
-    var html = template(replacements);
+    html = template(replacements);
 
 
     that.send({ to: to, subject: `[${this.brand_name}] Your password has been changed`, html: html });
@@ -1623,19 +1623,19 @@ class EmailService {
    */
   async sendYouHaveBeenInvited(to, currentUserFirstname, currentUserLastname, projectName, id_project, invitedUserFirstname, invitedUserLastname, invitedUserRole) {
 
-    var that = this;
+    let that = this;
 
-    var html = await this.readTemplate('beenInvitedExistingUser.html', undefined, "EMAIL_EXUSER_INVITED_HTML_TEMPLATE");
+    let html = await this.readTemplate('beenInvitedExistingUser.html', undefined, "EMAIL_EXUSER_INVITED_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
-    var template = handlebars.compile(html);
+    let template = handlebars.compile(html);
 
-    var baseScope = JSON.parse(JSON.stringify(that));
+    let baseScope = JSON.parse(JSON.stringify(that));
     delete baseScope.pass;
 
 
-    var replacements = {
+    let replacements = {
       currentUserFirstname: currentUserFirstname,
       currentUserLastname: currentUserLastname,
       projectName: projectName,
@@ -1646,7 +1646,7 @@ class EmailService {
       baseScope: baseScope
     };
 
-    var html = template(replacements);
+    html = template(replacements);
 
 
     that.send({ to: to, subject: `[${this.brand_name}] You have been invited to the '${projectName}' project`, html: html });
@@ -1662,19 +1662,19 @@ class EmailService {
   async sendInvitationEmail_UserNotRegistered(to, currentUserFirstname, currentUserLastname, projectName, id_project, invitedUserRole, pendinginvitationid) {
 
 
-    var that = this;
+    let that = this;
 
-    var html = await this.readTemplate('beenInvitedNewUser.html', undefined, "EMAIL_NEWUSER_INVITED_HTML_TEMPLATE");
+    let html = await this.readTemplate('beenInvitedNewUser.html', undefined, "EMAIL_NEWUSER_INVITED_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
-    var template = handlebars.compile(html);
+    let template = handlebars.compile(html);
 
-    var baseScope = JSON.parse(JSON.stringify(that));
+    let baseScope = JSON.parse(JSON.stringify(that));
     delete baseScope.pass;
 
 
-    var replacements = {
+    let replacements = {
       currentUserFirstname: currentUserFirstname,
       currentUserLastname: currentUserLastname,
       projectName: projectName,
@@ -1684,7 +1684,7 @@ class EmailService {
       baseScope: baseScope
     };
 
-    var html = template(replacements);
+    html = template(replacements);
 
     that.send({ to: to, subject: `[${this.brand_name}] You have been invited to the '${projectName}' project`, html: html });
     that.send({ to: that.bcc, subject: `[${this.brand_name}] You have been invited to the '${projectName}' project - notification`, html: html });
@@ -1695,28 +1695,28 @@ class EmailService {
   async sendVerifyEmailAddress(to, savedUser, code) {
 
 
-    var that = this;
+    let that = this;
 
     if (savedUser.toJSON) {
       savedUser = savedUser.toJSON();
     }
-    var html = await this.readTemplate('verify.html', undefined, "EMAIL_VERIFY_HTML_TEMPLATE");
+    let html = await this.readTemplate('verify.html', undefined, "EMAIL_VERIFY_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
-    var template = handlebars.compile(html);
+    let template = handlebars.compile(html);
 
-    var baseScope = JSON.parse(JSON.stringify(that));
+    let baseScope = JSON.parse(JSON.stringify(that));
     delete baseScope.pass;
 
 
-    var replacements = {
+    let replacements = {
       savedUser: savedUser,
       baseScope: baseScope,
       code: code
     };
 
-    var html = template(replacements);
+    html = template(replacements);
 
 
     that.send({ to: to, subject: `[${this.brand_name}] Verify your email address`, html: html });
@@ -1744,7 +1744,7 @@ class EmailService {
     //   project = project.toJSON();
     // }
 
-    var transcriptAsHtml = ""; //https://handlebarsjs.com/guide/expressions.html#html-escaping
+    let transcriptAsHtml = ""; //https://handlebarsjs.com/guide/expressions.html#html-escaping
     messages.forEach(message => {
       transcriptAsHtml = transcriptAsHtml + '[' + message.createdAt.toLocaleTimeString('en', { timeZone: 'UTC' }) + '] ' + message.senderFullname + ': ' + message.text + '<br>';
     });
@@ -1752,19 +1752,19 @@ class EmailService {
 
 
 
-    var that = this;
+    let that = this;
 
-    var html = await this.readTemplate('sendTranscript.html', project.settings, "EMAIL_SEND_TRANSCRIPT_HTML_TEMPLATE");
+    let html = await this.readTemplate('sendTranscript.html', project.settings, "EMAIL_SEND_TRANSCRIPT_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
-    var template = handlebars.compile(html);
+    let template = handlebars.compile(html);
 
-    var baseScope = JSON.parse(JSON.stringify(that));
+    let baseScope = JSON.parse(JSON.stringify(that));
     delete baseScope.pass;
 
 
-    var replacements = {
+    let replacements = {
       messages: messages,
       request: request,
       formattedCreatedAt: request.createdAt.toLocaleString('en', { timeZone: 'UTC' }),
@@ -1772,7 +1772,7 @@ class EmailService {
       baseScope: baseScope
     };
 
-    var html = template(replacements);
+    html = template(replacements);
 
 
 
@@ -1814,7 +1814,7 @@ class EmailService {
   async sendEmailRedirectOnDesktop(to, token, project_id, chatbot_id, namespace_id) {
     winston.debug("sendEmailRedirectOnDesktop: " + to);
 
-    var that = this;
+    let that = this;
 
     let html = await this.readTemplate('redirectToDesktopEmail.html', undefined, "EMAIL_REDIRECT_TO_DESKTOP_TEMPLATE");
 
@@ -1851,7 +1851,7 @@ class EmailService {
 
     winston.info("sendEmailQuotaCheckpointReached: " + to);
     
-    var that = this;
+    let that = this;
 
     let html = await this.readTemplate('checkpointReachedEmail.html', undefined, "EMAIL_QUOTA_CHECKPOINT_REACHED_TEMPLATE");
     winston.debug("html: " + html);
@@ -1889,20 +1889,20 @@ class EmailService {
 
 
 
-    var baseScope = JSON.parse(JSON.stringify(this));
+    let baseScope = JSON.parse(JSON.stringify(this));
     delete baseScope.pass;
 
     winston.debug("parseText text: " + text);
 
-    var templateHand = handlebars.compile(text);
+    let templateHand = handlebars.compile(text);
 
-    var replacements = {
+    let replacements = {
       payload: payload,
       baseScope: baseScope,
       test: "test"
     };
 
-    var textTemplate = templateHand(replacements);
+    let textTemplate = templateHand(replacements);
     winston.debug("parseText textTemplate: " + textTemplate);
 
     return textTemplate;
@@ -1923,20 +1923,20 @@ class EmailService {
       text = template;
     }
 
-    var baseScope = JSON.parse(JSON.stringify(this));
+    let baseScope = JSON.parse(JSON.stringify(this));
     delete baseScope.pass;
 
     winston.debug("formatText text: " + text);
 
-    var templateHand = handlebars.compile(text);
+    let templateHand = handlebars.compile(text);
 
-    var replacements = {
+    let replacements = {
       payload: payload,
       baseScope: baseScope,
       test: "test"
     };
 
-    var textTemplate = templateHand(replacements);
+    let textTemplate = templateHand(replacements);
     winston.debug("formatText textTemplate: " + textTemplate);
 
     return textTemplate;
@@ -1945,21 +1945,21 @@ class EmailService {
 
   getTemplate(templateName, settings) {
 
-    var that = this;
+    let that = this;
     winston.debug('getTemplate formatSubject: ' + JSON.stringify(settings));
 
 
     if (settings && settings.email && settings.email.templates) {
       winston.debug('getTemplate settings.email.templates: ', settings.email.templates);
 
-      var templates = settings.email.templates;
+      let templates = settings.email.templates;
       winston.debug('getTemplate templates: ', templates);
 
-      var templateDbName = templateName.replace(".subject", "");
+      let templateDbName = templateName.replace(".subject", "");
       winston.debug('getTemplate templateDbName: ' + templateDbName);
 
 
-      var template = templates[templateDbName];
+      let template = templates[templateDbName];
       winston.debug('getTemplate template: ' + template);
 
       if (template) {
@@ -1982,9 +1982,9 @@ class EmailService {
 }
 
 
-var emailService = new EmailService();
+let emailService = new EmailService();
 
-// var subject = "abc";
+// let subject = "abc";
 // hcustomization.emailTranscript({subject: subject});
 // console.log("subject", subject);
 

@@ -1,21 +1,21 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
-var Profile = require('../models/profile');
-var Channel = require('../models/channel');
-var pjson = require('../package.json');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
+let Profile = require('../models/profile');
+let Channel = require('../models/channel');
+let pjson = require('../package.json');
 const uuidv4 = require('uuid/v4');
 
 
 
-var trialEnabled = process.env.TRIAL_MODE_ENABLED || false;
+let trialEnabled = process.env.TRIAL_MODE_ENABLED || false;
 winston.debug("trial mode enabled: "+trialEnabled );
 
 if (trialEnabled) {
   winston.info("Trial mode enabled");
 }
 
-var ChatLimitOn = process.env.SMART_ASSIGNMENT_CHAT_LIMIT_ON_DEFAULT_PROJECT || false;
+let ChatLimitOn = process.env.SMART_ASSIGNMENT_CHAT_LIMIT_ON_DEFAULT_PROJECT || false;
 winston.debug("ChatLimitOn: "+ChatLimitOn );
 
 
@@ -23,7 +23,7 @@ if (ChatLimitOn) {
   winston.info("Smart Assignment Chat Limit On as default value for projects");
 }
 
-var ProjectSchema = new Schema({
+let ProjectSchema = new Schema({
   name: {
     type: String,
     required: true
@@ -40,7 +40,7 @@ var ProjectSchema = new Schema({
   settings: {
     type: Object,
     default: function () {
-      var defaultValue = {};
+      let defaultValue = {};
 
       if (ChatLimitOn) {
         defaultValue.chat_limit_on = true;
@@ -92,8 +92,8 @@ var ProjectSchema = new Schema({
     type: Number,
     default: function() {
       // try {
-      //   var version = pjson.version;
-      //   var versionNumber = parseInt(version.split(".").join(""));
+      //   let version = pjson.version;
+      //   let versionNumber = parseInt(version.split(".").join(""));
       //   //console.log("versionNumber",versionNumber);
       //   return versionNumber;
       // } catch(e) {
@@ -197,17 +197,17 @@ ProjectSchema.virtual('isActiveSubscription').get(function () {
   // winston.debug("isActiveSubscription  - PROJECT profile type: " + this.profile.type);
   // winston.debug("isActiveSubscription  - PROJECT profile subscription end date: " + this.profile.subEnd);
   // winston.debug("isActiveSubscription  -  this.activeOperatingHours: " + this.activeOperatingHours);
-  var isActiveSubscription = '';
+  let isActiveSubscription = '';
   if (this.profile && this.profile.type === 'payment') {
 
     if (this.profile.subEnd) {
       // winston.debug("isActiveSubscription  - PROJECT profile subscription end date getTime(): " + this.profile.subEnd.getTime());
 
-      var subEndPlus3gg = this.profile.subEnd.getTime() + 259200000
+      let subEndPlus3gg = this.profile.subEnd.getTime() + 259200000
       // winston.debug("isActiveSubscription  - PROJECT profile subscription end date getTime() + 3gg: " + subEndPlus3gg);
 
       // FOR DEBUG 
-      var subEndMinus3gg = this.profile.subEnd.getTime() - 259200000
+      let subEndMinus3gg = this.profile.subEnd.getTime() - 259200000
       // winston.debug("isActiveSubscription  - PROJECT profile subscription end date getTime() - 3gg: " + subEndMinus3gg);
 
       // + 259200000 

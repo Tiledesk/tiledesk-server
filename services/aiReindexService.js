@@ -1,4 +1,4 @@
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 const axios = require("axios").default;
 require('dotenv').config();
 

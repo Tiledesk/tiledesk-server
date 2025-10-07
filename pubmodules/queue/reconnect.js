@@ -1,5 +1,5 @@
-var amqp = require('amqplib/callback_api');
-var winston = require('../../config/winston');
+let amqp = require('amqplib/callback_api');
+let winston = require('../../config/winston');
 const requestEvent = require('../../event/requestEvent');
 const messageEvent = require('../../event/messageEvent');
 const leadEvent = require('../../event/leadEvent');
@@ -11,27 +11,27 @@ const authEvent = require('../../event/authEvent');
 // http://www.rabbitmq.com/tutorials/tutorial-one-javascript.html
 
 // if the connection is closed or fails to be established at all, we will reconnect
-var amqpConn = null;
+let amqpConn = null;
 
-var url = process.env.CLOUDAMQP_URL + "?heartbeat=60" || "amqp://localhost";
+let url = process.env.CLOUDAMQP_URL + "?heartbeat=60" || "amqp://localhost";
 // attento devi aggiornare configMap di PRE E PROD
-// var url = process.env.AMQP_URL + "?heartbeat=60" || "amqp://localhost?heartbeat=60";
+// let url = process.env.AMQP_URL + "?heartbeat=60" || "amqp://localhost?heartbeat=60";
 
-// var durable = true;
-var durable = false;
+// let durable = true;
+let durable = false;
 
 // if (process.env.ENABLE_DURABLE_QUEUE == false || process.env.ENABLE_DURABLE_QUEUE == "false") {
 //   durable = false;
 // }
 
-var persistent = false;
+let persistent = false;
 if (process.env.ENABLE_PERSISTENT_QUEUE == true || process.env.ENABLE_PERSISTENT_QUEUE == "true") {
   persistent = true;
 }
 
-var exchange = process.env.QUEUE_EXCHANGE_TOPIC || 'amq.topic';
+let exchange = process.env.QUEUE_EXCHANGE_TOPIC || 'amq.topic';
 
-var queueName = process.env.QUEUE_NAME || 'jobs';
+let queueName = process.env.QUEUE_NAME || 'jobs';
 winston.info("Durable queue: " + durable + " Persistent queue: " + persistent + " Exchange topic: " + exchange+ " Queue name: " + queueName);
 
 
@@ -77,8 +77,8 @@ function whenConnected() {
   
 }
 
-var pubChannel = null;
-var offlinePubQueue = [];
+let pubChannel = null;
+let offlinePubQueue = [];
 function startPublisher() {
   amqpConn.createConfirmChannel(function(err, ch) {
     if (closeOnErr(err)) return;
@@ -91,7 +91,7 @@ function startPublisher() {
 
     pubChannel = ch;
     while (true) {
-      var m = offlinePubQueue.shift();
+      let m = offlinePubQueue.shift();
       if (!m) break;
       publish(m[0], m[1], m[2]);
     }
@@ -118,7 +118,7 @@ function publish(exchange, routingKey, content) {
 }
 
 // A worker that acks messages only if processed succesfully
-// var channel;
+// let channel;
 function startWorker() {
     amqpConn.createChannel(function(err, ch) {
       if (closeOnErr(err)) return;
@@ -336,7 +336,7 @@ function closeOnErr(err) {
 }
 
 // setInterval(function() {
-//     var d = new Date();
+//     let d = new Date();
 //   publish(exchange, "request_create", Buffer.from("work work work: "+d));
 //   publish(exchange, "request_update", Buffer.from("work2 work work: "+d));
 // }, 1000);
@@ -424,7 +424,7 @@ function listen() {
             body = data.req.body;
           }
         }
-        var dat = {updatedProject_userPopulated: data.updatedProject_userPopulated, req: {user: user, body: body}}; //remove request
+        let dat = {updatedProject_userPopulated: data.updatedProject_userPopulated, req: {user: user, body: body}}; //remove request
         winston.debug("dat",dat);
         publish(exchange, "project_user_update", Buffer.from(JSON.stringify(dat)));
       });

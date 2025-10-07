@@ -1,7 +1,7 @@
 
 const messagePromiseEvent = require('../../event/messagePromiseEvent');
 
-var winston = require('../../config/winston');
+let winston = require('../../config/winston');
 const { TiledeskChatbotUtil } = require('@tiledesk/tiledesk-chatbot-util');
 
 
@@ -12,25 +12,25 @@ class MicroLanguageTransformerInterceptor {
 
     listen() {
 
-        var that = this;
+        let that = this;
         winston.info("MicroLanguageTransformerInterceptor listener start ");
         
         messagePromiseEvent.on('message.create.simple.before', async (data) => {
             winston.info('MicroLanguageTransformerInterceptor message.create.simple.before', data); 
 
-            var message = data.beforeMessage;
+            let message = data.beforeMessage;
             
             if (!message.text) { //for image i think
                 return data;
             }
 
             if (message.attributes && message.attributes.microlanguage == true) { 
-                var reply = TiledeskChatbotUtil.parseReply(message.text);
+                let reply = TiledeskChatbotUtil.parseReply(message.text);
                 winston.info('parseReply: ' + JSON.stringify(reply) );
-                var messageReply = reply.message;
+                let messageReply = reply.message;
 
                  
-                var msg_attributes = {"_raw_message": message.text};
+                let msg_attributes = {"_raw_message": message.text};
 
                 if (messageReply && messageReply.attributes) {
                     for(const [key, value] of Object.entries(messageReply.attributes)) {
@@ -63,5 +63,5 @@ class MicroLanguageTransformerInterceptor {
     
 }
 
-var microLanguageTransformerInterceptor = new MicroLanguageTransformerInterceptor();
+let microLanguageTransformerInterceptor = new MicroLanguageTransformerInterceptor();
 module.exports = microLanguageTransformerInterceptor;

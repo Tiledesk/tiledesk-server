@@ -1,18 +1,18 @@
 'use strict';
 
-var Lead = require("../models/lead");
+let Lead = require("../models/lead");
 const uuidv4 = require('uuid/v4');
 const leadEvent = require('../event/leadEvent');
-var winston = require('../config/winston');
-var cacheUtil = require('../utils/cacheUtil');
-var cacheEnabler = require("../services/cacheEnabler");
+let winston = require('../config/winston');
+let cacheUtil = require('../utils/cacheUtil');
+let cacheEnabler = require("../services/cacheEnabler");
 
 
 class LeadService {
 
 
   findByEmail(email, id_project) {
-    var that = this;
+    let that = this;
     return new Promise(function (resolve, reject) {
       return Lead.findOne({email: email, id_project: id_project})
       //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, id_project+":leads:email:"+email)  //lead_cache
@@ -33,7 +33,7 @@ class LeadService {
 
 
   createIfNotExists(fullname, email, id_project, createdBy, attributes, status) {
-    var that = this;
+    let that = this;
     return new Promise(function (resolve, reject) {
       that.findByEmail(email, id_project).then(function(lead) {
       // return Lead.findOne({email: email, id_project: id_project}, function(err, lead)  {         
@@ -56,7 +56,7 @@ class LeadService {
 
 
   createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes, status) {
-    var that = this;
+    let that = this;
     return new Promise(function (resolve, reject) {
       return Lead.findOne({lead_id: lead_id, id_project: id_project})
         //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, id_project+":leads:lead_id:"+lead_id) //lead_cache
@@ -93,7 +93,7 @@ class LeadService {
 
     return new Promise(function (resolve, reject) {
 
-    var update = {};
+    let update = {};
 
     update.status = status;
 
@@ -120,7 +120,7 @@ class LeadService {
 
     return new Promise(function (resolve, reject) {
 
-    var update = {};
+    let update = {};
 
     update.fullname = fullname;
     update.email = email;
@@ -159,7 +159,7 @@ class LeadService {
 
     return new Promise(function (resolve, reject) {
 
-            var newLead = new Lead({
+            let newLead = new Lead({
               lead_id: lead_id,
               fullname: fullname,
               email: email,
@@ -186,7 +186,7 @@ class LeadService {
   }
 
 }
-var leadService = new LeadService();
+let leadService = new LeadService();
 
 
 module.exports = leadService;

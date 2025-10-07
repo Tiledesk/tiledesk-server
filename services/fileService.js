@@ -8,6 +8,6 @@ class FileService {
 
 }
 
-// var fileService = new FileService();
+// let fileService = new FileService();
 
 module.exports = FileService;

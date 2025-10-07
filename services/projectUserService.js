@@ -1,11 +1,11 @@
 'use strict';
 
-var Project = require("../models/project");
-var Project_user = require("../models/project_user");
-var mongoose = require('mongoose');
-var User = require('../models/user');
-var winston = require('../config/winston');
-var pendinginvitation = require("../services/pendingInvitationService");
+let Project = require("../models/project");
+let Project_user = require("../models/project_user");
+let mongoose = require('mongoose');
+let User = require('../models/user');
+let winston = require('../config/winston');
+let pendinginvitation = require("../services/pendingInvitationService");
 
 class ProjectUserService {
 
@@ -43,7 +43,7 @@ class ProjectUserService {
     }
 
 }
-var projectUserService = new ProjectUserService();
+let projectUserService = new ProjectUserService();
 
 
 module.exports = projectUserService;

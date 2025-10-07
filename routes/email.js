@@ -1,9 +1,9 @@
-var express = require('express');
+let express = require('express');
 
-var router = express.Router();
+let router = express.Router();
 
-var emailService = require("../services/emailService");
-var winston = require('../config/winston');
+let emailService = require("../services/emailService");
+let winston = require('../config/winston');
 const recipientEmailUtil = require("../utils/recipientEmailUtil");
 
 
@@ -15,7 +15,7 @@ router.get('/templates/:templateid',
   winston.debug("req.params.templateid: "+req.params.templateid);
   winston.debug("process.env.EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE: "+process.env.EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE);
 
-  var html = await emailService.readTemplateFile(templateid);
+  let html = await emailService.readTemplateFile(templateid);
 
   if (req.params.templateid == "assignedRequest" && process.env.EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE) {
     html = process.env.EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE;

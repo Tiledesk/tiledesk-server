@@ -6,6 +6,6 @@ class FilesystemService extends FileService {
 
 }
 
-var filesystemService = new FilesystemService();
+let filesystemService = new FilesystemService();
 
 module.exports = filesystemService;

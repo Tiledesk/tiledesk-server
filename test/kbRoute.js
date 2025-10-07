@@ -9,20 +9,20 @@ process.env.PINECONE_INDEX_HYBRID = "test-index-hybrid";
 process.env.PINECONE_TYPE_HYBRID = "serverless";
 process.env.ADMIN_EMAIL = "admin@tiledesk.com";
 
-var userService = require('../services/userService');
-var projectService = require('../services/projectService');
-var faqService = require('../services/faqService');
+let userService = require('../services/userService');
+let projectService = require('../services/projectService');
+let faqService = require('../services/faqService');
 
 let log = false;
 
-var config = require('../config/global');
+let config = require('../config/global');
 
 //Require the dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
-var fs = require('fs');
+let fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
 const nock = require('nock');
@@ -31,8 +31,8 @@ const faq = require('../models/faq');
 
 // chai.config.includeStack = true;
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 let custom_profile_sample = { 
     name: "Custom",
@@ -53,8 +53,8 @@ describe('KbRoute', () => {
         // NEW TESTS
         it('create-new-kb', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -108,8 +108,8 @@ describe('KbRoute', () => {
 
         it('create-new-text-kb', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -166,8 +166,8 @@ describe('KbRoute', () => {
 
         it('get-kb-chunks', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -232,8 +232,8 @@ describe('KbRoute', () => {
 
         it('get-with-queries', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -357,8 +357,8 @@ describe('KbRoute', () => {
 
         it('get-with-queries-namespace-not-belong-project', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -431,8 +431,8 @@ describe('KbRoute', () => {
 
         it('add-multiple-faqs-with-csv', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -477,8 +477,8 @@ describe('KbRoute', () => {
          */
         it('add-multiple-urls-no-namespaces', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -513,8 +513,8 @@ describe('KbRoute', () => {
          */
         it('add-multiple-urls-namespace-not-belong-project', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -557,8 +557,8 @@ describe('KbRoute', () => {
 
         it('add-multiple-urls-success', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -600,8 +600,8 @@ describe('KbRoute', () => {
 
         it('add-multiple-urls-with-scrape-option-success-type-4', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -647,8 +647,8 @@ describe('KbRoute', () => {
 
         it('add-multiple-urls-with-scrape-option-success-type-3', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -691,8 +691,8 @@ describe('KbRoute', () => {
 
         it('expand-sitemap', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -722,8 +722,8 @@ describe('KbRoute', () => {
 
         it('scrape-single', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -792,8 +792,8 @@ describe('KbRoute', () => {
 
         it('askkb-key-from-env', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-kb-qa", savedUser._id).then((savedProject) => {
@@ -826,8 +826,8 @@ describe('KbRoute', () => {
 
         it('askkb-with-hybrid-search', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-kb-qa", savedUser._id).then((savedProject) => {
@@ -869,8 +869,8 @@ describe('KbRoute', () => {
 
         it('webhook', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-kb-webhook", savedUser._id).then(function (savedProject) {
@@ -940,8 +940,8 @@ describe('KbRoute', () => {
 
         it('webhook-reindex', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-kb-webhook", savedUser._id).then(function (savedProject) {
@@ -1021,8 +1021,8 @@ describe('KbRoute', () => {
          */
         it('get-namespaces-1', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -1062,8 +1062,8 @@ describe('KbRoute', () => {
          */
         // it('create-and-get-namespaces', (done) => {
 
-        //     var email = "test-signup-" + Date.now() + "@email.com";
-        //     var pwd = "pwd";
+        //     let email = "test-signup-" + Date.now() + "@email.com";
+        //     let pwd = "pwd";
 
         //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
         //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -1127,8 +1127,8 @@ describe('KbRoute', () => {
 
         it('create-namespaces-with-engine-similarity', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -1175,8 +1175,8 @@ describe('KbRoute', () => {
 
         it('create-namespaces-with-engine-hybrid-rejected', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -1203,8 +1203,8 @@ describe('KbRoute', () => {
         
         it('create-namespaces-with-engine-hybrid-accepted', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -1268,8 +1268,8 @@ describe('KbRoute', () => {
 
         it('import-namespace', (done) => {
             
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-namespace-import", savedUser._id).then((savedProject) => {
@@ -1317,8 +1317,8 @@ describe('KbRoute', () => {
          */
         it('update-namespace', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -1381,8 +1381,8 @@ describe('KbRoute', () => {
          */
         it('fail-to-delete-default-namespace', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
@@ -1429,8 +1429,8 @@ describe('KbRoute', () => {
 
         it('get-chatbots-from-namespace', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create('test-faqkb-create', savedUser._id).then((savedProject) => {
@@ -1508,8 +1508,8 @@ describe('KbRoute', () => {
          */
         // it('delete-namespace', (done) => {
 
-        //     var email = "test-signup-" + Date.now() + "@email.com";
-        //     var pwd = "pwd";
+        //     let email = "test-signup-" + Date.now() + "@email.com";
+        //     let pwd = "pwd";
 
         //     nock('https://api.openai.com')
         //         .post('/v1/namespaces/delete')
@@ -1589,8 +1589,8 @@ describe('KbRoute', () => {
     describe('Unanswered Questions', () => {
         
         it('add-unanswered-question', (done) => {
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-unanswered-create", savedUser._id).then(function (savedProject) {
@@ -1635,8 +1635,8 @@ describe('KbRoute', () => {
         });
 
         it('get-unanswered-questions', (done) => {
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-unanswered-get", savedUser._id).then(function (savedProject) {
@@ -1691,8 +1691,8 @@ describe('KbRoute', () => {
         });
 
         it('delete-unanswered-question', (done) => {
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-unanswered-delete", savedUser._id).then(function (savedProject) {
@@ -1751,8 +1751,8 @@ describe('KbRoute', () => {
         });
 
         it('delete-all-unanswered-questions', (done) => {
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-unanswered-delete-all", savedUser._id).then(function (savedProject) {
@@ -1815,8 +1815,8 @@ describe('KbRoute', () => {
         });
 
         it('update-unanswered-question', (done) => {
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-unanswered-update", savedUser._id).then(function (savedProject) {
@@ -1865,8 +1865,8 @@ describe('KbRoute', () => {
         });
 
         it('count-unanswered-questions', (done) => {
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-unanswered-count", savedUser._id).then(function (savedProject) {

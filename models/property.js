@@ -1,8 +1,8 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
 
-var PropertySchema = new Schema({
+let PropertySchema = new Schema({
   
   label: {
     type: String,
@@ -39,7 +39,7 @@ var PropertySchema = new Schema({
   }
 );
 
-var property = mongoose.model('property', PropertySchema);
+let property = mongoose.model('property', PropertySchema);
 
  if (process.env.MONGOOSE_SYNCINDEX) {
   property.syncIndexes();

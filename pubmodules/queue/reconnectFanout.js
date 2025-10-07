@@ -1,5 +1,5 @@
-var amqp = require('amqplib/callback_api');
-var winston = require('../../config/winston');
+let amqp = require('amqplib/callback_api');
+let winston = require('../../config/winston');
 const requestEvent = require('../../event/requestEvent');
 const messageEvent = require('../../event/messageEvent');
 const botEvent = require('../../event/botEvent');
@@ -9,13 +9,13 @@ const authEvent = require('../../event/authEvent');
 // http://www.rabbitmq.com/tutorials/tutorial-one-javascript.html
 
 // if the connection is closed or fails to be established at all, we will reconnect
-var amqpConn = null;
-var url = process.env.CLOUDAMQP_URL + "?heartbeat=60" || "amqp://localhost";
+let amqpConn = null;
+let url = process.env.CLOUDAMQP_URL + "?heartbeat=60" || "amqp://localhost";
 // attento devi aggiornare configMap di PRE E PROD
-// var url = process.env.AMQP_URL + "?heartbeat=60" || "amqp://localhost";
+// let url = process.env.AMQP_URL + "?heartbeat=60" || "amqp://localhost";
 
 // MOD0
-var exchange = 'ws';
+let exchange = 'ws';
 
 function start() {
   amqp.connect(url, function(err, conn) {
@@ -45,8 +45,8 @@ function whenConnected() {
   startWorker();
 }
 
-var pubChannel = null;
-var offlinePubQueue = [];
+let pubChannel = null;
+let offlinePubQueue = [];
 function startPublisher() {
   amqpConn.createConfirmChannel(function(err, ch) {
     if (closeOnErr(err)) return;
@@ -59,7 +59,7 @@ function startPublisher() {
 
     pubChannel = ch;
     while (true) {
-      var m = offlinePubQueue.shift();
+      let m = offlinePubQueue.shift();
       if (!m) break;
       publish(m[0], m[1], m[2]);
     }
@@ -88,7 +88,7 @@ function publish(exchange, routingKey, content) {
 }
 
 // A worker that acks messages only if processed succesfully
-// var channel;
+// let channel;
 function startWorker() {
     amqpConn.createChannel(function(err, ch) {
       if (closeOnErr(err)) return;
@@ -198,7 +198,7 @@ function closeOnErr(err) {
 }
 
 // setInterval(function() {
-//     var d = new Date();
+//     let d = new Date();
 //   publish(exchange, "request_create", Buffer.from("work work work: "+d));
 // }, 10000);
 
@@ -242,7 +242,7 @@ function listen() {
             body = data.req.body;
           }
         }
-        var dat = {updatedProject_userPopulated: data.updatedProject_userPopulated, req: {user: user, body: body}}; //remove request
+        let dat = {updatedProject_userPopulated: data.updatedProject_userPopulated, req: {user: user, body: body}}; //remove request
         winston.debug("dat",dat);
 
       publish(exchange, "project_user_update", Buffer.from(JSON.stringify(dat)));

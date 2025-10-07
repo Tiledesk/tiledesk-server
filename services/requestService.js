@@ -1,22 +1,22 @@
 'use strict';
 
-var departmentService = require('../services/departmentService');
-var Request = require("../models/request");
-var Project_user = require("../models/project_user");
-var Project = require("../models/project");
-var messageService = require('../services/messageService');
+let departmentService = require('../services/departmentService');
+let Request = require("../models/request");
+let Project_user = require("../models/project_user");
+let Project = require("../models/project");
+let messageService = require('../services/messageService');
 const requestEvent = require('../event/requestEvent');
 const leadEvent = require('../event/leadEvent');
-var winston = require('../config/winston');
-var RequestConstants = require("../models/requestConstants");
-var requestUtil = require("../utils/requestUtil");
-var cacheUtil = require("../utils/cacheUtil");
-var arrayUtil = require("../utils/arrayUtil");
-var cacheEnabler = require("../services/cacheEnabler");
-var UIDGenerator = require("../utils/UIDGenerator");
+let winston = require('../config/winston');
+let RequestConstants = require("../models/requestConstants");
+let requestUtil = require("../utils/requestUtil");
+let cacheUtil = require("../utils/cacheUtil");
+let arrayUtil = require("../utils/arrayUtil");
+let cacheEnabler = require("../services/cacheEnabler");
+let UIDGenerator = require("../utils/UIDGenerator");
 const { TdCache } = require('../utils/TdCache');
 const { QuoteManager } = require('./QuoteManager');
-var configGlobal = require('../config/global');
+let configGlobal = require('../config/global');
 const projectService = require('./projectService');
 const axios = require("axios").default;
 
@@ -143,7 +143,7 @@ class RequestService {
 
   getAvailableAgentsCount(agents) {
 
-    var project_users_available = agents.filter(function (projectUser) {
+    let project_users_available = agents.filter(function (projectUser) {
       if (projectUser.user_available == true) {
         return true;
       }
@@ -161,32 +161,32 @@ class RequestService {
 
   //change create with this
   routeInternal(request, departmentid, id_project, nobot) {
-    var that = this;
+    let that = this;
 
     return new Promise(function (resolve, reject) {
 
-      var context = { request: request };
+      let context = { request: request };
 
       // getOperators(departmentid, projectid, nobot, disableWebHookCall, context)
       return departmentService.getOperators(departmentid, id_project, nobot, undefined, context).then(function (result) {
 
         // winston.debug("getOperators", result);
 
-        var assigned_at = undefined;
+        let assigned_at = undefined;
 
-        var status = RequestConstants.UNASSIGNED;
-        var assigned_operator_id;
-        var participants = [];
-        var participantsAgents = [];
-        var participantsBots = [];
-        var hasBot = false;
+        let status = RequestConstants.UNASSIGNED;
+        let assigned_operator_id;
+        let participants = [];
+        let participantsAgents = [];
+        let participantsBots = [];
+        let hasBot = false;
 
         if (result.operators && result.operators.length > 0) {
           assigned_operator_id = result.operators[0].id_user;
 
           status = RequestConstants.ASSIGNED;
 
-          var assigned_operator_idString = assigned_operator_id.toString();
+          let assigned_operator_idString = assigned_operator_id.toString();
           participants.push(assigned_operator_idString);
 
           // botprefix
@@ -194,7 +194,7 @@ class RequestService {
             hasBot = true;
 
             // botprefix
-            var assigned_operator_idStringBot = assigned_operator_idString.replace("bot_", "");
+            let assigned_operator_idStringBot = assigned_operator_idString.replace("bot_", "");
             participantsBots.push(assigned_operator_idStringBot);
           } else {
             participantsAgents.push(assigned_operator_idString);
@@ -244,7 +244,7 @@ class RequestService {
   // TODO  changePreflightByRequestId se un agente entra in request freflight true disabilitare add agente e reassing ma mettere un bottone removePreflight???
   // usalo no_populate
   route(request_id, departmentid, id_project, nobot, no_populate) {
-    var that = this;
+    let that = this;
 
     return new Promise(function (resolve, reject) {
       winston.debug("request_id:" + request_id);
@@ -268,13 +268,13 @@ class RequestService {
 
         winston.debug('request return', request);
 
-        // cambia var in let
+        // cambia let in let
 
         //it is important to clone here
-        var requestBeforeRoute = Object.assign({}, request.toObject());
+        let requestBeforeRoute = Object.assign({}, request.toObject());
         winston.debug("requestBeforeRoute", requestBeforeRoute);
 
-        var beforeParticipants = requestBeforeRoute.participants;
+        let beforeParticipants = requestBeforeRoute.participants;
         winston.debug("beforeParticipants: ", beforeParticipants);
 
         return that.routeInternal(request, departmentid, id_project, nobot).then( async function (routedRequest) {
@@ -436,16 +436,16 @@ class RequestService {
                 winston.verbose("Request routed", requestComplete.toObject());
 
 
-                var oldParticipants = beforeParticipants;
+                let oldParticipants = beforeParticipants;
                 winston.debug("oldParticipants ", oldParticipants);
 
                 let newParticipants = requestComplete.participants;
                 winston.debug("newParticipants ", newParticipants);
 
-                var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
+                let removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
                 winston.debug("removedParticipants ", removedParticipants);
 
-                var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
+                let addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
                 winston.debug("addedParticipants ", addedParticipants);
 
 
@@ -482,8 +482,8 @@ class RequestService {
 
 
   reroute(request_id, id_project, nobot) {
-    var that = this;
-    var startDate = new Date();
+    let that = this;
+    let startDate = new Date();
     return new Promise(function (resolve, reject) {
       // winston.debug("request_id", request_id);
       // winston.debug("newstatus", newstatus);
@@ -516,7 +516,7 @@ class RequestService {
 
         return that.route(request_id, request.department.toString(), id_project, nobot).then(function (routedRequest) {
 
-          var endDate = new Date();
+          let endDate = new Date();
           winston.verbose("Performance Request reroute in millis: " + endDate - startDate);
 
           return resolve(routedRequest);
@@ -532,7 +532,7 @@ class RequestService {
 
   createWithRequester(project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight) {
 
-    var request_id = 'support-group-' + id_project + "-" + UIDGenerator.generate();
+    let request_id = 'support-group-' + id_project + "-" + UIDGenerator.generate();
     winston.debug("request_id: " + request_id);
 
     return this.createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight);
@@ -540,7 +540,7 @@ class RequestService {
 
   createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight, channel, location) {
 
-    var request = {
+    let request = {
       request_id: request_id, project_user_id: project_user_id, lead_id: lead_id, id_project: id_project, first_text: first_text,
       departmentid: departmentid, sourcePage: sourcePage, language: language, userAgent: userAgent, status: status, createdBy: createdBy,
       attributes: attributes, subject: subject, preflight: preflight, channel: channel, location: location
@@ -555,28 +555,28 @@ class RequestService {
       request.createdAt = new Date();
     }
 
-    var request_id = request.request_id;
-    var project_user_id = request.project_user_id;
-    var lead_id = request.lead_id;
-    var id_project = request.id_project;
-    var first_text = request.first_text;
-    var departmentid = request.departmentid;
-    var sourcePage = request.sourcePage;
-    var language = request.language;
-    var userAgent = request.userAgent;
-    var status = request.status;
-    var createdBy = request.createdBy;
-    var attributes = request.attributes;
-    var subject = request.subject;
-    var preflight = request.preflight;
-    var channel = request.channel;
-    var location = request.location;
-    var participants = request.participants || [];
-    var tags = request.tags;
-    var notes = request.notes;
-    var priority = request.priority;
-    var auto_close = request.auto_close;
-    var followers = request.followers;
+    let request_id = request.request_id;
+    let project_user_id = request.project_user_id;
+    let lead_id = request.lead_id;
+    let id_project = request.id_project;
+    let first_text = request.first_text;
+    let departmentid = request.departmentid;
+    let sourcePage = request.sourcePage;
+    let language = request.language;
+    let userAgent = request.userAgent;
+    let status = request.status;
+    let createdBy = request.createdBy;
+    let attributes = request.attributes;
+    let subject = request.subject;
+    let preflight = request.preflight;
+    let channel = request.channel;
+    let location = request.location;
+    let participants = request.participants || [];
+    let tags = request.tags;
+    let notes = request.notes;
+    let priority = request.priority;
+    let auto_close = request.auto_close;
+    let followers = request.followers;
     let createdAt = request.createdAt;
 
     if (!departmentid) {
@@ -596,10 +596,10 @@ class RequestService {
     let isTestConversation = false;
     let isVoiceConversation = false;
     let isStandardConversation = false;
-    var that = this;
+    let that = this;
 
     return new Promise( async (resolve, reject) => {
-      var context = {
+      let context = {
         request: {
           request_id: request_id, project_user_id: project_user_id, lead_id: lead_id, id_project: id_project,
           first_text: first_text, departmentid: departmentid, sourcePage: sourcePage, language: language, userAgent: userAgent, status: status,
@@ -610,17 +610,17 @@ class RequestService {
       };
       winston.debug("context", context);
 
-      var participantsAgents = [];
-      var participantsBots = [];
-      var hasBot = false;
-      var dep_id = undefined;
-      var assigned_at = undefined;
-      var agents = [];
-      var snapshot = {};
+      let participantsAgents = [];
+      let participantsBots = [];
+      let hasBot = false;
+      let dep_id = undefined;
+      let assigned_at = undefined;
+      let agents = [];
+      let snapshot = {};
 
       try {
         // (method) DepartmentService.getOperators(departmentid: any, projectid: any, nobot: any, disableWebHookCall: any, context: any): Promise<any>
-        var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
+        let result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
         winston.debug("getOperators", result);
 
       } catch (err) {
@@ -685,7 +685,7 @@ class RequestService {
             winston.debug("hasBot:" + hasBot);
 
             // botprefix
-            var assigned_operator_idStringBot = participants[0].replace("bot_", "");
+            let assigned_operator_idStringBot = participants[0].replace("bot_", "");
             winston.debug("assigned_operator_idStringBot:" + assigned_operator_idStringBot);
 
             participantsBots.push(assigned_operator_idStringBot);
@@ -717,7 +717,7 @@ class RequestService {
         snapshot.lead = request.lead;
       }
 
-      var newRequest = new Request({
+      let newRequest = new Request({
         request_id: request_id,
         requester: project_user_id,
         lead: lead_id,
@@ -782,47 +782,47 @@ class RequestService {
   // DEPRECATED
   // async _create(request) {
 
-  //   var startDate = new Date();
+  //   let startDate = new Date();
 
   //   if (!request.createdAt) {
   //     request.createdAt = new Date();
   //   }
 
 
-  //     var request_id = request.request_id;
-  //     var project_user_id = request.project_user_id;
-  //     var lead_id = request.lead_id;
-  //     var id_project = request.id_project;
+  //     let request_id = request.request_id;
+  //     let project_user_id = request.project_user_id;
+  //     let lead_id = request.lead_id;
+  //     let id_project = request.id_project;
 
-  //     var first_text = request.first_text;
+  //     let first_text = request.first_text;
 
   //     //removed for ticket
   //     // // lascia che sia nico a fare il replace...certo tu devi fare il test che tutto sia ok quindi dopo demo
-  //     // var first_text;  
+  //     // let first_text;  
   //     // if (request.first_text) {  //first_text can be empty for type image
   //     //   first_text = request.first_text.replace(/[\n\r]+/g, ' '); //replace new line with space
   //     // }
 
-  //     var departmentid = request.departmentid;
-  //     var sourcePage = request.sourcePage;
-  //     var language = request.language;
-  //     var userAgent = request.userAgent;
-  //     var status = request.status;
-  //     var createdBy = request.createdBy;
-  //     var attributes = request.attributes;
-  //     var subject = request.subject;
-  //     var preflight = request.preflight;
-  //     var channel = request.channel;
-  //     var location = request.location;
-  //     var participants = request.participants || [];
+  //     let departmentid = request.departmentid;
+  //     let sourcePage = request.sourcePage;
+  //     let language = request.language;
+  //     let userAgent = request.userAgent;
+  //     let status = request.status;
+  //     let createdBy = request.createdBy;
+  //     let attributes = request.attributes;
+  //     let subject = request.subject;
+  //     let preflight = request.preflight;
+  //     let channel = request.channel;
+  //     let location = request.location;
+  //     let participants = request.participants || [];
 
-  //     var tags = request.tags;
-  //     var notes = request.notes;
-  //     var priority = request.priority;
+  //     let tags = request.tags;
+  //     let notes = request.notes;
+  //     let priority = request.priority;
 
-  //     var auto_close = request.auto_close;
+  //     let auto_close = request.auto_close;
 
-  //     var followers = request.followers;
+  //     let followers = request.followers;
   //     let createdAt = request.createdAt;
 
 
@@ -842,7 +842,7 @@ class RequestService {
   //     let isTestConversation = false;
   //     let isVoiceConversation = false;
 
-  //     var that = this;
+  //     let that = this;
 
   //     return new Promise(async (resolve, reject) => {
 
@@ -883,7 +883,7 @@ class RequestService {
   //         }
         
 
-  //       var context = {
+  //       let context = {
   //         request: {
   //           request_id: request_id, project_user_id: project_user_id, lead_id: lead_id, id_project: id_project,
   //           first_text: first_text, departmentid: departmentid, sourcePage: sourcePage, language: language, userAgent: userAgent, status: status,
@@ -895,21 +895,21 @@ class RequestService {
 
   //       winston.debug("context", context);
 
-  //       var participantsAgents = [];
-  //       var participantsBots = [];
-  //       var hasBot = false;
+  //       let participantsAgents = [];
+  //       let participantsBots = [];
+  //       let hasBot = false;
 
-  //       var dep_id = undefined;
+  //       let dep_id = undefined;
 
-  //       var assigned_at = undefined;
+  //       let assigned_at = undefined;
 
-  //       var agents = [];
+  //       let agents = [];
 
-  //       var snapshot = {};
+  //       let snapshot = {};
 
   //       try {
   //         //  getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
-  //         var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
+  //         let result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
   //         // console.log("************* after get operator: "+new Date().toISOString());
 
   //         winston.debug("getOperators", result);
@@ -960,7 +960,7 @@ class RequestService {
   //             winston.debug("hasBot:" + hasBot);
 
   //             // botprefix
-  //             var assigned_operator_idStringBot = participants[0].replace("bot_", "");
+  //             let assigned_operator_idStringBot = participants[0].replace("bot_", "");
   //             winston.debug("assigned_operator_idStringBot:" + assigned_operator_idStringBot);
 
   //             participantsBots.push(assigned_operator_idStringBot);
@@ -1002,7 +1002,7 @@ class RequestService {
   //       // winston.debug("assigned_operator_id", assigned_operator_id);
   //       // winston.debug("req status", status);
 
-  //       var newRequest = new Request({
+  //       let newRequest = new Request({
   //         request_id: request_id,
   //         requester: project_user_id,
   //         lead: lead_id,
@@ -1057,7 +1057,7 @@ class RequestService {
 
   //         winston.debug("Request created", savedRequest.toObject());
 
-  //         var endDate = new Date();
+  //         let endDate = new Date();
   //         winston.verbose("Performance Request created in millis: " + endDate - startDate);
 
   //         requestEvent.emit('request.create.simple', savedRequest);
@@ -1081,47 +1081,47 @@ class RequestService {
   // DEPRECATED
   // async __create(request) {
 
-  //   var startDate = new Date();
+  //   let startDate = new Date();
 
   //   if (!request.createdAt) {
   //     request.createdAt = new Date();
   //   }
 
     
-  //   var request_id = request.request_id;
-  //   var project_user_id = request.project_user_id;
-  //   var lead_id = request.lead_id;
-  //   var id_project = request.id_project;
+  //   let request_id = request.request_id;
+  //   let project_user_id = request.project_user_id;
+  //   let lead_id = request.lead_id;
+  //   let id_project = request.id_project;
 
-  //   var first_text = request.first_text;
+  //   let first_text = request.first_text;
 
   //   //removed for ticket
   //   // // lascia che sia nico a fare il replace...certo tu devi fare il test che tutto sia ok quindi dopo demo
-  //   // var first_text;  
+  //   // let first_text;  
   //   // if (request.first_text) {  //first_text can be empty for type image
   //   //   first_text = request.first_text.replace(/[\n\r]+/g, ' '); //replace new line with space
   //   // }
 
-  //   var departmentid = request.departmentid;
-  //   var sourcePage = request.sourcePage;
-  //   var language = request.language;
-  //   var userAgent = request.userAgent;
-  //   var status = request.status;
-  //   var createdBy = request.createdBy;
-  //   var attributes = request.attributes;
-  //   var subject = request.subject;
-  //   var preflight = request.preflight;
-  //   var channel = request.channel;
-  //   var location = request.location;
-  //   var participants = request.participants || [];
+  //   let departmentid = request.departmentid;
+  //   let sourcePage = request.sourcePage;
+  //   let language = request.language;
+  //   let userAgent = request.userAgent;
+  //   let status = request.status;
+  //   let createdBy = request.createdBy;
+  //   let attributes = request.attributes;
+  //   let subject = request.subject;
+  //   let preflight = request.preflight;
+  //   let channel = request.channel;
+  //   let location = request.location;
+  //   let participants = request.participants || [];
 
-  //   var tags = request.tags;
-  //   var notes = request.notes;
-  //   var priority = request.priority;
+  //   let tags = request.tags;
+  //   let notes = request.notes;
+  //   let priority = request.priority;
 
-  //   var auto_close = request.auto_close;
+  //   let auto_close = request.auto_close;
 
-  //   var followers = request.followers;
+  //   let followers = request.followers;
   //   let createdAt = request.createdAt;
 
   //   if (!departmentid) {
@@ -1137,11 +1137,11 @@ class RequestService {
 
   //   }
 
-  //   var that = this;
+  //   let that = this;
 
   //   return new Promise(async (resolve, reject) => {
 
-  //     var context = {
+  //     let context = {
   //       request: {
   //         request_id: request_id, project_user_id: project_user_id, lead_id: lead_id, id_project: id_project,
   //         first_text: first_text, departmentid: departmentid, sourcePage: sourcePage, language: language, userAgent: userAgent, status: status,
@@ -1153,21 +1153,21 @@ class RequestService {
 
   //     winston.debug("context", context);
 
-  //     var participantsAgents = [];
-  //     var participantsBots = [];
-  //     var hasBot = false;
+  //     let participantsAgents = [];
+  //     let participantsBots = [];
+  //     let hasBot = false;
 
-  //     var dep_id = undefined;
+  //     let dep_id = undefined;
 
-  //     var assigned_at = undefined;
+  //     let assigned_at = undefined;
 
-  //     var agents = [];
+  //     let agents = [];
 
-  //     var snapshot = {};
+  //     let snapshot = {};
 
   //     try {
   //       //  getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
-  //       var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
+  //       let result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
   //       // console.log("************* after get operator: "+new Date().toISOString());
 
   //       winston.debug("getOperators", result);
@@ -1206,7 +1206,7 @@ class RequestService {
   //           winston.debug("hasBot:" + hasBot);
 
   //           // botprefix
-  //           var assigned_operator_idStringBot = participants[0].replace("bot_", "");
+  //           let assigned_operator_idStringBot = participants[0].replace("bot_", "");
   //           winston.debug("assigned_operator_idStringBot:" + assigned_operator_idStringBot);
 
   //           participantsBots.push(assigned_operator_idStringBot);
@@ -1248,7 +1248,7 @@ class RequestService {
   //     // winston.debug("assigned_operator_id", assigned_operator_id);
   //     // winston.debug("req status", status);
 
-  //     var newRequest = new Request({
+  //     let newRequest = new Request({
   //       request_id: request_id,
   //       requester: project_user_id,
   //       lead: lead_id,
@@ -1299,7 +1299,7 @@ class RequestService {
 
   //       winston.debug("Request created", savedRequest.toObject());
 
-  //       var endDate = new Date();
+  //       let endDate = new Date();
   //       winston.verbose("Performance Request created in millis: " + endDate - startDate);
 
   //       requestEvent.emit('request.create.simple', savedRequest);
@@ -1355,11 +1355,11 @@ class RequestService {
       createdBy = requester_id;
     }
 
-    var that = this;
+    let that = this;
 
     return new Promise(function (resolve, reject) {
 
-      var context = {
+      let context = {
         request: {
           request_id: request_id, requester_id: requester_id, id_project: id_project,
           first_text: first_text, departmentid: departmentid, sourcePage: sourcePage, language: language, userAgent: userAgent, status: status,
@@ -1373,19 +1373,19 @@ class RequestService {
 
         // winston.debug("getOperators", result);
 
-        var status = RequestConstants.UNASSIGNED;
-        var assigned_operator_id;
-        var participants = [];
-        var participantsAgents = [];
-        var participantsBots = [];
-        var hasBot = false;
+        let status = RequestConstants.UNASSIGNED;
+        let assigned_operator_id;
+        let participants = [];
+        let participantsAgents = [];
+        let participantsBots = [];
+        let hasBot = false;
 
-        var assigned_at = undefined;
+        let assigned_at = undefined;
         if (result.operators && result.operators.length > 0) {
           assigned_operator_id = result.operators[0].id_user;
           status = RequestConstants.ASSIGNED;
 
-          var assigned_operator_idString = assigned_operator_id.toString();
+          let assigned_operator_idString = assigned_operator_id.toString();
           participants.push(assigned_operator_idString);
 
           // botprefix
@@ -1393,7 +1393,7 @@ class RequestService {
             hasBot = true;
 
             // botprefix
-            var assigned_operator_idStringBot = assigned_operator_idString.replace("bot_", "");
+            let assigned_operator_idStringBot = assigned_operator_idString.replace("bot_", "");
             winston.debug("assigned_operator_idStringBot:" + assigned_operator_idStringBot);
             participantsBots.push(assigned_operator_idStringBot);
 
@@ -1405,7 +1405,7 @@ class RequestService {
         // winston.debug("assigned_operator_id", assigned_operator_id);
         // winston.debug("status", status);
 
-        var newRequest = new Request({
+        let newRequest = new Request({
           request_id: request_id,
           requester_id: requester_id,
           first_text: first_text,
@@ -1695,8 +1695,8 @@ class RequestService {
         }
         //update waiting_time only the first time
         if (!request.waiting_time) {
-          var now = Date.now();
-          var waitingTime = now - request.createdAt;
+          let now = Date.now();
+          let waitingTime = now - request.createdAt;
           // winston.debug("waitingTime", waitingTime);
 
 
@@ -1733,7 +1733,7 @@ class RequestService {
 
   closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by, force) {
 
-    var that = this;
+    let that = this;
     return new Promise(function (resolve, reject) {
       // winston.debug("request_id", request_id);
 
@@ -1826,7 +1826,7 @@ class RequestService {
 
   reopenRequestByRequestId(request_id, id_project) {
 
-    var that = this;
+    let that = this;
     return new Promise(function (resolve, reject) {
       // winston.debug("request_id", request_id);
 
@@ -1939,7 +1939,7 @@ class RequestService {
     // validate if array of string newparticipants
     return new Promise(function (resolve, reject) {
 
-      var isArray = Array.isArray(newparticipants);
+      let isArray = Array.isArray(newparticipants);
 
       if (isArray == false) {
         winston.error('setParticipantsByRequestId error  newparticipants is not an array for request_id ' + request_id + ' and id_project ' + id_project);
@@ -1976,7 +1976,7 @@ class RequestService {
             }
           }
 
-          var oldParticipants = request.participants;
+          let oldParticipants = request.participants;
           winston.debug('oldParticipants', oldParticipants);
           winston.debug('newparticipants', newparticipants);
 
@@ -1997,18 +1997,18 @@ class RequestService {
 
           request.participants = newparticipants;
 
-          var newparticipantsAgents = [];
-          var newparticipantsBots = [];
+          let newparticipantsAgents = [];
+          let newparticipantsBots = [];
 
 
           if (newparticipants && newparticipants.length > 0) {
-            var hasBot = false;
+            let hasBot = false;
             newparticipants.forEach(newparticipant => {
               // botprefix
               if (newparticipant.startsWith("bot_")) {
                 hasBot = true;
                 // botprefix          
-                var assigned_operator_idStringBot = newparticipant.replace("bot_", "");
+                let assigned_operator_idStringBot = newparticipant.replace("bot_", "");
                 winston.debug("assigned_operator_idStringBot:" + assigned_operator_idStringBot);
                 newparticipantsBots.push(assigned_operator_idStringBot);
 
@@ -2064,10 +2064,10 @@ class RequestService {
                 let newParticipants = requestComplete.participants;
                 winston.debug("newParticipants ", newParticipants);
 
-                var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
+                let removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
                 winston.debug("removedParticipants ", removedParticipants);
 
-                var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
+                let addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
                 winston.debug("addedParticipants ", addedParticipants);
 
 
@@ -2105,7 +2105,7 @@ class RequestService {
     return new Promise(function (resolve, reject) {
 
       if (member == undefined) {
-        var err = "addParticipantByRequestId error, member field is null";
+        let err = "addParticipantByRequestId error, member field is null";
         winston.error(err);
         return reject(err);
       }
@@ -2134,7 +2134,7 @@ class RequestService {
               request.hasBot = true;
 
               // botprefix
-              var assigned_operator_idStringBot = member.replace("bot_", "");
+              let assigned_operator_idStringBot = member.replace("bot_", "");
               winston.debug("assigned_operator_idStringBot:" + assigned_operator_idStringBot);
               request.participantsBots.push(assigned_operator_idStringBot);
             } else {
@@ -2145,7 +2145,7 @@ class RequestService {
 
             if (request.participants.length > 0) {
               request.status = RequestConstants.ASSIGNED;
-              var assigned_at = Date.now();
+              let assigned_at = Date.now();
               request.assigned_at = assigned_at;
             } else {
               request.status = RequestConstants.UNASSIGNED;
@@ -2212,7 +2212,7 @@ class RequestService {
 
 
       if (member == undefined) {
-        var err = "removeParticipantByRequestId error, member field is null";
+        let err = "removeParticipantByRequestId error, member field is null";
         winston.error(err);
         return reject(err);
       }
@@ -2234,7 +2234,7 @@ class RequestService {
             return reject('Request not found for request_id ' + request_id + ' and id_project ' + id_project);
           }
 
-          var index = request.participants.indexOf(member);
+          let index = request.participants.indexOf(member);
           // winston.debug("index", index);
 
           if (index > -1) {
@@ -2245,13 +2245,13 @@ class RequestService {
             if (member.startsWith("bot_")) {
               request.hasBot = false;
               // botprefix
-              var assigned_operator_idStringBot = member.replace("bot_", "");
+              let assigned_operator_idStringBot = member.replace("bot_", "");
               winston.debug("assigned_operator_idStringBot:" + assigned_operator_idStringBot);
 
-              var indexParticipantsBots = request.participantsBots.indexOf(assigned_operator_idStringBot);
+              let indexParticipantsBots = request.participantsBots.indexOf(assigned_operator_idStringBot);
               request.participantsBots.splice(indexParticipantsBots, 1);
             } else {
-              var indexParticipantsAgents = request.participantsAgents.indexOf(member);
+              let indexParticipantsAgents = request.participantsAgents.indexOf(member);
               request.participantsAgents.splice(indexParticipantsAgents, 1);
 
 
@@ -2270,14 +2270,14 @@ class RequestService {
 
                 /*
                 winston.info("request.participatingAgents",request.participatingAgents);
-                var pu = request.participatingAgents.find(projectUser => {
+                let pu = request.participatingAgents.find(projectUser => {
                   console.log(projectUser);
                   projectUser.id_user.toString() === member
                 });
                 winston.verbose("pu",pu);
                 */
 
-                var pu = await Project_user.findOne({ id_user: member, id_project: id_project }).exec();
+                let pu = await Project_user.findOne({ id_user: member, id_project: id_project }).exec();
                 winston.debug("pu", pu);
 
                 request.attributes.abandoned_by_project_users[pu._id] = new Date().getTime();
@@ -2358,7 +2358,7 @@ class RequestService {
 
 
   updateAttributesByRequestId(request_id, id_project, attributes) {
-    var data = attributes;
+    let data = attributes;
 
     Request.findOne({ "request_id": request_id, id_project: id_project })
       .populate('lead')
@@ -2383,7 +2383,7 @@ class RequestService {
         winston.debug(" req attributes", request.attributes)
 
         Object.keys(data).forEach(function (key) {
-          var val = data[key];
+          let val = data[key];
           winston.debug("data attributes " + key + " " + val)
           request.attributes[key] = val;
         });
@@ -2425,7 +2425,7 @@ class RequestService {
     return new Promise(function (resolve, reject) {
 
       if (tag == undefined) {
-        var err = "addTagByRequestId error, tag field is null";
+        let err = "addTagByRequestId error, tag field is null";
         winston.error(err);
         return reject(err);
       }
@@ -2490,7 +2490,7 @@ class RequestService {
 
 
       if (tag == undefined) {
-        var err = "removeTagByRequestId error, tag field is null";
+        let err = "removeTagByRequestId error, tag field is null";
         winston.error(err);
         return reject(err);
       }
@@ -2515,8 +2515,8 @@ class RequestService {
             return reject('Request not found for request_id ' + request_id + ' and id_project ' + id_project);
           }
 
-          // var index = request.tags.indexOf(tag);
-          var index = request.tags.findIndex(t => t.tag === tag);
+          // let index = request.tags.indexOf(tag);
+          let index = request.tags.findIndex(t => t.tag === tag);
 
           winston.debug("index", index);
 
@@ -2571,7 +2571,7 @@ class RequestService {
     return new Promise(function (resolve, reject) {
 
       if (member == undefined) {
-        var err = "addFollowerByRequestId error, member field is null";
+        let err = "addFollowerByRequestId error, member field is null";
         winston.error(err);
         return reject(err);
       }
@@ -2657,7 +2657,7 @@ class RequestService {
     // validate if array of string newparticipants
     return new Promise(function (resolve, reject) {
 
-      var isArray = Array.isArray(newfollowers);
+      let isArray = Array.isArray(newfollowers);
 
       if (isArray == false) {
         winston.error('setFollowersByRequestId error  newfollowers is not an array for request_id ' + request_id + ' and id_project ' + id_project);
@@ -2677,7 +2677,7 @@ class RequestService {
             winston.error('Request not found for request_id ' + request_id + ' and id_project ' + id_project);
             return reject('Request not found for request_id ' + request_id + ' and id_project ' + id_project);
           }
-          var oldfollowers = request.followers;
+          let oldfollowers = request.followers;
           winston.debug('oldParticipants', oldfollowers);
           winston.debug('newparticipants', newfollowers);
 
@@ -2756,7 +2756,7 @@ class RequestService {
 
 
       if (member == undefined) {
-        var err = "removeFollowerByRequestId error, member field is null";
+        let err = "removeFollowerByRequestId error, member field is null";
         winston.error(err);
         return reject(err);
       }
@@ -2778,7 +2778,7 @@ class RequestService {
             return reject('Request not found for request_id ' + request_id + ' and id_project ' + id_project);
           }
 
-          var index = request.followers.indexOf(member);
+          let index = request.followers.indexOf(member);
           winston.debug("index", index);
 
           if (index > -1) {
@@ -2893,7 +2893,7 @@ class RequestService {
 }
 
 
-var requestService = new RequestService();
+let requestService = new RequestService();
 
 
 module.exports = requestService;

@@ -1,8 +1,8 @@
 'use strict';
 
-var winston = require('../config/winston');
-var config = require('../config/database');
-var migrateMongoose = require('migrate-mongoose');
+let winston = require('../config/winston');
+let config = require('../config/database');
+let migrateMongoose = require('migrate-mongoose');
 
 class SchamaMigrationService {
 
@@ -26,7 +26,7 @@ class SchamaMigrationService {
       winston.info("SchemaMigration checking for schema updates.");
 
       // Define all your variables
-      var 
+      let 
       //  migrationsDir = '/path/to/migrations/',
       // templatePath,
       dbUrl = process.env.DATABASE_URI || process.env.MONGODB_URI || config.database,
@@ -41,12 +41,12 @@ class SchamaMigrationService {
           autosync: autosync // if making a CLI app, set this to false to prompt the user, otherwise true
       });
       
-      var list = await migrator.list();
+      let list = await migrator.list();
       winston.debug("SchemaMigration script list", list);
 
       list.forEach(async(script)=> { 
         winston.debug("script", script);
-        var runScript = await migrator.run('up', script.name);
+        let runScript = await migrator.run('up', script.name);
         if (runScript && !this.isEmptyObject(runScript)) {
           winston.info("SchemaMigration script " + script.name + " executed.");
         }
@@ -86,14 +86,14 @@ class SchamaMigrationService {
     
     // This functionality is opposite of prune()
     // */
-    // var promise = await migrator.sync();
+    // let promise = await migrator.sync();
     // console.log("SchemaMigration synched", promise)
     
 
   
   }
     // async checkSchemaMigration(currentSchamaVersion) {
-    //   var migrationUpdateOperation = [
+    //   let migrationUpdateOperation = [
     //     {
     //       schemaVersion: 300000,
     //       operation: `db.requests.update(
@@ -129,7 +129,7 @@ class SchamaMigrationService {
   
     //       migrationUpdateOperation.forEach(async(migOperation)=> {
     //         try {
-    //           var operation = migOperation.operation;
+    //           let operation = migOperation.operation;
     //           winston.info("Schema migration operation:"+ operation);
     //           const result = await db.db.command(operation);
     //           winston.info("Schema migration result", result);
@@ -142,7 +142,7 @@ class SchamaMigrationService {
     
     
      
-    //   // var bulk = Setting.collection.initializeUnorderedBulkOp();
+    //   // let bulk = Setting.collection.initializeUnorderedBulkOp();
     //   //   bulk.find({<query>}).update({<update>});
     //   //   bulk.find({<query2>}).update({<update2>});
         
@@ -154,7 +154,7 @@ class SchamaMigrationService {
 
 }
 
-var schamaMigrationService = new SchamaMigrationService();
+let schamaMigrationService = new SchamaMigrationService();
 
 
 module.exports = schamaMigrationService;

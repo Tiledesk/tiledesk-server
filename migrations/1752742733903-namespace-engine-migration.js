@@ -1,4 +1,4 @@
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 const { Namespace } = require('../models/kb_setting');
 
 async function up () {

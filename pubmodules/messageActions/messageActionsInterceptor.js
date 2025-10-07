@@ -1,13 +1,13 @@
 
 const messageEvent = require('../../event/messageEvent');
 const botEvent = require('../../event/botEvent');
-var messageActionEvent = require('./event/messageActionEvent');
-var winston = require('../../config/winston');
-var messageService = require('../../services/messageService');
-var requestService = require('../../services/requestService');
-var i8nUtil = require("../../utils/i8nUtil");
-var MessageConstants = require("../../models/messageConstants");
-var BotFromParticipant = require("../../utils/botFromParticipant");
+let messageActionEvent = require('./event/messageActionEvent');
+let winston = require('../../config/winston');
+let messageService = require('../../services/messageService');
+let requestService = require('../../services/requestService');
+let i8nUtil = require("../../utils/i8nUtil");
+let MessageConstants = require("../../models/messageConstants");
+let BotFromParticipant = require("../../utils/botFromParticipant");
 
 class MessageActionsInterceptor {
 
@@ -16,7 +16,7 @@ class MessageActionsInterceptor {
 
     listen() {
 
-        var that = this;
+        let that = this;
         winston.info("MessageActionsInterceptor listener start ");
                     
             //use .received to be sure for \close the message is sent to chat21 and after that you can archive the conversation. otherwise a race condition occurs with message.create if \close is sent by the bot      
@@ -29,10 +29,10 @@ class MessageActionsInterceptor {
                        if (message.text && message.text.indexOf("\\")>-1) {
                              winston.debug("message text contains command ");
                              
-                             var start = message.text.indexOf("\\");
-                             var end = message.text.length;
+                             let start = message.text.indexOf("\\");
+                             let end = message.text.length;
                              
-                             var action = message.text.substring(start+1, end);
+                             let action = message.text.substring(start+1, end);
                              winston.debug("message text contains action: "+ action);
                              messageActionEvent.emit(action, message);
                              
@@ -46,11 +46,11 @@ class MessageActionsInterceptor {
         // messageActionEvent.on("start", function(message) {
         //     winston.info("called \\agent action");
              
-        //     var request = message.request;
+        //     let request = message.request;
             
             
-        //      //var botId = botEvent.getBotId(message);
-        //      var botId =  BotFromParticipant.getBotId(message);
+        //      //let botId = botEvent.getBotId(message);
+        //      let botId =  BotFromParticipant.getBotId(message);
 
         //       winston.debug("botId: " + botId);
            
@@ -78,12 +78,12 @@ class MessageActionsInterceptor {
             
              winston.debug("called \\agent action");
              
-             var request = message.request;
+             let request = message.request;
              
 
              if (request) {
-                    //var botId = botEvent.getBotId(message);
-                var botId =  BotFromParticipant.getBotId(message);
+                    //let botId = botEvent.getBotId(message);
+                let botId =  BotFromParticipant.getBotId(message);
 
                 winston.debug("botId: " + botId);
             
@@ -148,7 +148,7 @@ class MessageActionsInterceptor {
             
             winston.verbose("called \\close action");
             
-            var request = message.request;
+            let request = message.request;
             
             if (request) {
                 // setTimeout(function() {
@@ -180,5 +180,5 @@ class MessageActionsInterceptor {
     
 }
 
-var messageActionsInterceptor = new MessageActionsInterceptor();
+let messageActionsInterceptor = new MessageActionsInterceptor();
 module.exports = messageActionsInterceptor;

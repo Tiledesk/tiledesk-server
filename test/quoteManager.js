@@ -3,8 +3,8 @@ process.env.QUOTES_ENABLED = 'true';
 
 const { QuoteManager } = require('../services/QuoteManager');
 const pubModulesManager = require('../pubmodules/pubModulesManager');  // on constructor init is undefined beacusae pub module is loaded after
-var projectService = require('../services/projectService');
-var userService = require('../services/userService');
+let projectService = require('../services/projectService');
+let userService = require('../services/userService');
 
 
 let chai = require('chai');
@@ -36,8 +36,8 @@ let tdCache = new TdCache({
 });
 
 tdCache.connect();
-// var redis = require('redis')
-// var redis_client;
+// let redis = require('redis')
+// let redis_client;
 
 // const dateList = [
 //     "2023-10-17T08:45:54.058Z",
@@ -254,8 +254,8 @@ describe('QuoteManager', function () {
 
     it('sendEmailDirect', (done) => {
 
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
             projectService.create("test-send-email-direct", savedUser._id).then(function (savedProject) {
@@ -277,8 +277,8 @@ describe('QuoteManager', function () {
 
     it('incrementTokensCount', (done) => {
 
-        var email = "test-quote-" + Date.now() + "@email.com"; 
-        var pwd = "pwd";
+        let email = "test-quote-" + Date.now() + "@email.com"; 
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
             projectService.create("quote-project", savedUser._id).then((savedProject) => {

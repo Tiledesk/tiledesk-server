@@ -3,18 +3,18 @@ process.env.NODE_ENV = 'test';
 
 require('dotenv').config();
 
-var expect = require('chai').expect;
+let expect = require('chai').expect;
 
-var assert = require('chai').assert;
-var config = require('../../../config/database');
-var Request = require('../../../models/request');
+let assert = require('chai').assert;
+let config = require('../../../config/database');
+let Request = require('../../../models/request');
 
-var mongoose = require('mongoose');
-var winston = require('../../../config/winston');
-var MessageConstants = require("../../../models/messageConstants");
+let mongoose = require('mongoose');
+let winston = require('../../../config/winston');
+let MessageConstants = require("../../../models/messageConstants");
 require('../../../services/mongoose-cache-fn')(mongoose);
 
-// var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
+// let databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 // if (!databaseUri) {
 //   console.log('DATABASE_URI not specified, falling back to localhost.');
 // }
@@ -22,23 +22,23 @@ require('../../../services/mongoose-cache-fn')(mongoose);
 // mongoose.connect(databaseUri || config.database);
 mongoose.connect(config.databasetest);
 
-var userService = require('../../../services/userService');
-var projectService = require('../../../services/projectService');
-var leadService = require('../../../services/leadService');
-var requestService = require('../../../services/requestService');
-var messageService = require('../../../services/messageService');
+let userService = require('../../../services/userService');
+let projectService = require('../../../services/projectService');
+let leadService = require('../../../services/leadService');
+let requestService = require('../../../services/requestService');
+let messageService = require('../../../services/messageService');
 
 const chat21Event = require('../chat21Event');
 const messageEvent = require('../../../event/messageEvent');
 
-var chat21Config = require('../chat21Config');
+let chat21Config = require('../chat21Config');
 
-var adminToken = process.env.CHAT21_ADMIN_TOKEN || chat21Config.adminToken 
+let adminToken = process.env.CHAT21_ADMIN_TOKEN || chat21Config.adminToken 
 winston.info('Test Chat21Handler adminToken: ' + adminToken);
 
-var chat21 = require('../chat21Client');
+let chat21 = require('../chat21Client');
 
-var chat21Handler = require('../chat21Handler');
+let chat21Handler = require('../chat21Handler');
 chat21Handler.listen();
 
 describe('Chat21Handler', function () {
@@ -77,15 +77,15 @@ describe('Chat21Handler', function () {
   it('createRequest', function (done) {
   
 
-    var email = "test-createRequest-chat21handler" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-createRequest-chat21handler" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
      projectService.create("createWithId", savedUser._id).then(function(savedProject) {
       leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
 
        
-        var counter = 0;
+        let counter = 0;
         chat21Event.on('group.create', function(data){
           counter++;
           winston.info("group created", data);
@@ -127,8 +127,8 @@ describe('Chat21Handler', function () {
 
 
 
-  //   var email = "test-createRequest-chat21handler" + Date.now() + "@email.com";
-  //   var pwd = "pwd";
+  //   let email = "test-createRequest-chat21handler" + Date.now() + "@email.com";
+  //   let pwd = "pwd";
 
   //   userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
   //    projectService.create("createWithId", savedUser._id).then(function(savedProject) {

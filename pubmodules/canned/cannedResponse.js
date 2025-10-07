@@ -1,9 +1,9 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../../config/winston');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../../config/winston');
 
 
-var CannedResponseSchema = new Schema({
+let CannedResponseSchema = new Schema({
   
   title: {
     type: String,
@@ -45,7 +45,7 @@ var CannedResponseSchema = new Schema({
 // CannedResponseSchema.index({text: 'text'},
 //  {"name":"cannedresponse_fulltext","default_language": "italian","language_override": "dummy"}); // schema level
 
- var CannedResponse = mongoose.model('cannedResponse', CannedResponseSchema);
+ let CannedResponse = mongoose.model('cannedResponse', CannedResponseSchema);
 
  if (process.env.MONGOOSE_SYNCINDEX) {
   CannedResponse.syncIndexes();

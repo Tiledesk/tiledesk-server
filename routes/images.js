@@ -1,12 +1,12 @@
-var express = require('express');
+let express = require('express');
 const multer  = require('multer');
-var passport = require('passport');
+let passport = require('passport');
 require('../middleware/passport')(passport);
-var validtoken = require('../middleware/valid-token')
-var winston = require('../config/winston');
-var pathlib = require('path');
+let validtoken = require('../middleware/valid-token')
+let winston = require('../config/winston');
+let pathlib = require('path');
 
-var router = express.Router();
+let router = express.Router();
 
 
 const sharp = require('sharp');
@@ -74,13 +74,13 @@ upload.single('file'), (req, res, next) => {
   try {
     // winston.info("req.query.folder1:"+req.body.folder);
 
-    var folder = req.folder || "error";
+    let folder = req.folder || "error";
     winston.debug("folder:"+folder);
 
-     var destinationFolder = 'uploads/users/' + req.user.id + "/images/" + folder +"/";
+     let destinationFolder = 'uploads/users/' + req.user.id + "/images/" + folder +"/";
      winston.debug("destinationFolder",destinationFolder);
 
-     var thumFilename = destinationFolder+'thumbnails_200_200-' + req.file.originalname;
+     let thumFilename = destinationFolder+'thumbnails_200_200-' + req.file.originalname;
 
 
      fileService.getFileDataAsBuffer(req.file.filename).then(function(buffer) {
@@ -128,7 +128,7 @@ uploadFixedFolder.single('file'), (req, res, next) => {
     winston.debug("/users/folder");
     // winston.info("req.query.folder1:"+req.body.folder);
 
-    // var folder = req.folder || "error";
+    // let folder = req.folder || "error";
     // winston.info("folder:"+folder);
 
     if (req.upload_file_already_exists) {
@@ -136,10 +136,10 @@ uploadFixedFolder.single('file'), (req, res, next) => {
       return res.status(409).send({success: false, msg: 'Error uploading user image, file already exists'});
     }
 
-     var destinationFolder = 'uploads/users/' + req.user.id + "/images/";
+     let destinationFolder = 'uploads/users/' + req.user.id + "/images/";
      winston.debug("destinationFolder",destinationFolder);
 
-     var thumFilename = destinationFolder+'thumbnails_200_200-' + req.file.originalname;
+     let thumFilename = destinationFolder+'thumbnails_200_200-' + req.file.originalname;
 
 
      fileService.getFileDataAsBuffer(req.file.filename).then(function(buffer) {
@@ -236,10 +236,10 @@ uploadAvatar.single('file'), async (req, res, next) => {
       entity_id = bot_id;
     }
 
-     var destinationFolder = 'uploads/users/' + entity_id + "/images/";
+     let destinationFolder = 'uploads/users/' + entity_id + "/images/";
      winston.debug("destinationFolder:"+destinationFolder);
 
-     var thumFilename = destinationFolder+'thumbnails_200_200-photo.jpg';
+     let thumFilename = destinationFolder+'thumbnails_200_200-photo.jpg';
 
      winston.debug("req.file.filename:"+req.file.filename);
      fileService.getFileDataAsBuffer(req.file.filename).then(function(buffer) {
@@ -400,15 +400,15 @@ curl -v -X POST -H 'Content-Type: multipart/form-data' -F "file=@/Users/andreale
 router.post('/public', upload.single('file'), (req, res, next) => {
   try {
      winston.debug("req",req);
-     var folder = req.folder || "error";
+     let folder = req.folder || "error";
      winston.debug("folder",folder);
 
-     var destinationFolder = "uploads/public/images/" + folder +"/";
+     let destinationFolder = "uploads/public/images/" + folder +"/";
      winston.debug("destinationFolder",destinationFolder);
 
      winston.debug("req.file.filename",req.file.filename);
 
-     var thumFilename = destinationFolder+'thumbnails_200_200-' + req.file.originalname;          
+     let thumFilename = destinationFolder+'thumbnails_200_200-' + req.file.originalname;          
 
 
      fileService.getFileDataAsBuffer(req.file.filename).then(function(buffer) {
@@ -438,7 +438,7 @@ router.post('/public', upload.single('file'), (req, res, next) => {
 // router.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 // router.use('/uploads', function timeLog(req, res, next) {
 //   winston.debug('Time: ', Date.now());
-//   var a = express.static(path.join(__dirname, '/uploads'))
+//   let a = express.static(path.join(__dirname, '/uploads'))
 //   winston.debug('Time2: ', a);
 //   return a;
 // }, express.static(path.join(__dirname, '/uploads')));

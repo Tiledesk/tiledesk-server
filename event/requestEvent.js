@@ -1,8 +1,8 @@
 const EventEmitter = require('events');
-var Message = require("../models/message");
-var Request = require("../models/request");
+let Message = require("../models/message");
+let Request = require("../models/request");
 
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 
 class RequestEvent extends EventEmitter {
     constructor() {
@@ -54,7 +54,7 @@ requestEvent.on('request.create.simple', function(request) {
         //   requestComplete.messages = messages;
         //   requestEvent.emit('request.create', requestComplete);
 
-        // //   var requestJson = request.toJSON();
+        // //   let requestJson = request.toJSON();
         // //   requestJson.messages = messages;
         // //   requestEvent.emit('request.create', requestJson);
         // });

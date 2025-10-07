@@ -1,18 +1,18 @@
-var express = require('express');
-var router = express.Router();
+let express = require('express');
+let router = express.Router();
 
-var User = require("../models/user");
-var emailService = require("../services/emailService");
-var winston = require('../config/winston');
+let User = require("../models/user");
+let emailService = require("../services/emailService");
+let winston = require('../config/winston');
 const authEvent = require('../event/authEvent');
 const uuidv4 = require('uuid/v4');
-var uniqid = require('uniqid');
+let uniqid = require('uniqid');
 
 router.put('/', function (req, res) {
 
   winston.debug('UPDATE USER - REQ BODY ', req.body);
 
-  var update = {};
+  let update = {};
 
   // update.firstname = req.body.firstname;
   // update.lastname = req.body.lastname;
@@ -67,7 +67,7 @@ router.delete('/', function (req, res) {
   winston.debug('delete USER - REQ BODY ', req.body);
 
   
-  var update = {status:0, email: uuidv4()+'@tiledesk.com',firstname: 'anonymized',lastname: 'anonymized'};
+  let update = {status:0, email: uuidv4()+'@tiledesk.com',firstname: 'anonymized',lastname: 'anonymized'};
   User.findByIdAndUpdate(req.user.id, update, { new: true, upsert: true }, function (err, updatedUser) {
     if (err) {
       winston.error(err);
@@ -191,7 +191,7 @@ router.get('/resendverifyemail', function (req, res) {
 
 router.get('/', function (req, res) {
   winston.debug("users");
-  var userid = req.user.id;
+  let userid = req.user.id;
 
   User.findById(userid, 'email firstname lastname _id emailverified', function (err, user) {
     if (err) {

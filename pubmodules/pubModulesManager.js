@@ -1,8 +1,8 @@
 
-var winston = require('../config/winston');
-var validtoken = require('../middleware/valid-token');
-var roleChecker = require('../middleware/has-role');
-var passport = require('passport');
+let winston = require('../config/winston');
+let validtoken = require('../middleware/valid-token');
+let roleChecker = require('../middleware/has-role');
+let passport = require('passport');
 require('../middleware/passport')(passport);
 
 class PubModulesManager {
@@ -136,7 +136,7 @@ class PubModulesManager {
 
     }
     useUnderProjects(app) {
-        var that = this;
+        let that = this;
         winston.debug("PubModulesManager using controllers");     
 
 
@@ -695,5 +695,5 @@ class PubModulesManager {
      
 }
 
-var pubModulesManager = new PubModulesManager();
+let pubModulesManager = new PubModulesManager();
 module.exports = pubModulesManager;

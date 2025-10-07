@@ -1,5 +1,5 @@
 
-var dotenvPath = undefined;
+let dotenvPath = undefined;
 
 if (process.env.DOTENV_PATH) {
   dotenvPath = process.env.DOTENV_PATH;
@@ -14,7 +14,7 @@ if (process.env.LOAD_DOTENV_SUBFOLDER ) {
 require('dotenv').config({ path: dotenvPath});
 
 
-var mongoose = require('mongoose');
+let mongoose = require('mongoose');
 
 let winston = require('./config/winston');
 let JobsManager = require('./jobsManager');
@@ -22,32 +22,32 @@ let JobsManager = require('./jobsManager');
 
 let geoService = require('./services/geoService');
 // let subscriptionNotifier = require('./services/subscriptionNotifier');
-var subscriptionNotifierQueued = require('./services/subscriptionNotifierQueued');
-var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
+let subscriptionNotifierQueued = require('./services/subscriptionNotifierQueued');
+let botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 
 const botEvent = require('./event/botEvent');
-var channelManager = require('./channels/channelManager');
+let channelManager = require('./channels/channelManager');
 
-var updateLeadQueued = require('./services/updateLeadQueued');
+let updateLeadQueued = require('./services/updateLeadQueued');
 
 
 require('./services/mongoose-cache-fn')(mongoose);
 
 
-var config = require('./config/database');
+let config = require('./config/database');
 
 
 //override JOB_WORKER_ENABLED to false when you start jobs.js
 process.env.JOB_WORKER_ENABLED=false
 
-var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
-var autoIndex = true;
+let databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
+let autoIndex = true;
 
 if (!databaseUri) { //TODO??
   winston.warn('DATABASE_URI not specified, falling back to localhost.');
 }
 
-var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex }, function(err) {
+let connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex }, function(err) {
   if (err) { 
     winston.error('Failed to connect to MongoDB on ' + databaseUri + " ", err);
     process.exit(1);
@@ -100,9 +100,9 @@ async function main()
     winston.debug("routingQueueQueued"); 
     jobsManager.listenRoutingQueue(routingQueueQueued);
 
-    let whatsappQueue = require('@tiledesk/tiledesk-whatsapp-jobworker');
-    winston.info("whatsappQueue");
-    jobsManager.listenWhatsappQueue(whatsappQueue);
+    // let whatsappQueue = require('@tiledesk/tiledesk-whatsapp-jobworker');
+    // winston.info("whatsappQueue");
+    // jobsManager.listenWhatsappQueue(whatsappQueue);
 
     let scheduler = require('./pubmodules/scheduler');    
     jobsManager.listenScheduler(scheduler);

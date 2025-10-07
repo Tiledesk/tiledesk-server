@@ -2,14 +2,14 @@
 process.env.NODE_ENV = 'test';
 
 let mongoose = require("mongoose");
-var Request = require("../../../models/request");
-var projectService = require('../../../services/projectService');
-var requestService = require('../../../services/requestService');
-var leadService = require('../../../services/leadService');
-var userService = require('../../../services/userService');
+let Request = require("../../../models/request");
+let projectService = require('../../../services/projectService');
+let requestService = require('../../../services/requestService');
+let leadService = require('../../../services/leadService');
+let userService = require('../../../services/userService');
 
-var Lead = require('../../../models/lead');
-var Message = require('../../../models/message');
+let Lead = require('../../../models/lead');
+let Message = require('../../../models/message');
 
 //Require the dev-dependencies
 let chai = require('chai');
@@ -19,8 +19,8 @@ let should = chai.should();
 
 // chai.config.includeStack = true;
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 chai.use(chaiHttp);
 
@@ -40,19 +40,19 @@ describe('Chat21WebHook', () => {
 
   describe('post', () => {
  
-    var userid = "5badfe5d553d1844ad654072";
+    let userid = "5badfe5d553d1844ad654072";
 
 
       it('new-messageWithoutEmail', (done) => {
 
-        var email = "test-request-create-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-request-create-" + Date.now() + "@email.com";
+        let pwd = "pwd";
     
         userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
 
           projectService.create("test-new-message", savedUser._id).then(function(savedProject) {
 
-            var request_id = "support-group-"+savedProject._id;
+            let request_id = "support-group-"+savedProject._id;
             let webhookContent = {"event_type": "new-message", "data":{"sender":savedUser._id, "sender_fullname": "sender_fullname", 
             "recipient":request_id, "recipient_fullname":"Andrea Leo","text":"text", 
             "attributes": {"projectId":savedProject._id} }
@@ -98,14 +98,14 @@ describe('Chat21WebHook', () => {
  // mocha channels/chat21/test-int/chat21WebHook.js   --grep 'new-messageWithEmailOnly'
         it('new-messageWithEmailOnly', (done) => {
 
-            var email = "test-request-create-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-request-create-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
 
             projectService.create("test-new-message", savedUser._id).then(function(savedProject) {
   
-              var request_id = "support-group-"+savedProject._id;
+              let request_id = "support-group-"+savedProject._id;
               let webhookContent = {"event_type": "new-message", 
                 "data":{
                     "sender":savedUser._id, "sender_fullname": "sender_fullname", 
@@ -179,22 +179,22 @@ describe('Chat21WebHook', () => {
 //        mocha channels/chat21/test-int/chat21WebHook.js   --grep 'new-messageWithEmailAndFullnameAndRequestAlreadyExists'
           it('new-messageWithEmailAndFullnameAndRequestAlreadyExists', (done) => {
 
-            var email = "test-request-create-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-request-create-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
 
             // projectService.create("test-new-message", savedUser._id).then(function(savedProject) {
             projectService.createAndReturnProjectAndProjectUser("test-new-message", savedUser._id).then(function(savedProjectAndPU) {
-                var savedProject = savedProjectAndPU.project;    
+                let savedProject = savedProjectAndPU.project;    
 
-                var request_id = "support-group-"+savedProject._id;
+                let request_id = "support-group-"+savedProject._id;
 
                 leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
                         // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
                         // requestService.createWithId(request_id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
                             
-                            var request = {
+                            let request = {
                                 request_id:request_id, project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
                                 id_project:savedProject._id, first_text: "first_text",
                                 lead:createdLead, requester: savedProjectAndPU.project_user };
@@ -248,24 +248,24 @@ describe('Chat21WebHook', () => {
  //       mocha channels/chat21/test-int/chat21WebHook.js   --grep 'new-messageWithEmailAndFullnameAndRequestAlreadyExistAndNOProjectID'
           it('new-messageWithEmailAndFullnameAndRequestAlreadyExistAndNOProjectID', (done) => {
 
-            var email = "test-request-create-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-request-create-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
 
 
             // projectService.create("test-new-message", savedUser._id).then(function(savedProject) {
             projectService.createAndReturnProjectAndProjectUser("test-new-message", savedUser._id).then(function(savedProjectAndPU) {
-                var savedProject = savedProjectAndPU.project;    
+                let savedProject = savedProjectAndPU.project;    
 
                     
-                var request_id = "support-group-"+savedProject._id;
+                let request_id = "support-group-"+savedProject._id;
 
                 leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
                         // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
                         // requestService.createWithId(request_id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
 
-                            var request = {
+                            let request = {
                                 request_id:request_id, project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
                                 id_project:savedProject._id, first_text: "first_text",
                                 lead:createdLead, requester: savedProjectAndPU.project_user };
@@ -317,24 +317,24 @@ describe('Chat21WebHook', () => {
         it('joinmember', (done) => {
 
 
-            var email = "test-request-create-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-request-create-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
 
 
             // projectService.create("test-join-member", userid).then(function(savedProject) {
                 projectService.createAndReturnProjectAndProjectUser("test-join-member", savedUser._id).then(function(savedProjectAndPU) {
-                    var savedProject = savedProjectAndPU.project;    
+                    let savedProject = savedProjectAndPU.project;    
 
                 // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
                 // requestService.createWithId("join-member", "join-member-requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
 
-                    var request_id = "support-group-"+savedProject._id;
+                    let request_id = "support-group-"+savedProject._id;
 
                     leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
 
-                    var request = {
+                    let request = {
                         request_id:request_id, project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
                         id_project:savedProject._id, first_text: "join-member-requester_id1",
                         lead:createdLead, requester: savedProjectAndPU.project_user };
@@ -342,7 +342,7 @@ describe('Chat21WebHook', () => {
                     requestService.create(request).then(function(savedRequest) {
 
     
-                    var webhookContent =     { "event_type": 'join-member', "createdAt": 1538156223681, "group_id": savedRequest.request_id, 
+                    let webhookContent =     { "event_type": 'join-member', "createdAt": 1538156223681, "group_id": savedRequest.request_id, 
                             "app_id": 'tilechat', "member_id": savedUser._id, "data": { "member_id": savedUser._id, "group":  { "createdOn": 1538156223311,
                         "iconURL": 'NOICON', "members": [Object], "name": 'Bash', "owner": 'system', 'attributes': {"projectId":savedProject._id} } } }
                         
@@ -377,8 +377,8 @@ describe('Chat21WebHook', () => {
     // // mocha channels/chat21/test-int/chat21WebHook.js   --grep 'butnottherequesterid'
     //     it('join-member-butnottherequesterid', (done) => {
 
-    //         var email = "test-request-create-" + Date.now() + "@email.com";
-    //         var pwd = "pwd";
+    //         let email = "test-request-create-" + Date.now() + "@email.com";
+    //         let pwd = "pwd";
 
     //         userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
 
@@ -386,7 +386,7 @@ describe('Chat21WebHook', () => {
     //             leadService.createIfNotExistsWithLeadId("requester_id1-join-member-butnottherequesterid", "leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
     //             requestService.createWithId("join-member-requestid", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
     
-    //                 var webhookContent =     { "event_type": 'join-member', "createdAt": 1538156223681, "group_id": savedRequest.request_id, 
+    //                 let webhookContent =     { "event_type": 'join-member', "createdAt": 1538156223681, "group_id": savedRequest.request_id, 
     //                         "app_id": 'tilechat', "member_id": savedUser._id, "data": { "member_id": savedUser._id, "group":  { "createdOn": 1538156223311,
     //                     "iconURL": 'NOICON', "members": [Object], "name": 'Bash', "owner": 'system', 'attributes': {"projectId":savedProject._id} } } }
                         
@@ -420,7 +420,7 @@ describe('Chat21WebHook', () => {
             projectService.create("test-leave-member", userid).then(function(savedProject) {
                 requestService.createWithId("leave-member", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
     
-                    var webhookContent =     { "event_type": 'leave-member', "createdAt": 1538156223681, "group_id": savedRequest.request_id, 
+                    let webhookContent =     { "event_type": 'leave-member', "createdAt": 1538156223681, "group_id": savedRequest.request_id, 
                             "app_id": 'tilechat', "member_id": userid, "id_project":savedProject._id, "data": { "member_id": userid, "group":  { "createdOn": 1538156223311,
                         "iconURL": 'NOICON', "members": [Object], "name": 'Bash', "owner": 'system', 'attributes': {"projectId":savedProject._id} } } }
                         
@@ -457,7 +457,7 @@ describe('Chat21WebHook', () => {
 
                         
 
-                        var webhookContent =     { "event_type": 'deleted-archivedconversation', "createdAt": 1538156223681, 
+                        let webhookContent =     { "event_type": 'deleted-archivedconversation', "createdAt": 1538156223681, 
                                 "app_id": 'tilechat',"user_id": "system", "recipient_id": "support-group-test-deleted-archivedconversation",
                                 "data": {"attributes" : {"projectId" : savedProject._id} }};
                             

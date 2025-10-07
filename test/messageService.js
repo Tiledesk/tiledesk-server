@@ -2,21 +2,19 @@
 process.env.NODE_ENV = 'test';
 process.env.LOG_LEVEL = 'critical';
 
-var expect = require('chai').expect;
-
-var chai = require("chai");
+let chai = require("chai");
 chai.config.includeStack = true;
 
 let log = false;
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 let should = chai.should();
-var config = require('../config/database');
-var mongoose = require('mongoose');
-var winston = require('../config/winston');
+let config = require('../config/database');
+let mongoose = require('mongoose');
+let winston = require('../config/winston');
 
-// var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
+// let databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 // if (!databaseUri) {
 //   console.log('DATABASE_URI not specified, falling back to localhost.');
 // }
@@ -25,13 +23,13 @@ var winston = require('../config/winston');
 mongoose.connect(config.databasetest);
 require('../services/mongoose-cache-fn')(mongoose);
 
-var requestService = require('../services/requestService');
-var messageService = require('../services/messageService');
-var projectService = require('../services/projectService');
+let requestService = require('../services/requestService');
+let messageService = require('../services/messageService');
+let projectService = require('../services/projectService');
 
-var Request = require("../models/request");
+let Request = require("../models/request");
 
-var { QuoteManager } = require('../services/QuoteManager');
+let { QuoteManager } = require('../services/QuoteManager');
 
 // CONNECT REDIS - CHECK IT
 const { TdCache } = require('../utils/TdCache');
@@ -44,7 +42,7 @@ tdCache.connect();
 
 describe('messageService', function () {
 
-  var userid = "5badfe5d553d1844ad654072";
+  let userid = "5badfe5d553d1844ad654072";
 
   // it('createMessageQuote', function (done) {
   //   // this.timeout(10000);
@@ -150,7 +148,7 @@ describe('messageService', function () {
     // this.timeout(10000);  
     // projectService.create("test1", userid).then(function(savedProject) {
     projectService.createAndReturnProjectAndProjectUser("test1", userid).then(function (savedProjectAndPU) {
-      var savedProject = savedProjectAndPU.project;
+      let savedProject = savedProjectAndPU.project;
       // attento reqid
       // requestService.createWithId("request_id-createTwoMessage", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
       requestService.createWithIdAndRequester("request_id-createTwoMessage-" + new Date(), savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function (savedRequest) {
@@ -188,7 +186,7 @@ describe('messageService', function () {
     // this.timeout(10000);
 
 
-    var messageTransformerInterceptor = require('../pubmodules/messageTransformer/messageTransformerInterceptor');
+    let messageTransformerInterceptor = require('../pubmodules/messageTransformer/messageTransformerInterceptor');
     if (log) { console.log("messageTransformerInterceptor", messageTransformerInterceptor); }
     messageTransformerInterceptor.listen();
 
@@ -220,7 +218,7 @@ describe('messageService', function () {
     // this.timeout(10000);
 
 
-    var messageTransformerInterceptor = require('../pubmodules/messageTransformer/messageTransformerInterceptor');
+    let messageTransformerInterceptor = require('../pubmodules/messageTransformer/messageTransformerInterceptor');
     if (log) { console.log("messageTransformerInterceptor", messageTransformerInterceptor); }
     messageTransformerInterceptor.listen();
 
@@ -254,7 +252,7 @@ describe('messageService', function () {
     // this.timeout(10000);
 
 
-    var messageTransformerInterceptor = require('../pubmodules/messageTransformer/messageTransformerInterceptor');
+    let messageTransformerInterceptor = require('../pubmodules/messageTransformer/messageTransformerInterceptor');
     if (log) { console.log("messageTransformerInterceptor", messageTransformerInterceptor); }
     messageTransformerInterceptor.listen();
 
@@ -292,7 +290,7 @@ describe('messageService', function () {
     // this.timeout(10000);
 
 
-    var microLanguageTransformerInterceptor = require('../pubmodules/messageTransformer/microLanguageTransformerInterceptor');
+    let microLanguageTransformerInterceptor = require('../pubmodules/messageTransformer/microLanguageTransformerInterceptor');
     if (log) { console.log("microLanguageTransformerInterceptor", microLanguageTransformerInterceptor); }
     microLanguageTransformerInterceptor.listen();
 

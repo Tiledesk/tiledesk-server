@@ -2,11 +2,11 @@
 'use strict';
 
 
-var winston = require('../../config/winston');
-var Request = require("../../models/request");
-var requestService = require("../../services/requestService");
+let winston = require('../../config/winston');
+let Request = require("../../models/request");
+let requestService = require("../../services/requestService");
 
-var Agenda = require("agenda");
+let Agenda = require("agenda");
 const mongoConnectionString = 'mongodb://127.0.0.1/agenda'; 
 const agenda = new Agenda({db: {address: mongoConnectionString}});
 
@@ -22,18 +22,18 @@ constructor() {
 }
 
 run() {
-    // var that = this;
+    // let that = this;
     // findUnresponsiveRequests();
     winston.info("RequestTaskScheduler listen started" );
     this.scheduleUnresponsiveRequests();
 }
 
 scheduleUnresponsiveRequests() {
-  var that = this;
+  let that = this;
   winston.info("RequestTaskScheduler task scheduleUnresponsiveRequests launched with closeAfter : " + this.closeUnresponsiveRequestsAfterTimeout + " cron expression: " + this.closeUnresponsiveRequestsCronExp);
 
  //https://crontab.guru/examples.html
-//  var s= schedule.scheduleJob(this.closeUnresponsiveRequestsCronExp, function(fireDate){
+//  let s= schedule.scheduleJob(this.closeUnresponsiveRequestsCronExp, function(fireDate){
 //     winston.info('This job was supposed to run at ' + fireDate + ', but actually ran at ' + new Date());
 //     that.findUnresponsiveRequests(); 
 //   });
@@ -59,7 +59,7 @@ findUnresponsiveRequests() {
     this.closeUnresponsiveRequestsAfterTimeout = 1;
 
   // db.getCollection('requests').find({"hasBot":true, "status": { "$lt": 1000 }, "createdAt":  { "$lte" :new ISODate("2020-11-28T20:15:31Z")} }).count()
-    var query = {hasBot:true, status: { $lt: 1000 }, createdAt:  { $lte :new Date(Date.now() - this.closeUnresponsiveRequestsAfterTimeout ).toISOString()} };
+    let query = {hasBot:true, status: { $lt: 1000 }, createdAt:  { $lte :new Date(Date.now() - this.closeUnresponsiveRequestsAfterTimeout ).toISOString()} };
 
     // togli
     query.id_project = "5fc224ce05416200342af18a";
@@ -105,7 +105,7 @@ findUnresponsiveRequests() {
  
  
  
-var requestTaskScheduler = new RequestTaskScheduler();
+let requestTaskScheduler = new RequestTaskScheduler();
 
 
 module.exports = requestTaskScheduler;

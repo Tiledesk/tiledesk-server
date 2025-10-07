@@ -1,9 +1,9 @@
 const faqBotEvent = require('../event/faqBotEvent');
 const Faq_kb = require('../models/faq_kb');
 const Faq = require('../models/faq');
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 const axios = require("axios").default;
-var configGlobal = require('../config/global');
+let configGlobal = require('../config/global');
 
 
 let training_api_url = process.env.CHATBOT_TRAINING_API_URL || "http://34.65.210.38/model/enqueuetrain";
@@ -147,6 +147,6 @@ class TrainingService {
 
 }
 
-var trainingService = new TrainingService();
+let trainingService = new TrainingService();
 
 module.exports = trainingService;

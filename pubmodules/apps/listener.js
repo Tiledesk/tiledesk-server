@@ -1,11 +1,11 @@
 const apps = require("@tiledesk/tiledesk-apps");
-var winston = require('../../config/winston');
+let winston = require('../../config/winston');
 
-var config = require('../../config/database'); // get db config file
+let config = require('../../config/database'); // get db config file
 
 let configSecretOrPubicKay = process.env.GLOBAL_SECRET || config.secret;   
 
-var pKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
+let pKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
 // console.log("pKey",pKey);
 
 if (pKey) {
@@ -38,6 +38,6 @@ class Listener {
 
 }
 
-var listener = new Listener();
+let listener = new Listener();
 
 module.exports = listener;

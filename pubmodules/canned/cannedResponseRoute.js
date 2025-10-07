@@ -1,7 +1,7 @@
-var express = require('express');
-var router = express.Router();
-var CannedResponse = require("./cannedResponse");
-var winston = require('../../config/winston');
+let express = require('express');
+let router = express.Router();
+let CannedResponse = require("./cannedResponse");
+let winston = require('../../config/winston');
 const RoleConstants = require('../../models/roleConstants');
 // const CannedResponseEvent = require('../event/CannedResponseEvent');
 
@@ -11,7 +11,7 @@ router.post('/', function (req, res) {
   winston.debug(req.body);
   winston.debug("req.user", req.user);
 
-  var newCannedResponse = new CannedResponse({
+  let newCannedResponse = new CannedResponse({
     title: req.body.title,  
     text: req.body.text,
     id_project: req.projectid,
@@ -42,7 +42,7 @@ router.put('/:cannedResponseid', async function (req, res) {
   const id_project = req.projectid;
   let user_role = req.projectuser.role;
   
-  var update = {};
+  let update = {};
 
   const allowedFields = ['title', 'text', 'attributes']
 
@@ -215,35 +215,35 @@ router.get('/:cannedResponseid', function (req, res) {
 });
 
 router.get('/', function (req, res) {
-  var limit = 1000; // Number of CannedResponses per page
-  var page = 0;
+  let limit = 1000; // Number of CannedResponses per page
+  let page = 0;
 
   if (req.query.page) {
     page = req.query.page;
   }
 
-  var skip = page * limit;
+  let skip = page * limit;
   winston.debug('CannedResponse ROUTE - SKIP PAGE ', skip);
 
-  // var query = { "id_project": req.projectid, "status": {$lt:1000}};
-  var query = {"id_project": req.projectid, "status": { $lt:1000 }, $or:[ { shared: true }, { shared : { $exists: false }}, { createdBy: req.user._id } ] }
+  // let query = { "id_project": req.projectid, "status": {$lt:1000}};
+  let query = {"id_project": req.projectid, "status": { $lt:1000 }, $or:[ { shared: true }, { shared : { $exists: false }}, { createdBy: req.user._id } ] }
 
   if (req.query.full_text) {
     winston.debug('CannedResponse ROUTE req.query.fulltext', req.query.full_text);
     query.$text = { "$search": req.query.full_text };
   }
 
-  var direction = -1; //-1 descending , 1 ascending
+  let direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
   }
 
-  var sortField = "createdAt";
+  let sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   }
 
-  var sortQuery = {};
+  let sortQuery = {};
   sortQuery[sortField] = direction;
 
   winston.debug("sort query", sortQuery);

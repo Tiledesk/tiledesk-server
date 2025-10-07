@@ -1,18 +1,18 @@
 'use strict';
 
-var userService = require("./userService");
-var projectService = require("./projectService");
+let userService = require("./userService");
+let projectService = require("./projectService");
 
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 
 
 class BootDataLoader {
 
 
   create() {
-    var that = this;
-      var email = process.env.ADMIN_EMAIL || "admin@tiledesk.com";
-      var password = process.env.ADMIN_PASSWORD || "adminadmin";
+    let that = this;
+      let email = process.env.ADMIN_EMAIL || "admin@tiledesk.com";
+      let password = process.env.ADMIN_PASSWORD || "adminadmin";
       userService.signup(email, password, "Administrator", " ", true)
       .then(function (savedUser) {
         winston.info("Created admin user with email "+ email + " and password "+ password);
@@ -32,7 +32,7 @@ class BootDataLoader {
 
 
 }
-var bootDataLoader = new BootDataLoader();
+let bootDataLoader = new BootDataLoader();
 
 
 module.exports = bootDataLoader;

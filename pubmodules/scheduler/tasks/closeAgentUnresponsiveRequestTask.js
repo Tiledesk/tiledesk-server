@@ -2,10 +2,10 @@
 'use strict';
 
 
-var schedule = require('node-schedule');
-var winston = require('../../../config/winston');
-var Request = require("../../../models/request");
-var requestService = require("../../../services/requestService");
+let schedule = require('node-schedule');
+let winston = require('../../../config/winston');
+let Request = require("../../../models/request");
+let requestService = require("../../../services/requestService");
 
 
 class CloseAgentUnresponsiveRequestTask {
@@ -21,7 +21,7 @@ constructor() {
     winston.info("CloseAgentUnresponsiveRequestTask filter only by projects enabled: " + this.queryProject );
   }
   
-  // var stringQuery = process.env.CLOSE_UNRESPONSIVE_REQUESTS_QUERY;
+  // let stringQuery = process.env.CLOSE_UNRESPONSIVE_REQUESTS_QUERY;
   // if (stringQuery) {
   //   this.query = JSON.parse(stringQuery) || {hasBot:true, status: { $lt: 1000 }, createdAt:  { $lte :new Date(Date.now() - this.queryAfterTimeout ).toISOString()} };
   // }else {
@@ -40,14 +40,14 @@ run() {
 }
 
 scheduleUnresponsiveRequests() {
-  var that = this;
+  let that = this;
   winston.info("CloseAgentUnresponsiveRequestTask task scheduleUnresponsiveRequests launched with closeAfter : " + this.queryAfterTimeout + " milliseconds, cron expression: " + this.cronExp + " and query limit: " +this.queryLimit);
   // if (this.queryProject) {
   //   winston.info("CloseAgentUnresponsiveRequestTask query altered: "+ JSON.stringify(this.query));
   // }
 
  //https://crontab.guru/examples.html
- var s= schedule.scheduleJob(this.cronExp, function(fireDate){
+ let s= schedule.scheduleJob(this.cronExp, function(fireDate){
     winston.debug('CloseAgentUnresponsiveRequestTask ScheduleUnresponsiveRequests job was supposed to run at ' + fireDate + ', but actually ran at ' + new Date());
     that.findUnresponsiveRequests(); 
   });
@@ -60,7 +60,7 @@ findUnresponsiveRequests() {
   // db.getCollection('requests').find({"hasBot":true, "status": { "$lt": 1000 }, "createdAt":  { "$lte" :new ISODate("2020-11-28T20:15:31Z")} }).count()    
     
     //RETEST IT
-    var query = {hasBot:false, status: { $lt: 1000 }, createdAt:  { $lte :new Date(Date.now() - this.queryAfterTimeout ).toISOString()} };
+    let query = {hasBot:false, status: { $lt: 1000 }, createdAt:  { $lte :new Date(Date.now() - this.queryAfterTimeout ).toISOString()} };
 
     if (this.queryProject) {
       query.id_project = this.queryProject;
@@ -114,7 +114,7 @@ findUnresponsiveRequests() {
  
  
  
-var closeAgentUnresponsiveRequestTask = new CloseAgentUnresponsiveRequestTask();
+let closeAgentUnresponsiveRequestTask = new CloseAgentUnresponsiveRequestTask();
 
 
 module.exports = closeAgentUnresponsiveRequestTask;

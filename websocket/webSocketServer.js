@@ -1,33 +1,33 @@
-var Message = require("../models/message");
-var User = require("../models/user");
-var Project_user = require("../models/project_user");
-var Project = require("../models/project");
-var EventModel = require("../pubmodules/events/event");
-var Request = require("../models/request");
-var Message = require("../models/message");
-var Faq_kb = require("../models/faq_kb");
+let Message = require("../models/message");
+let User = require("../models/user");
+let Project_user = require("../models/project_user");
+let Project = require("../models/project");
+let EventModel = require("../pubmodules/events/event");
+let Request = require("../models/request");
+let Message = require("../models/message");
+let Faq_kb = require("../models/faq_kb");
 const WebSocket = require('ws');
-var url = require('url');
-var validtoken = require('../middleware/valid-token');
-var messageEvent = require("../event/messageEvent");
-var eventEvent = require("../pubmodules/events/eventEvent");
-var requestEvent = require("../event/requestEvent");
-var botEvent = require("../event/botEvent");
-var jwt = require('jsonwebtoken');
-var config = require('../config/database'); // get db config file
-var winston = require('../config/winston');
-var roleChecker = require('../middleware/has-role');
+let url = require('url');
+let validtoken = require('../middleware/valid-token');
+let messageEvent = require("../event/messageEvent");
+let eventEvent = require("../pubmodules/events/eventEvent");
+let requestEvent = require("../event/requestEvent");
+let botEvent = require("../event/botEvent");
+let jwt = require('jsonwebtoken');
+let config = require('../config/database'); // get db config file
+let winston = require('../config/winston');
+let roleChecker = require('../middleware/has-role');
 const PubSub = require('./pubsub');
 const authEvent = require('../event/authEvent');
-var ProjectUserUtil = require("../utils/project_userUtil");
-var cacheUtil = require('../utils/cacheUtil');
-var mongoose = require('mongoose');
+let ProjectUserUtil = require("../utils/project_userUtil");
+let cacheUtil = require('../utils/cacheUtil');
+let mongoose = require('mongoose');
 const requestConstants = require("../models/requestConstants");
-var RoleConstants = require('../models/roleConstants');
+let RoleConstants = require('../models/roleConstants');
 
 let configSecretOrPubicKay = process.env.GLOBAL_SECRET || config.secret;
 
-var pKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
+let pKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
 // console.log("pKey",pKey);
 
 if (pKey) {
@@ -57,21 +57,21 @@ function logInvalidToken(req, err) {
   }
 }
 
-var cacheEnabler = require("../services/cacheEnabler");
+let cacheEnabler = require("../services/cacheEnabler");
 
 
-var lastRequestsLimit = process.env.WS_HISTORY_REQUESTS_LIMIT || 100;
+let lastRequestsLimit = process.env.WS_HISTORY_REQUESTS_LIMIT || 100;
 winston.debug('lastRequestsLimit:' + lastRequestsLimit);
 
 lastRequestsLimit = Number(lastRequestsLimit);
 
-var messagesLimit = process.env.WS_HISTORY_MESSAGES_LIMIT || 300;
+let messagesLimit = process.env.WS_HISTORY_MESSAGES_LIMIT || 300;
 winston.debug('messagesLimit:' + messagesLimit);
 
-var lastEventsLimit = process.env.WS_HISTORY_EVENTS_LIMIT || 20;
+let lastEventsLimit = process.env.WS_HISTORY_EVENTS_LIMIT || 20;
 winston.debug('lastEventsLimit:' + lastEventsLimit);
 
-var websocketServerPath = process.env.WS_SERVER_PATH || '/';
+let websocketServerPath = process.env.WS_SERVER_PATH || '/';
 winston.debug('websocketServerPath:' + websocketServerPath);
 
 
@@ -89,23 +89,23 @@ class WebSocketServer {
 
     winston.info('Starting websocket on path: ' + websocketServerPath);
 
-    //var wss = new WebSocket.Server({ port: 40510 });
-    //var wss = new WebSocket.Server({ port: 40510 , path: "/messages" });
-    //var wss = new WebSocket.Server({  port: 80 ,path: "/messages" });
-    //  var wss = new WebSocket.Server({  server: server,path: "/messages" });
+    //let wss = new WebSocket.Server({ port: 40510 });
+    //let wss = new WebSocket.Server({ port: 40510 , path: "/messages" });
+    //let wss = new WebSocket.Server({  port: 80 ,path: "/messages" });
+    //  let wss = new WebSocket.Server({  server: server,path: "/messages" });
 
-    var wss = new WebSocket.Server({
+    let wss = new WebSocket.Server({
       server: server,
       path: websocketServerPath,
       verifyClient: function (info, cb) {
         //console.log('info.req', info.req);
-        // var token = info.req.headers.Authorization
+        // let token = info.req.headers.Authorization
         let urlParsed = url.parse(info.req.url, true);
         // console.log('urlParsed', urlParsed);
-        var queryParameter = urlParsed.query;
+        let queryParameter = urlParsed.query;
         winston.debug('queryParameter', queryParameter);
 
-        var token = queryParameter.token;
+        let token = queryParameter.token;
         winston.debug('token:' + token);
         winston.debug('configSecretOrPubicKay:' + configSecretOrPubicKay);
 
@@ -164,7 +164,7 @@ class WebSocketServer {
     });
 
 
-    var onConnectCallback = async function (client, req) {
+    let onConnectCallback = async function (client, req) {
       winston.debug('onConnectCallback ');
       return new Promise(function (resolve, reject) {
         return resolve("ok");
@@ -172,7 +172,7 @@ class WebSocketServer {
       // check here if you can subscript o publish message
     }
 
-    var onDisconnectCallback = async function (subscript, id) {
+    let onDisconnectCallback = async function (subscript, id) {
       winston.debug('onDisconnectCallback: ' + subscript + ":" + id);
       return new Promise(function (resolve, reject) {
         return resolve("ok");
@@ -182,7 +182,7 @@ class WebSocketServer {
 
 
     //tilebaseMess.send('{ "action": "publish", "payload": { "topic": "/apps/123/requests/sendid/conversations/RFN", "message":{"sender_id":"sendid","sender_fullname":"SFN", "recipient_id":"RFN", "recipient_fullname":"RFN","text":"hi","app_id":"123"}}}');
-    var onPublishCallback = async function (publishTopic, publishMessage, from) {
+    let onPublishCallback = async function (publishTopic, publishMessage, from) {
       winston.debug("onPublish topic: " + publishTopic + " from: " + from, publishMessage);
       return new Promise(function (resolve, reject) {
         return resolve("ok");
@@ -190,7 +190,7 @@ class WebSocketServer {
 
     }
 
-    var onMessageCallback = async function (id, message) {
+    let onMessageCallback = async function (id, message) {
       winston.debug('onMessageCallback ', id, message);
       return new Promise(function (resolve, reject) {
         return resolve("ok");
@@ -200,7 +200,7 @@ class WebSocketServer {
 
     // tilebase.send('{ "action": "subscribe", "payload": { "topic": "/app1/requests"}}');
 
-    var onSubscribeCallback = async function (topic, clientId, req) {
+    let onSubscribeCallback = async function (topic, clientId, req) {
       return new Promise(function (resolve, reject) {
         winston.debug('onSubscribeCallback :' + topic + " " + clientId);
 
@@ -210,7 +210,7 @@ class WebSocketServer {
           winston.error('WebSocket - Error getting  topic. Topic can t be null');
           return reject('WebSocket - Error getting  topic. Topic can t be null');
         }
-        var urlSub = topic.split('/');
+        let urlSub = topic.split('/');
         winston.debug('urlSub: ' + urlSub);
 
         if (!urlSub || (urlSub && urlSub.length == 0)) {
@@ -219,7 +219,7 @@ class WebSocketServer {
         }
         // Error getting Project Cast to ObjectId failed for value "N7VJlLZ1" (type string) at path "_id" for model "project" {"kind":"ObjectId","path":"_id","reason":{},"stack":"CastError: Cast to ObjectId failed for value \"N7VJlLZ1\" (type string) at path \"_id\" for model \"project\"\n at model.Query.exec (/usr/src/app/node_modules/mongoose/lib/query.js:4498:21)\n at /usr/src/app/websocket/webSocketServer.js:180:14\n at new Promise (<anonymous>)\n at Object.onSubscribeCallback [as onSubscribe] (/usr/src/app/websocket/webSocketServer.js:167:14)\n at PubSub.handleReceivedClientMessage (/usr/src/app/websocket/pubsub.js:358:57)\n at runMicrotasks (<anonymous>)\n at processTicksAndRejections (internal/process/task_queues.js:97:5)","stringValue":"\"N7VJlLZ1\"","value":"N7VJlLZ1","valueType":"string"}
 
-        var projectId = urlSub[1];
+        let projectId = urlSub[1];
         winston.debug('projectId: ' + projectId);
         
         let q = Project.findOne({ _id: projectId, status: 100 })
@@ -243,7 +243,7 @@ class WebSocketServer {
           if (topic.endsWith('/messages')) {
             winston.debug(' messages: ');
 
-            var recipientId = urlSub[3];
+            let recipientId = urlSub[3];
             winston.debug('recipientId: ' + recipientId);
             // winston.debug(' req.: ',req);
 
@@ -260,7 +260,7 @@ class WebSocketServer {
                   return reject({ err: 'Project_user not found for user id ' + req.user._id + ' and projectid ' + projectId });
                 }
 
-                var queryRequest = { id_project: projectId, request_id: recipientId };
+                let queryRequest = { id_project: projectId, request_id: recipientId };
 
                 if (projectuser.role == "owner" || projectuser.role == "admin") {
                   winston.debug('queryRequest admin: ' + JSON.stringify(queryRequest));
@@ -286,7 +286,7 @@ class WebSocketServer {
 
 
 
-                    var query = { id_project: projectId, recipient: recipientId };
+                    let query = { id_project: projectId, recipient: recipientId };
                     winston.debug('query : ' + JSON.stringify(query));
 
                     Message.find(query).sort({ createdAt: 'asc' })
@@ -334,15 +334,15 @@ class WebSocketServer {
 
                 // db.getCollection('requests').find({"id_project":"5e15bef09877c800176d217f","status":{"$lt":1000},"$or":[{"agents":{"id_user":"5ddd30bff0195f0017f72c6d"}},{"participants":"5ddd30bff0195f0017f72c6d"}]})
                 // pubblica dopo toni
-                var query = { "id_project": projectId, "status": { $lt: 1000, $gt: 50, $ne: 150 }, preflight: false, "draft": { $in: [false, null] } };
+                let query = { "id_project": projectId, "status": { $lt: 1000, $gt: 50, $ne: 150 }, preflight: false, "draft": { $in: [false, null] } };
                 // add hasBot:false
 
-                // var query = {"id_project":projectId, "status": { $lt: 1000, $gt: 50 }, $or:[ {preflight:false}, { preflight : { $exists: false } } ] };
+                // let query = {"id_project":projectId, "status": { $lt: 1000, $gt: 50 }, $or:[ {preflight:false}, { preflight : { $exists: false } } ] };
 
                 //  qui1000
-                // var query = { id_project: projectId, statusObj: {closed:false, preflight:false} };
+                // let query = { id_project: projectId, statusObj: {closed:false, preflight:false} };
 
-                var cacheUserId;
+                let cacheUserId;
                 if (projectuser.role == "owner" || projectuser.role == "admin") {
                   winston.debug('query admin: ' + JSON.stringify(query));
                   cacheUserId = "/admin-owner";
@@ -357,7 +357,7 @@ class WebSocketServer {
 
                 //  TODO  proviamo a fare esempio con 100 agenti tutti
                 // elimina capo availableAgents (chiedi a Nico se gli usa altrimenti metti a select false)
-                var startDate = new Date();
+                let startDate = new Date();
                 Request.find(query)
                   .select("+snapshot.agents")
                   // .populate('lead') //??
@@ -402,7 +402,7 @@ class WebSocketServer {
 
                         // attento qui
                         if (request.snapshot.agents && request.snapshot.agents.length > 0) {
-                          var agentsnew = [];
+                          let agentsnew = [];
                           request.snapshot.agents.forEach(a => {
                             agentsnew.push({ id_user: a.id_user })  //remove unnecessary request.agents[].project_user fields. keep only id_user
                           });
@@ -415,7 +415,7 @@ class WebSocketServer {
                       });
                     }
 
-                    var endDate = new Date();
+                    let endDate = new Date();
                     winston.debug('ws count: ' + query + ' ' + requests.length + ' ' + startDate + ' ' + endDate + ' ' + endDate - startDate)
                     return resolve({
                       publishFunction: function () {
@@ -432,7 +432,7 @@ class WebSocketServer {
 
           } else if (topic.indexOf('/project_users/users/') > -1) {
 
-            var userId = urlSub[4];
+            let userId = urlSub[4];
             winston.debug('userId: ' + userId);
 
             //check if current user can see the data
@@ -450,10 +450,10 @@ class WebSocketServer {
                 winston.debug('currentProjectuser', currentProjectuser.toObject());
 
 
-                var isObjectId = mongoose.Types.ObjectId.isValid(userId);
+                let isObjectId = mongoose.Types.ObjectId.isValid(userId);
                 winston.debug("isObjectId:" + isObjectId);
 
-                var query = { id_project: projectId, status: "active" };
+                let query = { id_project: projectId, status: "active" };
                 winston.debug(' query: ', query);
 
                 if (isObjectId) {
@@ -475,7 +475,7 @@ class WebSocketServer {
                     }
 
 
-                    var pu = projectuser.toJSON();
+                    let pu = projectuser.toJSON();
                     pu.isBusy = ProjectUserUtil.isBusy(projectuser, project.settings && project.settings.max_agent_assigned_chat);
 
 
@@ -501,11 +501,11 @@ class WebSocketServer {
 
             // TODO aggiungere tutti i prject users
 
-            var puId = urlSub[3];
+            let puId = urlSub[3];
             winston.debug('puId: ' + puId);
 
-            //var query = { _id: puId, id_project: projectId};
-            var query = { _id: puId, id_project: projectId, id_user: req.user._id, $or: [{ "role": "agent" }, { "role": "admin" }, { "role": "owner" }], status: "active" };
+            //let query = { _id: puId, id_project: projectId};
+            let query = { _id: puId, id_project: projectId, id_user: req.user._id, $or: [{ "role": "agent" }, { "role": "admin" }, { "role": "owner" }], status: "active" };
             winston.debug(' query: ', query);
 
             Project_user.findOne(query)
@@ -521,7 +521,7 @@ class WebSocketServer {
                 }
 
 
-                var pu = projectuser.toJSON();
+                let pu = projectuser.toJSON();
                 pu.isBusy = ProjectUserUtil.isBusy(projectuser, project.settings && project.settings.max_agent_assigned_chat);
 
 
@@ -537,13 +537,13 @@ class WebSocketServer {
 
           else if (topic.indexOf('/events/') > -1) {
 
-            var puId = urlSub[3];
+            let puId = urlSub[3];
             winston.debug('puId: ' + puId);
 
-            var eventName = urlSub[4];
+            let eventName = urlSub[4];
             winston.debug('eventName: ' + eventName);
 
-            var query = { project_user: puId, id_project: projectId };
+            let query = { project_user: puId, id_project: projectId };
             if (eventName) {
               query.name = eventName;
             }
@@ -572,15 +572,15 @@ class WebSocketServer {
 
           } else if (topic.indexOf('/bots/') > -1) {
 
-            // var puId = urlSub[3];
+            // let puId = urlSub[3];
             // winston.info('puId: '+puId);
 
             winston.debug('urlSub: ' + urlSub);
 
-            var botId = urlSub[3];
+            let botId = urlSub[3];
             winston.debug('botId: ' + botId);
 
-            var query = { _id: botId, id_project: projectId };
+            let query = { _id: botId, id_project: projectId };
 
             winston.debug(' query: ', query);
 
@@ -607,7 +607,7 @@ class WebSocketServer {
 
             // winston.debug(' req.: ',req);
 
-            var recipientId = urlSub[3];
+            let recipientId = urlSub[3];
             winston.debug('recipientId: ' + recipientId);
 
             Project_user.findOne({ id_project: projectId, id_user: req.user._id, $or: [{ "role": "agent" }, { "role": "admin" }, { "role": "owner" }], status: "active" })
@@ -622,7 +622,7 @@ class WebSocketServer {
                   return reject({ err: 'Project_user not found with user id ' + req.user._id + ' and projectid ' + projectId });
                 }
 
-                var query = { id_project: projectId, request_id: recipientId };
+                let query = { id_project: projectId, request_id: recipientId };
                 winston.debug('query: ' + JSON.stringify(query));
 
                 if (projectuser.role == "owner" || projectuser.role == "admin") {
@@ -677,10 +677,10 @@ class WebSocketServer {
       onMessage: onMessageCallback, onSubscribe: onSubscribeCallback, onPublish: onPublishCallback
     });
 
-    var that = this;
+    let that = this;
 
 
-    var messageCreateKey = 'message.create';
+    let messageCreateKey = 'message.create';
     if (messageEvent.queueEnabled) {
       messageCreateKey = 'message.create.queue.pubsub';
     }
@@ -695,8 +695,8 @@ class WebSocketServer {
       });
     });
 
-    // var reconnect = require('./reconnect');
-    var requestCreateKey = 'request.create';
+    // let reconnect = require('./reconnect');
+    let requestCreateKey = 'request.create';
     if (requestEvent.queueEnabled) {
       requestCreateKey = 'request.create.queue.pubsub';
     }
@@ -711,7 +711,7 @@ class WebSocketServer {
 
           //TODO ATTENTION change value by reference requestJSON.snapshot
           let requestJSON = Object.assign({}, request);
-          // var requestJSON = request;
+          // let requestJSON = request;
 
           if (request.toObject) {
             requestJSON = request.toObject();
@@ -726,12 +726,12 @@ class WebSocketServer {
 
           // ATTENTO  https://stackoverflow.com/questions/64059795/mongodb-get-error-message-mongoerror-path-collision-at-activity
           try {
-            var snapshotAgents = await Request.findById(request.id).select({ "snapshot": 1 }).exec(); //SEMBRA CHE RITORNI TUTTO LO SNAPSHOT INVECE CHE SOLO AGENTS
+            let snapshotAgents = await Request.findById(request.id).select({ "snapshot": 1 }).exec(); //SEMBRA CHE RITORNI TUTTO LO SNAPSHOT INVECE CHE SOLO AGENTS
             winston.debug('snapshotAgents', snapshotAgents);
             // requestJSON.snapshot.agents = snapshotAgents;
 
             if (snapshotAgents.snapshot.agents && snapshotAgents.snapshot.agents.length > 0) {
-              var agentsnew = [];
+              let agentsnew = [];
               snapshotAgents.snapshot.agents.forEach(a => {
                 agentsnew.push({ id_user: a.id_user })
               });
@@ -749,7 +749,7 @@ class WebSocketServer {
       });
     });
 
-    var requestUpdateKey = 'request.update';
+    let requestUpdateKey = 'request.update';
     if (requestEvent.queueEnabled) {
       requestUpdateKey = 'request.update.queue.pubsub';
     }
@@ -764,7 +764,7 @@ class WebSocketServer {
 
           //TODO ATTENTION change value by reference requestJSON.snapshot
           let requestJSON = Object.assign({}, request);
-          // var requestJSON = request;
+          // let requestJSON = request;
 
           if (request.toObject) {
             requestJSON = request.toObject();
@@ -777,12 +777,12 @@ class WebSocketServer {
           // ATTENTO  https://stackoverflow.com/questions/64059795/mongodb-get-error-message-mongoerror-path-collision-at-activity
 
           try {
-            var snapshotAgents = await Request.findById(request.id).select({ "snapshot": 1 }).exec(); //SEMBRA CHE RITORNI TUTTO LO SNAPSHOT INVECE CHE SOLO AGENTS
+            let snapshotAgents = await Request.findById(request.id).select({ "snapshot": 1 }).exec(); //SEMBRA CHE RITORNI TUTTO LO SNAPSHOT INVECE CHE SOLO AGENTS
             winston.debug('snapshotAgents', snapshotAgents);
             // requestJSON.snapshot.agents = snapshotAgents;
 
             if (snapshotAgents.snapshot.agents && snapshotAgents.snapshot.agents.length > 0) {
-              var agentsnew = [];
+              let agentsnew = [];
               snapshotAgents.snapshot.agents.forEach(a => {
                 agentsnew.push({ id_user: a.id_user })
               });
@@ -810,7 +810,7 @@ class WebSocketServer {
     // TODO request.close is missing?
 
 
-    var projectuserUpdateKey = 'project_user.update';
+    let projectuserUpdateKey = 'project_user.update';
     if (authEvent.queueEnabled) {
       projectuserUpdateKey = 'project_user.update.queue.pubsub';
     }
@@ -818,14 +818,14 @@ class WebSocketServer {
     authEvent.on(projectuserUpdateKey, function (data) {
       setImmediate(async () => {
 
-        var pu = data.updatedProject_userPopulated;
+        let pu = data.updatedProject_userPopulated;
         winston.debug('ws pu', pu);
 
         //TODO pubSubServer.handlePublishMessage ('/'+pu.id_project+'/project_users/', pu, undefined, true, "UPDATE");
 
         pubSubServer.handlePublishMessage('/' + pu.id_project + '/project_users/' + pu.id, pu, undefined, true, "UPDATE");
 
-        var userId;
+        let userId;
         if (pu.uuid_user) {
           userId = pu.uuid_user;
         } else {
@@ -838,7 +838,7 @@ class WebSocketServer {
 
 
 
-    var eventEmitKey = 'event.emit';
+    let eventEmitKey = 'event.emit';
     if (eventEvent.queueEnabled) {
       eventEmitKey = 'event.emit.queue.pubsub';
     }
@@ -862,7 +862,7 @@ class WebSocketServer {
 
 
 
-    var botUpdateKey = 'faqbot.update';
+    let botUpdateKey = 'faqbot.update';
     if (botEvent.queueEnabled) {
       botUpdateKey = 'faqbot.update.queue.pubsub';
     }
@@ -905,10 +905,10 @@ class WebSocketServer {
     //        let urlParsed = url.parse(req.url, true);
     //        winston.debug('urlParsed', urlParsed);
 
-    //        var queryParameter = urlParsed.query;
+    //        let queryParameter = urlParsed.query;
     //        winston.debug('queryParameter', queryParameter);
 
-    //        var id_project = queryParameter.id_project;    
+    //        let id_project = queryParameter.id_project;    
     //        winston.debug('id_project=', id_project);   
 
     //        if (!id_project) {
@@ -917,7 +917,7 @@ class WebSocketServer {
     //        }
 
     //        winston.debug('queryParameter.events'+ queryParameter.events);
-    //        var events = JSON.parse(queryParameter.events);    
+    //        let events = JSON.parse(queryParameter.events);    
     //        winston.debug('events', events);  
 
     //        if (!events) {
@@ -931,7 +931,7 @@ class WebSocketServer {
 
     //        winston.debug('queryParameter.q', queryParameter.q);
 
-    //        var query = JSON.parse(queryParameter.q);  
+    //        let query = JSON.parse(queryParameter.q);  
     //        query['id_project'] = id_project;         
     //        winston.debug('query=', query);
 
@@ -1005,14 +1005,14 @@ class WebSocketServer {
   //     events.forEach(function(event) {
   //       if (event=='message') {          
   //         Message.find(query).sort({updatedAt: 'asc'}).limit(20).exec(function(err, messages) {   
-  //           var dataToSend = {event:event, data:messages};        
+  //           let dataToSend = {event:event, data:messages};        
   //           ws.send(JSON.stringify(dataToSend));
   //         });
   //       }
 
   //       if (event=='request') {
   //         Request.find(query).sort({updatedAt: 'asc'}).limit(20).exec(function(err, requests) {   
-  //           var dataToSend = {event:event, data:requests};                
+  //           let dataToSend = {event:event, data:requests};                
   //           ws.send(JSON.stringify(dataToSend));
   //         });
   //       }
@@ -1025,7 +1025,7 @@ class WebSocketServer {
   //   if (!this.clientsSubscriptions[id_project]) {
   //     this.clientsSubscriptions[id_project]={};
   //    }
-  //    var that=this;
+  //    let that=this;
 
   //    if (events && events.length>0) {
   //     events.forEach(function(event) {
@@ -1041,12 +1041,12 @@ class WebSocketServer {
   // }
 
   // sendAll(data, event){
-  //   var id_project = data.id_project;
+  //   let id_project = data.id_project;
   //   winston.debug("id_project:"+id_project);
 
   //   winston.debug("event:"+event);
 
-  //   var dataToSend = {event:event, data:data};
+  //   let dataToSend = {event:event, data:data};
 
   //   winston.debug("this.clientsSubscriptions:",this.clientsSubscriptions);
 
@@ -1068,10 +1068,10 @@ class WebSocketServer {
   // cloneAsDotted(prefix, origin) {
   //   // // Don't do anything if add isn't an object
   //   // if (!add || typeof add !== 'object') return origin;
-  //   var newObj = {};
+  //   let newObj = {};
 
-  //   var keys = Object.keys(origin);
-  //   var i = keys.length;
+  //   let keys = Object.keys(origin);
+  //   let i = keys.length;
   //   while (i--) {
   //     newObj[prefix+keys[i]] = origin[keys[i]];
   //   }
@@ -1082,5 +1082,5 @@ class WebSocketServer {
 
 }
 
-var webSocketServer = new WebSocketServer();
+let webSocketServer = new WebSocketServer();
 module.exports = webSocketServer;

@@ -6,21 +6,21 @@ process.env.AI_MODELS = '    gpt-3.5-turbo:0   .6;gpt -4:2  5; g  pt-4-tur   bo-
 
 
 let log = false;
-var projectService = require('../services/projectService');
-var userService = require('../services/userService');
+let projectService = require('../services/projectService');
+let userService = require('../services/userService');
 
 //Require the dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
-var fs = require('fs');
+let fs = require('fs');
 const path = require('path');
 
 // chai.config.includeStack = true;
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 chai.use(chaiHttp);
 
@@ -30,8 +30,8 @@ describe('OpenaiRoute', () => {
 
         // it('completions', (done) => {
 
-        //     var email = "test-signup-" + Date.now() + "@email.com";
-        //     var pwd = "pwd";
+        //     let email = "test-signup-" + Date.now() + "@email.com";
+        //     let pwd = "pwd";
 
         //     userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
         //         projectService.create("test-openai-create", savedUser._id).then((savedProject) => {
@@ -73,8 +73,8 @@ describe('OpenaiRoute', () => {
 
         // it('completions missing gptkey', (done) => {
 
-        //     var email = "test-signup-" + Date.now() + "@email.com";
-        //     var pwd = "pwd";
+        //     let email = "test-signup-" + Date.now() + "@email.com";
+        //     let pwd = "pwd";
 
         //     userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
         //         projectService.create("test-openai-create", savedUser._id).then((savedProject) => {
@@ -111,8 +111,8 @@ describe('OpenaiRoute', () => {
 
             let original_value = process.env.GPTKEY;
             process.env.GPTKEY = "";
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-openai-create", savedUser._id).then((savedProject) => {
@@ -148,8 +148,8 @@ describe('OpenaiRoute', () => {
          */
         // it('completionsWithProfileModified', (done) => {
 
-        //     var email = "test-signup-" + Date.now() + "@email.com";
-        //     var pwd = "pwd";
+        //     let email = "test-signup-" + Date.now() + "@email.com";
+        //     let pwd = "pwd";
 
         //     userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
         //         projectService.create("test-openai-create", savedUser._id).then((savedProject) => {

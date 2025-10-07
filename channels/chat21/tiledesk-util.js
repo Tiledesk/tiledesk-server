@@ -2,7 +2,7 @@
     ver 0.8.3
     Andrea Sponziello - (c) Tiledesk.com
 */
-var winston = require('../../config/winston');
+let winston = require('../../config/winston');
 
 class TiledeskUtil {    
 
@@ -18,29 +18,29 @@ class TiledeskUtil {
     Sends two messages delayed by 1 second
     */
     findSplits(text) {
-        var commands = []
+        let commands = []
         const split_pattern = /^(\\split[:0-9]*)/mg //ex. \split:500
-        var parts = text.split(split_pattern)
-        for (var i=0; i < parts.length; i++) {
+        let parts = text.split(split_pattern)
+        for (let i=0; i < parts.length; i++) {
             let p = parts[i]
             winston.debug("part: " + p)
             if (i % 2 != 0) {
             // split command
             winston.debug("split command: " + p)
-            var split_parts = p.split(":")
-            var wait_time = 1000
+            let split_parts = p.split(":")
+            let wait_time = 1000
             if (split_parts.length == 2) {
                 wait_time = split_parts[1]
             }
             winston.debug("wait time: " + wait_time)
-            var command = {}
+            let command = {}
             command.type = "wait"
             command.time = parseInt(wait_time, 10)
             commands.push(command)
             }
             else {
             // message command
-            var command = {}
+            let command = {}
             command.type = "message"
             command.text = p.trim()
             commands.push(command)
@@ -64,7 +64,7 @@ class TiledeskUtil {
         let TYPE_TEXT = 'text'
         
   
-        var reply = {
+        let reply = {
             "message": {}
         }
         reply.message[TEXT_KEY] = text
@@ -75,17 +75,17 @@ class TiledeskUtil {
         // \image:IMAGE_URL
         // or with optional size:
         // \image:100-100:http://image.com/image.gif
-        var image_pattern = /^\\image:.*/mg;
+        let image_pattern = /^\\image:.*/mg;
         // console.log("Searching images with image_pattern: ", image_pattern)
-        var images = text.match(image_pattern);
+        let images = text.match(image_pattern);
         // console.log("images: ", images)
         if (images && images.length > 0) {
           const image_text = images[0]
-          var text = text.replace(image_text,"").trim()
-          var image_url = image_text.replace("\\image:", "")
+          let text = text.replace(image_text,"").trim()
+          let image_url = image_text.replace("\\image:", "")
   
-          var width = 200
-          var height = 200
+          let width = 200
+          let height = 200
           // parse image size (optional) ex: \image:100-100:http://image.com/image.gif
           let image_size_pattern = /^([0-9]*-[0-9]*):(.*)/;
           let image_size_text = image_url.match(image_size_pattern)
@@ -111,18 +111,18 @@ class TiledeskUtil {
         }
       
         // looks for bullet buttons
-        var button_pattern = /^\*.*/mg; // button pattern is a line that starts with *TEXT_OF_BUTTON (every button on a line)
-        var text_buttons = text.match(button_pattern);
+        let button_pattern = /^\*.*/mg; // button pattern is a line that starts with *TEXT_OF_BUTTON (every button on a line)
+        let text_buttons = text.match(button_pattern);
         if (text_buttons) {
           // ricava il testo rimuovendo i bottoni
-          var text_with_removed_buttons = text.replace(button_pattern,"").trim()
+          let text_with_removed_buttons = text.replace(button_pattern,"").trim()
           reply.message[TEXT_KEY] = text_with_removed_buttons
           // estrae i bottoni
-          var buttons = []
+          let buttons = []
           text_buttons.forEach(element => {
-            var remove_extra_from_button = /^\*/mg; // removes initial "*"
-            var button_text = element.replace(remove_extra_from_button, "").trim()
-            var button = {}
+            let remove_extra_from_button = /^\*/mg; // removes initial "*"
+            let button_text = element.replace(remove_extra_from_button, "").trim()
+            let button = {}
             button[TYPE_KEY] = "text"
             button["value"] = button_text
             buttons.push(button)
@@ -139,8 +139,8 @@ class TiledeskUtil {
         }
   
         // looks for a webhook url
-        var webhook_pattern = /^\\webhook:.*/mg; // webhooks are defined as a line starting with \webhook:URL
-        var webhooks = text.match(webhook_pattern);
+        let webhook_pattern = /^\\webhook:.*/mg; // webhooks are defined as a line starting with \webhook:URL
+        let webhooks = text.match(webhook_pattern);
         if (webhooks && webhooks.length > 0) {
           const webhook_text = webhooks[0]
           winston.debug("webhook_text: " + webhook_text)
@@ -155,6 +155,6 @@ class TiledeskUtil {
   
   }
   
-  var tiledeskUtil = new TiledeskUtil();
+  let tiledeskUtil = new TiledeskUtil();
   
   module.exports = tiledeskUtil;

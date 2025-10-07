@@ -4,19 +4,19 @@
 
 const Faq = require('../models/faq');
 const Faq_kb = require('../models/faq_kb');
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 
-var jwt = require('jsonwebtoken');
+let jwt = require('jsonwebtoken');
 const uuidv4 = require('uuid/v4');
 
 const { TiledeskChatbotUtil } = require('@tiledesk/tiledesk-chatbot-util');
 
-var request = require('retry-request', {
+let request = require('retry-request', {
     request: require('request')
   });
 
  
-var webhook_origin = process.env.WEBHOOK_ORIGIN || "http://localhost:3000";
+let webhook_origin = process.env.WEBHOOK_ORIGIN || "http://localhost:3000";
 winston.debug("webhook_origin: "+webhook_origin);
 
 class FaqBotSupport {
@@ -35,7 +35,7 @@ class FaqBotSupport {
 
         winston.debug('getMessage: ' + key + ' ' + lang+ ' ' + JSON.stringify(labelsObject) );
 
-        var label = "";
+        let label = "";
 
         try {
             // winston.debug("1");
@@ -52,14 +52,14 @@ class FaqBotSupport {
 // usa api di sponziello parseReply: https://github.com/Tiledesk/tiledesk-nodejs-libs/blob/master/tiledesk-chatbot-util/index.js 
 
     parseMicrolanguage(text, message, bot, faq, disableWebHook, json) { 
-        var that = this;
+        let that = this;
         return new Promise(async (resolve, reject) => {
             winston.debug('parseMicrolanguage message: ' + JSON.stringify(message) );
-            var reply = TiledeskChatbotUtil.parseReply(text);
+            let reply = TiledeskChatbotUtil.parseReply(text);
             winston.debug('parseReply: ' + JSON.stringify(reply) );
-            var messageReply = reply.message;
+            let messageReply = reply.message;
             
-            var msg_attributes = {"_raw_message": text};
+            let msg_attributes = {"_raw_message": text};
 
             // prendi attributi e li mergi
             // metadata prendi da messageReply SOLO SE CI SONO (DIVERSI NULL). Se riesci fai il merge
@@ -108,7 +108,7 @@ class FaqBotSupport {
             if (disableWebHook === false && bot.webhook_enabled ===true && (faq.webhook_enabled  === true || reply.webhook)) {
 
                 winston.debug("bot.webhook_url "+ bot.webhook_url)
-                var webhookurl = bot.webhook_url;
+                let webhookurl = bot.webhook_url;
 
                
                 winston.debug("reply.webhook "+ reply.webhook )
@@ -126,9 +126,9 @@ class FaqBotSupport {
                     return resolve(messageReply);
                 }
                     
-                var botWithSecret = await Faq_kb.findById(bot._id).select('+secret').exec();  //TODO add cache_bot_nOT_here?? it's internal bot that is deprecated-> skip caching
+                let botWithSecret = await Faq_kb.findById(bot._id).select('+secret').exec();  //TODO add cache_bot_nOT_here?? it's internal bot that is deprecated-> skip caching
 
-                var signOptions = {
+                let signOptions = {
                     issuer:  'https://tiledesk.com',
                     subject:  'bot',
                     audience:  'https://tiledesk.com/bots/'+bot._id,   
@@ -136,7 +136,7 @@ class FaqBotSupport {
                     };
             
                     // TODO metti bot_? a user._id
-                var token = jwt.sign(bot.toObject(), botWithSecret.secret, signOptions);                  
+                let token = jwt.sign(bot.toObject(), botWithSecret.secret, signOptions);                  
 
 
                 winston.debug("webhookurl "+ webhookurl)
@@ -161,7 +161,7 @@ class FaqBotSupport {
 
                             // return error
                             /*
-                            var bot_answer = {};
+                            let bot_answer = {};
                             bot_answer.text = err.toString(); 
                             if(response && response.text) {
                                 bot_answer.text = bot_answer.text + ' '+response.text;
@@ -183,7 +183,7 @@ class FaqBotSupport {
                        
                         winston.debug("webhookurl repl_message ", response);
 
-                        var text = undefined;
+                        let text = undefined;
                         if(json && json.text===undefined) {
                             winston.verbose("webhookurl json is defined but text not. return standard reply",{json:json, response:response});
                             // text = 'Field text is not defined in the webhook respose of the faq with id: '+ faq._id+ ". Error: " + JSON.stringify(response);
@@ -225,24 +225,24 @@ class FaqBotSupport {
     }
 
     // parseMicrolanguageOld(text, message, bot, faq) { 
-    //     var that = this;
+    //     let that = this;
     //     // text = "*"
     //     return new Promise(function(resolve, reject) {
     //         winston.debug("getParsedMessage ******",text);
-    //         var repl_message = {};
+    //         let repl_message = {};
 
     //         // cerca i bottoni eventualmente definiti
-    //         var button_pattern = /^\*.*/mg; // buttons are defined as a line starting with an asterisk            
-    //         var text_buttons = text.match(button_pattern);
+    //         let button_pattern = /^\*.*/mg; // buttons are defined as a line starting with an asterisk            
+    //         let text_buttons = text.match(button_pattern);
     //         if (text_buttons) {
-    //             var text_with_removed_buttons = text.replace(button_pattern,"").trim();
+    //             let text_with_removed_buttons = text.replace(button_pattern,"").trim();
     //             repl_message.text = text_with_removed_buttons
-    //             var buttons = []
+    //             let buttons = []
     //             text_buttons.forEach(element => {
     //             winston.debug("button ", element)
-    //             var remove_extra_from_button = /^\*/mg;
-    //             var button_text = element.replace(remove_extra_from_button, "").trim()
-    //             var button = {}
+    //             let remove_extra_from_button = /^\*/mg;
+    //             let button_text = element.replace(remove_extra_from_button, "").trim()
+    //             let button = {}
     //             button["type"] = "text"
     //             button["value"] = button_text
     //             buttons.push(button)
@@ -261,33 +261,33 @@ class FaqBotSupport {
     //             repl_message.type =  MessageConstants.MESSAGE_TYPE.TEXT;
     //         }
 
-    //         var image_pattern = /^\\image:.*/mg; 
-    //         var imagetext = text.match(image_pattern);
+    //         let image_pattern = /^\\image:.*/mg; 
+    //         let imagetext = text.match(image_pattern);
     //         if (imagetext && imagetext.length>0) {
-    //             var imageurl = imagetext[0].replace("\\image:","").trim();
+    //             let imageurl = imagetext[0].replace("\\image:","").trim();
     //             winston.debug("imageurl ", imageurl)
-    //             var text_with_removed_image = text.replace(image_pattern,"").trim();
+    //             let text_with_removed_image = text.replace(image_pattern,"").trim();
     //             repl_message.text = text_with_removed_image + " " + imageurl
     //             repl_message.metadata = {src: imageurl, width:200, height:200};
     //             repl_message.type =  MessageConstants.MESSAGE_TYPE.IMAGE;
     //         }
 
-    //         var frame_pattern = /^\\frame:.*/mg; 
-    //         var frametext = text.match(frame_pattern);
+    //         let frame_pattern = /^\\frame:.*/mg; 
+    //         let frametext = text.match(frame_pattern);
     //         if (frametext && frametext.length>0) {
-    //             var frameurl = frametext[0].replace("\\frame:","").trim();
+    //             let frameurl = frametext[0].replace("\\frame:","").trim();
     //             winston.debug("frameurl ", frameurl)
-    //             // var text_with_removed_image = text.replace(frame_pattern,"").trim();
+    //             // let text_with_removed_image = text.replace(frame_pattern,"").trim();
     //             // repl_message.text = text_with_removed_image + " " + imageurl
     //             repl_message.metadata = {src: frameurl};
     //             repl_message.type = MessageConstants.MESSAGE_TYPE.FRAME;
     //         }
 
 
-    //         var webhook_pattern = /^\\webhook:.*/mg; 
-    //         var webhooktext = text.match(webhook_pattern);
+    //         let webhook_pattern = /^\\webhook:.*/mg; 
+    //         let webhooktext = text.match(webhook_pattern);
     //         if (webhooktext && webhooktext.length>0) {
-    //             var webhookurl = webhooktext[0].replace("\\webhook:","").trim();
+    //             let webhookurl = webhooktext[0].replace("\\webhook:","").trim();
     //             winston.debug("webhookurl ", webhookurl)
 
     //             return request({                        
@@ -311,7 +311,7 @@ class FaqBotSupport {
     //                     // }
     //                     winston.debug("webhookurl repl_message ", response);
 
-    //                     var text = undefined;
+    //                     let text = undefined;
     //                     if(json && json.text===undefined) {
     //                         text = 'Field text is not defined in the webhook respose of the faq with id: '+ faq._id+ ". Error: " + JSON.stringify(response);
     //                     }else {
@@ -336,16 +336,16 @@ class FaqBotSupport {
 
 
     getBotMessage(botAnswer, projectid, bot, message, threshold) {
-        var that = this;
+        let that = this;
           return new Promise(function(resolve, reject) {
   
               winston.debug('botAnswer', botAnswer);
-                // var found = false;
-                var bot_answer={};
+                // let found = false;
+                let bot_answer={};
   
                       if (!botAnswer ) {                          
   
-                        var query = { "id_project": projectid, "id_faq_kb": bot._id, "question": "defaultFallback"};
+                        let query = { "id_project": projectid, "id_faq_kb": bot._id, "question": "defaultFallback"};
                         winston.debug('query', query);
 
                        
@@ -383,7 +383,7 @@ class FaqBotSupport {
                                 // }
                                 
                            } else {
-                                var message_key = "DEFAULT_NOTFOUND_NOBOT_SENTENCE_REPLY_MESSAGE";                             
+                                let message_key = "DEFAULT_NOTFOUND_NOBOT_SENTENCE_REPLY_MESSAGE";                             
                                 bot_answer.text = that.getMessage(message_key, message.language, faqBotSupport.LABELS);  
                                 bot_answer.defaultFallback = true;
                                 // console.log("bot_answer ", bot_answer)
@@ -402,7 +402,7 @@ class FaqBotSupport {
 }
 
 
-var faqBotSupport = new FaqBotSupport();
+let faqBotSupport = new FaqBotSupport();
 
 faqBotSupport.LABELS = {
     EN : {

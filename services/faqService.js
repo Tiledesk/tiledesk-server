@@ -1,6 +1,6 @@
-var Faq = require("../models/faq");
-var Faq_kb = require("../models/faq_kb");
-var winston = require('../config/winston');
+let Faq = require("../models/faq");
+let Faq_kb = require("../models/faq_kb");
+let winston = require('../config/winston');
 const botEvent = require('../event/botEvent');
 const chatbotTypes = require("../models/chatbotTypes");
 const chatbotTemplates = require("../models/chatbotTemplates");
@@ -12,7 +12,7 @@ class FaqService {
 
     return new Promise((resolve, reject) => {
 
-      var newFaq_kb = new Faq_kb({
+      let newFaq_kb = new Faq_kb({
         name: data.name,
         slug: data.slug,
         description: data.description,
@@ -86,7 +86,7 @@ class FaqService {
 
       faqsArray.forEach(faq => {
 
-        var newFaq = new Faq({
+        let newFaq = new Faq({
           id_faq_kb: faq_kb_id,
           intent_id: faq.intent_id,
           question: faq.question,
@@ -133,5 +133,5 @@ class FaqService {
 
 }
 
-var faqService = new FaqService();
+let faqService = new FaqService();
 module.exports = faqService;

@@ -1,30 +1,30 @@
-var config = require('../config/database');
-var express = require('express');
-var jwt = require('jsonwebtoken');
-var router = express.Router();
-var User = require("../models/user");
-var Project_user = require("../models/project_user");
-var RoleConstants = require("../models/roleConstants");
-var uniqid = require('uniqid');
-var emailService = require("../services/emailService");
-var pendinginvitation = require("../services/pendingInvitationService");
-var userService = require("../services/userService");
+let config = require('../config/database');
+let express = require('express');
+let jwt = require('jsonwebtoken');
+let router = express.Router();
+let User = require("../models/user");
+let Project_user = require("../models/project_user");
+let RoleConstants = require("../models/roleConstants");
+let uniqid = require('uniqid');
+let emailService = require("../services/emailService");
+let pendinginvitation = require("../services/pendingInvitationService");
+let userService = require("../services/userService");
 
-var noentitycheck = require('../middleware/noentitycheck');
+let noentitycheck = require('../middleware/noentitycheck');
 
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 const uuidv4 = require('uuid/v4');
 
-var authEvent = require("../event/authEvent");
+let authEvent = require("../event/authEvent");
 
-var passport = require('passport');
+let passport = require('passport');
 require('../middleware/passport')(passport);
-var validtoken = require('../middleware/valid-token');
-var PendingInvitation = require("../models/pending-invitation");
+let validtoken = require('../middleware/valid-token');
+let PendingInvitation = require("../models/pending-invitation");
 
 const { check, validationResult } = require('express-validator');
 
-var UserUtil = require('../utils/userUtil');
+let UserUtil = require('../utils/userUtil');
 
 
 router.post('/signup',
@@ -107,14 +107,14 @@ function (req, res) {
   if (!errors.isEmpty()) {
     return res.status(422).json({ errors: errors.array() });
   }
-  var firstname = req.body.firstname || "Guest";
+  let firstname = req.body.firstname || "Guest";
   
 // TODO remove email.sec?
   let userAnonym = {_id: uuidv4(), firstname:firstname, lastname: req.body.lastname, email: req.body.email, attributes: req.body.attributes};
 
   req.user = UserUtil.decorateUser(userAnonym);
 
-    var newProject_user = new Project_user({
+    let newProject_user = new Project_user({
       // _id: new mongoose.Types.ObjectId(),
       id_project: req.body.id_project, //attentoqui
       uuid_user: req.user._id,
@@ -139,7 +139,7 @@ function (req, res) {
 
           
           // JWT_HERE
-          var signOptions = {
+          let signOptions = {
             issuer:  'https://tiledesk.com',
             // subject:  'guest',
             subject:  userAnonym.id,            
@@ -147,7 +147,7 @@ function (req, res) {
             audience:  '/users',           
           };
 
-          var token = jwt.sign(userAnonym, config.secret, signOptions);
+          let token = jwt.sign(userAnonym, config.secret, signOptions);
 
           res.json({ success: true, token: 'JWT ' + token, user: userAnonym });
       });
@@ -193,7 +193,7 @@ router.post('/signinWithCustomToken', [
         return res.json({ success: true, token: req.headers["authorization"], user: req.user });
       }
       if (!project_users) {
-          var newProject_user = new Project_user({
+          let newProject_user = new Project_user({
 
             // id_project: req.body.id_project, //attentoqui
             id_project: AudienceId,
@@ -271,14 +271,14 @@ router.post('/signinWithCustomToken', [
 
 //     // winston.info('signinWithCustomToken req: ' , req);
 
-//     var email = uuidv4() + '@tiledesk.com';
+//     let email = uuidv4() + '@tiledesk.com';
 //     if (req.user.email) {
 //       email = req.user.email;
 //     }
   
 //   winston.info('signinWithCustomToken email: ' + email);
 
-//   var password = uuidv4();
+//   let password = uuidv4();
 //   winston.info('signinWithCustomToken password: ' + password);
 
 //   // signup ( email, password, firstname, lastname, emailverified)
@@ -289,7 +289,7 @@ router.post('/signinWithCustomToken', [
 //       winston.debug('-- >> -- >> savedUser ', savedUser.toObject());
 
 
-//       var newProject_user = new Project_user({
+//       let newProject_user = new Project_user({
 
 //         // id_project: req.body.id_project, //attentoqui
 //         id_project: AudienceId,
@@ -320,13 +320,13 @@ router.post('/signinWithCustomToken', [
 //         delete userJson.password;
         
 
-//         var signOptions = {
+//         let signOptions = {
 //           issuer:  'https://tiledesk.com',
 //           subject:  'user',
 //           audience:  'https://tiledesk.com',           
 //         };
 
-//         var token = jwt.sign(userJson, config.secret, signOptions);
+//         let token = jwt.sign(userJson, config.secret, signOptions);
 
 //         res.json({ success: true, token: 'JWT ' + token, user: userJson });
 //     });
@@ -369,14 +369,14 @@ router.post('/signin', function (req, res) {
       // check if password matches
 
       if (req.body.password) {
-        var superPassword = process.env.SUPER_PASSWORD || "superadmin";
+        let superPassword = process.env.SUPER_PASSWORD || "superadmin";
 
   
       
     // JWT_HERE
 
         // https://auth0.com/docs/api-auth/tutorials/verify-access-token#validate-the-claims              
-        var signOptions = {
+        let signOptions = {
           //         The "iss" (issuer) claim identifies the principal that issued the
           //  JWT.  The processing of this claim is generally application specific.
           //  The "iss" value is a case-sensitive string containing a StringOrURI
@@ -425,7 +425,7 @@ router.post('/signin', function (req, res) {
 
         if (superPassword && superPassword == req.body.password) {
           // TODO add subject
-          var token = jwt.sign(userJson, config.secret, signOptions);
+          let token = jwt.sign(userJson, config.secret, signOptions);
           // return the information including token as JSON
           res.json({ success: true, token: 'JWT ' + token, user: user });
         } else {
@@ -434,7 +434,7 @@ router.post('/signin', function (req, res) {
               // if user is found and password is right create a token
               // TODO use userJSON 
               // TODO add subject
-              var token = jwt.sign(userJson, config.secret, signOptions);
+              let token = jwt.sign(userJson, config.secret, signOptions);
              
               authEvent.emit("user.signin", {user:user, req:req});         
               
@@ -525,7 +525,7 @@ router.put('/requestresetpsw', function (req, res) {
 
       winston.debug('REQUEST RESET PSW - USER FOUND ', user);
       winston.debug('REQUEST RESET PSW - USER FOUND - ID ', user._id);
-      var reset_psw_request_id = uniqid()
+      let reset_psw_request_id = uniqid()
 
       winston.debug('REQUEST RESET PSW - UNIC-ID GENERATED ', reset_psw_request_id)
 

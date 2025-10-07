@@ -1,8 +1,8 @@
-var express = require('express');
+let express = require('express');
 
-var router = express.Router();
+let router = express.Router();
 
-var noentitycheck = require('../middleware/noentitycheck');
+let noentitycheck = require('../middleware/noentitycheck');
 
 
 router.get('/', 

@@ -1,12 +1,12 @@
 // UNUSED
-var appRoot = require('app-root-path');
-var winston = require('winston');
-var config = require('./database');
+let appRoot = require('app-root-path');
+let winston = require('winston');
+let config = require('./database');
 
-var level = process.env.LOG_LEVEL || 'info'
+let level = process.env.LOG_LEVEL || 'info'
 // console.log("level",level);
 
-var options = {
+let options = {
     file: {
       level:level ,
       filename: `${appRoot}/logs/app.log`,
@@ -34,9 +34,9 @@ var options = {
     require('../utils/winston-mongodb/winston-mongodb');
 
     if (process.env.NODE_ENV == 'test')  {
-      var logsDb = config.databasetest;
+      let logsDb = config.databasetest;
     }else {
-      var logsDb = config.database;
+      let logsDb = config.database;
     }
 
     console.log("Added winston MongoDB transport");

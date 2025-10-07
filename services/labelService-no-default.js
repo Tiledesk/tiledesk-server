@@ -1,20 +1,20 @@
-var Label = require("../models/label");
-var winston = require('../config/winston');
-var fs = require('fs');
-var path = require('path');
-var labelsDir = __dirname+"/../config/labels/";
+let Label = require("../models/label");
+let winston = require('../config/winston');
+let fs = require('fs');
+let path = require('path');
+let labelsDir = __dirname+"/../config/labels/";
 winston.debug('labelsDir: ' + labelsDir);
-var cacheUtil = require('../utils/cacheUtil');
+let cacheUtil = require('../utils/cacheUtil');
 
 class LabelService {
 
 // fetch pivot default language (EN)
 fetchPivotDefault() {
-    var that = this;
+    let that = this;
     return new Promise(function (resolve, reject) {
         that.fetchDefault().then(function (def) {
             // console.log("def", def)
-            var pivot = def.find(l => l.lang === "EN");
+            let pivot = def.find(l => l.lang === "EN");
             return resolve(pivot);        
         });
     });
@@ -24,10 +24,10 @@ fetchPivotDefault() {
 // fetch all widget.json languages
 fetchDefault() {
      
-    var that = this;
+    let that = this;
     return new Promise(function (resolve, reject) {
 
-        var filePath = path.join(labelsDir, 'widget.json');
+        let filePath = path.join(labelsDir, 'widget.json');
     
         fs.readFile(filePath, {encoding: 'utf-8'}, function(err,data){
         if (err) {
@@ -42,7 +42,7 @@ fetchDefault() {
 
 // get a specific key of a project language merged with default (widget.json) but if not found return Pivot
 async get(id_project, language, key) {
-   var ret = await this.getByLanguageAndKey(id_project, language, key);
+   let ret = await this.getByLanguageAndKey(id_project, language, key);
 
    if (ret) {
        return ret;
@@ -54,13 +54,13 @@ async get(id_project, language, key) {
 
 // get a specific key of a project language merged with default (widget.json) with NO Pivot
 getByLanguageAndKey(id_project, language, key) {
-    var that = this;
+    let that = this;
     return new Promise(function (resolve, reject) {
 
         that.getAllByLanguageNoPivot(id_project,language).then(function(returnval) {
             winston.debug("getByLanguageAndKey returnval",returnval);
             if (returnval) {
-                var value = returnval.data[key];
+                let value = returnval.data[key];
                 winston.debug("getByLanguageAndKey value: "+value);
                  return resolve(value); 
             } else {
@@ -73,16 +73,16 @@ getByLanguageAndKey(id_project, language, key) {
 
  // get a specific project language merged with default (widget.json) but if not found return Pivot
 async getAllByLanguage(id_project, language) {
-    var ret = await this.getAllByLanguageNoPivot(id_project, language);
+    let ret = await this.getAllByLanguageNoPivot(id_project, language);
     winston.debug("getAllByLanguage ret",ret);
     if (ret) {
         return ret;
     } else { 
-        var retEn = await this.getAllByLanguageNoPivot(id_project, "EN");
+        let retEn = await this.getAllByLanguageNoPivot(id_project, "EN");
         if (retEn) {
             return retEn;
         } else { 
-            var retPiv = await this.fetchPivotDefault();
+            let retPiv = await this.fetchPivotDefault();
             winston.debug("retPiv",retPiv);
             return retPiv;
         }
@@ -92,14 +92,14 @@ async getAllByLanguage(id_project, language) {
 
  // get a specific project language merged with default (widget.json) Not Pivot
 getAllByLanguageNoPivot(id_project, language) {
-    var that = this;
+    let that = this;
     return new Promise(function (resolve, reject) {
 
         that.getAll(id_project).then(function(returnval) {
             winston.debug("getAllByLanguageNoPivot returnval: ",returnval);
 
-            var pickedLang = returnval.data.find(l => l.lang === language);
-            //var pickedLang = returnval.data[req.params.lang];           
+            let pickedLang = returnval.data.find(l => l.lang === language);
+            //let pickedLang = returnval.data[req.params.lang];           
 
             winston.debug("getAllByLanguageNoPivot pickedLang"+  language,pickedLang);
             return resolve(pickedLang); 
@@ -111,12 +111,12 @@ getAllByLanguageNoPivot(id_project, language) {
 //UNused
 getAllMerged(id_project) {
  
-    var that = this;
+    let that = this;
     return new Promise(function (resolve, reject) {
         
         return that.fetchDefault().then(function(defaults) {
 
-            var query = {"id_project": id_project};
+            let query = {"id_project": id_project};
         
             winston.debug("query /", query);
         
@@ -137,7 +137,7 @@ getAllMerged(id_project) {
                 } else {
                     returnval = labels;
                     defaults.forEach(elementDef => {
-                        var pickedLang = labels.data.find(l => l.lang === elementDef.lang);
+                        let pickedLang = labels.data.find(l => l.lang === elementDef.lang);
                         if (!pickedLang) {
                         returnval.data.push(elementDef);
                         }
@@ -155,13 +155,13 @@ getAllMerged(id_project) {
 
 
 getAll(id_project) {
-    var that = this;
+    let that = this;
     return new Promise(function (resolve, reject) {
         
         return that.fetchPivotDefault().then(function(def) {
 
 
-                var query = {"id_project": id_project};
+                let query = {"id_project": id_project};
                     
                 winston.debug("query /", query);
 
@@ -195,5 +195,5 @@ getAll(id_project) {
   
 
 }
-var labelService = new LabelService();
+let labelService = new LabelService();
 module.exports = labelService;

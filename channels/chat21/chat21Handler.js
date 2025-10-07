@@ -7,13 +7,13 @@ const groupEvent = require('../../event/groupEvent');
 const chat21Event = require('./chat21Event');
 const leadEvent = require('../../event/leadEvent');
 
-var messageService = require('../../services/messageService');
-var MessageConstants = require("../../models/messageConstants");
-var ChannelConstants = require("../../models/channelConstants");
-var winston = require('../../config/winston');
-var Request = require("../../models/request");
-var chat21Config = require('./chat21Config');
-var chat21 = require('./chat21Client');
+let messageService = require('../../services/messageService');
+let MessageConstants = require("../../models/messageConstants");
+let ChannelConstants = require("../../models/channelConstants");
+let winston = require('../../config/winston');
+let Request = require("../../models/request");
+let chat21Config = require('./chat21Config');
+let chat21 = require('./chat21Client');
 
 
 
@@ -38,10 +38,10 @@ const maskPasswordOptions = {
 
 
 
-// var chat21Util = require('./chat21Util');
-// var tiledeskUtil = require('./tiledesk-util');
+// let chat21Util = require('./chat21Util');
+// let tiledeskUtil = require('./tiledesk-util');
 
-var adminToken =  process.env.CHAT21_ADMIN_TOKEN || chat21Config.adminToken;
+let adminToken =  process.env.CHAT21_ADMIN_TOKEN || chat21Config.adminToken;
 
 const masked_adminToken = MaskData.maskPhone(adminToken, maskPasswordOptions);
 
@@ -73,7 +73,7 @@ class Chat21Handler {
 
     listen() {
 
-        var that = this;       
+        let that = this;       
        
         winston.debug("Chat21Handler listener start ");
         
@@ -89,10 +89,10 @@ class Chat21Handler {
 
         // su projectUser create e update
         authEvent.on('user.signup', function(userData) {
-            var firstName = userData.savedUser.firstname;
-            var lastName = userData.savedUser.lastname;
-            var email = userData.savedUser.email;
-            var current_user = userData.savedUser.id;
+            let firstName = userData.savedUser.firstname;
+            let lastName = userData.savedUser.lastname;
+            let email = userData.savedUser.email;
+            let current_user = userData.savedUser.id;
 
             setImmediate(() => {
                 winston.debug("Chat21Handler on user.signup ",  userData);
@@ -113,9 +113,9 @@ class Chat21Handler {
 
 
         authEvent.on('user.update', function(userData) {
-            var firstName = userData.updatedUser.firstname;
-            var lastName = userData.updatedUser.lastname;            
-            var current_user = userData.updatedUser.id;
+            let firstName = userData.updatedUser.firstname;
+            let lastName = userData.updatedUser.lastname;            
+            let current_user = userData.updatedUser.id;
 
             setImmediate(() => {
                 winston.debug("Chat21Handler on user.update ",  userData);
@@ -136,11 +136,11 @@ class Chat21Handler {
 
 
         botEvent.on('faqbot.create', function(bot) {
-            var firstName = bot.name;
-            var lastName = "";
-            var email = "";
+            let firstName = bot.name;
+            let lastName = "";
+            let email = "";
             // botprefix
-            var current_user = "bot_"+bot.id;
+            let current_user = "bot_"+bot.id;
 
             setImmediate(() => {
                 winston.debug("Chat21Handler on faqbot.create ",  bot);
@@ -162,10 +162,10 @@ class Chat21Handler {
 
 
         botEvent.on('faqbot.update', function(bot) {
-            var firstName = bot.name;
-            var lastName = "";
+            let firstName = bot.name;
+            let lastName = "";
             // botprefix
-            var current_user = "bot_"+bot.id;
+            let current_user = "bot_"+bot.id;
 
             setImmediate(() => {
                 winston.debug("Chat21Handler on faqbot.create ",  bot);
@@ -210,7 +210,7 @@ class Chat21Handler {
 
                             winston.verbose("Chat21Handler lead.update for request ",  request);
                             
-                            var groupName = lead.fullname;
+                            let groupName = lead.fullname;
                             if (request.subject) {
                                 groupName=request.subject;
                             }
@@ -225,7 +225,7 @@ class Chat21Handler {
                             });
 
                              // updateAttributes: function(attributes, group_id){
-                                 var gattributes = {userFullname:lead.fullname, userEmail: lead.email }
+                                 let gattributes = {userFullname:lead.fullname, userEmail: lead.email }
                                 //  qui1
                             chat21.groups.updateAttributes(gattributes, request.request_id).then(function(data) {
                                 winston.verbose("Chat21 group gattributes for lead.update updated: " + JSON.stringify(data));      
@@ -310,13 +310,13 @@ class Chat21Handler {
                             // sendToGroup: function(sender_fullname, recipient_id, recipient_fullname, text, sender_id, attributes, type, metadata, timestamp){
 
 
-                            var timestamp = Date.now();
-                            // var timestamp = undefined;
+                            let timestamp = Date.now();
+                            // let timestamp = undefined;
                             if (message.attributes && message.attributes.clienttimestamp) {
                                 timestamp = message.attributes.clienttimestamp;
                             }
 
-                            var recipient_fullname = "Guest"; 
+                            let recipient_fullname = "Guest"; 
                             // guest_here
                         
                             if (message.request && message.request.lead && message.request.lead.fullname) {
@@ -346,7 +346,7 @@ class Chat21Handler {
                                 message.metadata = parsedReply.message.metadata;
                             }
                             
-                            // var msg_attributes = {...message.attributes, ...parsedReply.message.attributes };
+                            // let msg_attributes = {...message.attributes, ...parsedReply.message.attributes };
                             if (parsedReply.message && parsedReply.message.attributes) {
                                 for(const [key, value] of Object.entries(parsedReply.message.attributes)) {
                                     attributes[key] = value
@@ -432,8 +432,8 @@ class Chat21Handler {
 
                            chat21.auth.setAdminToken(adminToken);
 
-                           var timestamp = Date.now();
-                           // var timestamp = undefined;
+                           let timestamp = Date.now();
+                           // let timestamp = undefined;
                            if (message.attributes && message.attributes.clienttimestamp) {
                                timestamp = message.attributes.clienttimestamp;
                            }
@@ -477,7 +477,7 @@ class Chat21Handler {
 
                         chat21.auth.setAdminToken(adminToken);
 
-                        var gattributes = request.attributes;
+                        let gattributes = request.attributes;
                         // qui1
                         chat21.groups.updateAttributes(gattributes, request.request_id).then(function(data) {
                             winston.verbose("Chat21 group gattributes for request.attributes.update updated: " + JSON.stringify(data));      
@@ -502,11 +502,11 @@ class Chat21Handler {
             //             chat21.auth.setAdminToken(adminToken);
 
             //               // https://stackoverflow.com/questions/42310950/handling-undefined-values-with-firebase/42315610                        
-            //             //   var requestWithoutUndefined = JSON.parse(JSON.stringify(request, function(k, v) {
+            //             //   let requestWithoutUndefined = JSON.parse(JSON.stringify(request, function(k, v) {
             //             //     if (v === undefined) { return null; } return v; 
             //             //  }));
 
-            //             // var gattributes = { "_request":requestWithoutUndefined};
+            //             // let gattributes = { "_request":requestWithoutUndefined};
 
             //             // qui1
             //             chat21.groups.updateAttributes(gattributes, request.request_id).then(function(data) {
@@ -544,7 +544,7 @@ class Chat21Handler {
                         winston.debug("requestObj.participants: "+ JSON.stringify(requestObj.participants));
                         
                         let members = requestObj.participants;
-                        // var members = reqParticipantArray;
+                        // let members = reqParticipantArray;
 
                         members.push("system");
                         if (request.lead) {
@@ -556,9 +556,9 @@ class Chat21Handler {
                         // let membersArray = JSON.parse(JSON.stringify(members));
                         // winston.info("membersArray", membersArray);
 
-                        var gAttributes = requestObj.attributes || {};
+                        let gAttributes = requestObj.attributes || {};
                         // TODO ATTENTION change value by reference
-                        // var gAttributes = request.attributes || {}; //BUG LINK TO event emmiter obiect
+                        // let gAttributes = request.attributes || {}; //BUG LINK TO event emmiter obiect
 
 
                         // problema requester_id
@@ -586,7 +586,7 @@ class Chat21Handler {
                         // https://stackoverflow.com/questions/42310950/handling-undefined-values-with-firebase/42315610
 
                         //   not used now. Before used by ionic
-                        // var requestWithoutUndefined = JSON.parse(JSON.stringify(request, function(k, v) {
+                        // let requestWithoutUndefined = JSON.parse(JSON.stringify(request, function(k, v) {
                         //     if (v === undefined) { return null; } return v; 
                         //  }));
                         //  gAttributes['_request'] = requestWithoutUndefined; //used by ionic to open request detail 
@@ -597,9 +597,9 @@ class Chat21Handler {
  
                         winston.debug("Chat21 group create gAttributes: ",gAttributes);  
 
-                        var groupId = request.request_id;
+                        let groupId = request.request_id;
 
-                        var group_name = "Guest"; 
+                        let group_name = "Guest"; 
                         // guest_here
                         
                         if (request.lead && request.lead.fullname) {
@@ -742,7 +742,7 @@ class Chat21Handler {
                         
                         winston.verbose("setting chat21 group for request.participants.update for request with id: " + requestObj._id);
                     
-                        var groupId = request.request_id;
+                        let groupId = request.request_id;
 
                         let members = [];
                         
@@ -753,7 +753,7 @@ class Chat21Handler {
                             members.push(participant);
                         });
                         // requestObj.participants;
-                        // var members = reqParticipantArray;
+                        // let members = reqParticipantArray;
 
                         if (request.lead) {
                             // lead_id used. Change it?
@@ -778,7 +778,7 @@ class Chat21Handler {
                         // let newParticipants = data.request.participants;
                         // winston.info("newParticipants ", newParticipants);
 
-                        // var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
+                        // let removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
                         // winston.info("removedParticipants ", removedParticipants);
 
                        
@@ -826,7 +826,7 @@ class Chat21Handler {
                      
                         // let requestObj = request.toJSON();
                         
-                        var groupId = request.request_id;
+                        let groupId = request.request_id;
 
                         winston.verbose("joining member " + member +" for chat21 group with request : " + groupId);
                                             
@@ -864,7 +864,7 @@ class Chat21Handler {
                      
                         // let requestObj = request.toJSON();
                         
-                        var groupId = request.request_id;
+                        let groupId = request.request_id;
 
                         winston.verbose("leaving " + member +" for chat21 group for request with id: " + groupId);
                                    
@@ -917,10 +917,10 @@ class Chat21Handler {
                     chat21.auth.setAdminToken(adminToken);
 
 
-                    var groupMembers = group.members;
+                    let groupMembers = group.members;
                     winston.debug("groupMembers ", groupMembers); 
                     
-                    var group_id = "group-" + group._id;
+                    let group_id = "group-" + group._id;
                     winston.debug("group_id :" + group_id); 
 
                     return chat21.groups.create(group.name, groupMembers, undefined, group_id).then(function(data) {
@@ -952,10 +952,10 @@ class Chat21Handler {
                     chat21.auth.setAdminToken(adminToken);
 
 
-                    var groupMembers = group.members;
+                    let groupMembers = group.members;
                     winston.debug("groupMembers ", groupMembers); 
                     
-                    var group_id = "group-" + group._id;
+                    let group_id = "group-" + group._id;
                     winston.debug("group_id :" + group_id); 
 
                             // update: function(name, owner, attributes, group_id){
@@ -995,7 +995,7 @@ class Chat21Handler {
 
                     chat21.auth.setAdminToken(adminToken);
                   
-                    var group_id = "group-" + group._id;
+                    let group_id = "group-" + group._id;
                     winston.debug("group_id :" + group_id); 
 
                     //Remove members but group remains.
@@ -1017,5 +1017,5 @@ class Chat21Handler {
     
 }
 
-var chat21Handler = new Chat21Handler();
+let chat21Handler = new Chat21Handler();
 module.exports = chat21Handler;

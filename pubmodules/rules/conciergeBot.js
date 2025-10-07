@@ -1,14 +1,14 @@
 
 const requestEvent = require('../../event/requestEvent');
 const messageEvent = require('../../event/messageEvent');
-var messageService = require('../../services/messageService');
-var requestService = require('../../services/requestService');
-var leadService = require('../../services/leadService');
-var MessageConstants = require("../../models/messageConstants");
-var LeadConstants = require("../../models/leadConstants");
-var winston = require('../../config/winston');
-var i8nUtil = require("../../utils/i8nUtil");
-var BotFromParticipant = require("../../utils/botFromParticipant");
+let messageService = require('../../services/messageService');
+let requestService = require('../../services/requestService');
+let leadService = require('../../services/leadService');
+let MessageConstants = require("../../models/messageConstants");
+let LeadConstants = require("../../models/leadConstants");
+let winston = require('../../config/winston');
+let i8nUtil = require("../../utils/i8nUtil");
+let BotFromParticipant = require("../../utils/botFromParticipant");
 const RequestConstants = require('../../models/requestConstants');
 
 class ConciergeBot {
@@ -16,7 +16,7 @@ class ConciergeBot {
 
     listen() {
 
-        var that = this;
+        let that = this;
         winston.info("ConciergeBot listener start ");
         
 
@@ -32,7 +32,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 */
         messageEvent.on('message.create',  function(message) {
             winston.debug(" ConciergeBot message create", message);
-            //var botId = BotFromParticipant.getBotFromParticipants(message.request.participants);
+            //let botId = BotFromParticipant.getBotFromParticipants(message.request.participants);
 
             setImmediate(() => {
 
@@ -93,14 +93,14 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                         // do not update lead here: otherwise it override contact info of the console
 
                         // if (message.attributes.userFullname) {
-                        //     var  userFullname = message.attributes.userFullname;
+                        //     let  userFullname = message.attributes.userFullname;
                         //     winston.info("concierge userFullname: "+ userFullname);
 
                         //     if (!userFullname) {
                         //         userFullname = message.sender_fullname;
                         //     }
 
-                        //     var userEmail = message.attributes.userEmail;
+                        //     let userEmail = message.attributes.userEmail;
                         //     winston.info("concierge userEmail:" + userEmail);
 
                         //     leadService.updateWitId(message.sender, userFullname, userEmail, message.request.id_project).then(function (updatedLead) {
@@ -131,7 +131,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                     winston.debug("ConciergeBot member: " + member);
                     // botprefix
                     if (member.indexOf("bot_")==-1) {
-                        var botId = BotFromParticipant.getBotFromParticipants(request.participants);
+                        let botId = BotFromParticipant.getBotFromParticipants(request.participants);
                         if (botId) {
                             winston.verbose("ConciergeBot: removing bot with id: " + botId + " from the request with request_id: " + request.request_id + " from the project with id: " + request.id_project);
                             
@@ -257,7 +257,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 
     // unused
     // welcomeOnJoin(request) {
-    //     var botId = BotFromParticipant.getBotFromParticipants(request.participants);
+    //     let botId = BotFromParticipant.getBotFromParticipants(request.participants);
     //     if (!botId) {                        
     //     // if (!request.department.id_bot) {
             
@@ -313,7 +313,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 
 
     welcomeAgentOnJoin(request, member) {
-        var botId = BotFromParticipant.getBotFromParticipants(request.participants);
+        let botId = BotFromParticipant.getBotFromParticipants(request.participants);
         if (!botId) {                        
         // if (!request.department.id_bot) {
             
@@ -326,7 +326,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                     
                     // if (request.availableAgents.length==0) {
                        
-                    var updateconversationfor = request.participants;
+                    let updateconversationfor = request.participants;
 
                     if (member) {
                         updateconversationfor = [member];
@@ -373,5 +373,5 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
     
 }
 
-var conciergeBot = new ConciergeBot();
+let conciergeBot = new ConciergeBot();
 module.exports = conciergeBot;

@@ -1,13 +1,13 @@
-var express = require('express');
+let express = require('express');
 const multer  = require('multer');
-var passport = require('passport');
+let passport = require('passport');
 require('../middleware/passport')(passport);
-var validtoken = require('../middleware/valid-token')
-var winston = require('../config/winston');
-var pathlib = require('path');
+let validtoken = require('../middleware/valid-token')
+let winston = require('../config/winston');
+let pathlib = require('path');
 
 
-var router = express.Router();
+let router = express.Router();
 
 
 

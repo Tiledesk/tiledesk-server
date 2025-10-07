@@ -1,9 +1,9 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
-var User = require('../models/user');
-var projectService = require('../services/projectService');
-var userService = require('../services/userService');
+let User = require('../models/user');
+let projectService = require('../services/projectService');
+let userService = require('../services/userService');
 
 //Require the dev-dependencies
 let chai = require('chai');
@@ -15,8 +15,8 @@ let log = false;
 
 // chai.config.includeStack = true;
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 chai.use(chaiHttp);
 
@@ -26,8 +26,8 @@ describe('KeysRoute', () => {
  
     it('generate', (done) => {
 
-       var email = "test-signup-" + Date.now() + "@email.com";
-       var pwd = "pwd";
+       let email = "test-signup-" + Date.now() + "@email.com";
+       let pwd = "pwd";
 
         userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
             projectService.create("test-join-member", savedUser._id).then(function(savedProject) {                                              

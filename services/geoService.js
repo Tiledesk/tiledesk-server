@@ -1,12 +1,12 @@
 'use strict';
 
-var requestEvent = require("./../event/requestEvent");
-var Location = require("./../models/location");
-var Request = require("./../models/request");
+let requestEvent = require("./../event/requestEvent");
+let Location = require("./../models/location");
+let Request = require("./../models/request");
 
 
-var winston = require('../config/winston');
-var geoip = require('geoip-lite');
+let winston = require('../config/winston');
+let geoip = require('geoip-lite');
 
 class GeoService {
 
@@ -34,8 +34,8 @@ class GeoService {
 
 
  
-  // var ip = "95.255.73.34";
-  // var geo = geoip.lookup(ip);
+  // let ip = "95.255.73.34";
+  // let geo = geoip.lookup(ip);
   
   // console.log("geo", geo);
 
@@ -51,7 +51,7 @@ class GeoService {
 
 
 
-  var requestCreateKey = 'request.create';
+  let requestCreateKey = 'request.create';
   if (requestEvent.queueEnabled) {
     requestCreateKey = 'request.create.queue';
   }
@@ -64,15 +64,15 @@ class GeoService {
 
     winston.debug("request", request);
 
-    var ip = (request.location && request.location.ipAddress) || (request.attributes && request.attributes.ipAddress);
+    let ip = (request.location && request.location.ipAddress) || (request.attributes && request.attributes.ipAddress);
     winston.debug("ip" + ip);
     if (ip) {
-        var geo = geoip.lookup(ip);  
+        let geo = geoip.lookup(ip);  
         winston.debug("Geo result", geo);
 
         
         if (geo) {
-            var update = {};
+            let update = {};
 
             if (!request.location) {
                 request.location = {};
@@ -104,9 +104,9 @@ class GeoService {
             // console.log(request.location.toString());
             
 
-            // var locFound=false;
+            // let locFound=false;
             // try {
-            //     var loc = request.location.geometry;
+            //     let loc = request.location.geometry;
             //     locFound = true;
             // } catch (e) {locFound = false;}
             
@@ -125,7 +125,7 @@ class GeoService {
             }
             
             
-            // var setObj = { $set: {location: update} }        
+            // let setObj = { $set: {location: update} }        
             // winston.info("setObj", setObj);
             // winston.info("update", update);
 
@@ -158,7 +158,7 @@ class GeoService {
 
 
 }
-var geoService = new GeoService();
+let geoService = new GeoService();
 
 
 module.exports = geoService;

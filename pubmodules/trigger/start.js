@@ -1,10 +1,10 @@
-var faqService = require('../../services/faqService');
-var Trigger = require('./models/trigger');
-var DefaultTrigger = require('./default');
-var projectEvent = require('../../event/projectEvent');
-var winston = require('../../config/winston');
+let faqService = require('../../services/faqService');
+let Trigger = require('./models/trigger');
+let DefaultTrigger = require('./default');
+let projectEvent = require('../../event/projectEvent');
+let winston = require('../../config/winston');
 const chatbotTypes = require("../../models/chatbotTypes");
-var rulesTrigger = require('./rulesTrigger');
+let rulesTrigger = require('./rulesTrigger');
 
 
 function saveTrigger(trigger) {
@@ -25,8 +25,8 @@ projectEvent.on('project.create', async (project) => {
             description: "An identity bot"
         }
         
-        var botIdentity = await faqService.create(project._id, "system", identity_bot);
-        var botIdentityId = "bot_"+botIdentity.id;
+        let botIdentity = await faqService.create(project._id, "system", identity_bot);
+        let botIdentityId = "bot_"+botIdentity.id;
         winston.debug("botIdentityId:"+botIdentityId);
 
 

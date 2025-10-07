@@ -1,14 +1,14 @@
-var express = require('express');
-var router = express.Router();
-var TagLibrary = require("../models/tagLibrary");
-var winston = require('../config/winston');
+let express = require('express');
+let router = express.Router();
+let TagLibrary = require("../models/tagLibrary");
+let winston = require('../config/winston');
 
 router.post('/', function (req, res) {
 
   winston.debug(req.body);
   winston.debug("req.user", req.user);
 
-  var newTag = new TagLibrary({
+  let newTag = new TagLibrary({
     tag: req.body.tag,  
     color: req.body.color,
     id_project: req.projectid,
@@ -34,7 +34,7 @@ router.post('/', function (req, res) {
 
 router.put('/:tagid', function (req, res) {
   winston.debug(req.body);
-  var update = {};
+  let update = {};
   
 
   update.tag = req.body.tag;   
@@ -85,18 +85,18 @@ router.get('/:tagid', function (req, res) {
 });
 
 router.get('/', function (req, res) {
-  var limit = 40; // Number of Tags per page
-  var page = 0;
+  let limit = 40; // Number of Tags per page
+  let page = 0;
 
   if (req.query.page) {
     page = req.query.page;
   }
 
-  var skip = page * limit;
+  let skip = page * limit;
   winston.debug('Tag ROUTE - SKIP PAGE ', skip);
 
 
-  var query = { "id_project": req.projectid};
+  let query = { "id_project": req.projectid};
 
   // if (req.query.full_text) {
   //   winston.debug('Tag ROUTE req.query.fulltext', req.query.full_text);
@@ -104,17 +104,17 @@ router.get('/', function (req, res) {
   // }
 
 
-  var direction = -1; //-1 descending , 1 ascending
+  let direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
   }
 
-  var sortField = "createdAt";
+  let sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   }
 
-  var sortQuery = {};
+  let sortQuery = {};
   sortQuery[sortField] = direction;
 
   winston.debug("sort query", sortQuery);

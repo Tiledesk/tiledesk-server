@@ -8,7 +8,7 @@ class UserUtil {
     }
 }
 
- var userUtil = new UserUtil();
+ let userUtil = new UserUtil();
 
  module.exports = userUtil;
  

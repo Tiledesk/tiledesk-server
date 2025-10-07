@@ -2,9 +2,9 @@
 process.env.NODE_ENV = 'test';
 process.env.LOG_LEVEL = 'critical';
 
-var User = require('../models/user');
-var projectService = require('../services/projectService');
-var userService = require('../services/userService');
+let User = require('../models/user');
+let projectService = require('../services/projectService');
+let userService = require('../services/userService');
 
 //Require the dev-dependencies
 let chai = require('chai');
@@ -16,8 +16,8 @@ chai.use(chaiHttp);
 
 // chai.config.includeStack = true;
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 let log = false;
 
@@ -58,8 +58,8 @@ describe('LogsRoute', () => {
 
         it('whatsapp', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test1", savedUser._id).then(function (savedProject) {

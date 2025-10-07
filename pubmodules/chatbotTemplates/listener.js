@@ -1,6 +1,6 @@
 const templates = require("@tiledesk/tiledesk-chatbot-templates");
 const winston = require("../../config/winston");
-var configGlobal = require('../../config/global');
+let configGlobal = require('../../config/global');
 
 class Listener {
 
@@ -24,6 +24,6 @@ class Listener {
     }
 }
 
-var listener = new Listener();
+let listener = new Listener();
 
 module.exports = listener;

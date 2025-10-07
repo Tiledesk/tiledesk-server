@@ -36,24 +36,24 @@ class Tilebase {
     }
     start(initialMessage) {
         // start(token) {
-        var that = this;
+        let that = this;
         return new Promise(function (resolve, reject) {
 
-            // var options = {
+            // let options = {
             //     // headers: {
             //     //     "Authorization" : "JWT " + token
             //     // }
             // };
             // console.log('options', options);
 
-        // var ws = new WebSocket('ws://localhost:3000');
-                    // var ws = new WebSocket('ws://localhost:3000/public/requests');
-                    // var ws = new WebSocket('ws://localhost:3000/5bae41325f03b900401e39e8/messages');
+        // let ws = new WebSocket('ws://localhost:3000');
+                    // let ws = new WebSocket('ws://localhost:3000/public/requests');
+                    // let ws = new WebSocket('ws://localhost:3000/5bae41325f03b900401e39e8/messages');
                     
                     // 'ws://localhost:40510'
                     that.ws = new WebSocket(that.url);
-                    var ws = that.ws;
-                    // var ws = new WebSocket(that.url, options);
+                    let ws = that.ws;
+                    // let ws = new WebSocket(that.url, options);
                     ws.onopen = function () {
                         console.log('websocket is connected2 ...');
                         if (initialMessage) {
@@ -75,7 +75,7 @@ class Tilebase {
 
                        
                             try {
-                                var json = JSON.parse(message.data);
+                                let json = JSON.parse(message.data);
                             } catch (e) {
                                 console.log('This doesn\'t look like a valid JSON: ',
                                     message.data);
@@ -91,7 +91,7 @@ class Tilebase {
                             let insUp = json.payload.method;
                                 console.log("insUp",insUp);
 
-                                    var object = {event: json.payload, data: element};
+                                    let object = {event: json.payload, data: element};
 
                                     if (insUp=="CREATE" && that.onCreate) {
                                         that.onCreate(element, object);
@@ -109,7 +109,7 @@ class Tilebase {
 				                let insUp = json.payload.method;                                                                                                                                                                                                                         
                                   console.log("insUp",insUp);     
 
-                                var object = {event: json.payload, data: json};
+                                let object = {event: json.payload, data: json};
 
                                 if (insUp=="CREATE" && that.onCreate) {
                                     that.onCreate(json.payload.message, object);

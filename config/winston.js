@@ -1,11 +1,11 @@
-var appRoot = require('app-root-path');
-var winston = require('winston');
-var config = require('./database');
+let appRoot = require('app-root-path');
+let winston = require('winston');
+let config = require('./database');
 
-var level = process.env.LOG_LEVEL || 'info'
+let level = process.env.LOG_LEVEL || 'info'
 // console.log("level",level);
 
-var options = {
+let options = {
     file: {
       level:level ,
       filename: `${appRoot}/logs/app.log`,
@@ -35,7 +35,7 @@ var options = {
   };
 
 //   https://stackoverflow.com/questions/51074805/typeerror-winston-logger-is-not-a-constructor-with-winston-and-morgan
-//   var logger = new winston.Logger({
+//   let logger = new winston.Logger({
 //     transports: [
 //       new winston.transports.File(options.file),
 //       new winston.transports.Console(options.console)
@@ -62,9 +62,9 @@ var options = {
     require('../utils/winston-mongodb/winston-mongodb');
 
     if (process.env.NODE_ENV == 'test')  {
-      var logsDb = process.env.DATABASE_LOG_URI || process.env.DATABASE_URI || process.env.MONGODB_URI || config.databasetest;
+      let logsDb = process.env.DATABASE_LOG_URI || process.env.DATABASE_URI || process.env.MONGODB_URI || config.databasetest;
     }else {
-      var logsDb = process.env.DATABASE_LOG_URI ||  process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
+      let logsDb = process.env.DATABASE_LOG_URI ||  process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
     }
 
     console.log("Added winston MongoDB transport");
@@ -76,9 +76,9 @@ var options = {
     require('../utils/winston-mongodb/winston-mongodb');
 
     if (process.env.NODE_ENV == 'test')  {
-      var logsDb = process.env.DATABASE_LOG_MT_URI || process.env.DATABASE_LOG_URI ||  process.env.DATABASE_URI || process.env.MONGODB_URI || config.databasetest;
+      let logsDb = process.env.DATABASE_LOG_MT_URI || process.env.DATABASE_LOG_URI ||  process.env.DATABASE_URI || process.env.MONGODB_URI || config.databasetest;
     }else {
-      var logsDb = process.env.DATABASE_LOG_MT_URI || process.env.DATABASE_LOG_URI ||  process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
+      let logsDb = process.env.DATABASE_LOG_MT_URI || process.env.DATABASE_LOG_URI ||  process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
     }
 
     console.log("Added winston MongoDB MT transport");

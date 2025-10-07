@@ -1,12 +1,12 @@
 const fs = require('fs');
 
-var express = require('express');
+let express = require('express');
 
-var router = express.Router();
-var passport = require('passport');
+let router = express.Router();
+let passport = require('passport');
 require('../middleware/passport')(passport);
-var validtoken = require('../middleware/valid-token');
-var roleChecker = require('../middleware/has-role');
+let validtoken = require('../middleware/valid-token');
+let roleChecker = require('../middleware/has-role');
 
 
 router.get('/', function (req, res) {
@@ -39,7 +39,7 @@ router.get('/saved', function (req, res) {
 
 router.post('/', function (req, res) {
     
-    var env = `
+    let env = `
     FIREBASE_PRIVATE_KEY=${req.body.FIREBASE_PRIVATE_KEY}
     FIREBASE_CLIENT_EMAIL=${req.body.FIREBASE_CLIENT_EMAIL}
     FIREBASE_PROJECT_ID=${req.body.FIREBASE_PROJECT_ID}

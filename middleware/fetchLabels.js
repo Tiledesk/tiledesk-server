@@ -1,15 +1,15 @@
 
-var fs = require('fs');
-var path = require('path');
-var winston = require('../config/winston');
+let fs = require('fs');
+let path = require('path');
+let winston = require('../config/winston');
 
 
-var labelsDir = __dirname + "/../config/labels/";
+let labelsDir = __dirname + "/../config/labels/";
 winston.debug('labelsDir: ' + labelsDir);
 
 
 module.exports = function (req, res, next) {
-  var filePath = path.join(labelsDir, 'widget.json');
+  let filePath = path.join(labelsDir, 'widget.json');
 
   fs.readFile(filePath, { encoding: 'utf-8' }, function (err, data) {
     if (err) {

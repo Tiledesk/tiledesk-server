@@ -5,9 +5,9 @@
 const mongoose = require("mongoose");
 const GridFsStorage = require("multer-gridfs-storage");
 const uuidv4 = require('uuid/v4');
-var config = require('../config/database');
-var winston = require('../config/winston');
-var pathlib = require('path');
+let config = require('../config/database');
+let winston = require('../config/winston');
+let pathlib = require('path');
 
 const FileService = require("./fileService");
 
@@ -91,7 +91,7 @@ class FileGridFsService extends FileService {
 
     getFileDataAsStream (filename) {
         // try {
-        var stream = this.gfs.openDownloadStreamByName(filename);
+        let stream = this.gfs.openDownloadStreamByName(filename);
 
         // stream.on('error', function(e) {
         //     console.error("TTTTT",e);
@@ -103,11 +103,11 @@ class FileGridFsService extends FileService {
         return stream;
     }
     getFileDataAsBuffer (filename) {
-        var that = this;
+        let that = this;
         return new Promise((resolve, reject) => {
 
             try {
-                var stream = that.getFileDataAsStream(filename);
+                let stream = that.getFileDataAsStream(filename);
             } catch (e) {
                 console.error("Error getFileDataAsStream");
                 return reject(e);
@@ -129,7 +129,7 @@ class FileGridFsService extends FileService {
             });
             stream.on('end', () => {
 
-                var buffer = Buffer.concat(bufs);
+                let buffer = Buffer.concat(bufs);
                 return resolve(buffer);
             });
         });
@@ -140,9 +140,9 @@ class FileGridFsService extends FileService {
             url: this.mongoURI,
             options: { useNewUrlParser: true, useUnifiedTopology: true },
             file: (req, file) => {
-                var folder = uuidv4();
+                let folder = uuidv4();
 
-                // var form = new multiparty.Form();
+                // let form = new multiparty.Form();
 
                 // form.parse(req, function(err, fields, files) {
                 //     console.log("XXX fields",fields)
@@ -161,7 +161,7 @@ class FileGridFsService extends FileService {
                 //     folder = req.body.folder;
                 // }
 
-                var subfolder = "/public";
+                let subfolder = "/public";
                 if (req.user && req.user.id) {
                     subfolder = "/users/" + req.user.id;
                 }
@@ -195,9 +195,9 @@ class FileGridFsService extends FileService {
             url : this.mongoURI,
             options: { useNewUrlParser: true, useUnifiedTopology: true },
             file: async (req, file) => {
-                // var folder = uuidv4();
+                // let folder = uuidv4();
 
-                // var form = new multiparty.Form();
+                // let form = new multiparty.Form();
 
                 // form.parse(req, function(err, fields, files) {
                 //     console.log("XXX fields",fields)
@@ -217,7 +217,7 @@ class FileGridFsService extends FileService {
 
                
 
-                var subfolder = "/public";
+                let subfolder = "/public";
                 if (req.user && req.user.id) {
                   subfolder = "/users/"+req.user.id;
                 }
@@ -231,7 +231,7 @@ class FileGridFsService extends FileService {
                 //     return filename;
                 // }
     
-                var pathExists = `${path}/${file.originalname}`;
+                let pathExists = `${path}/${file.originalname}`;
                 winston.debug("pathExists", pathExists);
 
                 let fileExists = await this.gfs.find({filename: pathExists}).toArray();
@@ -269,10 +269,10 @@ class FileGridFsService extends FileService {
             url : this.mongoURI,
             options: { useNewUrlParser: true, useUnifiedTopology: true },
             file: async (req, file) => {
-                var filename = "photo.jpg";
-                // var folder = uuidv4();
+                let filename = "photo.jpg";
+                // let folder = uuidv4();
 
-                // var form = new multiparty.Form();
+                // let form = new multiparty.Form();
 
                 // form.parse(req, function(err, fields, files) {
                 //     console.log("XXX fields",fields)
@@ -293,9 +293,9 @@ class FileGridFsService extends FileService {
 
                
 
-                var subfolder = "/public";
+                let subfolder = "/public";
                 if (req.user && req.user.id) {
-                  var userid = req.user.id;
+                  let userid = req.user.id;
 
                   if (req.query.bot_id) {
                     winston.debug("req.query.user_id: "+ req.query.user_id);
@@ -319,7 +319,7 @@ class FileGridFsService extends FileService {
                 //     return filename;
                 // }
     
-                var pathExists = `${path}/${filename}`;
+                let pathExists = `${path}/${filename}`;
                 winston.debug("pathExists: "+ pathExists);
 
                 let fileExists = await this.gfs.find({filename: pathExists}).toArray();

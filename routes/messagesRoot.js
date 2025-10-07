@@ -1,15 +1,15 @@
-var express = require('express');
+let express = require('express');
 
 // https://stackoverflow.com/questions/28977253/express-router-undefined-params-with-router-use-when-split-across-files
-var router = express.Router({mergeParams: true});
+let router = express.Router({mergeParams: true});
 
-var MessageConstants = require("../models/messageConstants");
-var Message = require("../models/message");
-var Request = require("../models/request");
-var messageService = require("../services/messageService");
-var winston = require('../config/winston');
-var fastCsv = require("fast-csv");
-var roleChecker = require('../middleware/has-role');
+let MessageConstants = require("../models/messageConstants");
+let Message = require("../models/message");
+let Request = require("../models/request");
+let messageService = require("../services/messageService");
+let winston = require('../config/winston');
+let fastCsv = require("fast-csv");
+let roleChecker = require('../middleware/has-role');
 const { check, validationResult } = require('express-validator');
 
 
@@ -70,7 +70,7 @@ router.get('/',roleChecker.hasRoleOrTypes('owner'), function(req, res) {
 
   const DEFAULT_LIMIT = 10;
 
-  var limit = DEFAULT_LIMIT; // Number of rows per page
+  let limit = DEFAULT_LIMIT; // Number of rows per page
 
   // console.log("req.query.populate_request",req.query.populate_request);
   if (req.query.limit) {
@@ -81,13 +81,13 @@ router.get('/',roleChecker.hasRoleOrTypes('owner'), function(req, res) {
   }
 
 
-  var page = 0;
+  let page = 0;
 
   if (req.query.page) {
     page = req.query.page;
   }
 
-  var skip = page * limit;
+  let skip = page * limit;
 
   return Message.find({id_project: req.projectid}).sort({createdAt: 'desc'}).
     skip(skip).limit(limit).lean().exec(async (err, messages) => { 
@@ -95,7 +95,7 @@ router.get('/',roleChecker.hasRoleOrTypes('owner'), function(req, res) {
 
       if (req.query.populate_request) {  
         // console.log("pupulate")
-        for (var i = 0; i < messages.length; i++) {
+        for (let i = 0; i < messages.length; i++) {
           messages[i].request = await Request.findOne({request_id:messages[i].recipient, id_project: messages[i].id_project }).exec();
         }
       }
@@ -127,8 +127,8 @@ router.get('/csv', roleChecker.hasRoleOrTypes('owner'), function(req, res) {
   res.flushHeaders();
 
   console.log("fastCsv",fastCsv)
-  var csvStream = fastCsv.format({headers: true})//.transform(transformer)
-  // var csvStream = fastCsv.createWriteStream({headers: true}).transform(transformer)
+  let csvStream = fastCsv.format({headers: true})//.transform(transformer)
+  // let csvStream = fastCsv.createWriteStream({headers: true}).transform(transformer)
   cursor.stream().pipe(csvStream).pipe(res);
 
 });

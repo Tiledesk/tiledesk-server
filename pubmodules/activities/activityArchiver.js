@@ -1,7 +1,7 @@
 const authEvent = require('../../event/authEvent');
 const requestEvent = require('../../event/requestEvent');
-var Activity = require('./models/activity');
-var winston = require('../../config/winston');
+let Activity = require('./models/activity');
+let winston = require('../../config/winston');
 
 class ActivityArchiver {
 
@@ -9,7 +9,7 @@ class ActivityArchiver {
 
         winston.debug('ActivityArchiver listen');   
 
-        var enabled = process.env.ACTIVITY_HISTORY_ENABLED || "false";
+        let enabled = process.env.ACTIVITY_HISTORY_ENABLED || "false";
         winston.debug('ActivityArchiver enabled:'+enabled);
     
         if (enabled==="true") {
@@ -24,7 +24,7 @@ class ActivityArchiver {
           winston.info("Activity.syncIndexes called");
         }
         
-        var that = this;
+        let that = this;
         
         //modify all to async
       
@@ -43,7 +43,7 @@ class ActivityArchiver {
 */
       
 //  works only if worker is disabled
-      var authProjectUserInvitePendingKey = 'project_user.invite.pending';  //Don't work if job_worker enabled because queue.worker is disabled
+      let authProjectUserInvitePendingKey = 'project_user.invite.pending';  //Don't work if job_worker enabled because queue.worker is disabled
       // if (authEvent.queueEnabled) { //queue not supported.
       //   authProjectUserInvitePendingKey = 'project_user.invite.pending.queue';
       // }
@@ -54,7 +54,7 @@ class ActivityArchiver {
             if (event.skipArchive) {
               return 0;
             }
-              var activity = new Activity({actor: {type:"user", id: event.req.user.id, name: event.req.user.fullName }, 
+              let activity = new Activity({actor: {type:"user", id: event.req.user.id, name: event.req.user.fullName }, 
               verb: "PROJECT_USER_INVITE", actionObj: event.req.body, 
               target: {type:"pendinginvitation", id:event.savedPendingInvitation._id.toString(), object: event.savedPendingInvitation }, 
               id_project: event.req.projectid });
@@ -68,7 +68,7 @@ class ActivityArchiver {
 
 
 //  works only if worker is disabled
-        var authProjectUserInviteKey = 'project_user.invite';   //Don't work if job_worker enabled because queue.worker is disabled
+        let authProjectUserInviteKey = 'project_user.invite';   //Don't work if job_worker enabled because queue.worker is disabled
         // if (authEvent.queueEnabled) { //queue not supported
         //   authProjectUserInviteKey = 'project_user.invite.queue';
         // }
@@ -81,7 +81,7 @@ class ActivityArchiver {
             }
 
 
-            var activity = new Activity({actor: {type:"user", id: event.req.user.id, name: event.req.user.fullName }, 
+            let activity = new Activity({actor: {type:"user", id: event.req.user.id, name: event.req.user.fullName }, 
                         verb: "PROJECT_USER_INVITE", actionObj: event.req.body, 
                         target: {type:"project_user", id: event.savedProject_userPopulated._id.toString(), object: event.savedProject_userPopulated }, 
                         id_project: event.req.projectid });
@@ -94,7 +94,7 @@ class ActivityArchiver {
 
       
       // verified with queue
-        var authProjectUserUpdateKey = 'project_user.update';
+        let authProjectUserUpdateKey = 'project_user.update';
         if (authEvent.queueEnabled) {
           authProjectUserUpdateKey = 'project_user.update.queue';
         }
@@ -111,7 +111,7 @@ class ActivityArchiver {
             return 0;
           }
 
-          var project_user = undefined;
+          let project_user = undefined;
           if (event.updatedProject_userPopulated.toObject) {
             project_user = event.updatedProject_userPopulated.toObject() 
           } else {
@@ -123,7 +123,7 @@ class ActivityArchiver {
           if (!event.req.user) {
             return  winston.debug('ActivityArchiver skipping archive empty user'); //from i think chat21webhook
           }
-          var activity = new Activity({actor: {type:"user", id: event.req.user._id, name: event.req.user.fullName }, 
+          let activity = new Activity({actor: {type:"user", id: event.req.user._id, name: event.req.user.fullName }, 
                 verb: "PROJECT_USER_UPDATE", actionObj: event.req.body, 
                 target: {type:"project_user", id: event.updatedProject_userPopulated._id.toString(), object: project_user}, 
                 id_project: event.updatedProject_userPopulated.id_project });
@@ -134,7 +134,7 @@ class ActivityArchiver {
        });
       
 //  works only if worker is disabled
-       var authProjectUserDeleteKey = 'project_user.delete';     //Don't work if job_worker enabled because queue.worker is disabled
+       let authProjectUserDeleteKey = 'project_user.delete';     //Don't work if job_worker enabled because queue.worker is disabled
       //  if (authEvent.queueEnabled) { //queue not supported
       //   authProjectUserDeleteKey = 'project_user.delete.queue';
       //  }
@@ -147,7 +147,7 @@ class ActivityArchiver {
             return 0;
           }
 
-            var activity = new Activity({actor: {type:"user", id: event.req.user.id, name: event.req.user.fullName }, 
+            let activity = new Activity({actor: {type:"user", id: event.req.user.id, name: event.req.user.fullName }, 
             verb: "PROJECT_USER_DELETE", actionObj: event.req.body, 
             target: {type:"project_user", id:event.req.params.project_userid, object: event.project_userPopulated.toObject() }, //Error saving activity Maximum call stack size exceeded
             id_project: event.req.projectid });
@@ -159,7 +159,7 @@ class ActivityArchiver {
 
       
 // disabled why? performance?
-      // var authUserSignineKey = 'user.signin';
+      // let authUserSignineKey = 'user.signin';
       // // if (authEvent.queueEnabled) { //queue not supported
       // //   authUserSignineKey = 'user.signin.queue';
       // // }
@@ -175,7 +175,7 @@ class ActivityArchiver {
       //         return 0;
       //       }
 
-      //         var activity = new Activity({actor: {type:"user", id: event.user._id, name: event.user.fullName }, 
+      //         let activity = new Activity({actor: {type:"user", id: event.user._id, name: event.user.fullName }, 
       //                 verb: "USER_SIGNIN", actionObj: event.req.body, //insecure it store password
       //                 target: {type:"user", id:event.user._id.toString(), object: null }, 
       //                 id_project: '*' }); /// * project
@@ -185,7 +185,7 @@ class ActivityArchiver {
       //   });
 
 
-        // var authUserSigninErrorKey = 'user.login.error';
+        // let authUserSigninErrorKey = 'user.login.error';
         // // if (authEvent.queueEnabled) {  //queue not supported
         // //   authUserSigninErrorKey = 'user.login.error.queue';
         // // }
@@ -199,7 +199,7 @@ class ActivityArchiver {
         //       return 0;
         //     }
 
-        //       var activity = new Activity({actor: {type:"user"}, 
+        //       let activity = new Activity({actor: {type:"user"}, 
         //       verb: "USER_SIGNIN_ERROR", actionObj: event.req.body,     //insecure it store password
         //       target: {type:"user", id:null, object: null }, 
         //       id_project: '*' });     /// * project
@@ -209,7 +209,7 @@ class ActivityArchiver {
         // });
       
 
-      //   var authUserResetPasswordKey = 'user.requestresetpassword';
+      //   let authUserResetPasswordKey = 'user.requestresetpassword';
       //   // if (authEvent.queueEnabled) {  //queue not supported
       //   //   authUserResetPasswordKey = 'user.requestresetpassword.queue';
       //   // }
@@ -222,7 +222,7 @@ class ActivityArchiver {
       //       return 0;
       //     }
 
-      //       var activity = new Activity({actor: {type:"user", id: event.updatedUser._id, name: event.updatedUser.fullName }, 
+      //       let activity = new Activity({actor: {type:"user", id: event.updatedUser._id, name: event.updatedUser.fullName }, 
       //         verb: "USER_REQUEST_RESETPASSWORD", actionObj: event.req.body, 
       //         target: {type:"user", id:event.updatedUser._id.toString(), object: null }, 
       //         id_project: '*' });        /// * project
@@ -232,7 +232,7 @@ class ActivityArchiver {
       //  });
       
 
-      //  var authUserResetPassword2Key = 'user.resetpassword';
+      //  let authUserResetPassword2Key = 'user.resetpassword';
       // //  if (authEvent.queueEnabled) {  //queue not supported
       // //   authUserResetPassword2Key = 'user.resetpassword.queue';
       // //  }
@@ -246,7 +246,7 @@ class ActivityArchiver {
       //       return 0;
       //     }
 
-      //     var activity = new Activity({actor: {type:"user", id: event.saveUser._id, name: event.saveUser.fullName }, 
+      //     let activity = new Activity({actor: {type:"user", id: event.saveUser._id, name: event.saveUser.fullName }, 
       //       verb: "USER_RESETPASSWORD", actionObj: null, //req.body otherwise print password  
       //       target: {type:"user", id:event.saveUser._id.toString(), object: null }, 
       //       id_project: '*' });     /// * project
@@ -256,7 +256,7 @@ class ActivityArchiver {
       // });
       
       
-      // var authUserSignupKey = 'user.signup';
+      // let authUserSignupKey = 'user.signup';
       // //  if (authEvent.queueEnabled) {  //queue not supported
       // //   authUserSignupKey = 'user.signup.queue';
       // //  }
@@ -269,7 +269,7 @@ class ActivityArchiver {
       //       return 0;
       //     }
 
-      //       var activity = new Activity({actor: {type:"user", id: event.savedUser._id, name: event.savedUser.fullName }, 
+      //       let activity = new Activity({actor: {type:"user", id: event.savedUser._id, name: event.savedUser.fullName }, 
       //             verb: "USER_SIGNUP", actionObj: event.req.body, 
       //             target: {type:"user", id: event.savedUser._id.toString(), object: null }, 
       //             id_project: '*' });     /// * project
@@ -279,7 +279,7 @@ class ActivityArchiver {
       //  });
       
 
-      //  var authUserSignupErrorKey = 'user.signup.error';
+      //  let authUserSignupErrorKey = 'user.signup.error';
       // //  if (authEvent.queueEnabled) {   //queue not supported
       // //   authUserSignupErrorKey = 'user.signup.error.queue';
       // //  }
@@ -293,7 +293,7 @@ class ActivityArchiver {
       //     }
 
 
-      //     var activity = new Activity({actor: {type:"user"}, 
+      //     let activity = new Activity({actor: {type:"user"}, 
       //         verb: "USER_SIGNUP_ERROR", actionObj: event.req.body, 
       //         target: {type:"user", id:null, object: null }, 
       //         id_project: '*' });     /// * project
@@ -303,7 +303,7 @@ class ActivityArchiver {
       //  });
       
 
-       var requestCreateKey = 'request.create';
+       let requestCreateKey = 'request.create';
        if (requestEvent.queueEnabled) {
          requestCreateKey = 'request.create.queue';
        }
@@ -332,7 +332,7 @@ class ActivityArchiver {
                   winston.debug("preflight request disable archiver")
                   return 0;
                 }
-                var activity = new Activity({actor: {type:"user", id: request.requester_id}, 
+                let activity = new Activity({actor: {type:"user", id: request.requester_id}, 
                 verb: "REQUEST_CREATE", actionObj: request, 
                 target: {type:"request", id:request._id, object: request }, 
                 id_project: request.id_project });
@@ -347,7 +347,7 @@ class ActivityArchiver {
 
 
         // verified with queue
-        var requestUpdatePreflightKey = 'request.update.preflight';
+        let requestUpdatePreflightKey = 'request.update.preflight';
         if (requestEvent.queueEnabled) {
           requestUpdatePreflightKey = 'request.update.preflight.queue';
         }
@@ -365,7 +365,7 @@ class ActivityArchiver {
                   winston.debug("preflight request disable archiver")
                   return 0;
                 }
-                var activity = new Activity({actor: {type:"user", id: request.requester_id}, 
+                let activity = new Activity({actor: {type:"user", id: request.requester_id}, 
                 verb: "REQUEST_CREATE", actionObj: request, 
                 target: {type:"request", id:request._id, object: request }, 
                 id_project: request.id_project });
@@ -381,7 +381,7 @@ class ActivityArchiver {
 
 
         // verified with queue
-        var requestCloseKey = 'request.close';   //request.close event here queued under job
+        let requestCloseKey = 'request.close';   //request.close event here queued under job
         if (requestEvent.queueEnabled) {
           requestCloseKey = 'request.close.queue';
         }
@@ -395,7 +395,7 @@ class ActivityArchiver {
               try {
                 winston.debug('ActivityArchiver close');
                
-                var activity = new Activity({actor: {type:"user", id: request.closed_by}, 
+                let activity = new Activity({actor: {type:"user", id: request.closed_by}, 
                 verb: "REQUEST_CLOSE", actionObj: request, 
                 target: {type:"request", id:request._id, object: request }, 
                 id_project: request.id_project });
@@ -426,7 +426,7 @@ class ActivityArchiver {
     }
 }
 
-var activityArchiver = new ActivityArchiver();
+let activityArchiver = new ActivityArchiver();
 
 
 module.exports = activityArchiver;

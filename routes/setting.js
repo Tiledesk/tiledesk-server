@@ -1,6 +1,6 @@
-var express = require('express');
-var router = express.Router();
-// var Setting = require("../models/setting");
+let express = require('express');
+let router = express.Router();
+// let Setting = require("../models/setting");
 
 
 

@@ -1,9 +1,9 @@
 'use strict';
 
-var Event = require("./event");
+let Event = require("./event");
 const eventEvent = require('./eventEvent');
 const event2Event = require('./event2Event');
-var winston = require('../../config/winston');
+let winston = require('../../config/winston');
 
 
 class EventService {
@@ -14,7 +14,7 @@ class EventService {
   //   return new Promise(function (resolve, reject) {
 
   
-  //     var newEvent = new Event({
+  //     let newEvent = new Event({
   //       name: name,
   //       attributes: attributes,
   //       id_project: id_project,
@@ -44,7 +44,7 @@ class EventService {
 
     return new Promise(function (resolve, reject) {
   
-      var newEvent = new Event({
+      let newEvent = new Event({
         name: name,
         attributes: attributes,
         id_project: id_project,
@@ -65,7 +65,7 @@ class EventService {
           populate:{path:'id_user'}                
         },function (err, savedEventPopulated) {
           
-          var savedEventPopulatedJson = savedEventPopulated.toJSON();
+          let savedEventPopulatedJson = savedEventPopulated.toJSON();
 
           if (user) {
             savedEventPopulatedJson.user = user;
@@ -89,7 +89,7 @@ class EventService {
   }
 
 }
-var eventService = new EventService();
+let eventService = new EventService();
 
 
 

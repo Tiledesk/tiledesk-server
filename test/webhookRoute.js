@@ -2,8 +2,8 @@
 process.env.NODE_ENV = 'test';
 process.env.LOG_LEVEL = 'error';
 
-var projectService = require('../services/projectService');
-var userService = require('../services/userService');
+let projectService = require('../services/projectService');
+let userService = require('../services/userService');
 let chatbot_mock = require('./mock/chatbotMock');
 let log = false;
 
@@ -12,11 +12,11 @@ let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
-var fs = require('fs');
+let fs = require('fs');
 const path = require('path');
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 chai.use(chaiHttp);
 
@@ -24,8 +24,8 @@ describe('WebhookRoute', () => {
 
     it('create-new-webhook', (done) => {
 
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
             projectService.create("test-webhook-create", savedUser._id).then(function (savedProject) {
@@ -76,8 +76,8 @@ describe('WebhookRoute', () => {
 
     it('create-and-get-webhook', (done) => {
 
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
             projectService.create("test-webhook-create", savedUser._id).then(function (savedProject) {
@@ -159,8 +159,8 @@ describe('WebhookRoute', () => {
 
     it('update-webhook', (done) => {
 
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
             projectService.create("test-webhook-create", savedUser._id).then(function (savedProject) {
@@ -218,8 +218,8 @@ describe('WebhookRoute', () => {
 
     it('rigenerate-url-webhook', (done) => {
 
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
             projectService.create("test-webhook-create", savedUser._id).then(function (savedProject) {
@@ -280,8 +280,8 @@ describe('WebhookRoute', () => {
 
     it('delete-webhook', (done) => {
 
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
             projectService.create("test-webhook-create", savedUser._id).then(function (savedProject) {
@@ -338,8 +338,8 @@ describe('WebhookRoute', () => {
 
     it('preload-and-run-webhook', (done) => {
         
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
             projectService.create("test-webhook-preload", savedUser._id).then(function (savedProject) {
@@ -414,8 +414,8 @@ describe('WebhookRoute', () => {
 
     it('run-webhook-without-preloading', (done) => {
 
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
             projectService.create("test-webhook-preload", savedUser._id).then(function (savedProject) {
@@ -475,8 +475,8 @@ describe('WebhookRoute', () => {
 
     it('run-draft-webhook', (done) => {
 
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
             projectService.create("test-webhook-create", savedUser._id).then(function (savedProject) {
@@ -535,8 +535,8 @@ describe('WebhookRoute', () => {
 
     it('run-published-webhook', (done) => {
 
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
             projectService.create("test-webhook-create", savedUser._id).then(function (savedProject) {

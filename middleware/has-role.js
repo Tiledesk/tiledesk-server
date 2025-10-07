@@ -1,10 +1,10 @@
-var Project_user = require("../models/project_user");
-var Faq_kb = require("../models/faq_kb");
-var Subscription = require("../models/subscription");
-var winston = require('../config/winston');
+let Project_user = require("../models/project_user");
+let Faq_kb = require("../models/faq_kb");
+let Subscription = require("../models/subscription");
+let winston = require('../config/winston');
 
-var cacheUtil = require('../utils/cacheUtil');
-var cacheEnabler = require("../services/cacheEnabler");
+let cacheUtil = require('../utils/cacheUtil');
+let cacheEnabler = require("../services/cacheEnabler");
 
 class RoleChecker {
     
@@ -24,7 +24,7 @@ class RoleChecker {
     }
       
     isType(type) {        
-      var that = this;   
+      let that = this;   
         winston.debug("isType",isType);
         return function(req, res, next) {
           if (that.isTypeAsFunction(type)) {
@@ -51,7 +51,7 @@ class RoleChecker {
             } else {
               winston.debug("isTypeAsFunction is false");
 
-              var adminEmail = process.env.ADMIN_EMAIL || "admin@tiledesk.com";
+              let adminEmail = process.env.ADMIN_EMAIL || "admin@tiledesk.com";
 
               if (user && user.email && user.email === adminEmail) { //skip has role check 
                 return true;
@@ -64,8 +64,8 @@ class RoleChecker {
       isTypesAsFunction(types, user) {                 
         winston.debug("isTypes:"+types);
         winston.debug("user", user);
-        var isType = false;
-        var BreakException = {};
+        let isType = false;
+        let BreakException = {};
 
         if (types && types.length>0) {
           try {
@@ -95,7 +95,7 @@ class RoleChecker {
 
        hasRoleOrTypes(role, types) {
            
-        var that = this;
+        let that = this;
 
         // winston.debug("HasRole");
         return function(req, res, next) {
@@ -121,7 +121,7 @@ class RoleChecker {
           // console.log("QUIIIIIIIIIIIIIIIIIIIIIII",type);
           if (types && types.length>0) {
             // console.log("QUIIIIIIIIIIIIIIIIIIIIIII");
-            var checkRes = that.isTypesAsFunction(types, req.user);
+            let checkRes = that.isTypesAsFunction(types, req.user);
             winston.debug("checkRes: " + checkRes);
 
             if (checkRes) {
@@ -138,7 +138,7 @@ class RoleChecker {
           // project_user_qui_importante
 
           // JWT_HERE
-          var query = { id_project: projectid, id_user: req.user._id, status: "active"};
+          let query = { id_project: projectid, id_user: req.user._id, status: "active"};
           let cache_key = projectid+":project_users:iduser:"+req.user._id
 
           if (req.user.sub && (req.user.sub=="userexternal" || req.user.sub=="guest")) {
@@ -168,14 +168,14 @@ class RoleChecker {
                 req.projectuser = project_user;
                 winston.debug("req.projectuser", req.projectuser);
 
-                var userRole = project_user.role;
+                let userRole = project_user.role;
                 winston.debug("userRole", userRole);
       
                 if (!role) {
                   next();
                 }else {
       
-                  var hierarchicalRoles = that.ROLES[userRole];
+                  let hierarchicalRoles = that.ROLES[userRole];
                   winston.debug("hierarchicalRoles", hierarchicalRoles);
       
                   if ( hierarchicalRoles && hierarchicalRoles.includes(role)) {
@@ -213,13 +213,13 @@ class RoleChecker {
 // unused
       hasRoleAsPromise(role, user_id, projectid) {
            
-        var that = this;
+        let that = this;
 
         return new Promise(function (resolve, reject) {              
           // project_user_qui_importante
 
            // JWT_HERE
-          var query = { id_project: req.params.projectid, id_user: req.user._id, status: "active"};
+          let query = { id_project: req.params.projectid, id_user: req.user._id, status: "active"};
           if (req.user.sub && (req.user.sub=="userexternal" || req.user.sub=="guest")) {
             query = { id_project: req.params.projectid, uuid_user: req.user._id};
           }
@@ -234,16 +234,16 @@ class RoleChecker {
       
               if (project_users && project_users.length>0) {
                 
-                var project_user= project_users[0];
+                let project_user= project_users[0];
 
-                var userRole = project_user.role;
+                let userRole = project_user.role;
                 // winston.debug("userRole", userRole);
       
                 if (!role) {
                   resolve(project_user);
                 }else {
       
-                  var hierarchicalRoles = that.ROLES[userRole];
+                  let hierarchicalRoles = that.ROLES[userRole];
                   // winston.debug("hierarchicalRoles", hierarchicalRoles);
       
                   if ( hierarchicalRoles.includes(role)) {
@@ -267,7 +267,7 @@ class RoleChecker {
 }
 
 
-var roleChecker = new RoleChecker();
+let roleChecker = new RoleChecker();
 module.exports = roleChecker;
 
 

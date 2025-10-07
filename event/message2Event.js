@@ -1,10 +1,10 @@
-var winston = require('../config/winston');
-var MessageConstants = require("../models/messageConstants");
-// var messageEvent = require("../event/messageEvent");
+let winston = require('../config/winston');
+let MessageConstants = require("../models/messageConstants");
+// let messageEvent = require("../event/messageEvent");
 
 
 
-var EventEmitter2 = require('eventemitter2').EventEmitter2;
+let EventEmitter2 = require('eventemitter2').EventEmitter2;
 
 
 class Message2Event extends EventEmitter2 {}

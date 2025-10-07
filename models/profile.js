@@ -1,8 +1,8 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
 
-var ProfileSchema = new Schema({
+let ProfileSchema = new Schema({
   name: {
     type: String,
     default: 'Sandbox',
@@ -54,7 +54,7 @@ var ProfileSchema = new Schema({
 }
 ,{ _id : false });
 
-var profile =mongoose.model('profile', ProfileSchema);
+let profile =mongoose.model('profile', ProfileSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   profile.syncIndexes();

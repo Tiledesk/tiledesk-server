@@ -1,13 +1,13 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
 
-// var uuid = require('node-uuid');
+// let uuid = require('node-uuid');
 // require('mongoose-uuid2')(mongoose);
-// var UUID = mongoose.Types.UUID;
+// let UUID = mongoose.Types.UUID;
 
-// var id = mongoose.Types.ObjectId();
+// let id = mongoose.Types.ObjectId();
 
-var BotSchema = new Schema({
+let BotSchema = new Schema({
   // bot_id: { 
   //   type: UUID,
   //   default: uuid.v4 

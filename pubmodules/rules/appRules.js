@@ -1,6 +1,6 @@
 const conciergeBot = require('./conciergeBot');
 
-var winston = require('../../config/winston');
+let winston = require('../../config/winston');
 
 class AppRules {
 
@@ -12,5 +12,5 @@ class AppRules {
     }
 }
 
-var appRules = new AppRules();
+let appRules = new AppRules();
 module.exports = appRules;

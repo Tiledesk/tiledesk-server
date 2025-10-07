@@ -60,7 +60,7 @@ class CacheEnabler {
 }
 
 
-var cacheEnabler = new CacheEnabler();
+let cacheEnabler = new CacheEnabler();
 
 
 module.exports = cacheEnabler;

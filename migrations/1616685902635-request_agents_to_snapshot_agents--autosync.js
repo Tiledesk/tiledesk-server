@@ -1,5 +1,5 @@
-var Request = require("../models/request");
-var winston = require('../config/winston');
+let Request = require("../models/request");
+let winston = require('../config/winston');
 const request = require("../models/request");
 
 /**

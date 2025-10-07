@@ -1,13 +1,13 @@
-var express = require('express');
-var router = express.Router();
-var Faq = require("../models/faq");
-var winston = require('../config/winston');
+let express = require('express');
+let router = express.Router();
+let Faq = require("../models/faq");
+let winston = require('../config/winston');
 
 
 
 
 router.get('/', function (req, res, next) {
-  var query = {};
+  let query = {};
 
   winston.debug("GET ALL FAQ OF THE BOT ID (req.query): ", req.query);
 

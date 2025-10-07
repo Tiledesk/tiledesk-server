@@ -13,7 +13,7 @@ class Segment2MongoConverter {
         // }
 
         if (segment.filters && segment.filters.length > 0) {
-            for(var i = 0; i < segment.filters.length; i++) {
+            for(let i = 0; i < segment.filters.length; i++) {
                 let filter = segment.filters[i];
                 switch (filter.operator) {
                     case '=':
@@ -92,7 +92,7 @@ class Segment2MongoConverter {
     }
 }
 
- var segment2MongoConverter = new Segment2MongoConverter();
+ let segment2MongoConverter = new Segment2MongoConverter();
 
  module.exports = segment2MongoConverter;
  

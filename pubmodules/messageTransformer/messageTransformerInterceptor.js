@@ -2,10 +2,10 @@
 const messagePromiseEvent = require('../../event/messagePromiseEvent');
 const labelService = require('../../services/labelService');
 const Request = require('../../models/request');
-var winston = require('../../config/winston');
-var i8nUtil = require("../../utils/i8nUtil");
-var cacheUtil = require('../../utils/cacheUtil');
-var cacheEnabler = require("../../services/cacheEnabler");
+let winston = require('../../config/winston');
+let i8nUtil = require("../../utils/i8nUtil");
+let cacheUtil = require('../../utils/cacheUtil');
+let cacheEnabler = require("../../services/cacheEnabler");
 
 //TODO rename to LabelMessageTransformerInterceptor
 class MessageTransformerInterceptor {
@@ -15,27 +15,27 @@ class MessageTransformerInterceptor {
 
     listen() {
 
-        var that = this;
+        let that = this;
         winston.info("MessageTransformerInterceptor listener start ");
  
 
         messagePromiseEvent.on('message.create.simple.before', async (data) => {
             winston.debug('MessageTransformerInterceptor message.create.simple.before', data); 
 
-            var message = data.beforeMessage;
+            let message = data.beforeMessage;
             
             if (!message.text) { //for image i think
                 return data;
             }
 
             // https://stackoverflow.com/questions/413071/regex-to-get-string-between-curly-braces
-            var re = /\${([^}]+)\}/;
-            var m = message.text.match(re);
+            let re = /\${([^}]+)\}/;
+            let m = message.text.match(re);
             if (m != null) {
-                var messageExtracted = m[0].replace(re, '$1');
+                let messageExtracted = m[0].replace(re, '$1');
                 winston.debug('messageExtracted: '+messageExtracted);
 
-                var language = "EN";
+                let language = "EN";
 
                 let q = Request.findOne({request_id:  message.recipient, id_project: message.id_project});
                     // populate('lead').
@@ -50,7 +50,7 @@ class MessageTransformerInterceptor {
                 }
 
 
-                var request = await q.exec();
+                let request = await q.exec();
               
                 winston.debug('request mti: ', request);
 
@@ -74,7 +74,7 @@ class MessageTransformerInterceptor {
             // if (message.text.indexOf("${")>-1) {
             
                 // get a specific key of a project language merged with default (widget.json) but if not found return Pivot
-                var label = await labelService.get(message.id_project,language, messageExtracted);
+                let label = await labelService.get(message.id_project,language, messageExtracted);
                 winston.debug('MessageTransformerInterceptor label: ' + label);
 
                 if (label) {
@@ -102,5 +102,5 @@ class MessageTransformerInterceptor {
     
 }
 
-var messageTransformerInterceptor = new MessageTransformerInterceptor();
+let messageTransformerInterceptor = new MessageTransformerInterceptor();
 module.exports = messageTransformerInterceptor;

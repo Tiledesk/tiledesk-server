@@ -1,19 +1,19 @@
 
 const botEvent = require('../event/botEvent');
-var Faq = require('../models/faq');
-var Faq_kb = require('../models/faq_kb');
-var messageService = require('../services/messageService');
-var MessageConstants = require("../models/messageConstants");
-var winston = require('../config/winston');
-var faqBotSupport = require('../services/faqBotSupport');
-var BotFromParticipant = require("../utils/botFromParticipant");
-var cacheUtil = require('../utils/cacheUtil');
-var eventService = require('../pubmodules/events/eventService');
-var mongoose = require('mongoose');
+let Faq = require('../models/faq');
+let Faq_kb = require('../models/faq_kb');
+let messageService = require('../services/messageService');
+let MessageConstants = require("../models/messageConstants");
+let winston = require('../config/winston');
+let faqBotSupport = require('../services/faqBotSupport');
+let BotFromParticipant = require("../utils/botFromParticipant");
+let cacheUtil = require('../utils/cacheUtil');
+let eventService = require('../pubmodules/events/eventService');
+let mongoose = require('mongoose');
 const ActionsConstants = require('../models/actionsConstants');
-var httpUtil = require('../utils/httpUtil');
+let httpUtil = require('../utils/httpUtil');
 
-var webhook_origin = process.env.WEBHOOK_ORIGIN || "http://localhost:3000";
+let webhook_origin = process.env.WEBHOOK_ORIGIN || "http://localhost:3000";
 winston.debug("webhook_origin: "+webhook_origin);
 
 class FaqBotHandler {
@@ -71,15 +71,15 @@ class FaqBotHandler {
       
     listen() {
 
-        var that = this;
+        let that = this;
         //modify to async
         botEvent.on('bot.message.received.notify.internal', function(message) {
                            
 
-        //    var botName = message.request.department.bot.name;
+        //    let botName = message.request.department.bot.name;
         //    winston.debug("botName " + botName);
 
-           var botId =  BotFromParticipant.getBotId(message);
+           let botId =  BotFromParticipant.getBotId(message);
 
            winston.debug("botId " + botId);
 
@@ -98,22 +98,22 @@ class FaqBotHandler {
             winston.debug('faq_kb ', faq_kb.toJSON());
             winston.debug('faq_kb.type :'+ faq_kb.type);
 
-            var botName = faq_kb.name;
+            let botName = faq_kb.name;
             winston.debug("botName " + botName);
            
 
-            var query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id, "question": message.text};
+            let query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id, "question": message.text};
 
             if (message.attributes && message.attributes.action) {
 
-                var action = message.attributes.action;
-                var action_parameters_index = action.indexOf("?");
+                let action = message.attributes.action;
+                let action_parameters_index = action.indexOf("?");
                 if (action_parameters_index > -1) {
                     action = action.substring(0,action_parameters_index);
                 }
                 winston.debug("action: " + action);
 
-                var isObjectId = mongoose.Types.ObjectId.isValid(action);
+                let isObjectId = mongoose.Types.ObjectId.isValid(action);
                 winston.debug("isObjectId:"+ isObjectId);
                              
               
@@ -155,7 +155,7 @@ class FaqBotHandler {
                     winston.debug("sender", sender);          
                 
 
-                    var answerObj;
+                    let answerObj;
                     if (faqs && faqs.length>0 && faqs[0].answer) {
                         answerObj = faqs[0];     
 
@@ -167,7 +167,7 @@ class FaqBotHandler {
                         // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type) {
                            
 
-                            var attr = bot_answer.attributes;                            
+                            let attr = bot_answer.attributes;                            
                             if (!attr) {
                                 attr = {};
                             }
@@ -255,30 +255,30 @@ class FaqBotHandler {
  
 
                 query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id};
-                var mongoproject = undefined;
-                var sort = undefined;
+                let mongoproject = undefined;
+                let sort = undefined;
 
                 //make http request external   
                 if (faq_kb.url) {
 
                                                                                         
-                    var url = faq_kb.url+"/parse";
+                    let url = faq_kb.url+"/parse";
                     winston.debug("fulltext search external url " + url);   
 
-                    var json = {text: message.text, language: faq_kb.language, id_project: message.id_project, id_faq_kb: faq_kb._id};
+                    let json = {text: message.text, language: faq_kb.language, id_project: message.id_project, id_faq_kb: faq_kb._id};
                     winston.debug("fulltext search external json", json);   
 
-                    var headers = {
+                    let headers = {
                         'Content-Type' : 'application/json', 
                         'User-Agent': 'tiledesk-bot',
                         'Origin': webhook_origin
                         };
 
-                    var res = await httpUtil.call(url, headers, json, "POST")
+                    let res = await httpUtil.call(url, headers, json, "POST")
                     winston.debug("res", res);
                     
                     if (res && res.intent && res.intent.name) {
-                        var intent_name = res.intent.name;
+                        let intent_name = res.intent.name;
                         winston.debug("intent_name", intent_name);
                         //filtra su intent name
                         query.intent_display_name = intent_name;
@@ -287,7 +287,7 @@ class FaqBotHandler {
                     }
                 } else {
 
-                    var search_obj = {"$search": message.text};
+                    let search_obj = {"$search": message.text};
 
                     if (faq_kb.language) {
                         search_obj["$language"] = faq_kb.language;
@@ -315,7 +315,7 @@ class FaqBotHandler {
                     winston.debug("sender", sender);          
                 
 
-                    var answerObj;
+                    let answerObj;
                     if (faqs && faqs.length>0 && faqs[0].answer) {
                         answerObj = faqs[0];                
 
@@ -326,29 +326,29 @@ class FaqBotHandler {
                         if (faq_kb.url) {
 
                                                                                                 
-                            var url = faq_kb.url+"/parse";
+                            let url = faq_kb.url+"/parse";
                             winston.verbose("fulltext search external url " + url);   
 
-                            var json = {text: message.text, language: faq_kb.language, id_project: message.id_project, id_faq_kb: faq_kb._id};
+                            let json = {text: message.text, language: faq_kb.language, id_project: message.id_project, id_faq_kb: faq_kb._id};
                             winston.verbose("fulltext search external json", json);   
 
-                            var headers = {
+                            let headers = {
                                 'Content-Type' : 'application/json', 
                                 'User-Agent': 'tiledesk-bot',
                                 'Origin': webhook_origin
                                 };
 
-                            var res = await httpUtil.call(url, headers, json, "POST")
+                            let res = await httpUtil.call(url, headers, json, "POST")
                             console.log("res", res);
                             
                             if (res && res.intent && res.intent.name) {
-                                var intent_name = res.intent.name;
+                                let intent_name = res.intent.name;
                                 console.log("intent_name", intent_name);
                                                         //filtra su intent name
-                                var queryExternal = { id_project: message.id_project, id_faq_kb: faq_kb._id, intent_display_name: intent_name};
+                                let queryExternal = { id_project: message.id_project, id_faq_kb: faq_kb._id, intent_display_name: intent_name};
                                 winston.verbose("queryExternal",queryExternal);
 
-                                var faqExternal = await Faq.findOne(queryExternal) 
+                                let faqExternal = await Faq.findOne(queryExternal) 
                                     .lean().               
                                     exec();
 
@@ -369,7 +369,7 @@ class FaqBotHandler {
                         // qui
                         faqBotSupport.getParsedMessage(answerObj.answer, message, faq_kb, answerObj).then(function(bot_answer) {
 
-                            var attr = bot_answer.attributes;                            
+                            let attr = bot_answer.attributes;                            
                             if (!attr) {
                                 attr = {};
                             }
@@ -449,7 +449,7 @@ class FaqBotHandler {
         
                     }
                     
-                        var threshold = 1.2;
+                        let threshold = 1.2;
 
                         faqBotSupport.getBotMessage(answerObj, message.id_project, faq_kb, message, threshold).then(function(botAns){
                         winston.debug("faqbot message botAns ", botAns);  
@@ -458,7 +458,7 @@ class FaqBotHandler {
 
                             if (botAns.defaultFallback === true) {
                                 winston.debug("defaultFallback event");  
-                                var project_user = undefined;
+                                let project_user = undefined;
                                 // emit(name, attributes, id_project, project_user, createdBy, status) {                                
                                 eventService.emit("faqbot.answer_not_found", 
                                           // optional. TODO fare solo text
@@ -469,7 +469,7 @@ class FaqBotHandler {
                             }
                            
 
-                            var attr = botAns.attributes;                            
+                            let attr = botAns.attributes;                            
                             if (!attr) {
                                 attr = {};
                             }
@@ -585,5 +585,5 @@ class FaqBotHandler {
     
 }
 
-var faqBotHandler = new FaqBotHandler();
+let faqBotHandler = new FaqBotHandler();
 module.exports = faqBotHandler;

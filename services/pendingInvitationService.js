@@ -1,9 +1,9 @@
-var express = require('express');
-var PendingInvitation = require("../models/pending-invitation");
-var emailService = require("../services/emailService");
-var Project_user = require("../models/project_user");
-var mongoose = require('mongoose');
-var winston = require('../config/winston');
+let express = require('express');
+let PendingInvitation = require("../models/pending-invitation");
+let emailService = require("../services/emailService");
+let Project_user = require("../models/project_user");
+let mongoose = require('mongoose');
+let winston = require('../config/winston');
 
 class Pending_Invitation {
 
@@ -34,7 +34,7 @@ class Pending_Invitation {
           // return reject({ success: false, msg: 'Object not found.' });
           // console.log('** ** FOUND PENDING INVITATION ** ** ', pendinginvitation);
 
-          var newPendingInvitation = new PendingInvitation({
+          let newPendingInvitation = new PendingInvitation({
             email: invited_user_email,
             role: invited_user_role,
             id_project: project_id,
@@ -66,7 +66,7 @@ class Pending_Invitation {
 
   checkNewUserInPendingInvitationAndSavePrcjUser(newUserEmail, newUserId) {
     winston.debug('** ** CHECK NEW USER EMAIL ** **');
-    var that = this;
+    let that = this;
     return new Promise(function (resolve, reject) {
 
       return PendingInvitation.find({ email: newUserEmail }, function (err, pendinginvitations) {
@@ -86,7 +86,7 @@ class Pending_Invitation {
           winston.debug('** ** CHECK NEW USER EMAIL ** PENDING INVITATION FOUND ** PENDING INVITATION ROLE', invite.role);
           winston.debug('** ** CHECK NEW USER EMAIL ** PENDING INVITATION FOUND ** PENDING INVITATION PRJCT ID', invite.id_project);
 
-          var newProject_user = new Project_user({
+          let newProject_user = new Project_user({
             // _id: new mongoose.Types.ObjectId(),
             id_project: invite.id_project,
             id_user: newUserId,
@@ -134,5 +134,5 @@ class Pending_Invitation {
 
 
 }
-var pending_invitation = new Pending_Invitation();
+let pending_invitation = new Pending_Invitation();
 module.exports = pending_invitation;

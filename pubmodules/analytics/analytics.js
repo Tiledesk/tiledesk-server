@@ -1,16 +1,16 @@
-var express = require('express');
-var router = express.Router();
-var AnalyticResult = require("../../models/analyticResult");
-var AnalyticProject_UsersResult = require("../../models/analyticProject_usersResult");
-var AnalyticMessagesResult = require("../../models/analyticMessagesResult");
-var AnalyticEventsResult = require("../../pubmodules/events/analyticEventsResult");
+let express = require('express');
+let router = express.Router();
+let AnalyticResult = require("../../models/analyticResult");
+let AnalyticProject_UsersResult = require("../../models/analyticProject_usersResult");
+let AnalyticMessagesResult = require("../../models/analyticMessagesResult");
+let AnalyticEventsResult = require("../../pubmodules/events/analyticEventsResult");
 
-var RoleConstants = require("../../models/roleConstants");
+let RoleConstants = require("../../models/roleConstants");
 
-var mongoose = require('mongoose');
-var winston = require('../../config/winston');
-var Analytics = require('../../models/analytics');
-var ObjectId = require('mongodb').ObjectId;
+let mongoose = require('mongoose');
+let winston = require('../../config/winston');
+let Analytics = require('../../models/analytics');
+let ObjectId = require('mongodb').ObjectId;
 
 
 
@@ -537,7 +537,7 @@ router.get('/requests/aggregate/status', function(req, res) {
     winston.debug(req.params);
     winston.debug("req.projectid",  req.projectid);    
    
-    var last = 30 * 24 * 60 * 60;
+    let last = 30 * 24 * 60 * 60;
       
     if (req.query.last) {
       last = req.query.last;
@@ -1371,7 +1371,7 @@ router.get('/messages/count', function(req, res) {
   winston.debug(req.params);
   winston.debug("req.projectid: "+  req.projectid);    
   
-  var query = {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }};
+  let query = {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }};
 
   if (req.query.sender) {
     query.sender = req.query.sender;

@@ -1,16 +1,16 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
-var expect = require('chai').expect;
+let expect = require('chai').expect;
 
-var assert = require('chai').assert;
-var config = require('../config/database');
-var mongoose = require('mongoose');
-var winston = require('../config/winston');
+let assert = require('chai').assert;
+let config = require('../config/database');
+let mongoose = require('mongoose');
+let winston = require('../config/winston');
 
 let log = false;
 
-// var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
+// let databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 // if (!databaseUri) {
 //   console.log('DATABASE_URI not specified, falling back to localhost.');
 // }
@@ -18,12 +18,12 @@ let log = false;
 // mongoose.connect(databaseUri || config.database);
 mongoose.connect(config.databasetest);
 
-var projectService = require('../services/projectService');
+let projectService = require('../services/projectService');
 
 
 describe('ProjectService()', function () {
 
-  var userid = "5badfe5d553d1844ad654072";
+  let userid = "5badfe5d553d1844ad654072";
 
 
   it('createProject', function (done) {

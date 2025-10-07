@@ -6,7 +6,7 @@ class StringUtil {
     }
 }
 
- var stringUtil = new StringUtil();
+ let stringUtil = new StringUtil();
 
  module.exports = stringUtil;
  

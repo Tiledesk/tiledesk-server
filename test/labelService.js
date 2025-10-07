@@ -1,24 +1,24 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
-var expect = require('chai').expect;
+let expect = require('chai').expect;
 
-var assert = require('chai').assert;
-var config = require('../config/database');
-var mongoose = require('mongoose');
-var winston = require('../config/winston');
+let assert = require('chai').assert;
+let config = require('../config/database');
+let mongoose = require('mongoose');
+let winston = require('../config/winston');
 
 mongoose.connect(config.databasetest);
 
-var labelService = require('../services/labelService');
-var projectService = require("../services/projectService");
+let labelService = require('../services/labelService');
+let projectService = require("../services/projectService");
 require('../services/mongoose-cache-fn')(mongoose);
 
 describe('labelService', function () {
 
 
   it('getWithoutClonedLabel', function (done) {
-    var userid = "5badfe5d553d1844ad654072";
+    let userid = "5badfe5d553d1844ad654072";
 
     projectService.create("test1", userid).then(function (savedProject) {
 
@@ -38,7 +38,7 @@ describe('labelService', function () {
 
 
   it('getITLanguageButNotPresentInProject', function (done) {
-    var userid = "5badfe5d553d1844ad654072";
+    let userid = "5badfe5d553d1844ad654072";
 
     projectService.create("test1", userid).then(function (savedProject) {
 
@@ -58,7 +58,7 @@ describe('labelService', function () {
 
 
   it('getWrongLanguage', function (done) {
-    var userid = "5badfe5d553d1844ad654072";
+    let userid = "5badfe5d553d1844ad654072";
 
     projectService.create("test1", userid).then(function (savedProject) {
 
@@ -78,7 +78,7 @@ describe('labelService', function () {
 
 
   it('getLanguage', function (done) {
-    var userid = "5badfe5d553d1844ad654072";
+    let userid = "5badfe5d553d1844ad654072";
 
     projectService.create("test1", userid).then(function (savedProject) {
 
@@ -98,7 +98,7 @@ describe('labelService', function () {
 
 
   it('getLanguageWrongLang', function (done) {
-    var userid = "5badfe5d553d1844ad654072";
+    let userid = "5badfe5d553d1844ad654072";
 
     projectService.create("test1", userid).then(function (savedProject) {
 

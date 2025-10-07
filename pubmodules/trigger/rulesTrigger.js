@@ -4,33 +4,33 @@ const triggerEventEmitter = require('./event/triggerEventEmitter');
 // const event2Event = require('../../../pubmodules/events/event2Event');
 const eventEvent = require('../../pubmodules/events/eventEvent');
 
-var Trigger = require('./models/trigger');
-var winston = require('../../config/winston');
+let Trigger = require('./models/trigger');
+let winston = require('../../config/winston');
 
-var Engine = require('@tiledesk/tiledesk-json-rules-engine').Engine;
+let Engine = require('@tiledesk/tiledesk-json-rules-engine').Engine;
 
 
 
-var messageService = require('../../services/messageService');
-var requestService = require('../../services/requestService');
-var MessageConstants = require("../../models/messageConstants");
-var leadService = require('../../services/leadService');
-var LeadConstants = require('../../models/leadConstants');
-var operatingHoursService = require("../../services/operatingHoursService");
-var sendMessageUtil = require("../../utils/sendMessageUtil");
-var sendEmailUtil = require("../../utils/sendEmailUtil");
-var cacheUtil = require("../../utils/cacheUtil");
-var cacheEnabler = require("../../services/cacheEnabler");
-var UIDGenerator = require("../../utils/UIDGenerator");
+let messageService = require('../../services/messageService');
+let requestService = require('../../services/requestService');
+let MessageConstants = require("../../models/messageConstants");
+let leadService = require('../../services/leadService');
+let LeadConstants = require('../../models/leadConstants');
+let operatingHoursService = require("../../services/operatingHoursService");
+let sendMessageUtil = require("../../utils/sendMessageUtil");
+let sendEmailUtil = require("../../utils/sendEmailUtil");
+let cacheUtil = require("../../utils/cacheUtil");
+let cacheEnabler = require("../../services/cacheEnabler");
+let UIDGenerator = require("../../utils/UIDGenerator");
 const RequestConstants = require('../../models/requestConstants');
-var Bot = require("../../models/faq_kb");
+let Bot = require("../../models/faq_kb");
 
-var request = require('retry-request', {
+let request = require('retry-request', {
   request: require('request')
 });
 const uuidv4 = require('uuid/v4');
 
-var jwt = require('jsonwebtoken');
+let jwt = require('jsonwebtoken');
 
 const port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/ext/";;
@@ -52,9 +52,9 @@ class RulesTrigger {
     // }
 
     listen(success, error) {
-        var that = this;
+        let that = this;
 
-        var enabled = process.env.TRIGGER_ENABLED || "true";
+        let enabled = process.env.TRIGGER_ENABLED || "true";
         winston.debug('Trigger enabled:'+enabled);
 
         if (enabled==="true") {
@@ -73,7 +73,7 @@ class RulesTrigger {
             // console.log("************* request.support_group.created: "+new Date().toISOString());
 
             // requestEvent.on('request.create', function(request) {
-            var requestJson = request.toJSON();
+            let requestJson = request.toJSON();
             operatingHoursService.projectIsOpenNow(request.id_project, function (isOpen, err) {       
               requestJson.isOpen = isOpen;
               winston.debug('requestJson: ', requestJson);
@@ -87,7 +87,7 @@ class RulesTrigger {
           requestEvent.on('request.participants.join',  function(data) {      
             let request = data.request;
             let member = data.member;
-            var requestJson = request.toJSON();
+            let requestJson = request.toJSON();
             operatingHoursService.projectIsOpenNow(request.id_project, function (isOpen, err) {       
               requestJson.isOpen = isOpen;
               winston.debug('requestJson: ', requestJson);
@@ -133,29 +133,29 @@ class RulesTrigger {
         try {
 
           winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
-          var trigger = eventTrigger.trigger;         
+          let trigger = eventTrigger.trigger;         
           winston.debug('runAction trigger', trigger.toObject());
 
 
-          var action = eventTrigger.action;
+          let action = eventTrigger.action;
           winston.debug('runAction action', action.toObject());
 
-          var fullname = action.parameters.fullName || "BOT";
+          let fullname = action.parameters.fullName || "BOT";
           winston.debug('runAction action fullname: ' + fullname);
 
-          var sender = "system";
+          let sender = "system";
           
           if (action.parameters.sender) {
             sender = action.parameters.sender;
           }
           winston.debug('runAction action sender: ' + sender);
 
-          var text = action.parameters.text;
+          let text = action.parameters.text;
           winston.debug('runAction action text: ' + text);
 
-          var attributes = {templateProcessor: true};
+          let attributes = {templateProcessor: true};
 
-          // var attributes = action.parameters.attributes;
+          // let attributes = action.parameters.attributes;
           // winston.debug('runAction action attributes: ' + attributes);
 
           if (text && text.endsWith(":tdk_msg_subtype_info")) {            
@@ -166,7 +166,7 @@ class RulesTrigger {
           }
         
 
-          var recipient;
+          let recipient;
           if (eventTrigger.eventKey=="request.create" || eventTrigger.eventKey=="request.participants.join") {
             recipient = eventTrigger.event.request_id;
 
@@ -186,7 +186,7 @@ class RulesTrigger {
           
           winston.debug('runAction action recipient: ' + recipient);
 
-          var id_project = eventTrigger.event.id_project;
+          let id_project = eventTrigger.event.id_project;
           winston.debug('runAction action id_project: ' + id_project);
 
             // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes) {
@@ -227,38 +227,38 @@ class RulesTrigger {
           try {
 
             winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
-            var trigger = eventTrigger.trigger;         
+            let trigger = eventTrigger.trigger;         
             winston.debug('runAction trigger', trigger.toObject());
   
   
-            var action = eventTrigger.action;
+            let action = eventTrigger.action;
             winston.debug('runAction action', action.toObject());
   
 
-            var fullname = action.parameters.fullName || "BOT";
+            let fullname = action.parameters.fullName || "BOT";
             winston.debug('runAction action fullname: ' + fullname);
   
-            var subject = action.parameters.subject || "New Email";                                   
+            let subject = action.parameters.subject || "New Email";                                   
 
             winston.debug('runAction action subject: ' + subject);
 
-            var sender = "system";
+            let sender = "system";
             
             if (action.parameters.sender) {
               sender = action.parameters.sender;
             }
             winston.debug('runAction action sender: ' + sender);
   
-            var text = action.parameters.text;
+            let text = action.parameters.text;
             winston.debug('runAction action text: ' + text);
   
-            var attributes = {};
+            let attributes = {};
   
-            // var attributes = action.parameters.attributes;
+            // let attributes = action.parameters.attributes;
             // winston.debug('runAction action attributes: ' + attributes);
 
   
-            var recipient;
+            let recipient;
             if (eventTrigger.eventKey=="request.create" || eventTrigger.eventKey=="request.participants.join") {
               recipient = eventTrigger.event.request_id;
 
@@ -288,15 +288,15 @@ class RulesTrigger {
             
             winston.debug('runAction action recipient: ' + recipient);
   
-            var id_project = eventTrigger.event.id_project;
+            let id_project = eventTrigger.event.id_project;
             winston.debug('runAction action id_project: ' + id_project);
   
 
-            var message = eventTrigger.event;
+            let message = eventTrigger.event;
             winston.debug('runAction action message: ', message);
 
             if (eventTrigger.event.request && eventTrigger.event.request.lead && eventTrigger.event.request.lead.email) {
-              var to = eventTrigger.event.request.lead.email;
+              let to = eventTrigger.event.request.lead.email;
               winston.debug('to ' + to);
   
               // sendEmailDirect(to, text, id_project, recipient, subject, message)
@@ -321,30 +321,30 @@ class RulesTrigger {
         try {
 
           winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
-          var trigger = eventTrigger.trigger;         
+          let trigger = eventTrigger.trigger;         
           winston.debug('runAction trigger', trigger.toObject());
 
 
-          var action = eventTrigger.action;
+          let action = eventTrigger.action;
           winston.debug('runAction action', action.toObject());
 
 
-          var intentName = action.parameters.intentName;
+          let intentName = action.parameters.intentName;
           winston.debug('runAction action intentName: ' + intentName);
         
 
-          var botId = action.parameters.botId;
+          let botId = action.parameters.botId;
           winston.debug('runAction action botId: ' + botId);
 
 
-          var url = TILEBOT_ENDPOINT+botId;
+          let url = TILEBOT_ENDPOINT+botId;
           if (action.parameters.url) {
             url = action.parameters.url;
           }
           winston.debug('runAction action url: ' + url);
 
 
-          var message = action.parameters.message;
+          let message = action.parameters.message;
           winston.debug('runAction action message: ' + message);
 
           
@@ -363,11 +363,11 @@ class RulesTrigger {
 
           // console.log("eventTrigger.event", eventTrigger.event);
           
-          var id_project = eventTrigger.event.id_project;
+          let id_project = eventTrigger.event.id_project;
           winston.debug('runAction action id_project: ' + id_project);
 
 
-          var payload = Object.assign({}, eventTrigger.event);;
+          let payload = Object.assign({}, eventTrigger.event);;
           winston.debug('runAction action payload: ', payload);
           
 
@@ -378,7 +378,7 @@ class RulesTrigger {
 
           delete payload.request.snapshot
       
-          var json = {timestamp: Date.now(), payload: payload};
+          let json = {timestamp: Date.now(), payload: payload};
     
 
           json["hook"] = trigger;
@@ -386,10 +386,10 @@ class RulesTrigger {
 
 
 
-          var bot = await Bot.findById(botId).select("+secret").exec();
+          let bot = await Bot.findById(botId).select("+secret").exec();
           winston.debug("bot: ", bot);
 
-          var signOptions = {
+          let signOptions = {
             issuer:  'https://tiledesk.com',
             subject:  'bot',
             audience:  'https://tiledesk.com/bots/'+bot._id,   
@@ -405,11 +405,11 @@ class RulesTrigger {
           delete botPayload.description;
           delete botPayload.attributes;
 
-          var token = jwt.sign(botPayload, botSecret, signOptions);
+          let token = jwt.sign(botPayload, botSecret, signOptions);
           json["token"] = token;
 
 
-          var webhook_origin = process.env.WEBHOOK_ORIGIN || "http://localhost:3000";
+          let webhook_origin = process.env.WEBHOOK_ORIGIN || "http://localhost:3000";
           winston.debug("webhook_origin: "+webhook_origin);
 
           winston.debug("Rules trigger notify json ", json );
@@ -451,19 +451,19 @@ class RulesTrigger {
           try {
   
             winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
-            var trigger = eventTrigger.trigger;         
+            let trigger = eventTrigger.trigger;         
             winston.debug('runAction trigger', trigger.toObject());
   
   
-            var action = eventTrigger.action;
+            let action = eventTrigger.action;
             winston.debug('runAction action', action.toObject());
     
                 
-            var departmentid = action.parameters.departmentid;
+            let departmentid = action.parameters.departmentid;
             winston.debug('runAction action departmentid: ' + departmentid);
 
 
-            var request_id;
+            let request_id;
             if (eventTrigger.eventKey=="request.create") {
               request_id = eventTrigger.event.request_id;
             }
@@ -473,7 +473,7 @@ class RulesTrigger {
             
             winston.debug('runAction action request_id: ' + request_id);
 
-            var id_project = eventTrigger.event.id_project;
+            let id_project = eventTrigger.event.id_project;
             winston.debug('runAction action id_project: ' + id_project);
 
             // route(request_id, departmentid, id_project, nobot) {
@@ -495,13 +495,13 @@ class RulesTrigger {
             try {
     
               winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
-              var trigger = eventTrigger.trigger;         
+              let trigger = eventTrigger.trigger;         
               winston.debug('runAction trigger', trigger.toObject());
     
-              var action = eventTrigger.action;
+              let action = eventTrigger.action;
               winston.debug('runAction action', action.toObject());
                            
-              var request_id;
+              let request_id;
               if (eventTrigger.eventKey=="request.create") {
                 request_id = eventTrigger.event.request_id;
               }
@@ -511,7 +511,7 @@ class RulesTrigger {
               
               winston.debug('runAction action request_id: ' + request_id);
   
-              var id_project = eventTrigger.event.id_project;
+              let id_project = eventTrigger.event.id_project;
               winston.debug('runAction action id_project: ' + id_project);
   
               // reroute(request_id, id_project, nobot) {
@@ -534,17 +534,17 @@ class RulesTrigger {
               try {
       
                 winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
-                var trigger = eventTrigger.trigger;         
+                let trigger = eventTrigger.trigger;         
                 winston.debug('runAction trigger', trigger.toObject());
       
-                var action = eventTrigger.action;
+                let action = eventTrigger.action;
                 winston.debug('runAction action', action.toObject());
                        
-                var newstatus = action.parameters.status;
+                let newstatus = action.parameters.status;
                 winston.debug('runAction action newstatus: ' + newstatus);
 
                 
-                var request_id;
+                let request_id;
                 if (eventTrigger.eventKey=="request.create") {
                   request_id = eventTrigger.event.request_id;
                 }
@@ -554,7 +554,7 @@ class RulesTrigger {
                 
                 winston.debug('runAction action request_id: ' + request_id);
     
-                var id_project = eventTrigger.event.id_project;
+                let id_project = eventTrigger.event.id_project;
                 winston.debug('runAction action id_project: ' + id_project);
     
                 // changeStatusByRequestId(request_id, id_project, newstatus) {
@@ -576,14 +576,14 @@ class RulesTrigger {
                 try {
         
                   winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
-                  var trigger = eventTrigger.trigger;         
+                  let trigger = eventTrigger.trigger;         
                   winston.debug('runAction trigger', trigger.toObject());
         
-                  var action = eventTrigger.action;
+                  let action = eventTrigger.action;
                   winston.debug('runAction action', action.toObject());
                                              
                       
-                  var request_id;
+                  let request_id;
                   if (eventTrigger.eventKey=="request.create") {
                     request_id = eventTrigger.event.request_id;
                   }
@@ -593,7 +593,7 @@ class RulesTrigger {
                   
                   winston.debug('runAction action request_id: ' + request_id);
       
-                  var id_project = eventTrigger.event.id_project;
+                  let id_project = eventTrigger.event.id_project;
                   winston.debug('runAction action id_project: ' + id_project);
       
                   // closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
@@ -613,14 +613,14 @@ class RulesTrigger {
                   try {
           
                     winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
-                    var trigger = eventTrigger.trigger;         
+                    let trigger = eventTrigger.trigger;         
                     winston.debug('runAction trigger', trigger.toObject());
           
-                    var action = eventTrigger.action;
+                    let action = eventTrigger.action;
                     winston.debug('runAction action', action.toObject());
                                                
                         
-                    var request_id;
+                    let request_id;
                     if (eventTrigger.eventKey=="request.create") {
                       request_id = eventTrigger.event.request_id;
                     }
@@ -630,7 +630,7 @@ class RulesTrigger {
                     
                     winston.debug('runAction action request_id: ' + request_id);
         
-                    var id_project = eventTrigger.event.id_project;
+                    let id_project = eventTrigger.event.id_project;
                     winston.debug('runAction action id_project: ' + id_project);
         
                     //   reopenRequestByRequestId(request_id, id_project) {
@@ -649,18 +649,18 @@ class RulesTrigger {
               try {
       
                 winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
-                var trigger = eventTrigger.trigger;         
+                let trigger = eventTrigger.trigger;         
                 winston.debug('runAction trigger', trigger.toObject());
       
-                var action = eventTrigger.action;
+                let action = eventTrigger.action;
                 winston.debug('runAction action', action.toObject());
                              
                 // console.log("actionaction",action);
 
-                var member = action.parameters.member;
+                let member = action.parameters.member;
                 winston.debug('runAction action member: ' + member);
 
-                var request_id;
+                let request_id;
                 if (eventTrigger.eventKey=="request.create") {
                   request_id = eventTrigger.event.request_id;
                 }
@@ -670,7 +670,7 @@ class RulesTrigger {
                 
                 winston.debug('runAction action request_id: ' + request_id);
     
-                var id_project = eventTrigger.event.id_project;
+                let id_project = eventTrigger.event.id_project;
                 winston.debug('runAction action id_project: ' + id_project);
     
                 //     addParticipantByRequestId(request_id, id_project, member) {
@@ -697,13 +697,13 @@ class RulesTrigger {
 
 
               winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
-              var trigger = eventTrigger.trigger;         
+              let trigger = eventTrigger.trigger;         
               winston.debug('runAction trigger', trigger.toObject());
     
-              var action = eventTrigger.action;
+              let action = eventTrigger.action;
               winston.debug('runAction action', action.toObject());
                            
-              var request_id;
+              let request_id;
               if (eventTrigger.eventKey=="request.create") {
                 request_id = eventTrigger.event.request_id;
               }
@@ -713,13 +713,13 @@ class RulesTrigger {
               
               winston.debug('runAction action request_id: ' + request_id);
   
-              var id_project = eventTrigger.event.id_project;
+              let id_project = eventTrigger.event.id_project;
               winston.debug('runAction action id_project: ' + id_project);
   
 
 
-              var startText = "/start";
-              // var startText = "\\start";
+              let startText = "/start";
+              // let startText = "\\start";
               if (action.parameters && action.parameters.text) {
                 startText = action.parameters.text;
               }
@@ -765,13 +765,13 @@ class RulesTrigger {
               try {
       
                 winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
-                var trigger = eventTrigger.trigger;         
+                let trigger = eventTrigger.trigger;         
                 winston.debug('runAction trigger', trigger.toObject());
       
-                var action = eventTrigger.action;
+                let action = eventTrigger.action;
                 winston.debug('runAction action', action.toObject());
                              
-                var request_id;
+                let request_id;
                 if (eventTrigger.eventKey=="request.create") {
                   request_id = eventTrigger.event.request_id;
                 }
@@ -781,11 +781,11 @@ class RulesTrigger {
                 winston.debug('runAction action request_id: ' + request_id);
 
 
-                var member = action.parameters.member;
+                let member = action.parameters.member;
                 winston.debug('runAction action member: ' + member);
 
     
-                var id_project = eventTrigger.event.id_project;
+                let id_project = eventTrigger.event.id_project;
                 winston.debug('runAction action id_project: ' + id_project);
     
                  requestService.addParticipantByRequestId(request_id, id_project, member).then(function(request) {
@@ -820,18 +820,18 @@ class RulesTrigger {
               try {
       
                 winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
-                var trigger = eventTrigger.trigger;         
+                let trigger = eventTrigger.trigger;         
                 winston.debug('runAction trigger', trigger.toObject());
       
-                var action = eventTrigger.action;
+                let action = eventTrigger.action;
                 winston.debug('runAction action', action.toObject());
                              
                 // console.log("actionaction",action);
 
-                var tag = action.parameters.tag;
+                let tag = action.parameters.tag;
                 winston.debug('runAction action tag: ' + tag);
 
-                var request_id;
+                let request_id;
                 if (eventTrigger.eventKey=="request.create") {
                   request_id = eventTrigger.event.request_id;
                 }
@@ -841,7 +841,7 @@ class RulesTrigger {
                 
                 winston.debug('runAction action request_id: ' + request_id);
     
-                var id_project = eventTrigger.event.id_project;
+                let id_project = eventTrigger.event.id_project;
                 winston.debug('runAction action id_project: ' + id_project);
     
                 // addTagByRequestId(request_id, id_project, tag) {
@@ -863,16 +863,16 @@ class RulesTrigger {
           try {
   
             winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
-            var trigger = eventTrigger.trigger;         
+            let trigger = eventTrigger.trigger;         
             winston.debug('runAction trigger', trigger.toObject());
   
-            var action = eventTrigger.action;
+            let action = eventTrigger.action;
             winston.debug('runAction action', action.toObject());
 
-            var member = action.parameters.member;
+            let member = action.parameters.member;
             winston.debug('runAction action member: ' + member);
 
-            var request_id;
+            let request_id;
             if (eventTrigger.eventKey=="request.create") {
               request_id = eventTrigger.event.request_id;
             }
@@ -882,7 +882,7 @@ class RulesTrigger {
             
             winston.debug('runAction action request_id: ' + request_id);
 
-            var id_project = eventTrigger.event.id_project;
+            let id_project = eventTrigger.event.id_project;
             winston.debug('runAction action id_project: ' + id_project);
 
             //     removeParticipantByRequestId(request_id, id_project, member) {
@@ -904,24 +904,24 @@ class RulesTrigger {
 
           winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
 
-          var trigger = eventTrigger.trigger;         
+          let trigger = eventTrigger.trigger;         
           winston.debug('runAction trigger', trigger.toObject());
 
-          var action = eventTrigger.action;
+          let action = eventTrigger.action;
           winston.debug('runAction action', action.toObject());
 
 
-          var text = action.parameters.text;
+          let text = action.parameters.text;
           winston.debug('runAction action text: ' + text);
 
-          var subtype = action.parameters.subtype;
+          let subtype = action.parameters.subtype;
           winston.debug('runAction action subtype: ' + subtype);;
 
-          var status = action.parameters.status;
+          let status = action.parameters.status;
           winston.debug('runAction action status: ' + status);
 
 
-          var preflight = action.parameters.preflight;
+          let preflight = action.parameters.preflight;
           winston.debug('runAction action preflight: ' + preflight);
 
           if (text && text.indexOf(":tdk_msg_subtype_info")>-1) {
@@ -941,36 +941,36 @@ class RulesTrigger {
             winston.debug('tdk_req_status_hidden');
           }
 
-          var type = action.parameters.type;
+          let type = action.parameters.type;
           winston.debug('runAction action type: ' + type);
 
         
 
          
 
-          var departmentid = action.parameters.departmentid;
+          let departmentid = action.parameters.departmentid;
           winston.debug('runAction action departmentid: ' + departmentid);
 
-          var participants = action.parameters.participants;
+          let participants = action.parameters.participants;
           winston.debug('runAction action participants: ' + participants);
-          // var attributes = action.parameters.attributes;
+          // let attributes = action.parameters.attributes;
           // winston.debug('runAction action attributes: ' + attributes);
 
           
 
-          var request_id = 'support-group-'+id_project+"-"+UIDGenerator.generate();
-          var id_user;
-          var fullname;
-          var email;
-          var attributes = {};
+          let request_id = 'support-group-'+id_project+"-"+UIDGenerator.generate();
+          let id_user;
+          let fullname;
+          let email;
+          let attributes = {};
 
           
 
-          var sourcePage;
-          var language;
-          var userAgent;
+          let sourcePage;
+          let language;
+          let userAgent;
           
-          var userObj = undefined;
+          let userObj = undefined;
 
 
           if (eventTrigger.eventKey=="event.emit") {
@@ -1016,7 +1016,7 @@ class RulesTrigger {
             // }
 
             if (eventTrigger.event.attributes) {
-              var eventAttributes = eventTrigger.event.attributes;
+              let eventAttributes = eventTrigger.event.attributes;
 
               if (eventAttributes.request_id) {
                 request_id = eventAttributes.request_id;
@@ -1107,7 +1107,7 @@ class RulesTrigger {
           
           
 
-          var id_project = eventTrigger.event.id_project;
+          let id_project = eventTrigger.event.id_project;
           winston.debug('runAction action id_project: ' + id_project);
 
             
@@ -1121,7 +1121,7 @@ class RulesTrigger {
 
                 // return Project_user.findOne(queryProjectUser, function (err, project_user) {
 
-                //   var project_user_id = null; 
+                //   let project_user_id = null; 
 
                 //   if (err) {
                 //     winston.error("Error getting the project_user_id", err);
@@ -1134,8 +1134,8 @@ class RulesTrigger {
                 //   }
 
 
-                var puser = eventTrigger.event.project_user;
-                var project_user_id = puser._id;   //questo è null se nn specifico come trigger un event
+                let puser = eventTrigger.event.project_user;
+                let project_user_id = puser._id;   //questo è null se nn specifico come trigger un event
                 winston.verbose("project_user_id: " + project_user_id);
 
 
@@ -1148,7 +1148,7 @@ class RulesTrigger {
                           //   language, userAgent, status, id_user, attributes, undefined, preflight).then(function (savedRequest) {
 
 
-                    var new_request = {
+                    let new_request = {
                       request_id: request_id, project_user_id: project_user_id, lead_id: createdLead._id, id_project: id_project,
                       first_text: text, participants: participants, departmentid: departmentid, sourcePage: sourcePage,
                       language: language, userAgent: userAgent, status: status, createdBy: id_user,
@@ -1165,7 +1165,7 @@ class RulesTrigger {
                           attributes.sendnotification = false; //  sembra nn funzionae
                         }
                         
-                        var senderFullname = fullname || 'Guest'; // guest_here
+                        let senderFullname = fullname || 'Guest'; // guest_here
 
                         // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
                         return messageService.create( id_user, senderFullname , savedRequest.request_id, text,
@@ -1201,11 +1201,11 @@ class RulesTrigger {
     }
 
     exec(event, eventKey,successCall,errorCall) {
-      var that = this;
+      let that = this;
         // winston.verbose('this', this);
 
-        // var eventKey = Object.keys(this._events);
-        // var eventKey = Object.values(this._events);
+        // let eventKey = Object.keys(this._events);
+        // let eventKey = Object.values(this._events);
         // winston.verbose('eventKey: ',eventKey);
 
         // winston.verbose('this', JSON.stringify(this));
@@ -1244,11 +1244,11 @@ class RulesTrigger {
                 winston.debug('active triggers found', triggers);
 
 
-                // var engineExists = that.engines.hasOwnProperty(event.id_project);
-                // // var engineExists = that.engines.hasOwnProperty(event.id_project+"-"+eventKey);
+                // let engineExists = that.engines.hasOwnProperty(event.id_project);
+                // // let engineExists = that.engines.hasOwnProperty(event.id_project+"-"+eventKey);
                 // winston.verbose("engineExists:"+engineExists);
 
-                // var engine;
+                // let engine;
                 // if (!engineExists) {
                 //   engine = new Engine();
                 //   that.engines[event.id_project] = engine;
@@ -1261,7 +1261,7 @@ class RulesTrigger {
                 //   return 0;
                 // }
 
-                var engine = new Engine();     
+                let engine = new Engine();     
                 // winston.verbose("create engine");              
                 // that.engine = new Engine();
 
@@ -1271,7 +1271,7 @@ class RulesTrigger {
                 triggers.forEach(function(trigger) { 
                   winston.debug('trigger', trigger.toObject());
 
-                  var rule = {
+                  let rule = {
                     conditions: {
                     },
                     event: {  // define the event to fire when the conditions evaluate truthy
@@ -1344,7 +1344,7 @@ class RulesTrigger {
                   winston.debug("success eventSuccess", eventSuccess); 
                   winston.debug("success ruleResult", ruleResult); 
 
-                  var triggerEvent = {event: event, eventKey:eventKey , triggers: triggers, ruleResult:requestEvent,eventSuccess:eventSuccess, engine:engine };
+                  let triggerEvent = {event: event, eventKey:eventKey , triggers: triggers, ruleResult:requestEvent,eventSuccess:eventSuccess, engine:engine };
 
                   // info: test success eventTrigger:{
                     // "event":{"_id":"5e4a771a248688f8ea55e47e","name":"user.pay","attributes":{"attr1":"val1"},"id_project":"5e4a771a248688f8ea55e476","project_user":{"_id":"5e4a771a248688f8ea55e477","id_project":"5e4a771a248688f8ea55e476","id_user":{"_id":"5e4a771a248688f8ea55e475","email":"test-trigger-EventEmit-1581938458317@email.com","firstname":"Test Firstname","lastname":"Test lastname","createdAt":"2020-02-17T11:20:58.326Z","updatedAt":"2020-02-17T11:20:58.326Z","__v":0},"role":"owner","user_available":true,"createdBy":"5e4a771a248688f8ea55e475","createdAt":"2020-02-17T11:20:58.580Z","updatedAt":"2020-02-17T11:20:58.580Z","__v":0,"id":"5e4a771a248688f8ea55e477"},"createdBy":"5e4a771a248688f8ea55e475","createdAt":"2020-02-17T11:20:58.603Z","updatedAt":"2020-02-17T11:20:58.603Z","__v":0},
@@ -1364,7 +1364,7 @@ class RulesTrigger {
                     // "engine":{"_events":{},"_eventsCount":2,"rules":["{\"conditions\":{\"priority\":1,\"all\":[{\"operator\":\"equal\",\"value\":\"val1\",\"fact\":\"json\",\"path\":\"attributes.attr1\"}]},\"priority\":1,\"event\":{\"type\":\"5e4a7e52f3f18136851535f1\",\"params\":[{\"_id\":\"5e4a7e52f3f18136851535f4\",\"key\":\"request.create\",\"parameters\":{\"fullName\":\"fullName\",\"text\":\"hi\"}}]}}"],"allowUndefinedFacts":false,"operators":{},"facts":{},"status":"RUNNING","prioritizedRules":[["{\"conditions\":{\"priority\":1,\"all\":[{\"operator\":\"equal\",\"value\":\"val1\",\"fact\":\"json\",\"path\":\"attributes.attr1\"}]},\"priority\":1,\"event\":{\"type\":\"5e4a7e52f3f18136851535f1\",\"params\":[{\"_id\":\"5e4a7e52f3f18136851535f4\",\"key\":\"request.create\",\"parameters\":{\"fullName\":\"fullName\",\"text\":\"hi\"}}]}}"]]}}
                   winston.debug("success triggerEvent", triggerEvent); 
                   
-                  var pickedTrigger = triggers.filter( function (t) {
+                  let pickedTrigger = triggers.filter( function (t) {
                     // winston.verbose("t:"+t._id);
                     // winston.verbose("eventSuccess.type:"+eventSuccess.type);
                     if (t.id === eventSuccess.type) {
@@ -1383,8 +1383,8 @@ class RulesTrigger {
 
                   // shiiiit https://stackoverflow.com/questions/37977602/settimeout-not-working-inside-foreach
 
-                  // var a = [1,2,3]
-                  // // var index = 0;   <- BUGGGGGGGG try it in the browser you must user index of the forEach
+                  // let a = [1,2,3]
+                  // // let index = 0;   <- BUGGGGGGGG try it in the browser you must user index of the forEach
                   // a.forEach(function(e,index,c) {
                   //   // a.forEach(function(e) {
                   //   setTimeout(function() {
@@ -1399,7 +1399,7 @@ class RulesTrigger {
                   pickedTrigger.actions.forEach(function (action, i, collection) {
                     winston.debug("triggerEventEmitter emit: " + action.key, action);
                     // triggerEvent.action = action;
-                    var waitTime = 500*i;
+                    let waitTime = 500*i;
                     // console.log("waitTime",waitTime);
                     // make timeout of 500 ms 
                     that.delayedFunction(action, triggerEvent, waitTime );
@@ -1409,7 +1409,7 @@ class RulesTrigger {
                   // pickedTrigger.actions.forEach(function (action, i, collection) {
                   //   winston.verbose("triggerEventEmitter emit: " + action.key, action);
                   //   triggerEvent.action = action;
-                  //   var waitTime = 500*i;
+                  //   let waitTime = 500*i;
                   //   console.log("waitTime",waitTime);
                   //   // make timeout of 500 ms 
                   //   setTimeout(function() {
@@ -1428,11 +1428,11 @@ class RulesTrigger {
                 engine.on('failure', function(eventFailure, almanac, ruleResult) {
                   winston.debug("failure eventFailure", eventFailure); 
 
-                  var triggerEvent = {event: event, eventKey:eventKey , triggers: triggers, ruleResult:requestEvent,engine:engine };
+                  let triggerEvent = {event: event, eventKey:eventKey , triggers: triggers, ruleResult:requestEvent,engine:engine };
                   winston.debug("failure triggerEvent", triggerEvent); 
 
 
-                  var pickedTrigger = triggers.filter( function (t) {
+                  let pickedTrigger = triggers.filter( function (t) {
                     // winston.verbose("t:"+t._id);
                     // winston.verbose("eventFailure.type:"+eventFailure.type);
                     if (t.id === eventFailure.type) {
@@ -1480,6 +1480,6 @@ class RulesTrigger {
 
 }
 
-var rulesTrigger = new RulesTrigger();
+let rulesTrigger = new RulesTrigger();
 module.exports = rulesTrigger;
 

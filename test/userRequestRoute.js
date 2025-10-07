@@ -7,16 +7,16 @@ let should = chai.should();
 
 chai.use(chaiHttp);
 
-var expect = require('chai').expect;
-var assert = require('chai').assert;
-var config = require('../config/database');
+let expect = require('chai').expect;
+let assert = require('chai').assert;
+let config = require('../config/database');
 
-var mongoose = require('mongoose');
-var winston = require('../config/winston');
+let mongoose = require('mongoose');
+let winston = require('../config/winston');
 
 let log = false;
 
-// var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
+// let databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 // if (!databaseUri) {
 //   console.log('DATABASE_URI not specified, falling back to localhost.');
 // }
@@ -24,14 +24,14 @@ let log = false;
 // mongoose.connect(databaseUri || config.database);
 mongoose.connect(config.databasetest);
 
-var userService = require('../services/userService');
+let userService = require('../services/userService');
 const projectService = require('../services/projectService');
-var leadService = require('../services/leadService');
-var requestService = require('../services/requestService');
+let leadService = require('../services/leadService');
+let requestService = require('../services/requestService');
 const faqService = require('../services/faqService');
-var Bot = require("../models/faq_kb");
+let Bot = require("../models/faq_kb");
 
-var jwt = require('jsonwebtoken');
+let jwt = require('jsonwebtoken');
 const uuidv4 = require('uuid/v4');
 const chatbotTypes = require('../models/chatbotTypes');
 
@@ -40,18 +40,18 @@ describe('UserService()', function () {
 
     it('request-rating', function (done) {
 
-        var email = "test-UserRequest-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-UserRequest-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-            var userid = savedUser.id;
+            let userid = savedUser.id;
 
             projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser.id).then(function (savedProjectAndPU) {
-                var savedProject = savedProjectAndPU.project;
+                let savedProject = savedProjectAndPU.project;
 
                 faqService.create(savedProject._id, savedUser._id, { name: "testbot", type: "tilebot", subtype: chatbotTypes.CHATBOT, language: "en", template: "blank" }).then(async function (savedFaq_kb) {
 
-                    var signOptions = {
+                    let signOptions = {
                         issuer: 'https://tiledesk.com',
                         subject: 'bot',
                         audience: 'https://tiledesk.com/bots/' + savedFaq_kb._id,
@@ -61,11 +61,11 @@ describe('UserService()', function () {
                     let botPayload = savedFaq_kb.toObject();
                     let botSecret = botPayload.secret;
 
-                    var bot_token = jwt.sign(botPayload, botSecret, signOptions);
+                    let bot_token = jwt.sign(botPayload, botSecret, signOptions);
 
                     leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
-                        var now = Date.now();
-                        var request = {
+                        let now = Date.now();
+                        let request = {
                             request_id: "request_id-createObjSimple-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
                             id_project: savedProject._id, first_text: "first_text",
                             lead: createdLead, requester: savedProjectAndPU.project_user
@@ -100,8 +100,8 @@ describe('UserService()', function () {
 
                 // console.log("savedProject: ", savedProject)
                 // leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
-                //     var now = Date.now();
-                //     var request = {
+                //     let now = Date.now();
+                //     let request = {
                 //         request_id: "request_id-createObjSimple-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
                 //         id_project: savedProject._id, first_text: "first_text",
                 //         lead: createdLead, requester: savedProjectAndPU.project_user

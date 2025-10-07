@@ -1,9 +1,9 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
 
 
-var NoteSchema = new Schema({
+let NoteSchema = new Schema({
   
   text: {
     type: String,
@@ -27,7 +27,7 @@ var NoteSchema = new Schema({
 }
 );
 
- var Note = mongoose.model('note', NoteSchema);
+ let Note = mongoose.model('note', NoteSchema);
 
 
 module.exports = Note;

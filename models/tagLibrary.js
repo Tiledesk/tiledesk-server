@@ -1,10 +1,10 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var TagSchema = require('./tag');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let TagSchema = require('./tag');
 
 
 
-var TagLibrarySchema = new Schema({
+let TagLibrarySchema = new Schema({
   ...TagSchema.obj,
   // tag: {
   //   type: String,
@@ -36,7 +36,7 @@ var TagLibrarySchema = new Schema({
 TagLibrarySchema.index({ id_project: 1, tag: 1 }, { unique: true }); 
 
 
- var Tag = mongoose.model('tag', TagLibrarySchema);
+ let Tag = mongoose.model('tag', TagLibrarySchema);
 
 
 module.exports = Tag;

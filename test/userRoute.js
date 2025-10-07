@@ -8,16 +8,16 @@ let should = chai.should();
 
 chai.use(chaiHttp);
 
-var expect = require('chai').expect;
-var assert = require('chai').assert;
-var config = require('../config/database');
+let expect = require('chai').expect;
+let assert = require('chai').assert;
+let config = require('../config/database');
 
-var mongoose = require('mongoose');
-var winston = require('../config/winston');
+let mongoose = require('mongoose');
+let winston = require('../config/winston');
 
 let log = false;
 
-// var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
+// let databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 // if (!databaseUri) {
 //   console.log('DATABASE_URI not specified, falling back to localhost.');
 // }
@@ -25,16 +25,16 @@ let log = false;
 // mongoose.connect(databaseUri || config.database);
 mongoose.connect(config.databasetest);
 
-var userService = require('../services/userService');
+let userService = require('../services/userService');
 const projectService = require('../services/projectService');
 
 
 describe('UserService()', function () {
 
   it('loginemail', function (done) {
-    var now = Date.now();
-    var email = "test-UserService-signup-" + now + "@email.com";
-    var pwd = "pwd";
+    let now = Date.now();
+    let email = "test-UserService-signup-" + now + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email , pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
       expect(savedUser.email).to.equal("test-userservice-signup-" + now + "@email.com");

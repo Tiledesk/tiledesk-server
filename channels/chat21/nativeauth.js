@@ -2,8 +2,8 @@
 'use strict';
 
 const express = require('express');
-var router = express.Router();
-var winston = require('../../config/winston');
+let router = express.Router();
+let winston = require('../../config/winston');
 const uuidv4 = require('uuid/v4');
 const jwt = require("jsonwebtoken")
 
@@ -32,10 +32,10 @@ winston.info("Chat21 Native channel jwtSecret: "+ masked_jwtSecret);
 
 router.post('/createCustomToken', function (req, res) {
 
-        var userid = req.user.id;
+        let userid = req.user.id;
         winston.debug("userid",userid);
 
-        var user = req.user;
+        let user = req.user;
 
         const appid = "tilechat";
 
@@ -50,7 +50,7 @@ router.post('/createCustomToken', function (req, res) {
         // console.log("now: ", now)
         const exp = now + 60 * 60 * 24 * 30;
 
-        var payload = {
+        let payload = {
             "jti": uuidv4(),
             "sub": user._id,
             scope: scope,
@@ -78,7 +78,7 @@ router.post('/createCustomToken', function (req, res) {
             "tiledesk_api_roles": "user"
         }
         winston.debug("payload:\n", payload)
-        var token = jwt.sign(
+        let token = jwt.sign(
             payload,
             jwtSecret,
             {

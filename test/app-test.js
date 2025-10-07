@@ -24,8 +24,8 @@ describe('Root Test', () => {
      */
     it("Wrong request url", (done) => {
 
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
             projectService.create("test-root-project", savedUser._id).then((savedProject) => {
@@ -56,8 +56,8 @@ describe('Root Test', () => {
      */
     it("Wrong request url", (done) => {
 
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-signup-" + Date.now() + "@email.com";
+        let pwd = "pwd";
 
         userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
             projectService.create("test-root-project", savedUser._id).then((savedProject) => {

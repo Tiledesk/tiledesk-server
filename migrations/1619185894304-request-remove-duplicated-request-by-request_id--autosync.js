@@ -1,5 +1,5 @@
-var mongoose = require('mongoose');
-var winston = require('../config/winston');
+let mongoose = require('mongoose');
+let winston = require('../config/winston');
 
 /**
  * Make any changes you need to make to the database here

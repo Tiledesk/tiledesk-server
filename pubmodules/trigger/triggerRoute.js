@@ -1,10 +1,10 @@
-var express = require('express');
-var router = express.Router();
-var Trigger = require("./models/trigger");
-var triggerEventEmitter = require("./event/triggerEventEmitter");
-var DefaultTrigger = require('./default');
+let express = require('express');
+let router = express.Router();
+let Trigger = require("./models/trigger");
+let triggerEventEmitter = require("./event/triggerEventEmitter");
+let DefaultTrigger = require('./default');
 
-var winston = require('../../config/winston');
+let winston = require('../../config/winston');
 
 
 winston.debug("trigger route");
@@ -13,7 +13,7 @@ router.post('/', function (req, res) {
 
   winston.debug(req.body);
 
-  var trigger = new Trigger({
+  let trigger = new Trigger({
     name: req.body.name,
     description: req.body.description,
     id_project: req.projectid,
@@ -42,7 +42,7 @@ router.put('/:triggerid', function (req, res) {
   winston.debug(req.body);      
 
   
-  var update = {};
+  let update = {};
   update.name = req.body.name;
   update.description = req.body.description;
   update.trigger = req.body.trigger;
@@ -72,7 +72,7 @@ router.put('/:triggercode/reset', function (req, res) {
 
   winston.debug(req.body);
 
-  var query = {code:req.params.triggercode, id_project:  req.projectid};
+  let query = {code:req.params.triggercode, id_project:  req.projectid};
   winston.verbose("query resetting trigger: " , query);
 
 
@@ -82,7 +82,7 @@ router.put('/:triggercode/reset', function (req, res) {
   winston.verbose("reset triggerObj: " ,triggerObj);
 
   let trigger = new Trigger(triggerObj);
-  // var trigger = DefaultTrigger.defTrigger[req.params.triggercode];
+  // let trigger = DefaultTrigger.defTrigger[req.params.triggercode];
   // winston.verbose("trigger: ", trigger.toJSON());
 
   Trigger.remove(query, function (errOld, triggerOld) {

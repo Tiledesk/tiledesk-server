@@ -1,13 +1,13 @@
 'use strict';
 
-var Message = require("../models/message");
-var Project = require("../models/project");
-var MessageConstants = require("../models/messageConstants");
+let Message = require("../models/message");
+let Project = require("../models/project");
+let MessageConstants = require("../models/messageConstants");
 const messageEvent = require('../event/messageEvent');
 const messagePromiseEvent = require('../event/messagePromiseEvent');
-var winston = require('../config/winston');
-var cacheUtil = require("../utils/cacheUtil");
-var cacheEnabler = require("../services/cacheEnabler");
+let winston = require('../config/winston');
+let cacheUtil = require("../utils/cacheUtil");
+let cacheEnabler = require("../services/cacheEnabler");
 const fileUtils = require("../utils/fileUtils");
 const Integration = require("../models/integrations");
 const aiService = require("./aiService");
@@ -48,7 +48,7 @@ class MessageService {
 
     save(message) {
 
-        var that = this;
+        let that = this;
         winston.debug('message.save called');
 
         if (!message.createdAt) {
@@ -81,14 +81,14 @@ class MessageService {
                 createdBy = sender;
             }
 
-            var beforeMessage = {
+            let beforeMessage = {
                 sender: sender, senderFullname: senderFullname
                 , recipient: recipient, recipientFullname: recipientFullname
                 , text: text, id_project: id_project, createdBy: createdBy, status: status, attributes: attributes,
                 type: type, metadata: metadata, language: language, channel_type: channel_type, channel: channel
             };
 
-            var messageToCreate = beforeMessage;
+            let messageToCreate = beforeMessage;
             winston.debug('messageToCreate before', messageToCreate);
             //   messageEvent.emit('message.create.simple.before', {beforeMessage:beforeMessage});
 
@@ -126,7 +126,7 @@ class MessageService {
 
                 // if (id_project) {
 
-                var newMessage = new Message({
+                let newMessage = new Message({
                     sender: messageToCreate.sender,
                     senderFullname: messageToCreate.senderFullname,
                     recipient: messageToCreate.recipient,
@@ -223,7 +223,7 @@ class MessageService {
 
     changeStatus(message_id, newstatus) {
         winston.debug("changeStatus. " + message_id + " " + newstatus);
-        var that = this;
+        let that = this;
         return new Promise(function (resolve, reject) {
             // winston.debug("request_id", request_id);
             // winston.debug("newstatus", newstatus);
@@ -246,7 +246,7 @@ class MessageService {
     getTranscriptByRequestId(requestid, id_project) {
         winston.debug("requestid", requestid);
         winston.debug("id_project", id_project);
-        var that = this;
+        let that = this;
         return new Promise(function (resolve, reject) {
             return Message.find({ "recipient": requestid, id_project: id_project }).sort({ createdAt: 'asc' }).exec(function (err, messages) {
                 if (err) {
@@ -262,10 +262,10 @@ class MessageService {
 
 
 
-                var transcript = '';
+                let transcript = '';
                 // messages.forEach(message => {
-                for (var i = 0; i < messages.length; i++) {
-                    var message = messages[i];
+                for (let i = 0; i < messages.length; i++) {
+                    let message = messages[i];
                     // winston.debug("message", message);
                     // winston.debug("message.createdAt", message.createdAt);
 
@@ -338,5 +338,5 @@ class MessageService {
 }
 
 
-var messageService = new MessageService();
+let messageService = new MessageService();
 module.exports = messageService;

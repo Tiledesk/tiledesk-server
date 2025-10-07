@@ -1,14 +1,14 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
-var User = require('../models/user');
-var projectService = require('../services/projectService');
-var requestService = require('../services/requestService');
-var userService = require('../services/userService');
-var leadService = require('../services/leadService');
-var messageService = require('../services/messageService');
-var Project_user = require("../models/project_user");
-var roleConstants = require('../models/roleConstants');
+let User = require('../models/user');
+let projectService = require('../services/projectService');
+let requestService = require('../services/requestService');
+let userService = require('../services/userService');
+let leadService = require('../services/leadService');
+let messageService = require('../services/messageService');
+let Project_user = require("../models/project_user");
+let roleConstants = require('../models/roleConstants');
 const uuidv4 = require('uuid/v4');
 
 //Require the dev-dependencies
@@ -16,12 +16,12 @@ let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
-var winston = require('../config/winston');
-var jwt = require('jsonwebtoken');
+let winston = require('../config/winston');
+let jwt = require('jsonwebtoken');
 // chai.config.includeStack = true;
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 let log = false;
 
@@ -35,17 +35,17 @@ describe('MessageRoute', () => {
   it('createSimple', function (done) {
     // this.timeout(10000);
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 
-      var email2 = "test-message-create-" + Date.now() + "@email.com";
+      let email2 = "test-message-create-" + Date.now() + "@email.com";
       userService.signup(email2, pwd, "Test Firstname2", "Test lastname2").then(function (savedUser2) {
 
         projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
-          var savedProject = savedProjectAndPU.project;
+          let savedProject = savedProjectAndPU.project;
 
           chai.request(server)
             .post('/' + savedProject._id + '/messages')
@@ -88,13 +88,13 @@ describe('MessageRoute', () => {
   it('createValidationNoRecipient', function (done) {
     // this.timeout(10000);
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         chai.request(server)
           .post('/' + savedProject._id + '/messages')
@@ -122,13 +122,13 @@ describe('MessageRoute', () => {
   it('createValidationNoText', function (done) {
     // this.timeout(10000);
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         chai.request(server)
           .post('/' + savedProject._id + '/messages')
@@ -157,13 +157,13 @@ describe('MessageRoute', () => {
   it('createWithSenderFullName', function (done) {
     // this.timeout(10000);
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
         chai.request(server)
           .post('/' + savedProject._id + '/messages')

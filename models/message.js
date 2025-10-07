@@ -1,11 +1,11 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
-var Channel = require('../models/channel');
-var MessageConstants = require('../models/messageConstants');
-var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
+let Channel = require('../models/channel');
+let MessageConstants = require('../models/messageConstants');
+let defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 
-var MessageSchema = new Schema({
+let MessageSchema = new Schema({
   // messageId: {
   //   type: String,
   //   required: true,
@@ -107,7 +107,7 @@ MessageSchema.index({text: 'text'},
  {"name":"message_fulltext","default_language": defaultFullTextLanguage, "language_override": "dummy"}); // schema level
 
 
-var message = mongoose.model('message', MessageSchema);
+let message = mongoose.model('message', MessageSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   message.syncIndexes();

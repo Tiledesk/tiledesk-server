@@ -1,10 +1,10 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
 
 
 
-var SegmentFilterSchema = new Schema({
+let SegmentFilterSchema = new Schema({
     field: { //ex: email
         type: String,
         required: true,
@@ -22,7 +22,7 @@ var SegmentFilterSchema = new Schema({
 },{ _id : false });
 
 
-var SegmentSchema = new Schema({
+let SegmentSchema = new Schema({
 
   name: {
     type: String,
@@ -57,7 +57,7 @@ var SegmentSchema = new Schema({
 );
 
 
-var segment = mongoose.model('segment', SegmentSchema);
+let segment = mongoose.model('segment', SegmentSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
     segment.syncIndexes();

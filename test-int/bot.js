@@ -6,28 +6,28 @@ process.env.NODE_ENV = 'test';
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
-var projectService = require('../services/projectService');
-var userService = require('../services/userService');
+let projectService = require('../services/projectService');
+let userService = require('../services/userService');
 let should = chai.should();
-var messageService = require('../services/messageService');
-var requestService = require('../services/requestService');
-var faqService = require('../services/faqService');
-var Department = require('../models/department');
-var Faq = require('../models/faq');
-var faqBotSupport = require('../services/faqBotSupport');
-var Project_user = require("../models/project_user");
+let messageService = require('../services/messageService');
+let requestService = require('../services/requestService');
+let faqService = require('../services/faqService');
+let Department = require('../models/department');
+let Faq = require('../models/faq');
+let faqBotSupport = require('../services/faqBotSupport');
+let Project_user = require("../models/project_user");
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 //server client
-var express = require('express');
+let express = require('express');
 const bodyParser = require('body-parser');
 
-var leadService = require('../services/leadService');
+let leadService = require('../services/leadService');
 const chatbotTypes = require('../models/chatbotTypes');
 
-// var http = require('http');
+// let http = require('http');
 // const { parse } = require('querystring');
 
 //end server client
@@ -42,8 +42,8 @@ describe('bot', () => {
     // mocha test-int/bot.js  --grep 'createSimpleExatMatch'
     it('createSimpleExatMatch', (done) => {
        
-        var email = "test-bot-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-bot-" + Date.now() + "@email.com";
+        let pwd = "pwd";
  
        
 
@@ -52,7 +52,7 @@ describe('bot', () => {
                 // create(name, url, projectid, user_id, type) 
                 faqService.create(savedProject._id, savedUser._id, { name: "testbot", type: "internal" }).then(function(savedBot) {  
                     
-                    var newFaq = new Faq({
+                    let newFaq = new Faq({
                         id_faq_kb: savedBot._id,
                         question: 'question',
                         answer: 'answer',
@@ -78,13 +78,13 @@ describe('bot', () => {
                                             res.should.have.status(200);
                                             res.body.should.be.a('object');
                                             expect(res.body.event).to.equal("message.create"); 
-                                            var secret = res.body.secret;
+                                            let secret = res.body.secret;
                                             expect(secret).to.not.equal(null);                     
                                             expect(res.headers["x-hook-secret"]).to.equal(secret); 
                                             
                                         
                                             let messageReceived = 0;
-                                            var serverClient = express();
+                                            let serverClient = express();
                                             serverClient.use(bodyParser.json());
                                             serverClient.post('/', function (req, res) {
                                                 console.log('serverClient req', JSON.stringify(req.body));                        
@@ -116,7 +116,7 @@ describe('bot', () => {
                                                 
                                                                     
                                             });
-                                            var listener = serverClient.listen(3005, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+                                            let listener = serverClient.listen(3005, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
 
 
                                             leadService.createIfNotExists("leadfullname-subscription-message-sending", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {
@@ -144,8 +144,8 @@ describe('bot', () => {
     // mocha test-int/bot.js  --grep 'createSimpleAgent'
     it('createSimpleAgent', (done) => {
        
-        var email = "test-bot-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-bot-" + Date.now() + "@email.com";
+        let pwd = "pwd";
  
        
 
@@ -154,7 +154,7 @@ describe('bot', () => {
                 // create(name, url, projectid, user_id, type) 
                 faqService.create(savedProject._id, savedUser._id,  { name: "testbot", type: "internal" }).then(function(savedBot) {  
                     
-                    var newFaq = new Faq({
+                    let newFaq = new Faq({
                         id_faq_kb: savedBot._id,
                         question: 'switch agent',
                         answer: '\\agent',
@@ -180,14 +180,14 @@ describe('bot', () => {
                                             res.should.have.status(200);
                                             res.body.should.be.a('object');
                                             expect(res.body.event).to.equal("request.update"); 
-                                            var secret = res.body.secret;
+                                            let secret = res.body.secret;
                                             expect(secret).to.not.equal(null);                     
                                             expect(res.headers["x-hook-secret"]).to.equal(secret); 
                                             console.log('001');
 
                                         
                                             let messageReceived = 0;
-                                            var serverClient = express();
+                                            let serverClient = express();
                                             serverClient.use(bodyParser.json());
                                             serverClient.post('/', function (req, res) {
                                                 console.log('serverClient req', JSON.stringify(req.body));                        
@@ -212,7 +212,7 @@ describe('bot', () => {
                                                 
                                                                     
                                             });
-                                            var listener = serverClient.listen(3006, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+                                            let listener = serverClient.listen(3006, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
 
 
                                             leadService.createIfNotExists("leadfullname-subscription-message-sending-createSimpleAgent", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {
@@ -240,8 +240,8 @@ describe('bot', () => {
     // mocha test-int/bot.js  --grep 'createSimpleAgentTwoAgent'
     it('createSimpleAgentTwoAgent', (done) => {
        
-        var email = "test-bot-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-bot-" + Date.now() + "@email.com";
+        let pwd = "pwd";
  
        
 
@@ -251,7 +251,7 @@ describe('bot', () => {
 
             userService.signup( "test-bot-" + Date.now() + "@email.com" ,pwd, "Test Firstname", "Test lastname").then(function(savedUser2) {
 
-            var newProject_user = new Project_user({
+            let newProject_user = new Project_user({
                 // _id: new mongoose.Types.ObjectId(),
                 id_project: savedProject._id.toString(),
                 id_user: savedUser2._id.toString(),
@@ -272,7 +272,7 @@ describe('bot', () => {
 
                     expect(savedRequest2.request_id).to.equal("request_id-subscription-message-sending-createSimpleAgent-2");
                     // expect(savedRequest2.participantsAgents[0]).equal(savedUser2._id.toString());      
-                    var selectedAgent = savedRequest2.participantsAgents[0];
+                    let selectedAgent = savedRequest2.participantsAgents[0];
                     console.log("selectedAgent",  selectedAgent);
 
                     expect(savedRequest2.hasBot).equal(false);
@@ -284,7 +284,7 @@ describe('bot', () => {
                 // create(name, url, projectid, user_id, type) 
                 faqService.create(savedProject._id, savedUser._id, { name: "testbot", type: "internal" }).then(function(savedBot) {  
                     
-                    var newFaq = new Faq({
+                    let newFaq = new Faq({
                         id_faq_kb: savedBot._id,
                         question: 'switch agent',
                         answer: '\\agent',
@@ -310,14 +310,14 @@ describe('bot', () => {
                                             res.should.have.status(200);
                                             res.body.should.be.a('object');
                                             expect(res.body.event).to.equal("request.update"); 
-                                            var secret = res.body.secret;
+                                            let secret = res.body.secret;
                                             expect(secret).to.not.equal(null);                     
                                             expect(res.headers["x-hook-secret"]).to.equal(secret); 
                                             console.log('001');
 
                                         
                                             let messageReceived = 0;
-                                            var serverClient = express();
+                                            let serverClient = express();
                                             serverClient.use(bodyParser.json());
                                             serverClient.post('/', function (req, res) {
                                                 console.log('serverClient req', JSON.stringify(req.body));                        
@@ -345,7 +345,7 @@ describe('bot', () => {
                                                 
                                                                     
                                             });
-                                            var listener = serverClient.listen(3021, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+                                            let listener = serverClient.listen(3021, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
 
 
                                             
@@ -377,8 +377,8 @@ describe('bot', () => {
     // mocha test-int/bot.js  --grep 'createSimpleFulltext'
     it('createSimpleFulltext', (done) => {
        
-        var email = "test-bot-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-bot-" + Date.now() + "@email.com";
+        let pwd = "pwd";
  
        
 
@@ -387,7 +387,7 @@ describe('bot', () => {
                 // create(name, url, projectid, user_id, type) 
                 faqService.create(savedProject._id, savedUser._id, { name: "testbot", type: "internal" }).then(function(savedBot) {  
                     
-                    var newFaq = new Faq({
+                    let newFaq = new Faq({
                         id_faq_kb: savedBot._id,
                         question: 'question number one',
                         answer: 'answer',
@@ -413,13 +413,13 @@ describe('bot', () => {
                                             res.should.have.status(200);
                                             res.body.should.be.a('object');
                                             expect(res.body.event).to.equal("message.create"); 
-                                            var secret = res.body.secret;
+                                            let secret = res.body.secret;
                                             expect(secret).to.not.equal(null);                     
                                             expect(res.headers["x-hook-secret"]).to.equal(secret); 
                                             
                                         
                                             let messageReceived = 0;
-                                            var serverClient = express();
+                                            let serverClient = express();
                                             serverClient.use(bodyParser.json());
                                             serverClient.post('/', function (req, res) {
                                                 console.log('serverClient req', JSON.stringify(req.body));                        
@@ -445,7 +445,7 @@ describe('bot', () => {
                                                 
                                                                     
                                             });
-                                            var listener = serverClient.listen(3010, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+                                            let listener = serverClient.listen(3010, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
 
 
                                             leadService.createIfNotExists("leadfullname-subscription-message-sending", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {
@@ -470,8 +470,8 @@ describe('bot', () => {
     // mocha test-int/bot.js  --grep 'createSimpleExternalSearcherBot'
     it('createSimpleExternalSearcherBot', (done) => {
        
-        var email = "test-bot-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+        let email = "test-bot-" + Date.now() + "@email.com";
+        let pwd = "pwd";
  
        
 
@@ -480,7 +480,7 @@ describe('bot', () => {
                 // create(name, url, projectid, user_id, type) 
                 faqService.create(savedProject._id, savedUser._id, { name: "testbot", url: "http://localhost:3001/samples/bot/external/searcher",  type: "internal" }).then(function(savedBot) {  
                     
-                    var newFaq = new Faq({
+                    let newFaq = new Faq({
                         id_faq_kb: savedBot._id,
                         question: 'question number one',
                         answer: 'answer',
@@ -506,13 +506,13 @@ describe('bot', () => {
                                             res.should.have.status(200);
                                             res.body.should.be.a('object');
                                             expect(res.body.event).to.equal("message.create"); 
-                                            var secret = res.body.secret;
+                                            let secret = res.body.secret;
                                             expect(secret).to.not.equal(null);                     
                                             expect(res.headers["x-hook-secret"]).to.equal(secret); 
                                             
                                         
                                             let messageReceived = 0;
-                                            var serverClient = express();
+                                            let serverClient = express();
                                             serverClient.use(bodyParser.json());
                                             serverClient.post('/', function (req, res) {
                                                 console.log('serverClient req', JSON.stringify(req.body));                        
@@ -538,7 +538,7 @@ describe('bot', () => {
                                                 
                                                                     
                                             });
-                                            var listener = serverClient.listen(3010, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+                                            let listener = serverClient.listen(3010, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
 
 
                                             leadService.createIfNotExists("leadfullname-subscription-message-sending", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {
@@ -565,8 +565,8 @@ describe('bot', () => {
 
         it('createNotFoundDefaultFallback', (done) => {
        
-            var email = "test-bot-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+            let email = "test-bot-" + Date.now() + "@email.com";
+            let pwd = "pwd";
      
            
     
@@ -575,7 +575,7 @@ describe('bot', () => {
                     // create(name, url, projectid, user_id, type) 
                     faqService.create(savedProject._id, savedUser._id, { name: "testbot", type: "internal" }).then(function(savedBot) {  
                         
-                        var newFaq = new Faq({
+                        let newFaq = new Faq({
                             id_faq_kb: savedBot._id,
                             question: 'question',
                             answer: 'answer',
@@ -601,13 +601,13 @@ describe('bot', () => {
                                                 res.should.have.status(200);
                                                 res.body.should.be.a('object');
                                                 expect(res.body.event).to.equal("message.create"); 
-                                                var secret = res.body.secret;
+                                                let secret = res.body.secret;
                                                 expect(secret).to.not.equal(null);                     
                                                 expect(res.headers["x-hook-secret"]).to.equal(secret); 
                                                 
                                             
                                                 let messageReceived = 0;
-                                                var serverClient = express();
+                                                let serverClient = express();
                                                 serverClient.use(bodyParser.json());
                                                 serverClient.post('/', function (req, res) {
                                                     console.log('serverClient req', JSON.stringify(req.body));                        
@@ -636,7 +636,7 @@ describe('bot', () => {
 
                                                                         
                                                 });
-                                                var listener = serverClient.listen(3008, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+                                                let listener = serverClient.listen(3008, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
     
     
                                                 leadService.createIfNotExists("leadfullname-subscription-message-sending-createNotFoundDefaultFallback", "andrea.leo@-subscription-message-sending-createNotFoundDefaultFallback.it", savedProject._id).then(function(createdLead) {
@@ -670,8 +670,8 @@ describe('bot', () => {
 
             it('createFaqWithImage', (done) => {
        
-                var email = "test-bot-" + Date.now() + "@email.com";
-                var pwd = "pwd";
+                let email = "test-bot-" + Date.now() + "@email.com";
+                let pwd = "pwd";
          
                
         
@@ -680,7 +680,7 @@ describe('bot', () => {
                         // create(name, url, projectid, user_id, type) 
                         faqService.create(savedProject._id, savedUser._id, { name: "testbot", type: "internal" }).then(function(savedBot) {  
                             
-                            var newFaq = new Faq({
+                            let newFaq = new Faq({
                                 id_faq_kb: savedBot._id,
                                 question: 'question',
                                 answer: 'answer \n\\image:https://www.tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png',
@@ -706,13 +706,13 @@ describe('bot', () => {
                                                     res.should.have.status(200);
                                                     res.body.should.be.a('object');
                                                     expect(res.body.event).to.equal("message.create"); 
-                                                    var secret = res.body.secret;
+                                                    let secret = res.body.secret;
                                                     expect(secret).to.not.equal(null);                     
                                                     expect(res.headers["x-hook-secret"]).to.equal(secret); 
                                                     
                                                 
                                                     let messageReceived = 0;
-                                                    var serverClient = express();
+                                                    let serverClient = express();
                                                     serverClient.use(bodyParser.json());
                                                     serverClient.post('/', function (req, res) {
                                                         console.log('serverClient req', JSON.stringify(req.body));                        
@@ -745,7 +745,7 @@ describe('bot', () => {
                                                       
                                                                             
                                                     });
-                                                    var listener = serverClient.listen(3011, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+                                                    let listener = serverClient.listen(3011, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
         
         
                                                     leadService.createIfNotExists("leadfullname-subscription-message-sending", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {
@@ -777,8 +777,8 @@ describe('bot', () => {
 
             it('createFaqWithButton', (done) => {
        
-                var email = "test-bot-" + Date.now() + "@email.com";
-                var pwd = "pwd";
+                let email = "test-bot-" + Date.now() + "@email.com";
+                let pwd = "pwd";
          
                
         
@@ -787,7 +787,7 @@ describe('bot', () => {
                         // create(name, url, projectid, user_id, type) 
                         faqService.create(savedProject._id, savedUser._id, { name: "testbot", type: "internal" }).then(function(savedBot) {  
                             
-                            var newFaq = new Faq({
+                            let newFaq = new Faq({
                                 id_faq_kb: savedBot._id,
                                 question: 'question',
                                 answer: 'answer\n* Button 1\n* Button 2',
@@ -813,13 +813,13 @@ describe('bot', () => {
                                                     res.should.have.status(200);
                                                     res.body.should.be.a('object');
                                                     expect(res.body.event).to.equal("message.create"); 
-                                                    var secret = res.body.secret;
+                                                    let secret = res.body.secret;
                                                     expect(secret).to.not.equal(null);                     
                                                     expect(res.headers["x-hook-secret"]).to.equal(secret); 
                                                     
                                                 
                                                     let messageReceived = 0;
-                                                    var serverClient = express();
+                                                    let serverClient = express();
                                                     serverClient.use(bodyParser.json());
                                                     serverClient.post('/', function (req, res) {
                                                         console.log('serverClient req', JSON.stringify(req.body));                        
@@ -845,7 +845,7 @@ describe('bot', () => {
                                                       
                                                                             
                                                     });
-                                                    var listener = serverClient.listen(3012, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+                                                    let listener = serverClient.listen(3012, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
         
         
                                                     leadService.createIfNotExists("leadfullname-subscription-message-sending", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {
@@ -873,8 +873,8 @@ describe('bot', () => {
 
             it('createFaqWithActionButtonFromId', (done) => {
        
-                var email = "test-bot-" + Date.now() + "@email.com";
-                var pwd = "pwd";
+                let email = "test-bot-" + Date.now() + "@email.com";
+                let pwd = "pwd";
          
                
         
@@ -884,7 +884,7 @@ describe('bot', () => {
                         faqService.create(savedProject._id, savedUser._id, { name: "testbot", type: "internal" }).then(function(savedBot) {  
                             
 
-                            var newFaq2 = new Faq({
+                            let newFaq2 = new Faq({
                                 id_faq_kb: savedBot._id,
                                 question: 'question2',
                                 answer: 'answer2',
@@ -895,7 +895,7 @@ describe('bot', () => {
 
                             newFaq2.save(function (err, savedFaq2) {              
 
-                            var newFaq = new Faq({
+                            let newFaq = new Faq({
                                 id_faq_kb: savedBot._id,
                                 question: 'question',
                                 answer: 'Intro\n* button1 tdAction:'+savedFaq2._id.toString(),
@@ -923,13 +923,13 @@ describe('bot', () => {
 
                                                     res.body.should.be.a('object');
                                                     expect(res.body.event).to.equal("message.create"); 
-                                                    var secret = res.body.secret;
+                                                    let secret = res.body.secret;
                                                     expect(secret).to.not.equal(null);                     
                                                     expect(res.headers["x-hook-secret"]).to.equal(secret); 
                                                     
                                                 
                                                     let messageReceived = 0;
-                                                    var serverClient = express();
+                                                    let serverClient = express();
                                                     serverClient.use(bodyParser.json());
                                                     serverClient.post('/', function (req, res) {
                                                         console.log('serverClient req', JSON.stringify(req.body));                        
@@ -961,7 +961,7 @@ describe('bot', () => {
                                                       
                                                                             
                                                     });
-                                                    var listener = serverClient.listen(3016, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+                                                    let listener = serverClient.listen(3016, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
         
         
                                                     leadService.createIfNotExists("leadfullname-subscription-message-sending", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {
@@ -991,8 +991,8 @@ describe('bot', () => {
 
             it('createFaqWithActionButtonFromIntentDisplayName', (done) => {
        
-                var email = "test-bot-" + Date.now() + "@email.com";
-                var pwd = "pwd";
+                let email = "test-bot-" + Date.now() + "@email.com";
+                let pwd = "pwd";
          
                
         
@@ -1002,7 +1002,7 @@ describe('bot', () => {
                         faqService.create(savedProject._id, savedUser._id, { name: "testbot", type: "internal" }).then(function(savedBot) {  
                             
 
-                            var newFaq2 = new Faq({
+                            let newFaq2 = new Faq({
                                 id_faq_kb: savedBot._id,
                                 question: 'question2',
                                 answer: 'answer2',
@@ -1013,7 +1013,7 @@ describe('bot', () => {
 
                             newFaq2.save(function (err, savedFaq2) {              
 
-                            var newFaq = new Faq({
+                            let newFaq = new Faq({
                                 id_faq_kb: savedBot._id,
                                 question: 'question',
                                 answer: 'Intro\n* button1 tdAction:'+savedFaq2.intent_display_name,
@@ -1041,13 +1041,13 @@ describe('bot', () => {
 
                                                     res.body.should.be.a('object');
                                                     expect(res.body.event).to.equal("message.create"); 
-                                                    var secret = res.body.secret;
+                                                    let secret = res.body.secret;
                                                     expect(secret).to.not.equal(null);                     
                                                     expect(res.headers["x-hook-secret"]).to.equal(secret); 
                                                     
                                                 
                                                     let messageReceived = 0;
-                                                    var serverClient = express();
+                                                    let serverClient = express();
                                                     serverClient.use(bodyParser.json());
                                                     serverClient.post('/', function (req, res) {
                                                         console.log('serverClient req', JSON.stringify(req.body));                        
@@ -1079,7 +1079,7 @@ describe('bot', () => {
                                                       
                                                                             
                                                     });
-                                                    var listener = serverClient.listen(3017, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+                                                    let listener = serverClient.listen(3017, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
         
         
                                                     leadService.createIfNotExists("leadfullname-subscription-message-sending", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {
@@ -1110,8 +1110,8 @@ describe('bot', () => {
 
             // it('createFaqWithFrame', (done) => {
        
-            //     var email = "test-bot-" + Date.now() + "@email.com";
-            //     var pwd = "pwd";
+            //     let email = "test-bot-" + Date.now() + "@email.com";
+            //     let pwd = "pwd";
          
                
         
@@ -1120,7 +1120,7 @@ describe('bot', () => {
             //             // create(name, url, projectid, user_id, type) 
             //             faqService.create("testbot", null, savedProject._id, savedUser._id, "internal").then(function(savedBot) {  
                             
-            //                 var newFaq = new Faq({
+            //                 let newFaq = new Faq({
             //                     id_faq_kb: savedBot._id,
             //                     question: 'question',
             //                     answer: 'answer frame\\frame:http://localhost:3013/',
@@ -1146,13 +1146,13 @@ describe('bot', () => {
             //                                         res.should.have.status(200);
             //                                         res.body.should.be.a('object');
             //                                         expect(res.body.event).to.equal("message.create"); 
-            //                                         var secret = res.body.secret;
+            //                                         let secret = res.body.secret;
             //                                         expect(secret).to.not.equal(null);                     
             //                                         expect(res.headers["x-hook-secret"]).to.equal(secret); 
                                                     
                                                 
             //                                         let messageReceived = 0;
-            //                                         var serverClient = express();
+            //                                         let serverClient = express();
             //                                         serverClient.use(bodyParser.json());
             //                                         serverClient.post('/', function (req, res) {
             //                                             console.log('serverClient req', JSON.stringify(req.body));                        
@@ -1179,7 +1179,7 @@ describe('bot', () => {
                                                       
                                                                             
             //                                         });
-            //                                         var listener = serverClient.listen(3013, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+            //                                         let listener = serverClient.listen(3013, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
         
         
             //                                         leadService.createIfNotExists("leadfullname-subscription-message-sending", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {
@@ -1210,8 +1210,8 @@ describe('bot', () => {
 
             it('createFaqWithTdFrame', (done) => {
        
-                var email = "test-bot-" + Date.now() + "@email.com";
-                var pwd = "pwd";
+                let email = "test-bot-" + Date.now() + "@email.com";
+                let pwd = "pwd";
          
                
         
@@ -1220,7 +1220,7 @@ describe('bot', () => {
                         // create(name, url, projectid, user_id, type) 
                         faqService.create(savedProject._id, savedUser._id, { name: "testbot", type: "internal" }).then(function(savedBot) {  
                             
-                            var newFaq = new Faq({
+                            let newFaq = new Faq({
                                 id_faq_kb: savedBot._id,
                                 question: 'question',
                                 answer: 'answer frame\ntdFrame:http://localhost:3014/',
@@ -1247,13 +1247,13 @@ describe('bot', () => {
                                                    
                                                     res.body.should.be.a('object');
                                                     expect(res.body.event).to.equal("message.create"); 
-                                                    var secret = res.body.secret;
+                                                    let secret = res.body.secret;
                                                     expect(secret).to.not.equal(null);                     
                                                     expect(res.headers["x-hook-secret"]).to.equal(secret); 
                                                     
                                                 
                                                     let messageReceived = 0;
-                                                    var serverClient = express();
+                                                    let serverClient = express();
                                                     serverClient.use(bodyParser.json());
                                                     serverClient.post('/', function (req, res) {
                                                         console.log('serverClient req', JSON.stringify(req.body));                        
@@ -1281,7 +1281,7 @@ describe('bot', () => {
                                                       
                                                                             
                                                     });
-                                                    var listener = serverClient.listen(3014, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+                                                    let listener = serverClient.listen(3014, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
         
         
                                                     leadService.createIfNotExists("leadfullname-subscription-message-sending", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {
@@ -1310,8 +1310,8 @@ describe('bot', () => {
 
             it('createFaqWithWebhook', (done) => {
        
-                var email = "test-bot-" + Date.now() + "@email.com";
-                var pwd = "pwd";
+                let email = "test-bot-" + Date.now() + "@email.com";
+                let pwd = "pwd";
          
                
         
@@ -1320,7 +1320,7 @@ describe('bot', () => {
                         // create(name, url, projectid, user_id, type) 
                         faqService.create(savedProject._id, savedUser._id, { name: "testbot", type: "internal", webhook_url: "http://localhost:3019/", webhook_enabled: true }).then(function(savedBot) {  
                             
-                            var newFaq = new Faq({
+                            let newFaq = new Faq({
                                 id_faq_kb: savedBot._id,
                                 question: 'question',
                                 answer: 'answer',
@@ -1347,13 +1347,13 @@ describe('bot', () => {
                                                     res.should.have.status(200);
                                                     res.body.should.be.a('object');
                                                     expect(res.body.event).to.equal("message.create"); 
-                                                    var secret = res.body.secret;
+                                                    let secret = res.body.secret;
                                                     expect(secret).to.not.equal(null);                     
                                                     expect(res.headers["x-hook-secret"]).to.equal(secret); 
                                                     
                                                 
                                                     let messageReceived = 0;
-                                                    var serverClient = express();
+                                                    let serverClient = express();
                                                     serverClient.use(bodyParser.json());
                                                     serverClient.post('/', function (req, res) {
                                                         console.log('serverClient req', JSON.stringify(req.body));                        
@@ -1385,16 +1385,16 @@ describe('bot', () => {
                                                       
                                                                             
                                                     });
-                                                    var listener = serverClient.listen(3020, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+                                                    let listener = serverClient.listen(3020, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
 
-                                                    var serverClient2 = express();
+                                                    let serverClient2 = express();
                                                     serverClient2.use(bodyParser.json());
                                                     serverClient2.post('/', function (req, res) {
                                                         console.log('serverClient req2', JSON.stringify(req.body));                        
                                                         console.log("serverClient.headers2",  JSON.stringify(req.headers));
                                                         res.send({text:"ok from webhook\n* button1"});                                                       
                                                     });
-                                                    var listener2 = serverClient2.listen(3019, '0.0.0.0', function(){ console.log('Node js Express started', listener2.address());});
+                                                    let listener2 = serverClient2.listen(3019, '0.0.0.0', function(){ console.log('Node js Express started', listener2.address());});
         
         
                                                     leadService.createIfNotExists("leadfullname-subscription-message-sending", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {
@@ -1422,8 +1422,8 @@ describe('bot', () => {
 
             it('createFaqWithDefaultIntentWebhook', (done) => {
        
-                var email = "test-bot-" + Date.now() + "@email.com";
-                var pwd = "pwd";
+                let email = "test-bot-" + Date.now() + "@email.com";
+                let pwd = "pwd";
          
                
         
@@ -1449,13 +1449,13 @@ describe('bot', () => {
                                                     res.should.have.status(200);
                                                     res.body.should.be.a('object');
                                                     expect(res.body.event).to.equal("message.create"); 
-                                                    var secret = res.body.secret;
+                                                    let secret = res.body.secret;
                                                     expect(secret).to.not.equal(null);                     
                                                     expect(res.headers["x-hook-secret"]).to.equal(secret); 
                                                     
                                                 
                                                     let messageReceived = 0;
-                                                    var serverClient = express();
+                                                    let serverClient = express();
                                                     serverClient.use(bodyParser.json());
                                                     serverClient.post('/', function (req, res) {
                                                         console.log('serverClient req', JSON.stringify(req.body));                        
@@ -1488,16 +1488,16 @@ describe('bot', () => {
                                                       
                                                                             
                                                     });
-                                                    var listener = serverClient.listen(3022, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+                                                    let listener = serverClient.listen(3022, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
 
-                                                    var serverClient2 = express();
+                                                    let serverClient2 = express();
                                                     serverClient2.use(bodyParser.json());
                                                     serverClient2.post('/', function (req, res) {
                                                         console.log('serverClient req2', JSON.stringify(req.body));                        
                                                         console.log("serverClient.headers2",  JSON.stringify(req.headers));
                                                         res.send({text:"ok from webhook\n* button1"});                                                       
                                                     });
-                                                    var listener2 = serverClient2.listen(3029, '0.0.0.0', function(){ console.log('Node js Express started', listener2.address());});
+                                                    let listener2 = serverClient2.listen(3029, '0.0.0.0', function(){ console.log('Node js Express started', listener2.address());});
         
         
                                                     leadService.createIfNotExists("leadfullname-subscription-message-sending", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {
@@ -1527,8 +1527,8 @@ describe('bot', () => {
 
             it('createFaqWithDefaultIntentWebhookReturnAttributes', (done) => {
        
-                var email = "test-bot-" + Date.now() + "@email.com";
-                var pwd = "pwd";
+                let email = "test-bot-" + Date.now() + "@email.com";
+                let pwd = "pwd";
          
                
         
@@ -1554,12 +1554,12 @@ describe('bot', () => {
                                                     res.should.have.status(200);
                                                     res.body.should.be.a('object');
                                                     expect(res.body.event).to.equal("message.create"); 
-                                                    var secret = res.body.secret;
+                                                    let secret = res.body.secret;
                                                     expect(secret).to.not.equal(null);                     
                                                     expect(res.headers["x-hook-secret"]).to.equal(secret); 
                                                     
                                                 
-                                                    var serverClient = express();
+                                                    let serverClient = express();
                                                     serverClient.use(bodyParser.json());
                                                     serverClient.post('/', function (req, res) {
                                                         console.log('serverClient req', JSON.stringify(req.body));                        
@@ -1612,16 +1612,16 @@ describe('bot', () => {
                                                       
                                                                             
                                                     });
-                                                    var listener = serverClient.listen(3023, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+                                                    let listener = serverClient.listen(3023, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
 
-                                                    var serverClient2 = express();
+                                                    let serverClient2 = express();
                                                     serverClient2.use(bodyParser.json());
                                                     serverClient2.post('/', function (req, res) {
                                                         console.log('serverClient req2', JSON.stringify(req.body));                        
                                                         console.log("serverClient.headers2",  JSON.stringify(req.headers));
                                                         res.send({text:"ok from webhook with no microlanguage but attributes", attributes: {attachment: {buttons: [{value: "button1", type:"text"}]}}});                                                       
                                                     });
-                                                    var listener2 = serverClient2.listen(3028, '0.0.0.0', function(){ console.log('Node js Express started', listener2.address());});
+                                                    let listener2 = serverClient2.listen(3028, '0.0.0.0', function(){ console.log('Node js Express started', listener2.address());});
         
         
                                                     leadService.createIfNotExists("leadfullname-subscription-message-sending", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {
@@ -1659,8 +1659,8 @@ describe('bot', () => {
 
             it('createFaqWithDefaultIntentWebhookReturnTypeAndMetadata', (done) => {
        
-                var email = "test-bot-" + Date.now() + "@email.com";
-                var pwd = "pwd";
+                let email = "test-bot-" + Date.now() + "@email.com";
+                let pwd = "pwd";
          
                
         
@@ -1686,12 +1686,12 @@ describe('bot', () => {
                                                     res.should.have.status(200);
                                                     res.body.should.be.a('object');
                                                     expect(res.body.event).to.equal("message.create"); 
-                                                    var secret = res.body.secret;
+                                                    let secret = res.body.secret;
                                                     expect(secret).to.not.equal(null);                     
                                                     expect(res.headers["x-hook-secret"]).to.equal(secret); 
                                                     
                                                 
-                                                    var serverClient = express();
+                                                    let serverClient = express();
                                                     serverClient.use(bodyParser.json());
                                                     serverClient.post('/', function (req, res) {
                                                         console.log('serverClient req', JSON.stringify(req.body));                        
@@ -1742,16 +1742,16 @@ describe('bot', () => {
                                                       
                                                                             
                                                     });
-                                                    var listener = serverClient.listen(3031, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+                                                    let listener = serverClient.listen(3031, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
 
-                                                    var serverClient2 = express();
+                                                    let serverClient2 = express();
                                                     serverClient2.use(bodyParser.json());
                                                     serverClient2.post('/', function (req, res) {
                                                         console.log('serverClient req2', JSON.stringify(req.body));                        
                                                         console.log("serverClient.headers2",  JSON.stringify(req.headers));
                                                         res.send({text:"ok from webhook with no microlanguage but type and metadata", type: "image", metadata: {src: "http://image.jpg" }});                                                       
                                                     });
-                                                    var listener2 = serverClient2.listen(3030, '0.0.0.0', function(){ console.log('Node js Express started', listener2.address());});
+                                                    let listener2 = serverClient2.listen(3030, '0.0.0.0', function(){ console.log('Node js Express started', listener2.address());});
         
         
                                                     leadService.createIfNotExists("leadfullname-subscription-message-sending", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {
@@ -1795,8 +1795,8 @@ describe('bot', () => {
 
             it('createFaqWithWebhookMicrolanguage', (done) => {
        
-                var email = "test-bot-" + Date.now() + "@email.com";
-                var pwd = "pwd";
+                let email = "test-bot-" + Date.now() + "@email.com";
+                let pwd = "pwd";
          
                
         
@@ -1805,7 +1805,7 @@ describe('bot', () => {
                         // create(name, url, projectid, user_id, type) 
                         faqService.create(savedProject._id, savedUser._id,{ name: "testbot", type: "internal", webhook_enabled: true }).then(function(savedBot) {  
                             
-                            var newFaq = new Faq({
+                            let newFaq = new Faq({
                                 id_faq_kb: savedBot._id,
                                 question: 'question',
                                 answer: 'answer\n\\webhook:http://localhost:3018/',
@@ -1831,13 +1831,13 @@ describe('bot', () => {
                                                     res.should.have.status(200);
                                                     res.body.should.be.a('object');
                                                     expect(res.body.event).to.equal("message.create"); 
-                                                    var secret = res.body.secret;
+                                                    let secret = res.body.secret;
                                                     expect(secret).to.not.equal(null);                     
                                                     expect(res.headers["x-hook-secret"]).to.equal(secret); 
                                                     
                                                 
                                                     let messageReceived = 0;
-                                                    var serverClient = express();
+                                                    let serverClient = express();
                                                     serverClient.use(bodyParser.json());
                                                     serverClient.post('/', function (req, res) {
                                                         console.log('serverClient req', JSON.stringify(req.body));                        
@@ -1869,9 +1869,9 @@ describe('bot', () => {
                                                       
                                                                             
                                                     });
-                                                    var listener = serverClient.listen(3025, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+                                                    let listener = serverClient.listen(3025, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
 
-                                                    var serverClient2 = express();
+                                                    let serverClient2 = express();
                                                     serverClient2.use(bodyParser.json());
                                                     serverClient2.post('/', function (req, res) {
                                                         console.log('serverClient req2', JSON.stringify(req.body));                        
@@ -1879,7 +1879,7 @@ describe('bot', () => {
                                                         res.send({text:"ok from webhook\n* button1"});
                                                        
                                                     });
-                                                    var listener2 = serverClient2.listen(3018, '0.0.0.0', function(){ console.log('Node js Express started', listener2.address());});
+                                                    let listener2 = serverClient2.listen(3018, '0.0.0.0', function(){ console.log('Node js Express started', listener2.address());});
         
         
                                                     leadService.createIfNotExists("leadfullname-subscription-message-sending", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {
@@ -1903,8 +1903,8 @@ describe('bot', () => {
 
             // it('createFaqWithTdWebhook', (done) => {
        
-            //     var email = "test-bot-" + Date.now() + "@email.com";
-            //     var pwd = "pwd";
+            //     let email = "test-bot-" + Date.now() + "@email.com";
+            //     let pwd = "pwd";
          
                
         
@@ -1913,7 +1913,7 @@ describe('bot', () => {
             //             // create(name, url, projectid, user_id, type) 
             //             faqService.create("testbot", null, savedProject._id, savedUser._id, "internal").then(function(savedBot) {  
                             
-            //                 var newFaq = new Faq({
+            //                 let newFaq = new Faq({
             //                     id_faq_kb: savedBot._id,
             //                     question: 'question',
             //                     answer: 'answer\ntdWebhook:http://localhost:3020/',
@@ -1939,13 +1939,13 @@ describe('bot', () => {
             //                                         res.should.have.status(200);
             //                                         res.body.should.be.a('object');
             //                                         expect(res.body.event).to.equal("message.create"); 
-            //                                         var secret = res.body.secret;
+            //                                         let secret = res.body.secret;
             //                                         expect(secret).to.not.equal(null);                     
             //                                         expect(res.headers["x-hook-secret"]).to.equal(secret); 
                                                     
                                                 
             //                                         let messageReceived = 0;
-            //                                         var serverClient = express();
+            //                                         let serverClient = express();
             //                                         serverClient.use(bodyParser.json());
             //                                         serverClient.post('/', function (req, res) {
             //                                             console.log('serverClient req', JSON.stringify(req.body));                        
@@ -1974,9 +1974,9 @@ describe('bot', () => {
                                                       
                                                                             
             //                                         });
-            //                                         var listener = serverClient.listen(3020, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+            //                                         let listener = serverClient.listen(3020, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
 
-            //                                         var serverClient2 = express();
+            //                                         let serverClient2 = express();
             //                                         serverClient2.use(bodyParser.json());
             //                                         serverClient2.post('/', function (req, res) {
             //                                             console.log('serverClient req2', JSON.stringify(req.body));                        
@@ -1984,7 +1984,7 @@ describe('bot', () => {
             //                                             res.send({text:"ok from webhook"});
                                                        
             //                                         });
-            //                                         var listener2 = serverClient2.listen(3019, '0.0.0.0', function(){ console.log('Node js Express started', listener2.address());});
+            //                                         let listener2 = serverClient2.listen(3019, '0.0.0.0', function(){ console.log('Node js Express started', listener2.address());});
         
         
             //                                         leadService.createIfNotExists("leadfullname-subscription-message-sending", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {

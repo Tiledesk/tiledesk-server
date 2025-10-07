@@ -17,13 +17,13 @@ class Listener {
             winston.debug("TwilioVoice config databaseUri: " +  config.databaseUri);
         }
 
-        var port = process.env.CACHE_REDIS_PORT || 6379;
+        let port = process.env.CACHE_REDIS_PORT || 6379;
         winston.debug("Redis port: "+ port);
 
-        var host = process.env.CACHE_REDIS_HOST || "127.0.0.1"
+        let host = process.env.CACHE_REDIS_HOST || "127.0.0.1"
         winston.debug("Redis host: "+ host);
 
-        var password = process.env.CACHE_REDIS_PASSWORD;
+        let password = process.env.CACHE_REDIS_PASSWORD;
         winston.debug("Redis password: "+ password);
 
         let brand_name = null;

@@ -2,24 +2,24 @@
 process.env.NODE_ENV = 'test';
 process.env.LOG_LEVEL = 'critical';
 
-var User = require('../models/user');
-var projectService = require('../services/projectService');
-var Group = require('../models/group');
-var userService = require('../services/userService');
+let User = require('../models/user');
+let projectService = require('../services/projectService');
+let Group = require('../models/group');
+let userService = require('../services/userService');
 
 //Require the dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
-var winston = require('../config/winston');
-var jwt = require('jsonwebtoken');
+let winston = require('../config/winston');
+let jwt = require('jsonwebtoken');
 // chai.config.includeStack = true;
 
 let log = false;
 
-var expect = chai.expect;
-var assert = chai.assert;
+let expect = chai.expect;
+let assert = chai.assert;
 
 chai.use(chaiHttp);
 
@@ -29,14 +29,14 @@ describe('CampaignsRoute', () => {
   // mocha test/campaignsRoute.js  --grep 'directSimpleNoOut'
   it('directSimpleNoOut', function (done) {
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("directSimple", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
-        var recipient = "5f8972c82db41c003473cb03";
+        let savedProject = savedProjectAndPU.project;
+        let recipient = "5f8972c82db41c003473cb03";
 
         chai.request(server)
           .post('/' + savedProject._id + '/campaigns/direct')
@@ -64,14 +64,14 @@ describe('CampaignsRoute', () => {
   // mocha test/campaignsRoute.js  --grep 'directSimple'
   it('directSimple', function (done) {
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("directSimple", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
-        var recipient = "5f8972c82db41c003473cb03";
+        let savedProject = savedProjectAndPU.project;
+        let recipient = "5f8972c82db41c003473cb03";
 
         chai.request(server)
           .post('/' + savedProject._id + '/campaigns/direct')
@@ -106,20 +106,20 @@ describe('CampaignsRoute', () => {
   // mocha test/campaignsRoute.js  --grep 'directGroupIdNoOut'
   it('directGroupIdNoOut', function (done) {
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("directSimple", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
-        var userid = savedUser._id;
+        let userid = savedUser._id;
 
-        var email2 = "test-message-create-" + Date.now() + "@email.com";
+        let email2 = "test-message-create-" + Date.now() + "@email.com";
         userService.signup(email2, pwd, "Test Firstname", "Test lastname").then(function (savedUser2) {
 
-          var newGroup = new Group({
+          let newGroup = new Group({
             name: "group1",
             // members: ["userid1", "userid2"],
             members: [userid, savedUser2._id.toString()],
@@ -160,20 +160,20 @@ describe('CampaignsRoute', () => {
   // mocha test/campaignsRoute.js  --grep 'directGroupId2'
   it('directGroupId2', function (done) {
 
-    var email = "test-message-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+    let email = "test-message-create-" + Date.now() + "@email.com";
+    let pwd = "pwd";
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.createAndReturnProjectAndProjectUser("directSimple", savedUser._id).then(function (savedProjectAndPU) {
 
-        var savedProject = savedProjectAndPU.project;
+        let savedProject = savedProjectAndPU.project;
 
-        var userid = savedUser._id;
+        let userid = savedUser._id;
 
-        var email2 = "test-message-create-" + Date.now() + "@email.com";
+        let email2 = "test-message-create-" + Date.now() + "@email.com";
         userService.signup(email2, pwd, "Test Firstname", "Test lastname").then(function (savedUser2) {
 
-          var newGroup = new Group({
+          let newGroup = new Group({
             name: "group1",
             // members: ["userid1", "userid2"],
             members: [userid, savedUser2._id.toString()],

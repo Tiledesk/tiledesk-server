@@ -1,7 +1,7 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
 
-var AnalyticsSchema = new Schema({
+let AnalyticsSchema = new Schema({
   id_project: {
     type: String,
     required: true,

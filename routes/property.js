@@ -1,14 +1,14 @@
-var express = require('express');
-var router = express.Router();
-var Property = require("../models/property");
-var winston = require('../config/winston');
+let express = require('express');
+let router = express.Router();
+let Property = require("../models/property");
+let winston = require('../config/winston');
 
 router.post('/', function (req, res) {
 
   winston.debug(req.body);
   winston.debug("req.user", req.user);
 
-  var newProperty= new Property({
+  let newProperty= new Property({
     label: req.body.label,
     name: req.body.name,
     type: req.body.type,
@@ -30,7 +30,7 @@ router.post('/', function (req, res) {
 
 router.put('/:propertyid', function (req, res) {
   winston.debug(req.body);
-  var update = {};
+  let update = {};
   
   if (req.body.label!=undefined) {
     update.label = req.body.label;
@@ -76,7 +76,7 @@ router.delete('/:propertyid', function (req, res) {
 router.delete('/:propertyid/physical', function (req, res) {
   winston.debug(req.body);
 
-  var projectuser = req.projectuser;
+  let projectuser = req.projectuser;
 
 
   if (projectuser.role != "owner" ) {
@@ -113,24 +113,24 @@ router.get('/:propertyid', function (req, res) {
 
 router.get('/', function (req, res) {
 
-  var limit = 40; // Number of request per page
+  let limit = 40; // Number of request per page
 
   if (req.query.limit) {    
     limit = parseInt(req.query.limit);
     winston.debug('property ROUTE - limit: '+limit);
   }
 
-  var page = 0;
+  let page = 0;
 
   if (req.query.page) {
     page = req.query.page;
   }
 
-  var skip = page * limit;
+  let skip = page * limit;
   winston.debug('property ROUTE - SKIP PAGE ', skip);
 
 
-  var query = { "id_project": req.projectid, "status": 100};
+  let query = { "id_project": req.projectid, "status": 100};
 
   if (req.query.name) {
     winston.debug('property ROUTE req.query.name', req.query.name);
@@ -141,17 +141,17 @@ router.get('/', function (req, res) {
     query.status = req.query.status;
   }
 
-  var direction = -1; //-1 descending , 1 ascending
+  let direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
   }
 
-  var sortField = "createdAt";
+  let sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   }
 
-  var sortQuery = {};
+  let sortQuery = {};
   sortQuery[sortField] = direction;
 
   winston.debug("sort query", sortQuery);  

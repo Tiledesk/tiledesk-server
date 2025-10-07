@@ -13,7 +13,7 @@ class I8nUtil {
 
         lang = lang.toUpperCase();
         
-        var label = "";
+        let label = "";
 
         try {
          label = labelsObject[lang][key];
@@ -32,7 +32,7 @@ class I8nUtil {
 }
 
 
-var i8nUtil = new I8nUtil();
+let i8nUtil = new I8nUtil();
 
 
 module.exports = i8nUtil;

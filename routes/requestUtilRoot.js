@@ -1,9 +1,9 @@
-var express = require('express');
+let express = require('express');
 
-var router = express.Router();
+let router = express.Router();
 
-var Request = require("../models/request");
-var winston = require('../config/winston');
+let Request = require("../models/request");
+let winston = require('../config/winston');
 
 // https://tiledesk-server-pre.herokuapp.com/requests_util/lookup/id_project/support-group-60ffe291f725db00347661ef-b4cb6875785c4a23b27244fe498eecf4
 router.get('/lookup/id_project/:request_id',  function(req, res) {

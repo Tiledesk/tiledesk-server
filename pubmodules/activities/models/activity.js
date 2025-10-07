@@ -1,5 +1,5 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
 
 // https://getstream.io/blog/designing-activity-stream-newsfeed-w3c-spec/
 // {
@@ -30,7 +30,7 @@ var Schema = mongoose.Schema;
 //  }
 
 //actor: {type:"user", id: event.req.user.id, name: event.req.user.fullName },
-var ActorActivitySchema = new Schema({
+let ActorActivitySchema = new Schema({
   type: { 
     type: String,
     required: true,
@@ -47,7 +47,7 @@ var ActorActivitySchema = new Schema({
   },
 });
 
-var ActivitySchema = new Schema({
+let ActivitySchema = new Schema({
   
   actor: { 
     // type: String,

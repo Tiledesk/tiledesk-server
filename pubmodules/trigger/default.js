@@ -1,12 +1,12 @@
-var Trigger = require('./models/trigger');
+let Trigger = require('./models/trigger');
 
 
-var defTrigger = {};
-var defTriggerObj = {};
+let defTrigger = {};
+let defTriggerObj = {};
        
 
 
-var tNewConversationObj = {
+let tNewConversationObj = {
 name: 'New Conversation',
 description: 'Create a temporary chat when new conversation button is pressed.',
 trigger: {key:'event.emit',name:'Event emit event', description: 'Standard event emit event'},
@@ -20,7 +20,7 @@ createdBy: 'system',
 updatedBy: 'system'
 };
 
-var tNewConversation = new Trigger(tNewConversationObj);          
+let tNewConversation = new Trigger(tNewConversationObj);          
 
 defTrigger['s_new_conversation_01'] = tNewConversation;
 defTriggerObj['s_new_conversation_01'] = tNewConversationObj;
@@ -29,7 +29,7 @@ defTriggerObj['s_new_conversation_01'] = tNewConversationObj;
 
 
 
-var tWelcomeOnlineObj = 
+let tWelcomeOnlineObj = 
 {
     name: 'Online Welcome Greeting',
     description: 'Send a welcome message if there are online agents to the visitor that create a chat.',
@@ -50,7 +50,7 @@ var tWelcomeOnlineObj =
     updatedBy: 'system'
 }
 
-var tWelcomeOnline = new Trigger(tWelcomeOnlineObj);          
+let tWelcomeOnline = new Trigger(tWelcomeOnlineObj);          
 
 defTrigger['s_online_welcome_01'] = tWelcomeOnline;
 defTriggerObj['s_online_welcome_01'] = tWelcomeOnlineObj
@@ -58,7 +58,7 @@ defTriggerObj['s_online_welcome_01'] = tWelcomeOnlineObj
 
 
 
-var tWelcomeOfflineObj = {
+let tWelcomeOfflineObj = {
     name: 'Offline Welcome Greeting',
     description: 'Send a welcome message if there aren\'t online agents to the visitor that create a chat.',
     trigger: {key:'request.create',name:'Request create event', description: 'Standard request create event'},
@@ -77,14 +77,14 @@ var tWelcomeOfflineObj = {
     createdBy: 'system',
     updatedBy: 'system'
 }
-var tWelcomeOffline = new Trigger(tWelcomeOfflineObj);      
+let tWelcomeOffline = new Trigger(tWelcomeOfflineObj);      
 
 defTrigger['s_offline_welcome_01'] = tWelcomeOffline;
 defTriggerObj['s_offline_welcome_01'] = tWelcomeOfflineObj;
 
 
 
-var tWelcomeClosedOperatingHoursObj = {
+let tWelcomeClosedOperatingHoursObj = {
     name: 'Office Closed Notice',
     description: 'Send an office closed message if a visitor asks for support outside of the operating hours.',
     trigger: {key:'request.create',name:'Request create event', description: 'Standard request create event'},
@@ -102,7 +102,7 @@ var tWelcomeClosedOperatingHoursObj = {
     createdBy: 'system',
     updatedBy: 'system'
 }
-var tWelcomeClosedOperatingHours = new Trigger(tWelcomeClosedOperatingHoursObj);      
+let tWelcomeClosedOperatingHours = new Trigger(tWelcomeClosedOperatingHoursObj);      
 
 defTrigger['s_closed_operating_hours_01'] = tWelcomeClosedOperatingHours;
 defTriggerObj['s_closed_operating_hours_01'] = tWelcomeClosedOperatingHoursObj;
@@ -112,7 +112,7 @@ defTriggerObj['s_closed_operating_hours_01'] = tWelcomeClosedOperatingHoursObj;
 
 
 
-var tInviteBotObj = {
+let tInviteBotObj = {
     name: 'Invite Bot',
     description: 'Invite if available the department bot to the temporary chat and start it.',
     trigger: {key:'request.create',name:'Request create event', description: 'Standard request create event'},
@@ -130,7 +130,7 @@ var tInviteBotObj = {
     updatedBy: 'system'
 }
 
-var tInviteBot = new Trigger(tInviteBotObj);          
+let tInviteBot = new Trigger(tInviteBotObj);          
 
 defTrigger['s_invite_bot_01'] = tInviteBot;
 defTriggerObj['s_invite_bot_01'] = tInviteBotObj;
@@ -139,7 +139,7 @@ defTriggerObj['s_invite_bot_01'] = tInviteBotObj;
 
 
 
-var tCheckoutPageObj = {
+let tCheckoutPageObj = {
     name: 'Checkout Page',
     description: 'Reduce cart abandonment by engaging customer that are on the checkout page.',
     trigger: {key:'request.create',name:'Request create event', description: 'Standard request create event'},
@@ -156,13 +156,13 @@ var tCheckoutPageObj = {
     updatedBy: 'system'
 }
 
-var tCheckoutPage = new Trigger(tCheckoutPageObj);          
+let tCheckoutPage = new Trigger(tCheckoutPageObj);          
 
 defTrigger['s_checkout_page_01'] = tCheckoutPage;
 defTriggerObj['s_checkout_page_01'] = tCheckoutPageObj;
 
 
-var tAuthStateChangeProactiveGreetingObj = {
+let tAuthStateChangeProactiveGreetingObj = {
     name: 'New visitor login',
     description: 'Create a temporary chat when a new visitor signin.',
     trigger: {key:'event.emit',name:'Event emit event', description: 'Standard event emit event'},
@@ -180,14 +180,14 @@ var tAuthStateChangeProactiveGreetingObj = {
     updatedBy: 'system'
     };
     
-    var tAuthStateChangeProactiveGreeting = new Trigger(tAuthStateChangeProactiveGreetingObj);          
+    let tAuthStateChangeProactiveGreeting = new Trigger(tAuthStateChangeProactiveGreetingObj);          
     
     defTrigger['s_new_login_01'] = tAuthStateChangeProactiveGreeting;
     defTriggerObj['s_new_login_01'] = tAuthStateChangeProactiveGreetingObj;
 
 
 
-var tInviteProactiveGreetingBotObj = {
+let tInviteProactiveGreetingBotObj = {
     name: 'Invite Proactive Greeting Bot',
     description: 'Invite if available the department bot to proactively greet the temporary chat and start it.',
     trigger: {key:'request.create',name:'Request create event', description: 'Standard request create event'},
@@ -205,7 +205,7 @@ var tInviteProactiveGreetingBotObj = {
     updatedBy: 'system'
 }
 
-var tInviteProactiveGreetingBot = new Trigger(tInviteProactiveGreetingBotObj);          
+let tInviteProactiveGreetingBot = new Trigger(tInviteProactiveGreetingBotObj);          
 
 defTrigger['s_invite_proactive_greeting_bot_01'] = tInviteProactiveGreetingBot;
 defTriggerObj['s_invite_proactive_greeting_bot_01'] = tInviteProactiveGreetingBotObj;
@@ -214,7 +214,7 @@ defTriggerObj['s_invite_proactive_greeting_bot_01'] = tInviteProactiveGreetingBo
 
 
 
-var tProactiveGreetingMessageObj = 
+let tProactiveGreetingMessageObj = 
 {
     name: 'Proactive Greeting',
     description: 'Send a proactive message when a new user signin.',
@@ -233,7 +233,7 @@ var tProactiveGreetingMessageObj =
     updatedBy: 'system'
 }
 
-var tProactiveGreetingMessage = new Trigger(tProactiveGreetingMessageObj);          
+let tProactiveGreetingMessage = new Trigger(tProactiveGreetingMessageObj);          
 
 defTrigger['s_proactivegreeting_message_01'] = tProactiveGreetingMessage;
 defTriggerObj['s_proactivegreeting_message_01'] = tProactiveGreetingMessageObj
@@ -244,7 +244,7 @@ defTriggerObj['s_proactivegreeting_message_01'] = tProactiveGreetingMessageObj
 
 
 
-var tTicketingTakingObj = 
+let tTicketingTakingObj = 
 {
     name: 'Ticketing Taking',
     description: 'Send a taking message when a new ticket is created.',
@@ -262,7 +262,7 @@ var tTicketingTakingObj =
     updatedBy: 'system'
 }
 
-var tTicketingTaking = new Trigger(tTicketingTakingObj);          
+let tTicketingTaking = new Trigger(tTicketingTakingObj);          
 
 defTrigger['s_ticketing_taking_01'] = tTicketingTaking;
 defTriggerObj['s_ticketing_taking_01'] = tTicketingTakingObj

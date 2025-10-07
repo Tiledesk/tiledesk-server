@@ -1,10 +1,10 @@
 const faq_kb = require("../models/faq_kb");
 const httpUtil = require("../utils/httpUtil");
 const uuidv4 = require('uuid/v4');
-var jwt = require('jsonwebtoken');
-var winston = require('../config/winston');
+let jwt = require('jsonwebtoken');
+let winston = require('../config/winston');
 const errorCodes = require("../errorCodes");
-var ObjectId = require('mongoose').Types.ObjectId;
+let ObjectId = require('mongoose').Types.ObjectId;
 
 const port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/";;
@@ -84,7 +84,7 @@ class WebhookService {
         let botPayload = chatbot.toObject();
         let botSecret = botPayload.secret;
       
-        var bot_token = jwt.sign(botPayload, botSecret, signOptions);
+        let bot_token = jwt.sign(botPayload, botSecret, signOptions);
         return bot_token;
       }
 }

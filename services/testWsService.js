@@ -1,6 +1,6 @@
-var Message = require("../models/message");
+let Message = require("../models/message");
 const WebSocket = require('ws');
-var url = require('url');
+let url = require('url');
 
 class TestWsService {
 
@@ -10,12 +10,12 @@ class TestWsService {
   // https://medium.com/@martin.sikora/node-js-websocket-simple-chat-tutorial-2def3a841b61
   init(server) {
     
-    //var wss = new WebSocket.Server({ port: 40510 });
-    //var wss = new WebSocket.Server({ port: 40510 , path: "/messages" });
-    //var wss = new WebSocket.Server({  port: 80 ,path: "/messages" });
-     var wss = new WebSocket.Server({  server: server,path: "/testws" });
+    //let wss = new WebSocket.Server({ port: 40510 });
+    //let wss = new WebSocket.Server({ port: 40510 , path: "/messages" });
+    //let wss = new WebSocket.Server({  port: 80 ,path: "/messages" });
+     let wss = new WebSocket.Server({  server: server,path: "/testws" });
     
-    var that = this;
+    let that = this;
 
 
     // https://github.com/websockets/ws/blob/master/examples/express-session-parse/index.js
@@ -30,11 +30,11 @@ class TestWsService {
        //console.log('ws connection. req', req);
        let urlParsed = url.parse(req.url, true);
        console.log('urlParsed', urlParsed);
-       var queryParameter = urlParsed.query;
+       let queryParameter = urlParsed.query;
        console.log('queryParameter', queryParameter);
        console.log('queryParameter.q', queryParameter.q);
        
-       var query = JSON.parse(queryParameter.q);    
+       let query = JSON.parse(queryParameter.q);    
        console.log('query=', query);
      
       // Message.find({"recipient": requestid, id_project: id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) { 
@@ -50,8 +50,8 @@ class TestWsService {
       
       
       setInterval(function() {
-        var message = {text:`ciao2 il ${new Date()}`};
-        // var array = new Array();
+        let message = {text:`ciao2 il ${new Date()}`};
+        // let array = new Array();
         // array.push(message);
         // ws.send(array);
         ws.send(JSON.stringify(message));
@@ -84,5 +84,5 @@ class TestWsService {
 
 }
 
-var testWsService = new TestWsService();
+let testWsService = new TestWsService();
 module.exports = testWsService;

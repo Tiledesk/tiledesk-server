@@ -3,11 +3,11 @@
 
 // Modules imports
 const express = require('express');
-var router = express.Router();
+let router = express.Router();
 const NodeRSA = require('node-rsa');
 const Project = require('../models/project');
 const uuidv4 = require('uuid/v4');
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 
 // curl -v -X POST -u andrea.leo@f21.it:123456 http://localhost:3000/5bae41325f03b900401e39e8/keys/generate
 router.post('/generate', function (req, res) {
@@ -28,7 +28,7 @@ router.post('/generate', function (req, res) {
 
     
 
-    var update = {
+    let update = {
         publicKey: publicKey, 
         privateKey: privateKey,
         jwtSecret: jwtSecret

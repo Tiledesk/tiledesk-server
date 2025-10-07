@@ -21,6 +21,6 @@ class FileUtils {
     }
 }
 
-var fileUtils = new FileUtils();
+let fileUtils = new FileUtils();
 
 module.exports = fileUtils;

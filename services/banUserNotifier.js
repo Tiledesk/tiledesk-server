@@ -1,20 +1,20 @@
-var messageService = require("./messageService");
-var projectEvent = require("../event/projectEvent");
+let messageService = require("./messageService");
+let projectEvent = require("../event/projectEvent");
 
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 
-var MessageConstants = require("../models/messageConstants");
+let MessageConstants = require("../models/messageConstants");
 
 class BanUserNotifier {
 
     listen() {
         projectEvent.on("project.update.user.ban", function(data) {
-            var project=data.project;
-            var banInfo = data.banInfo;
+            let project=data.project;
+            let banInfo = data.banInfo;
 
             winston.debug("User Banned");
 
-            var message = {
+            let message = {
                 sender: 'system',
                 senderFullname: 'Bot',
                 recipient: banInfo.id,
@@ -42,12 +42,12 @@ class BanUserNotifier {
             // );
         });
         projectEvent.on("project.update.user.unban", function(data) {
-            var project=data.project;
-            var banInfo = data.banInfo;
+            let project=data.project;
+            let banInfo = data.banInfo;
 
             winston.debug("User UnBanned: "+banInfo);
 
-            // var message = {
+            // let message = {
             //     sender: 'system',
             //     senderFullname: 'Bot',
             //     recipient: banInfo,
@@ -80,7 +80,7 @@ class BanUserNotifier {
     }
 
 }
-var banUserNotifier = new BanUserNotifier();
+let banUserNotifier = new BanUserNotifier();
 
 
 module.exports = banUserNotifier;

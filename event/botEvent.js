@@ -1,10 +1,10 @@
 const EventEmitter = require('events');
 const messageEvent = require('../event/messageEvent');
 const Faq_kb = require('../models/faq_kb');
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 const cacheUtil = require("../utils/cacheUtil");
 const cacheEnabler = require("../services/cacheEnabler");
-var Faq = require("../models/faq");
+let Faq = require("../models/faq");
 const { Webhook } = require('../models/webhook');
 
 // class BotEvent extends EventEmitter {}
@@ -20,7 +20,7 @@ class BotEvent extends EventEmitter {
     listen() {
         //TODO modify to async
         //messageEvent.on('message.received', function(message) {
-        var messageCreateKey = 'message.create';
+        let messageCreateKey = 'message.create';
         if (messageEvent.queueEnabled) {
             messageCreateKey = 'message.create.queue';
         }
@@ -66,7 +66,7 @@ class BotEvent extends EventEmitter {
             //     return null;
             // }
 
-            var botId = getBotId(message);
+            let botId = getBotId(message);
 
             winston.debug("botId: " + botId);
 
@@ -115,7 +115,7 @@ class BotEvent extends EventEmitter {
 
                     } else {  //external 
                         if (bot.url) {
-                            var botNotification = { bot: bot, message: message };
+                            let botNotification = { bot: bot, message: message };
                             botEvent.emit('bot.message.received.notify.external', botNotification);
                         } else {
                             winston.warn("bot url is not defined", bot);
@@ -187,7 +187,7 @@ const botEvent = new BotEvent();
 
 //TODO use request. getBotId
 function getBotFromParticipants(participants) {
-    var botIdTmp;
+    let botIdTmp;
   
     if (participants) {
       participants.forEach(function(participant) { 
@@ -210,14 +210,14 @@ function getBotFromParticipants(participants) {
 
 //TODO use request. getBotId
 function getBotId(message) {
-    var sender = message.sender;
+    let sender = message.sender;
     winston.debug("sender", sender);
  
     if (sender=="sytem") {
          return null;
     }
  
-    var recipient = message.recipient;
+    let recipient = message.recipient;
     winston.debug("recipient", recipient);
  
     // botprefix
@@ -225,17 +225,17 @@ function getBotId(message) {
         // botprefix
         return recipient.replace('bot_','');
     }
-    // var text = message.text;
+    // let text = message.text;
     // winston.debug("text", text);
     
     if ( message.request== null || message.request.participants == null) {
         return null;
     }
 
-    var participants = message.request.participants;
+    let participants = message.request.participants;
     winston.debug("participants", participants);
  
-    var botId = getBotFromParticipants(participants);
+    let botId = getBotFromParticipants(participants);
     winston.debug("botId: " + botId);
  
    if (botId) {

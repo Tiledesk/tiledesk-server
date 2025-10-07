@@ -1,4 +1,4 @@
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 const axios = require("axios").default;
 require('dotenv').config();
 const jwt = require("jsonwebtoken")
@@ -292,6 +292,6 @@ class AiService {
 
 }
 
-var aiService = new AiService();
+let aiService = new AiService();
 
 module.exports = aiService;

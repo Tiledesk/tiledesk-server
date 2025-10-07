@@ -1,23 +1,23 @@
-var express = require('express');
-var router = express.Router();
-var Group = require("../models/group");
-var Segment = require("../models/segment");
-var Lead = require("../models/lead");
-var User = require("../models/user");
-var winston = require('../config/winston');
-var requestService = require("../services/requestService");
-var messageService = require("../services/messageService");
-var MessageConstants = require("../models/messageConstants");
-var UIDGenerator = require("../utils/UIDGenerator");
-var LeadConstants = require("../models/leadConstants");
-var Segment2MongoConverter = require("../utils/segment2mongoConverter");
+let express = require('express');
+let router = express.Router();
+let Group = require("../models/group");
+let Segment = require("../models/segment");
+let Lead = require("../models/lead");
+let User = require("../models/user");
+let winston = require('../config/winston');
+let requestService = require("../services/requestService");
+let messageService = require("../services/messageService");
+let MessageConstants = require("../models/messageConstants");
+let UIDGenerator = require("../utils/UIDGenerator");
+let LeadConstants = require("../models/leadConstants");
+let Segment2MongoConverter = require("../utils/segment2mongoConverter");
 
-var JobManager = require("jobs-worker-queued");
+let JobManager = require("jobs-worker-queued");
 
-var JOB_RABBITURI = process.env.JOB_RABBITURI;
+let JOB_RABBITURI = process.env.JOB_RABBITURI;
 winston.verbose("JobWorkerQueued uri: " + JOB_RABBITURI);
 
-var jobManager = new JobManager(JOB_RABBITURI,
+let jobManager = new JobManager(JOB_RABBITURI,
   {
   // debug:true,
   // topic: "test22",
@@ -32,7 +32,7 @@ router.post('/', function (req, res) {
 
   winston.debug(req.body);
   winston.debug("req.user", req.user);
-  var request_id = req.body.request_id || 'support-group-' + req.projectid + "-" + UIDGenerator.generate();
+  let request_id = req.body.request_id || 'support-group-' + req.projectid + "-" + UIDGenerator.generate();
 
   // TODO cicla su segment
 
@@ -73,19 +73,19 @@ router.post('/directDEPRECATED?', async function (req, res) {
   winston.debug(req.body);
   winston.debug("req.user", req.user);
 
-  var recipients = [];
+  let recipients = [];
 
-  var recipient = req.body.recipient;
+  let recipient = req.body.recipient;
   if (recipient) {
     recipients.push(recipient);
   }
 
   // TODO cicla su segment
-  var segment_id = req.body.segment_id;
+  let segment_id = req.body.segment_id;
   if (segment_id) {
       winston.info("segment_id: "+ segment_id);
       
-      var queryLead = {};
+      let queryLead = {};
 
       let segment = await Segment.findOne({id_project: req.projectid, _id: segment_id }).exec();
       if (!segment) {
@@ -98,19 +98,19 @@ router.post('/directDEPRECATED?', async function (req, res) {
       winston.info("queryLead", queryLead);
 
       let leads = await Lead.find(queryLead).exec();
-      var recipients = leads;
+      let recipients = leads;
   }
 
-  var group_id = req.body.group_id;
+  let group_id = req.body.group_id;
   if (group_id) {
-    var group = await Group.findOne({ _id: group_id, id_project: req.projectid }).exec();
+    let group = await Group.findOne({ _id: group_id, id_project: req.projectid }).exec();
     winston.info("group", group);
 
     if (!group) {
       return res.status(404).send({ success: false, msg: 'Error group not found' });
     }
 
-    var recipients = group.members;
+    let recipients = group.members;
     // winston.info("members", members);
 
 
@@ -157,24 +157,24 @@ router.post('/directDEPRECATED?', async function (req, res) {
   }
 
 
-  var promises = [];
+  let promises = [];
   for (const recipient of recipients) {
   // recipients.forEach( async (recipient) => {
 
     // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type) {
-    // var promise = messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, recipient, req.body.text,
+    // let promise = messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, recipient, req.body.text,
     //   req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata, req.body.language, MessageConstants.CHANNEL_TYPE.DIRECT, req.body.channel);
 
     winston.info("recipient: " + recipient);
 
     message.recipient = recipient;
 
-    var user = await User.findOne({_id:recipient}).exec();
+    let user = await User.findOne({_id:recipient}).exec();
     winston.info("user", user);
     
     message.recipientFullname = user.fullName;
 
-    var promise = messageService.save(message);
+    let promise = messageService.save(message);
     promises.push(promise);
     // .then(function(savedMessage){                    
     // result.push(savedMessage);
@@ -214,7 +214,7 @@ router.post('/directDEPRECATED?', async function (req, res) {
         let message = data.payload.message;
 
         // TODO cicla su segment
-        var segment_id = data.payload.segment_id;
+        let segment_id = data.payload.segment_id;
         if (segment_id) {
             winston.info("segment_id: "+ segment_id);
             
@@ -222,7 +222,7 @@ router.post('/directDEPRECATED?', async function (req, res) {
           
           
         
-            var queryLead = {};
+            let queryLead = {};
 
             let segment = await Segment.findOne({id_project: data.payload.project_id, _id: segment_id }).exec();
             if (!segment) {
@@ -285,7 +285,7 @@ router.post('/directDEPRECATED?', async function (req, res) {
             // }
         
             // let leads = await Lead.find(queryLead).exec();
-            // var recipients = leads;
+            // let recipients = leads;
             // winston.info("recipients", recipients);
 
 
@@ -302,7 +302,7 @@ router.post('/direct', async function (req, res) {
   winston.debug(req.body);
   winston.debug("req.user", req.user);
 
-  var segment_id = req.body.segment_id;
+  let segment_id = req.body.segment_id;
   winston.info("segment_id"+ segment_id);
 
   let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;

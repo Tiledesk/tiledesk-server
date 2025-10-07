@@ -1,9 +1,9 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
 
 
 
-var SubscriptionLogSchema = new Schema({
+let SubscriptionLogSchema = new Schema({
   event: {
     type: String,
     required: true
