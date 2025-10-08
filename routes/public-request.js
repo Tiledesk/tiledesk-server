@@ -236,9 +236,9 @@ let printer = new PdfPrinter(fonts);
 
       let text = "Chat transcript:\n" //+ req.project.name;
 
-      filteredMessages.forEach(function(element) {
-        text = text + "[ " + element.createdAt.toLocaleString('en', { timeZone: 'UTC' })+ "] " + element.senderFullname + ": " + element.text + "\n";
-      });
+      for (const element of filteredMessages) {
+        text += `[ ${element.createdAt.toLocaleString('en', { timeZone: 'UTC' })} ] ${element.senderFullname}: ${element.text}\n`;
+      }
     
 
       res.set({"Content-Disposition":"attachment; filename=\"transcript.txt\""});
@@ -289,10 +289,10 @@ let printer = new PdfPrinter(fonts);
       };
 
       
-
-      filteredMessages.forEach(function(element) {
+      for (const element of filteredMessages) {
         docDefinition.content[1].ul.push("[ " + element.createdAt.toLocaleString('en', { timeZone: 'UTC' })+ "] " + element.senderFullname + ": " + element.text );
-      });
+      }
+
 
       console.log(docDefinition);
    
@@ -328,18 +328,17 @@ let printer = new PdfPrinter(fonts);
 
       let filteredMessages = messages.filter(m => m.sender != "system" );
 
-      filteredMessages.forEach(function(element) {
-
+      for (const element of filteredMessages) {
         let channel_name = "";
-        if (element.channel && element.channel.name) {
+      
+        if (element.channel?.name) {
           channel_name = element.channel.name;
         }
+      
         delete element.channel;
         element.channel_name = channel_name;
-
         delete element.attributes;
-      });
-
+      }
 
       res.setHeader('Content-Type', 'applictext/csv');
       res.setHeader('Content-Disposition', 'attachment; filename=transcript.csv');

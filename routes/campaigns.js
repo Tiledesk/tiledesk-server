@@ -98,7 +98,7 @@ router.post('/directDEPRECATED?', async function (req, res) {
       winston.info("queryLead", queryLead);
 
       let leads = await Lead.find(queryLead).exec();
-      let recipients = leads;
+      recipients = leads;
   }
 
   let group_id = req.body.group_id;
@@ -110,7 +110,7 @@ router.post('/directDEPRECATED?', async function (req, res) {
       return res.status(404).send({ success: false, msg: 'Error group not found' });
     }
 
-    let recipients = group.members;
+    recipients = group.members;
     // winston.info("members", members);
 
 

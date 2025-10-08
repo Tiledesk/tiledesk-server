@@ -110,8 +110,9 @@ router.post('/train', roleChecker.hasRole('admin'), function (req, res) {
             });
             winston.info("train", train);
 
+            let trainHttp;
             try {
-              let trainHttp = await httpUtil.call(faq_kb.url + "/trainandload", undefined, train, "POST");
+              trainHttp = await httpUtil.call(faq_kb.url + "/trainandload", undefined, train, "POST");
             } catch (e) {
               winston.error("error training", e);
             }

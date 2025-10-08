@@ -929,7 +929,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
         if (org!=undefined) {
           winston.debug("org!=undefined");
 
-          let project_users = project_users.filter(function (projectUser) {
+          project_users.filter(function (projectUser) {
             if (projectUser.id_project.organization && projectUser.id_project.organization === org ) {
               winston.debug("keep");
               return true;

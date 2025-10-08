@@ -770,7 +770,11 @@ router.get(
   function(req, res) {
     winston.verbose("'/keycloak/callback: ");
     // Successful authentication, redirect home.
-    res.redirect('/');
+    let prevSession = req.session;
+    req.session.regenerate((err) => {
+      Object.assign(req.session, prevSession);
+      res.redirect('/');
+    });
   }
 );
 
