@@ -19,6 +19,7 @@ var parsecsv = require("fast-csv");
 
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
 const { kbTypes } = require('../models/kbConstants');
+const integrationService = require('../services/integrationService');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
@@ -269,6 +270,8 @@ router.post('/qa', async (req, res) => {
   let project_id = req.projectid;
   let publicKey = false;
   let data = req.body;
+  let ollama_integration;
+  let vllm_integration;
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
     winston.error("find namespaces error: ", err)
@@ -288,16 +291,41 @@ router.post('/qa', async (req, res) => {
   
   winston.debug("/qa data: ", data);
 
-  if (!data.gptkey) {
-    let gptkey = await getKeyFromIntegrations(project_id);
-    if (!gptkey) {
-      gptkey = process.env.GPTKEY;
-      publicKey = true;
+  if (data.llm === 'ollama') {
+    try {
+      ollama_integration = await integrationService.getIntegration(project_id, 'ollama')
+    } catch (err) {
+      let error_code = err.code || 500;
+      let error_message = err.error || `Unable to get integration for ${data.llm}`;
+      return res.status(error_code).send({ success: false, error: error_message });
     }
-    if (!gptkey) {
-      return res.status(403).send({ success: false, error: "GPT apikey undefined" })
+  }
+  else if (data.llm === 'vllm') {
+    try {
+      vllm_integration = await integrationService.getIntegration(project_id, 'vllm')
+    } catch (err) {
+      let error_code = err.code || 500;
+      let error_message = err.error || `Unable to get integration for ${data.llm}`;
+      return res.status(error_code).send({ success: false, error: error_message });
     }
-    data.gptkey = gptkey;
+  } else {
+    try {
+      let key = await integrationService.getKeyFromIntegration(project_id, data.llm);
+
+      if (!key && data.llm === 'openai') {
+        data.gptkey = process.env.GPTKEY;
+        publicKey = true;
+      }
+      if (!key) {
+        return res.status(404).send({ success: false, error: `Invalid or empty key provided for ${data.llm}` })
+      }
+      data.gptkey = key;
+
+    } catch (err) {
+      let error_code = err.code || 500;
+      let error_message = err.error || `Unable to get integration for ${data.llm}`;
+      return res.status(error_code).send({ success: false, error: error_message });
+    }
   }
 
   let obj = { createdAt: new Date() };
@@ -326,7 +354,30 @@ router.post('/qa', async (req, res) => {
     data.search_type = 'hybrid';
   }
 
-  
+  if (data.llm === 'ollama') {
+    if (!ollama_integration.value.url) {
+      return res.status(422).send({ success: false, error: "Server url for ollama is empty or invalid"})
+    }
+    data.model = {
+      name: data.model,
+      url: ollama_integration.value.url,
+      provider: 'ollama'
+    }
+    data.stream = false;
+  }
+
+  if (data.llm === 'vllm') {
+    if (!vllm_integration.value.url) {
+      return res.status(422).send({ success: false, error: "Server url for ollama is empty or invalid"})
+    }
+    data.model = {
+      name: data.model,
+      url: vllm_integration.value.url,
+      provider: 'ollama'
+    }
+    data.stream = false;
+  }
+
   delete data.advancedPrompt;
   winston.verbose("ask data: ", data);
   
