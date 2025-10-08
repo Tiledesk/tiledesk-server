@@ -312,14 +312,16 @@ router.post('/qa', async (req, res) => {
     try {
       let key = await integrationService.getKeyFromIntegration(project_id, data.llm);
 
-      if (!key && data.llm === 'openai') {
-        data.gptkey = process.env.GPTKEY;
-        publicKey = true;
-      }
       if (!key) {
-        return res.status(404).send({ success: false, error: `Invalid or empty key provided for ${data.llm}` })
+        if (data.llm === 'openai') {
+          data.gptkey = process.env.GPTKEY;
+          publicKey = true;
+        } else {
+          return res.status(404).send({ success: false, error: `Invalid or empty key provided for ${data.llm}` });
+        }
+      } else {
+        data.gptkey = key;
       }
-      data.gptkey = key;
 
     } catch (err) {
       let error_code = err.code || 500;
