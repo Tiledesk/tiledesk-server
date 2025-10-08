@@ -100,7 +100,7 @@ router.post('/preview', async (req, res) => {
                 winston.info("No multiplier found for AI model " + json.model)
             }
             obj.multiplier = multiplier;
-            obj.tokens = response.data?.prompt_token_size || 0;
+            obj.tokens = response.data?.prompt_token_info?.total_tokens || 0;
             quoteManager.incrementTokenCount(req.project, obj);
         }
         res.status(200).send(response.data)
