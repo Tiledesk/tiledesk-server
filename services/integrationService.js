@@ -12,7 +12,7 @@ class IntegrationService {
 
         try {
             const integration = await integrations.findOne({ id_project: id_project, name: integration_name});
-            if (!integration) {
+            if (!integration && integration_name !== 'openai') {
                 throw({ code: 404, error: `Integration ${integration_name} not found for project ${id_project}` });
             }
 
@@ -20,7 +20,7 @@ class IntegrationService {
 
         } catch (err) {
             winston.error("Erro getting integration: ", err);
-            throw({ code: 500, error: `Error getting integration for ${integration_name} for project ${id_project}` })
+            throw({ code: err.code || 500, error: err.error || `Error getting integration for ${integration_name} for project ${id_project}` })
         }
     }
 
@@ -31,15 +31,15 @@ class IntegrationService {
 
         try {
             const integration = await integrations.findOne({ id_project: id_project, name: integration_name});
-            if (!integration) {
+            if (!integration && integration_name !== 'openai') {
                 throw({ code: 404, error: `Integration ${integration_name} not found for project ${id_project}` });
             }
 
-            return integration.value.apikey;
+            return integration?.value?.apikey;
 
         } catch (err) {
             winston.error("Erro getting integration: ", err);
-            throw({ code: 500, error: `Error getting integration for ${integration_name} for project ${id_project}` })
+            throw({ code: err.code || 500, error: err.error || `Error getting integration for ${integration_name} for project ${id_project}` })
         }
     }
 }
