@@ -292,8 +292,9 @@ router.post('/qa', async (req, res) => {
   winston.debug("/qa data: ", data);
 
   if (data.llm === 'ollama') {
+    data.gptkey = process.env.GPTKEY;
     try {
-      ollama_integration = await integrationService.getIntegration(project_id, 'ollama')
+      ollama_integration = await integrationService.getIntegration(project_id, 'ollama');
     } catch (err) {
       let error_code = err.code || 500;
       let error_message = err.error || `Unable to get integration for ${data.llm}`;
@@ -301,6 +302,7 @@ router.post('/qa', async (req, res) => {
     }
   }
   else if (data.llm === 'vllm') {
+    data.gptkey = process.env.GPTKEY;
     try {
       vllm_integration = await integrationService.getIntegration(project_id, 'vllm')
     } catch (err) {
