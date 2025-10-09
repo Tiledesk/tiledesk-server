@@ -26,21 +26,27 @@ const fileService = new FileGridFsService("images");
 
 
 let images_allowed = process.env.UPLOAD_IMAGES_ALLOW_LIST || "image/jpeg,image/png,image/gif,image/vnd.microsoft.icon,image/webp";
-winston.info("Images upload allowed list "+ images_allowed);
-
-
+winston.info("Images upload allowed list " + images_allowed);
 
 const fileFilter = (req, file, cb) => {
-    winston.debug("fileFilter "+ images_allowed);
-  if (images_allowed==="*" || (images_allowed && images_allowed.length>0 && images_allowed.split(",").indexOf(file.mimetype)>-1) ) {
-     winston.debug("file.mimetype allowed: "+ file.mimetype);
-      cb(null, true);
-  } else {
-      winston.debug("file.mimetype not allowed. " + file.mimetype);
-      // cb(null, false);
-      cb(new multer.MulterError('fileFilter not allowed'))
-  }
-}
+    winston.debug("fileFilter " + images_allowed);
+    const ext = file.originalname.toLowerCase().endsWith('.html') || file.originalname.toLowerCase().endsWith('.htm');
+
+    if (ext) {
+        winston.debug("file extension not allowed: " + file.originalname);
+        cb(new multer.MulterError('fileFilter not allowed'));
+        return;
+    }
+
+    if (images_allowed === "*" ||
+        (images_allowed && images_allowed.length > 0 && images_allowed.split(",").indexOf(file.mimetype) > -1)) {
+        winston.debug("file.mimetype allowed: " + file.mimetype);
+        cb(null, true);
+    } else {
+        winston.debug("file.mimetype not allowed. " + file.mimetype);
+        cb(new multer.MulterError('fileFilter not allowed'));
+    }
+};
 
 
 let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
