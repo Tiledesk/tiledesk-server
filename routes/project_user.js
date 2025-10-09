@@ -16,6 +16,7 @@ var passport = require('passport');
 require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 var roleChecker = require('../middleware/has-role');
+const puEvent = require('../event/projectUserEvent');
 
 
 router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
@@ -298,6 +299,7 @@ router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { ses
         return res.status(404).send({ success: false, error: 'Project user not found with id ' + pu_id });
       }
 
+      puEvent.emit('project_user.deleted', project_user);
       // Event 'project_user.delete' not working - Check it and improve it to manage soft/hard delete
       return res.status(200).send(project_user);
 
@@ -324,6 +326,7 @@ router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { ses
         });
       }
 
+      puEvent.emit('project_user.deleted', project_user);
       return res.status(200).send(project_user);
     });
   }
