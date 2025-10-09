@@ -34,18 +34,23 @@ let files_allowed = process.env.UPLOAD_FILES_ALLOW_LIST || "text/plain,applicati
 winston.info("Files upload allowed list " + files_allowed);
 
 const fileFilter = (req, file, cb) => {
-    winston.debug("fileFilter " + files_allowed);
-    const ext = file.originalname.toLowerCase().endsWith('.html') || file.originalname.toLowerCase().endsWith('.htm');
+  winston.debug("fileFilter " + files_allowed);
+  const ext = file.originalname.toLowerCase().endsWith('.html') || file.originalname.toLowerCase().endsWith('.htm');
 
-    if (files_allowed === "*" ||
-        (files_allowed && files_allowed.length > 0 && files_allowed.split(",").indexOf(file.mimetype) > -1) ||
-        ext) {
-        winston.debug("file.mimetype allowed: " + file.mimetype);
-        cb(null, true);
-    } else {
-        winston.debug("file.mimetype not allowed. " + file.mimetype);
-        cb(new multer.MulterError('fileFilter not allowed'));
-    }
+  if (ext) {
+      winston.debug("file extension not allowed: " + file.originalname);
+      cb(new multer.MulterError('fileFilter not allowed'));
+      return;
+  }
+
+  if (files_allowed === "*" ||
+      (files_allowed && files_allowed.length > 0 && files_allowed.split(",").indexOf(file.mimetype) > -1)) {
+      winston.debug("file.mimetype allowed: " + file.mimetype);
+      cb(null, true);
+  } else {
+      winston.debug("file.mimetype not allowed. " + file.mimetype);
+      cb(new multer.MulterError('fileFilter not allowed'));
+  }
 };
 
 
