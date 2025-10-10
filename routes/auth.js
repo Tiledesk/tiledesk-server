@@ -107,7 +107,7 @@ router.post('/signup',
           if (!skipVerificationEmail) {
 
             let verify_email_code = uniqid();
-            console.log("(Auth) verify_email_code: ", verify_email_code);
+            winston.verbose("(Auth) verify_email_code: ", verify_email_code);
 
             let redis_client = req.app.get('redis_client');
             let key = "emailverify:verify-" + verify_email_code;
