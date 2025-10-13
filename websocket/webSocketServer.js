@@ -34,6 +34,29 @@ if (pKey) {
   configSecretOrPubicKay = pKey.replace(/\\n/g, '\n');
 }
 
+// Cache for tracking invalid token logs to prevent spam
+const invalidTokenCache = new Map();
+
+function logInvalidToken(req, err) {
+  const ip = req.socket.remoteAddress;
+  const ua = req.headers['user-agent'] || 'unknown';
+  const now = Date.now();
+
+  const cacheKey = `${ip}_${req.url}`;
+  const lastLog = invalidTokenCache.get(cacheKey);
+
+  if (!lastLog || now - lastLog > 60000) {
+    invalidTokenCache.set(cacheKey, now);
+    console.warn('[⚠️ INVALID WS TOKEN]', {
+      ip,
+      ua,
+      url: req.url,
+      time: new Date().toISOString(),
+      message: err.message,
+    });
+  }
+}
+
 var cacheEnabler = require("../services/cacheEnabler");
 
 
@@ -93,7 +116,8 @@ class WebSocketServer {
           token = token.replace('JWT ', '');
           jwt.verify(token, configSecretOrPubicKay, function (err, decoded) {  //pub_jwt pp_jwt
             if (err) {
-              winston.error('WebSocket error verifing websocket jwt token: ' + token, err);
+              // Log invalid token with rate limiting
+              logInvalidToken(info.req, err);
               return cb(false, 401, 'Unauthorized');
             } else {
               // uncomment it
