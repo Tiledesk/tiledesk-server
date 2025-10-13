@@ -188,7 +188,7 @@ router.get('/', async (req, res, next) => {
 
        //@DISABLED_CACHE .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+req.projectid+":select:-settings")            
       
-      Project.findOne({_id: req.projectid, status: 100}).select('-settings -ipFilter -ipFilterEnabled').exec(function(err, project) {
+      Project.findOne({_id: req.projectid, status: 100}).select('-ipFilter -ipFilterEnabled').exec(function(err, project) {
         // not use .lean I need project.trialExpired 
 
           if (err) {
@@ -197,6 +197,20 @@ router.get('/', async (req, res, next) => {
 
 
           winston.debug("project", project);
+
+          // This code filters the project settings to only include the properties
+          // 'allowed_urls', 'allowed_urls_list', 'allowed_send_emoji' and 'allowed_upload_extentions' removing all others.
+          // Removed the "-settings" command from the query that excluded the entire "settings" field from the selection
+          if (project && project.settings) {
+            const { allowed_urls, allowed_urls_list, allow_send_emoji, allowed_upload_extentions } = project.settings;
+            project.settings = {};
+            Object.assign(project.settings, 
+              allowed_urls !== undefined ? { allowed_urls } : {},
+              allowed_urls_list !== undefined ? { allowed_urls_list } : {},
+              allow_send_emoji !== undefined ? { allow_send_emoji } : {},
+              allowed_upload_extentions !== undefined ? { allowed_upload_extentions } : {}
+            );
+          }
 
           // ProjectSetter project not found with id: 62d8cf8b2b10b30013bb9b99
           // Informazioni

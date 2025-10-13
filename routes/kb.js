@@ -19,9 +19,11 @@ var parsecsv = require("fast-csv");
 
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
 const { kbTypes } = require('../models/kbConstants');
+const integrationService = require('../services/integrationService');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
+const JOB_TOPIC_EXCHANGE_HYBRID = process.env.JOB_TOPIC_EXCHANGE_TRAIN_HYBRID || 'tiledesk-trainer-hybrid';
 const KB_WEBHOOK_TOKEN = process.env.KB_WEBHOOK_TOKEN || 'kbcustomtoken';
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 
@@ -52,6 +54,21 @@ jobManager.connectAndStartPublisher((status, error) => {
   }
 })
 
+let jobManagerHybrid = new JobManager(AMQP_MANAGER_URL, {
+  debug: false,
+  topic: JOB_TOPIC_EXCHANGE_HYBRID,
+  exchange: JOB_TOPIC_EXCHANGE_HYBRID
+})
+
+jobManagerHybrid.connectAndStartPublisher((status, error) => {
+  if (error) {
+    winston.error("connectAndStartPublisher error: ", error);
+  } else {
+    winston.info("KbRoute - ConnectPublisher done with status: ", status);
+  }
+})
+
+
 let default_preview_settings = {
   model: 'gpt-4o',
   max_tokens: 256,
@@ -80,6 +97,13 @@ if (process.env.EMBEDDINGS_PROVIDER && process.env.EMBEDDINGS_NAME && process.en
     name: process.env.EMBEDDINGS_NAME,                        // BAA/bge-m3 
     dimension: process.env.EMBEDDINGS_DIMENSION               // 1024
   };
+}
+let default_engine_hybrid = {
+  name: "pinecone",
+  type: process.env.PINECONE_TYPE_HYBRID || "serverless",
+  apikey: "",
+  vector_size: 1536,
+  index_name: process.env.PINECONE_INDEX_HYBRID
 }
 
 let embedding_qa;
@@ -172,7 +196,7 @@ router.post('/scrape/single', async (req, res) => {
       let ns = namespaces.find(n => n.id === kb.namespace);
       json.engine = ns.engine || default_engine;
 
-      if (json.engine.type === 'serverless') {
+      if (ns.hybrid === true) {
         json.hybrid = true;
       }
 
@@ -269,6 +293,8 @@ router.post('/qa', async (req, res) => {
   let project_id = req.projectid;
   let publicKey = false;
   let data = req.body;
+  let ollama_integration;
+  let vllm_integration;
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
     winston.error("find namespaces error: ", err)
@@ -288,16 +314,45 @@ router.post('/qa', async (req, res) => {
   
   winston.debug("/qa data: ", data);
 
-  if (!data.gptkey) {
-    let gptkey = await getKeyFromIntegrations(project_id);
-    if (!gptkey) {
-      gptkey = process.env.GPTKEY;
-      publicKey = true;
+  if (data.llm === 'ollama') {
+    data.gptkey = process.env.GPTKEY;
+    try {
+      ollama_integration = await integrationService.getIntegration(project_id, 'ollama');
+    } catch (err) {
+      let error_code = err.code || 500;
+      let error_message = err.error || `Unable to get integration for ${data.llm}`;
+      return res.status(error_code).send({ success: false, error: error_message });
     }
-    if (!gptkey) {
-      return res.status(403).send({ success: false, error: "GPT apikey undefined" })
+  }
+  else if (data.llm === 'vllm') {
+    data.gptkey = process.env.GPTKEY;
+    try {
+      vllm_integration = await integrationService.getIntegration(project_id, 'vllm')
+    } catch (err) {
+      let error_code = err.code || 500;
+      let error_message = err.error || `Unable to get integration for ${data.llm}`;
+      return res.status(error_code).send({ success: false, error: error_message });
     }
-    data.gptkey = gptkey;
+  } else {
+    try {
+      let key = await integrationService.getKeyFromIntegration(project_id, data.llm);
+
+      if (!key) {
+        if (data.llm === 'openai') {
+          data.gptkey = process.env.GPTKEY;
+          publicKey = true;
+        } else {
+          return res.status(404).send({ success: false, error: `Invalid or empty key provided for ${data.llm}` });
+        }
+      } else {
+        data.gptkey = key;
+      }
+
+    } catch (err) {
+      let error_code = err.code || 500;
+      let error_message = err.error || `Unable to get integration for ${data.llm}`;
+      return res.status(error_code).send({ success: false, error: error_message });
+    }
   }
 
   let obj = { createdAt: new Date() };
@@ -330,6 +385,30 @@ router.post('/qa', async (req, res) => {
     data.embedding = ns.embeddings.embedding_qa;
   } 
   
+  if (data.llm === 'ollama') {
+    if (!ollama_integration.value.url) {
+      return res.status(422).send({ success: false, error: "Server url for ollama is empty or invalid"})
+    }
+    data.model = {
+      name: data.model,
+      url: ollama_integration.value.url,
+      provider: 'ollama'
+    }
+    data.stream = false;
+  }
+
+  if (data.llm === 'vllm') {
+    if (!vllm_integration.value.url) {
+      return res.status(422).send({ success: false, error: "Server url for ollama is empty or invalid"})
+    }
+    data.model = {
+      name: data.model,
+      url: vllm_integration.value.url,
+      provider: 'ollama'
+    }
+    data.stream = false;
+  }
+
   delete data.advancedPrompt;
   winston.verbose("ask data: ", data);
   
@@ -465,7 +544,7 @@ router.get('/namespace/all', async (req, res) => {
 
   let project_id = req.projectid;
 
-  Namespace.find({ id_project: project_id }).lean().exec((err, namespaces) => {
+  Namespace.find({ id_project: project_id }).lean().exec( async (err, namespaces) => {
 
     if (err) {
       winston.error("find namespaces error: ", err);
@@ -509,7 +588,18 @@ router.get('/namespace/all', async (req, res) => {
 
     } else {
 
-      const namespaceObjArray = namespaces.map(({ _id, __v, ...keepAttrs }) => keepAttrs)
+      let namespaceObjArray = [];
+      if (req.query.count) {
+        namespaceObjArray = await Promise.all(
+          namespaces.map(async ({ _id, __v, ...keepAttrs }) => {
+            const count = await KB.countDocuments({ id_project: keepAttrs.id_project, namespace: keepAttrs.id });
+            return { ...keepAttrs, count };
+          })
+        );
+      } else {
+        namespaceObjArray = namespaces.map(({ _id, __v, ...keepAttrs }) => keepAttrs)
+      }
+        
       winston.debug("namespaceObjArray: ", namespaceObjArray);
       return res.status(200).send(namespaceObjArray);
     }
@@ -671,13 +761,32 @@ router.post('/namespace', async (req, res) => {
   let body = req.body;
   winston.debug("add namespace body: ", body);
 
+  let engine = default_engine;
+
+  let hybrid = false;
+  if ('hybrid' in req.body) {
+    if (typeof req.body.hybrid !== 'boolean') {
+      return res.status(400).send({ success: false, error: "Value not accepted for 'hybrid' field. Expected boolean." });
+    }
+    hybrid = req.body.hybrid;
+  }
+
+  if (hybrid) {
+    if (req.project?.profile?.customization?.hybrid) {
+      engine = default_engine_hybrid;
+    } else {
+      return res.status(403).send({ success: false, error: "Hybrid mode is not allowed for the current project" });
+    }
+  }
+
   var namespace_id = mongoose.Types.ObjectId();
   let new_namespace = new Namespace({
     id_project: project_id,
     id: namespace_id,
     name: body.name,
+    hybrid: hybrid,
     preview_settings: default_preview_settings,
-    engine: default_engine
+    engine: engine
   })
 
   if (embedding && embedding_qa) {
@@ -818,6 +927,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   //          import operation the content's limit is respected
   let ns = namespaces.find(n => n.id === namespace_id);
   let engine = ns.engine || default_engine;
+  let hybrid = ns.hybrid;
 
   if (process.env.NODE_ENV !== "test") {
     await aiService.deleteNamespace({
@@ -829,7 +939,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
     });
   }
 
-  let deleteResponse = await KB.deleteMany({ id_project: id_project, namespace: namespace_id }).catch((err) => {
+  let deleteResponse = await KB.deleteMany({ id_project: id_project, namespace: namespace_id, type: { $in: ['url', 'text', 'faq'] } }).catch((err) => {
     winston.error("deleteMany error: ", err);
     return res.status(500).send({ success: false, error: err });
   })
@@ -857,7 +967,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   winston.verbose("resources to be sent to worker: ", resources);
 
   if (process.env.NODE_ENV !== "test") {
-    scheduleScrape(resources);
+    scheduleScrape(resources, hybrid);
   }
 
   res.status(200).send({ success: true, message: "Contents imported successfully" });
@@ -1255,10 +1365,7 @@ router.post('/', async (req, res) => {
       }
       let ns = namespaces.find(n => n.id === body.namespace);
       json.engine = ns.engine || default_engine;
-
-      if (json.engine.type === 'serverless') {
-        json.hybrid = true;
-      }
+      json.hybrid = ns.hybrid;
 
       if (ns.embeddings?.embedding) {
         json.embedding = ns.embeddings.embedding;
@@ -1267,8 +1374,9 @@ router.post('/', async (req, res) => {
       let resources = [];
 
       resources.push(json);
+      
       if (process.env.NODE_ENV !== 'test') {
-        scheduleScrape(resources);
+        scheduleScrape(resources, ns.hybrid);
       }
 
     }
@@ -1387,14 +1495,11 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
     let ns = namespaces.find(n => n.id === namespace_id);
     let engine = ns.engine || default_engine;
+    let hybrid = ns.hybrid;
+    
     let embedding;
     if (ns.embeddings?.embedding) {
       embedding = ns.embeddings.embedding;
-    }
-
-    let hybrid;
-    if (engine.type === 'serverless') {
-      hybrid = true;
     }
 
     let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
@@ -1404,7 +1509,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     winston.verbose("resources to be sent to worker: ", resources);
 
     if (process.env.NODE_ENV !== 'test') {
-      scheduleScrape(resources);
+      scheduleScrape(resources, hybrid);
     }
     res.status(200).send(result);
 
@@ -1506,6 +1611,8 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
         let ns = namespaces.find(n => n.id === namespace_id);
         let engine = ns.engine || default_engine;
+        let hybrid = ns.hybrid;
+        
         let embedding;
         if (ns.embeddings?.embedding) {
           embedding = ns.embeddings.embedding;
@@ -1517,7 +1624,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
         })
         winston.verbose("resources to be sent to worker: ", resources);
         if (process.env.NODE_ENV !== 'test') {
-          scheduleScrape(resources);
+          scheduleScrape(resources, hybrid);
         }
         res.status(200).send(result);
       }).catch((err) => {
@@ -1539,10 +1646,12 @@ router.post('/sitemap', async (req, res) => {
 
   const sitemap = new Sitemapper({
     url: sitemap_url,
-    timeout: 15000
+    timeout: 15000,
+    debug: true
   });
 
   sitemap.fetch().then((data) => {
+    // TODO - check on data.errors to catch error
     winston.debug("data: ", data);
     res.status(200).send(data);
   }).catch((err) => {
@@ -1735,9 +1844,19 @@ async function updateStatus(id, status) {
   })
 }
 
-async function scheduleScrape(resources) {
+async function scheduleScrape(resources, hybrid) {
 
-  let scheduler = new Scheduler({ jobManager: jobManager });
+  let scheduler;
+  if (hybrid) {
+    scheduler = new Scheduler({ jobManager: jobManagerHybrid });
+  } else {
+    scheduler = new Scheduler({ jobManager: jobManager });
+  }
+
+  if (!scheduler) {
+    winston.error("ScheduleScrape JobManager is not defined");
+    return false;
+  }
 
   resources.forEach(r => {
     winston.debug("Schedule job with following data: ", r);
