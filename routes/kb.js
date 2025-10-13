@@ -83,10 +83,10 @@ let default_engine = {
   name: process.env.VECTOR_STORE_NAME || "pinecone",
   type: process.env.INDEX_TYPE || process.env.PINECONE_TYPE || "severless",
   apikey: "",
-  vector_size: process.env.VECTOR_SIZE || 1536,
+  vector_size: Number(process.env.VECTOR_SIZE) || 1536,
   index_name: process.env.INDEX_NAME || process.env.PINECONE_INDEX || "llm-sample-index",
   ...(process.env.VECTOR_STORE_HOST && { host: process.env.VECTOR_STORE_HOST }),
-  ...(process.env.VECTOR_STORE_PORT && { port: process.env.VECTOR_STORE_PORT }),
+  ...(process.env.VECTOR_STORE_PORT && { port: Number(process.env.VECTOR_STORE_PORT) }),
   ...(process.env.VECTOR_STORE_DEPLOYMENT && { deployment: process.env.VECTOR_STORE_DEPLOYMENT })
 };
 
@@ -95,7 +95,7 @@ if (process.env.EMBEDDINGS_PROVIDER && process.env.EMBEDDINGS_NAME && process.en
   embedding = {
     provider: process.env.EMBEDDINGS_PROVIDER,                // huggingface
     name: process.env.EMBEDDINGS_NAME,                        // BAA/bge-m3 
-    dimension: process.env.EMBEDDINGS_DIMENSION               // 1024
+    dimension: Number(process.env.EMBEDDINGS_DIMENSION)       // 1024
   };
 }
 let default_engine_hybrid = {
