@@ -96,7 +96,9 @@
             "SENT_AN_IMAGE": "sent an image",
     
             "LABEL_PREVIEW": "Preview",
-            "SWITCH_TO":"Or switch to:"
+            "SWITCH_TO":"Or switch to:",
+			"MAX_ATTACHMENT": "Max allowed size {{file_size_limit}}Mb",
+    		"EMOJI": "Emoji"
         }
     },
     {
@@ -196,7 +198,9 @@
             "SENT_AN_IMAGE":"ha inviato un'immagine",
             
             "LABEL_PREVIEW": "Anteprima",
-            "SWITCH_TO":"Oppure passa a:"
+            "SWITCH_TO":"Oppure passa a:",
+			"MAX_ATTACHMENT": "Dimensione massima consentita {{file_size_limit}}Mb",
+    		"EMOJI": "Emoji"
         }
     },
     {
@@ -296,7 +300,9 @@
             "SENT_AN_IMAGE": "envoyé une image",
 
             "LABEL_PREVIEW": "Aperçu",
-            "SWITCH_TO":"Ou passer à:"
+            "SWITCH_TO":"Ou passer à:",
+			"MAX_ATTACHMENT": "Taille maximale autorisée {{file_size_limit}}Mb",
+    		"EMOJI": "Emoji"
         }
      },
      {
@@ -396,7 +402,9 @@
             "SENT_AN_IMAGE": "envió una imagen",
 
             "LABEL_PREVIEW": "Avance",
-            "SWITCH_TO":"O cambiar a:"
+            "SWITCH_TO":"O cambiar a:",
+			"MAX_ATTACHMENT": "Tamaño máximo permitido {{file_size_limit}}Mb",
+    		"EMOJI": "Emoji"
         }
     },
     {
@@ -496,7 +504,9 @@
             "SENT_AN_IMAGE": "ein Bild gesendet",
     
             "LABEL_PREVIEW": "Vorschau",
-            "SWITCH_TO":"Oder wechseln Sie zu:"
+            "SWITCH_TO":"Oder wechseln Sie zu:",
+			"MAX_ATTACHMENT": "Maximal zulässige Größe {{file_size_limit}}Mb",
+    		"EMOJI": "Emoji"
         }
     },
     {
@@ -596,7 +606,9 @@
             "SENT_AN_IMAGE": "enviou uma imagem",
     
             "LABEL_PREVIEW": "Visualizar",
-            "SWITCH_TO":"Ou mude para:"
+            "SWITCH_TO":"Ou mude para:",
+			"MAX_ATTACHMENT": "Tamanho máximo permitido {{file_size_limit}}Mb",
+    		"EMOJI": "Emoji"
         }
     },
     {
@@ -696,7 +708,9 @@
             "SENT_AN_IMAGE": "отправил изображение",
     
             "LABEL_PREVIEW": "Превью",
-            "SWITCH_TO":"Или переключитесь на:"
+            "SWITCH_TO":"Или переключитесь на:",
+			"MAX_ATTACHMENT": "Максимально допустимый размер {{file_size_limit}}Mb",
+    		"EMOJI": "Эмодзи"
         }
     },
     {
@@ -796,7 +810,9 @@
             "SENT_AN_IMAGE": "bir resim gönderdi",
     
             "LABEL_PREVIEW": "Ön izleme",
-            "SWITCH_TO":"Veya geçiş yapın:"
+            "SWITCH_TO":"Veya geçiş yapın:",
+			"MAX_ATTACHMENT": "İzin verilen maksimum boyut {{file_size_limit}}Mb",
+    		"EMOJI": "Emoji"
         }
     },
 
@@ -898,7 +914,9 @@
             "SENT_AN_IMAGE":"послао имаге",
             
             "LABEL_PREVIEW": "Преглед",
-            "SWITCH_TO":"Или пређите на:"
+            "SWITCH_TO":"Или пређите на:",
+			"MAX_ATTACHMENT": "Максимално дозвољена величина {{file_size_limit}}Mb",
+    		"EMOJI": "Емоџи"
         }
      },
 
@@ -1000,7 +1018,9 @@
             "SENT_AN_IMAGE": "أرسل صورة",
             
             "LABEL_PREVIEW": "معاينة",
-            "SWITCH_TO": "أو قم بالتبديل إلى:"
+            "SWITCH_TO": "أو قم بالتبديل إلى:",
+			"MAX_ATTACHMENT": "الحد الأقصى للحجم المسموح به {{file_size_limit}}Mb",
+    		"EMOJI": "رموز تعبيرية"
         }
     },
 
@@ -1102,7 +1122,9 @@
             "SENT_AN_IMAGE": "надіслав зображення",
             
             "LABEL_PREVIEW": "Попередній перегляд",
-            "SWITCH_TO": "Або перейдіть на:"
+            "SWITCH_TO": "Або перейдіть на:",
+			"MAX_ATTACHMENT": "Максимально допустимий розмір {{file_size_limit}}Mb",
+    		"EMOJI": "Емодзі"
         }
     },
     {
@@ -1203,7 +1225,9 @@
             "SENT_AN_IMAGE": "skickade en bild",
             
             "LABEL_PREVIEW": "Förhandsvisning",
-            "SWITCH_TO": "Eller byt till:"
+            "SWITCH_TO": "Eller byt till:",
+			"MAX_ATTACHMENT": "Max tillåten storlek {{file_size_limit}}Mb",
+    		"EMOJI": "Emoji"
         }
     },
     {
@@ -1304,7 +1328,9 @@
             "SENT_AN_IMAGE": "сурет жіберді",
             
             "LABEL_PREVIEW": "Алдын ала қарау",
-            "SWITCH_TO": "Немесе келесіге ауысыңыз:"
+            "SWITCH_TO": "Немесе келесіге ауысыңыз:",
+			"MAX_ATTACHMENT": "Максималды рұқсат етілген өлшем {{file_size_limit}}Mb",
+    		"EMOJI": "Эмодзи"
         }
     },
     {
@@ -1404,8 +1430,10 @@
             "SENT_AN_ATTACHMENT": "ilova yubordi",
             "SENT_AN_IMAGE": "rasm yubordi",
             
-            "LABEL_PREVIEW": "Ko‘rib chiqish",
-            "SWITCH_TO": "Yoki o'tish:"
+            "LABEL_PREVIEW": "Ko'rib chiqish",
+            "SWITCH_TO": "Yoki o'tish:",
+			"MAX_ATTACHMENT": "Maksimal ruxsat etilgan o'lcham {{file_size_limit}}Mb",
+    		"EMOJI": "Emoji"
         }
     },
     {
@@ -1506,7 +1534,9 @@
             "SENT_AN_IMAGE": "şəkil göndərdi",
             
             "LABEL_PREVIEW": "Önizləmə",
-            "SWITCH_TO": "Və ya keçin:"
+            "SWITCH_TO": "Və ya keçin:",
+			"MAX_ATTACHMENT": "Maksimal icazə verilən ölçü {{file_size_limit}}Mb",
+    		"EMOJI": "Emoji"
         }
     }
 ]
