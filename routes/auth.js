@@ -782,22 +782,32 @@ router.get("/oauth2", function (req, res, next) {
   winston.debug("(oauth2) forced_redirect_url: " + req.query.forced_redirect_url);
   req.session.forced_redirect_url = req.query.forced_redirect_url;
 
-  passport.authenticate(
-    'oauth2'
-  )(req, res, next);
+  req.session.save(() => {
+    passport.authenticate('oauth2',{
+      state: JSON.stringify({
+        redirect_url: req.query.redirect_url,
+        forced_redirect_url: req.query.forced_redirect_url
+      })
+    })(req, res, next);
+  });
+
+  // passport.authenticate(
+  //   'oauth2'
+  // )(req, res, next);
 });
 
 // router.get('/oauth2',
 //   passport.authenticate('oauth2'));
 
 router.get('/oauth2/callback', passport.authenticate('oauth2', { session: false }), function (req, res) {
-  winston.debug("'/oauth2/callback: ", req.query);
-  winston.debug("/oauth2/callback --> req.session.redirect_url", req.session.redirect_url);
-  winston.debug("/oauth2/callback --> req.session.forced_redirect_url", req.session.forced_redirect_url);
+  winston.debug("'(/oauth2/callback): ", req.query);
+  const state = JSON.parse(req.query.state);
+  winston.debug("(/oauth2/callback) redirect_url:"+ state.redirect_url);
+  winston.debug("(/oauth2/callback) forced_redirect_url:"+ state.forced_redirect_url);
 
   var user = req.user;
   winston.debug("(/oauth2/callback) user", user);
-  winston.debug("(/oauth2/callback) req.session.redirect_url: " + req.session.redirect_url);
+  winston.debug("(/oauth2/callback) state.redirect_url: " + state.redirect_url);
   var userJson = user.toObject();
 
   delete userJson.password;
@@ -821,21 +831,20 @@ router.get('/oauth2/callback', passport.authenticate('oauth2', { session: false 
   // res.json(returnObject);
 
   let dashboard_base_url = process.env.EMAIL_BASEURL || config.baseUrl;
-  winston.debug("(/oauth2/callback) Google Redirect dashboard_base_url: ", dashboard_base_url);
+  winston.debug("(/oauth2/callback) Google Redirect dashboard_base_url: "+ dashboard_base_url);
 
   let homeurl = "/#/";
-    
   const separator = homeurl.includes('?') ? '&' : '?';
   var url = dashboard_base_url+homeurl+ separator + "token=JWT "+token;
   
-  if (req.session.redirect_url) {
-    const separator = req.session.redirect_url.includes('?') ? '&' : '?';
-    url = req.session.redirect_url+ separator + "token=JWT "+token;
+  if (state?.redirect_url) {
+    const separator = state.redirect_url.includes('?') ? '&' : '?';
+    url = state.redirect_url+ separator + "token=JWT "+token;
   }
 
-  if (req.session.forced_redirect_url) {
-    const separator = req.session.forced_redirect_url.includes('?') ? '&' : '?';
-    url = req.session.forced_redirect_url+ separator + "jwt=JWT "+token;  //attention we use jwt= (ionic) instead token=(dashboard) for ionic 
+  if (state?.forced_redirect_url) {
+    const separator = state.forced_redirect_url.includes('?') ? '&' : '?';
+    url = state.forced_redirect_url+ separator + "jwt=JWT "+token;  //attention we use jwt= (ionic) instead token=(dashboard) for ionic 
   }
 
   winston.debug("(/oauth2/callback) Google Redirect: " + url);
