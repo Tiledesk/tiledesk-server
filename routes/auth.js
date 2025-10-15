@@ -776,7 +776,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
 
 
 router.get("/oauth2", function (req, res, next) {
-  winston.debug("(oauth2) req: " + req);
+  console.log("(oauth2) req: ", req);
   winston.debug("(oauth2) redirect_url: " + req.query.redirect_url);
   req.session.redirect_url = req.query.redirect_url;
 
