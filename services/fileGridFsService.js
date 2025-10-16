@@ -71,8 +71,13 @@ class FileGridFsService extends FileService {
 
     createRetentionIndex(name) {
         this.conn.db.collection(name)
-            .createIndex( { "uploadDate": 1 },
-                          { expireAfterSeconds: this.retentionPeriod }, 
+
+            .createIndex( { "metadata.expireAt": 1 },
+                          { expireAfterSeconds: 0 }, 
+            // .createIndex( { "uploadDate": 1 },
+            //               { expireAfterSeconds: this.retentionPeriod }, 
+
+
                           (err, result) => {
             if (err) {
                 winston.error('Error creating index with name ' + name, err);
@@ -84,8 +89,13 @@ class FileGridFsService extends FileService {
     }
 
     async createFile ( filename, data, path, contentType, options) {
+
+        var metadata = undefined;
+        if (options && options.metadata) {
+            metadata = options.metadata;
+        }
         const stream = await this.gfs.openUploadStream(filename, {
-            // metadata: options.metadata,
+            metadata: metadata,
             });
         
         await stream.write(data);
@@ -212,9 +222,19 @@ class FileGridFsService extends FileService {
                 //     return filename;
                 // }
 
+                // console.log("Date.now()",Date.now())
+                // console.log("this.retentionPeriod*1000",this.retentionPeriod*1000)
+                // console.log("Date.now()+this.retentionPeriod*1000",Date.now()+this.retentionPeriod*1000)
+
+                let expireAt = new Date(Date.now()+ this.retentionPeriod*1000) ;
+                if (req.expireAt) {
+                    expireAt = req.expireAt;
+                }
+
                 return {
                     bucketName: folderName,
-                    filename: `${path}/${file.originalname}`
+                    filename: `${path}/${file.originalname}`,
+                    metadata: {'expireAt': expireAt}
                 };
             }
         });
@@ -282,10 +302,15 @@ class FileGridFsService extends FileService {
                 }
                 
 
+                 let expireAt = new Date(Date.now()+ this.retentionPeriod*1000) ;
+                if (req.expireAt) {
+                    expireAt = req.expireAt;
+                }
 
                 return {
                     bucketName: folderName,
-                    filename: `${path}/${file.originalname}`
+                    filename: `${path}/${file.originalname}`,
+                    metadata: {'expireAt': expireAt}
                 };
             }
             });
@@ -392,10 +417,16 @@ class FileGridFsService extends FileService {
                 }
                 
 
+                // let expireAt = new Date(Date.now()+ this.retentionPeriod*1000) ;
+                // if (req.expireAt) {
+                //     expireAt = req.expireAt;
+                // }
+
 
                 return {
                     bucketName: folderName,
-                    filename: `${path}/${filename}`
+                    filename: `${path}/${filename}`,
+                    // metadata: {'expireAt': expireAt}
                 };
             }
             });
