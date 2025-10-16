@@ -112,7 +112,6 @@ class WebSocketServer {
 
         const req = info.req;
         const fullUrl = req.headers.origin + req.url;
-        const token = getUrlParam(req.url, 'token');
         const forwardedFor = req.headers['x-forwarded-for'];
         const socketAddr = req.socket?.remoteAddress;
         const connectionAddr = req.connection?.remoteAddress;
@@ -120,7 +119,11 @@ class WebSocketServer {
         // 🔹 Log esteso
         console.log('[WS VERIFY]', {
           timestamp: new Date().toISOString(),
-          ip,
+          ipInfo: {
+            xForwardedFor: forwardedFor,
+            socketRemoteAddress: socketAddr,
+            connectionRemoteAddress: connectionAddr
+          },
           origin: req.headers.origin,
           url: req.url,
           fullUrl,
