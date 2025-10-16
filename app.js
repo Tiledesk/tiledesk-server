@@ -70,7 +70,7 @@ let useUnifiedTopology = process.env.MONGOOSE_UNIFIED_TOPOLOGY === 'true';
 winston.info("DB useUnifiedTopology: ", useUnifiedTopology, typeof useUnifiedTopology);
 
 
-var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex }, function(err) {
+var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex, "useUnifiedTopology": useUnifiedTopology }, function(err) {
   if (err) { 
     winston.error('Failed to connect to MongoDB on ' + databaseUri + " ", err);
     process.exit(1);
@@ -83,7 +83,7 @@ if (process.env.MONGOOSE_DEBUG==="true") {
 }
 mongoose.set('useFindAndModify', false); // https://mongoosejs.com/docs/deprecations.html#-findandmodify-
 mongoose.set('useCreateIndex', true);
-mongoose.set('useUnifiedTopology', useUnifiedTopology); 
+//mongoose.set('useUnifiedTopology', useUnifiedTopology); 
 
 // CONNECT REDIS - CHECK IT
 const { TdCache } = require('./utils/TdCache');
