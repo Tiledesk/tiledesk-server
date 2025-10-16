@@ -777,11 +777,11 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
 
 router.get("/oauth2", function (req, res, next) {
   console.log('(oauth2) req', req)
-  winston.debug("(oauth2) redirect_url: " + req.query.redirect_url);
-  req.session.redirect_url = req.query.redirect_url;
+  console.log("(oauth2) redirect_url: " + req.query.redirect_url);
+  // req.session.redirect_url = req.query.redirect_url;
 
-  winston.debug("(oauth2) forced_redirect_url: " + req.query.forced_redirect_url);
-  req.session.forced_redirect_url = req.query.forced_redirect_url;
+  console.log("(oauth2) forced_redirect_url: " + req.query.forced_redirect_url);
+  // req.session.forced_redirect_url = req.query.forced_redirect_url;
 
   req.session.save(() => {
     passport.authenticate('oauth2',{
@@ -801,14 +801,13 @@ router.get("/oauth2", function (req, res, next) {
 //   passport.authenticate('oauth2'));
 
 router.get('/oauth2/callback', passport.authenticate('oauth2', { session: false }), function (req, res) {
-  winston.debug("'(/oauth2/callback): ", req.query);
+  console.log("'(/oauth2/callback): ", req.query);
   const state = JSON.parse(req.query.state);
-  winston.debug("(/oauth2/callback) redirect_url:"+ state.redirect_url);
-  winston.debug("(/oauth2/callback) forced_redirect_url:"+ state.forced_redirect_url);
+  console.log("(/oauth2/callback) redirect_url:"+ state.redirect_url);
+  console.log("(/oauth2/callback) forced_redirect_url:"+ state.forced_redirect_url);
 
   var user = req.user;
-  winston.debug("(/oauth2/callback) user", user);
-  winston.debug("(/oauth2/callback) state.redirect_url: " + state.redirect_url);
+  console.log("(/oauth2/callback) user", user);
   var userJson = user.toObject();
 
   delete userJson.password;
@@ -848,7 +847,7 @@ router.get('/oauth2/callback', passport.authenticate('oauth2', { session: false 
     url = state.forced_redirect_url+ separator + "jwt=JWT "+token;  //attention we use jwt= (ionic) instead token=(dashboard) for ionic 
   }
 
-  winston.debug("(/oauth2/callback) Google Redirect: " + url);
+  console.log("(/oauth2/callback) Google Redirect: " + url);
 
   res.redirect(url);
 });
