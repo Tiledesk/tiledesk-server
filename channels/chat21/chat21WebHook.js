@@ -308,6 +308,9 @@ router.post('/', function (req, res) {
                 // TODO se stato = 50 e scrive visitatotre sposto a stato 100 poi queuue lo smista
 
                 // TOOD update also request attributes and sourcePage
+                    Request.findOneAndUpdate({request_id: request.request_id, id_project: request.id_project}, { "attributes.last_message": savedMessage}).catch((err) => {
+                      winston.error("Create message - saved last message in request error: ", error);
+                    })
                 
                     // return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
                       // winston.debug("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
