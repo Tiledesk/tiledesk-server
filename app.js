@@ -64,6 +64,7 @@ var autoIndex = true;
 if (process.env.MONGOOSE_AUTOINDEX) {
   autoIndex = process.env.MONGOOSE_AUTOINDEX;
 }
+let useUnifiedTopology = process.env.MONGOOSE_UNIFIED_TOPOLOGY || false;
 
 winston.info("DB AutoIndex: " + autoIndex);
 
@@ -80,7 +81,7 @@ if (process.env.MONGOOSE_DEBUG==="true") {
 }
 mongoose.set('useFindAndModify', false); // https://mongoosejs.com/docs/deprecations.html#-findandmodify-
 mongoose.set('useCreateIndex', true);
-mongoose.set('useUnifiedTopology', false); 
+mongoose.set('useUnifiedTopology', useUnifiedTopology); 
 
 // CONNECT REDIS - CHECK IT
 const { TdCache } = require('./utils/TdCache');
