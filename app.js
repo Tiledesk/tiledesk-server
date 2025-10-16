@@ -64,9 +64,11 @@ var autoIndex = true;
 if (process.env.MONGOOSE_AUTOINDEX) {
   autoIndex = process.env.MONGOOSE_AUTOINDEX;
 }
-let useUnifiedTopology = process.env.MONGOOSE_UNIFIED_TOPOLOGY === 'true';
-
 winston.info("DB AutoIndex: " + autoIndex);
+
+let useUnifiedTopology = process.env.MONGOOSE_UNIFIED_TOPOLOGY === 'true';
+winston.info("DB useUnifiedTopology: ", useUnifiedTopology, typeof useUnifiedTopology);
+
 
 var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex }, function(err) {
   if (err) { 
