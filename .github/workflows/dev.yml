@@ -53,6 +53,8 @@ jobs:
 
     - name: Build and push to Amazon ECR
       uses: docker/build-push-action@v4
+      env:
+        DOCKER_BUILDKIT: 0
       with:
         context: .
         file: ./Dockerfile
