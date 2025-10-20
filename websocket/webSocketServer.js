@@ -110,27 +110,26 @@ class WebSocketServer {
         winston.debug('token:' + token);
         winston.debug('configSecretOrPubicKay:' + configSecretOrPubicKay);
 
-        const req = info.req;
-        const fullUrl = req.headers.origin + req.url;
-        const forwardedFor = req.headers['x-forwarded-for'];
-        const socketAddr = req.socket?.remoteAddress;
-        const connectionAddr = req.connection?.remoteAddress;
+        //const req = info.req;
+        //const fullUrl = req.headers.origin + req.url;
+        //const forwardedFor = req.headers['x-forwarded-for'];
+        //const socketAddr = req.socket?.remoteAddress;
+        //const connectionAddr = req.connection?.remoteAddress;
 
-        // 🔹 Log esteso
-        console.log('[WS VERIFY]', {
-          timestamp: new Date().toISOString(),
-          ipInfo: {
-            xForwardedFor: forwardedFor,
-            socketRemoteAddress: socketAddr,
-            connectionRemoteAddress: connectionAddr
-          },
-          origin: req.headers.origin,
-          url: req.url,
-          fullUrl,
-          headers: req.headers,
-          userAgent: req.headers['user-agent'],
-          tokenSnippet: token ? token.substring(0, 30) + '...' : null
-        });
+        // console.log('[WS VERIFY]', {
+        //   timestamp: new Date().toISOString(),
+        //   ipInfo: {
+        //     xForwardedFor: forwardedFor,
+        //     socketRemoteAddress: socketAddr,
+        //     connectionRemoteAddress: connectionAddr
+        //   },
+        //   origin: req.headers.origin,
+        //   url: req.url,
+        //   fullUrl,
+        //   headers: req.headers,
+        //   userAgent: req.headers['user-agent'],
+        //   tokenSnippet: token ? token.substring(0, 30) + '...' : null
+        // });
 
 
         if (!token)
