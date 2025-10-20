@@ -1,4 +1,4 @@
-FROM node:18-bullseye
+FROM public.ecr.aws/docker/library/node:18-bullseye
 
 RUN sed -i 's/stable\/updates/stable-security\/updates/' /etc/apt/sources.list
 
