@@ -301,7 +301,7 @@ class RequestService {
 
           winston.debug("requestBefore status: ", requestBeforeRoute.status)
           winston.debug("routedRequest status: ", routedRequest.status)
-          console.log("routedRequest: ", JSON.stringiy(routedRequest));
+          console.log("routedRequest: ", JSON.stringify(routedRequest));
           /**
            * Case 1
            * After internal routing:
