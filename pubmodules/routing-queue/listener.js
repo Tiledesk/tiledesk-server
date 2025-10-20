@@ -150,9 +150,10 @@ class Listener {
                   }            
                   
                   winston.debug("maxAssignedchatForUser: "+ maxAssignedchatForUser);
-          
+                  console.log(`user managing ${aa.openRequetsCount} / ${maxAssignedchatForUser}`)
                   if (aa.openRequetsCount < maxAssignedchatForUser) {
                     winston.debug("adding  "+ aa.project_user.id_user+ " with openRequetsCount: "+ aa.openRequetsCount +" and with maxAssignedchatForUser " + maxAssignedchatForUser +" to available_agents_not_busy" );
+                    console.log("adding to available agents")
                     available_agents_not_busy.push(aa.project_user);
                   }
                 }
@@ -161,6 +162,9 @@ class Listener {
               }
           
               winston.debug("available_agents_not_busy", available_agents_not_busy);
+              console.log("available_agents_not_busy", available_agents_not_busy);
+              console.log("available_agents_not_busy length", available_agents_not_busy.length);
+              
           
           
 
@@ -178,17 +182,23 @@ class Listener {
                   winston.debug("res.context.request.attributes.abandoned_by_project_users: ", res.context.request.attributes.abandoned_by_project_users );
                   
                   var abandoned_by_project_usersAsArray = Object.keys(res.context.request.attributes.abandoned_by_project_users);
-
+                  console.log("abandoned_by_project_usersAsArray", abandoned_by_project_usersAsArray);
+                  console.log("abandoned_by_project_usersAsArray length", abandoned_by_project_usersAsArray.length);
                   if (abandoned_by_project_usersAsArray.length>0 )  {
                     winston.debug("abandoned_by_project_usersAsArray", abandoned_by_project_usersAsArray);
 
                     var available_agents_not_busy = available_agents_not_busy.filter(projectUser=> !abandoned_by_project_usersAsArray.includes(projectUser._id.toString()))
-                    
+                    console.log("available_agents_not_busy", available_agents_not_busy);
+                    console.log("available_agents_not_busy length", available_agents_not_busy.length);
+
                     if (available_agents_not_busy.length == 0) {
+                      console.log("set to fully abandoned");
                       res.context.request.attributes.fully_abandoned = true;
                     }
 
-                    winston.debug("available_agents_not_busy after: ", available_agents_not_busy );                           
+                    winston.debug("available_agents_not_busy after: ", available_agents_not_busy );     
+                    console.log("available_agents_not_busy after", available_agents_not_busy);
+                    console.log("available_agents_not_busy length after", available_agents_not_busy.length);                      
                   }
               }
 
