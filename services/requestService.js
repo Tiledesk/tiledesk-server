@@ -301,7 +301,14 @@ class RequestService {
 
           winston.debug("requestBefore status: ", requestBeforeRoute.status)
           winston.debug("routedRequest status: ", routedRequest.status)
+
+          console.log("requestBeforeRoute: ", JSON.stringify(requestBeforeRoute));
           console.log("routedRequest: ", JSON.stringify(routedRequest));
+          console.log("------")
+          console.log(`request status from ${requestBeforeRoute.status} to ${routedRequest.status}`);
+          console.log(`request status from ${beforeDepartmentId} to ${afterDepartmentId}`);
+          console.log("same participants: ", requestUtil.arraysEqual(beforeParticipants, routedRequest.participants));
+          console.log("------")
           /**
            * Case 1
            * After internal routing:
