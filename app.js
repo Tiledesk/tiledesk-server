@@ -64,10 +64,13 @@ var autoIndex = true;
 if (process.env.MONGOOSE_AUTOINDEX) {
   autoIndex = process.env.MONGOOSE_AUTOINDEX;
 }
-
 winston.info("DB AutoIndex: " + autoIndex);
 
-var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex }, function(err) {
+let useUnifiedTopology = process.env.MONGOOSE_UNIFIED_TOPOLOGY === 'true';
+winston.info("DB useUnifiedTopology: ", useUnifiedTopology, typeof useUnifiedTopology);
+
+
+var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex, "useUnifiedTopology": useUnifiedTopology }, function(err) {
   if (err) { 
     winston.error('Failed to connect to MongoDB on ' + databaseUri + " ", err);
     process.exit(1);
@@ -80,7 +83,7 @@ if (process.env.MONGOOSE_DEBUG==="true") {
 }
 mongoose.set('useFindAndModify', false); // https://mongoosejs.com/docs/deprecations.html#-findandmodify-
 mongoose.set('useCreateIndex', true);
-mongoose.set('useUnifiedTopology', false); 
+//mongoose.set('useUnifiedTopology', useUnifiedTopology); 
 
 // CONNECT REDIS - CHECK IT
 const { TdCache } = require('./utils/TdCache');
@@ -131,6 +134,7 @@ var quotes = require('./routes/quotes');
 var integration = require('./routes/integration')
 var kbsettings = require('./routes/kbsettings');
 var kb = require('./routes/kb');
+var unanswered = require('./routes/unanswered');
 
 // var admin = require('./routes/admin');
 var faqpub = require('./routes/faqpub');
@@ -149,6 +153,7 @@ var property = require('./routes/property');
 var segment = require('./routes/segment');
 var webhook = require('./routes/webhook');
 var webhooks = require('./routes/webhooks');
+var roles = require('./routes/roles');
 var copilot = require('./routes/copilot');
 
 var bootDataLoader = require('./services/bootDataLoader');
@@ -220,9 +225,13 @@ var BanUserNotifier = require('./services/banUserNotifier');
 BanUserNotifier.listen();
 const { ChatbotService } = require('./services/chatbotService');
 const { QuoteManager } = require('./services/QuoteManager');
+const RateManager = require('./services/RateManager');
 
 let qm = new QuoteManager({ tdCache: tdCache });
 qm.start();
+
+let rm = new RateManager({ tdCache: tdCache });
+
 
 var modulesManager = undefined;
 try {
@@ -258,7 +267,8 @@ app.set('view engine', 'jade');
 app.set('chatbot_service', new ChatbotService())
 app.set('redis_client', tdCache);
 app.set('quote_manager', qm);
-
+app.set('rate_manager', rm);
+app.set('trust proxy', true);
 
 // TODO DELETE IT IN THE NEXT RELEASE
 if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {  
@@ -347,7 +357,12 @@ if (process.env.DISABLE_SESSION_STRATEGY==true ||  process.env.DISABLE_SESSION_S
           store: redisStore,
           resave: false, // required: force lightweight session keep alive (touch)
           saveUninitialized: false, // recommended: only save session when data exists
-          secret: sessionSecret
+          secret: sessionSecret,
+          cookie: {
+            secure: true,           // ✅ Use HTTPS
+            httpOnly: true,         // ✅ Only accessible by the server (not client-side JS)
+            sameSite: 'None'        // ✅ Allows cross-origin (e.g., Keycloak on a different domain)
+          }
         })
       )
       winston.info("Express Session with Redis enabled with Secret: " + sessionSecret);
@@ -618,12 +633,14 @@ app.use('/:projectid/quotes', [passport.authenticate(['basic', 'jwt'], { session
 app.use('/:projectid/integration', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], integration )
 
 app.use('/:projectid/kbsettings', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], kbsettings);
+app.use('/:projectid/kb/unanswered', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], unanswered);
 app.use('/:projectid/kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], kb);
 
 app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], logs);
 
 app.use('/:projectid/webhooks', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], webhooks);
 app.use('/:projectid/copilot', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], copilot);
+app.use('/:projectid/roles', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], roles);
 
 
 if (pubModulesManager) {

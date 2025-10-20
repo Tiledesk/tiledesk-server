@@ -260,7 +260,14 @@ async (req, res)  => {
       
 
           winston.debug("request  exists", request.toObject());
-      
+          console.log("(messages) sender ", sender);
+          console.log("(messages) req.user._id ", req.user._id);
+          console.log("(messages) request exists ", request.toObject());
+          if (request.channel?.name === 'form' || request.channel?.name === 'email') {
+            if (!sender && request.participantsAgents?.[0] !== req.user.id) {
+              return res.status(403).send({ success: false, message: "Error creating message", err: "You don't belong the conversation" });
+            }
+          }
          
                // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type, channel) {                 
               return messageService.create(sender || req.user._id, fullname, req.params.request_id, req.body.text,
@@ -269,6 +276,12 @@ async (req, res)  => {
                   // TOOD update also request attributes and sourcePage
                   // return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
                     // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
+                    if (sender && sender !== 'system') {
+                      Request.findOneAndUpdate({request_id: request.request_id, id_project: request.id_project}, { "attributes.last_message": savedMessage}).catch((err) => {
+                        winston.error("Create message - saving last message in request error: ", err);
+                      })
+                    }
+
                      
                     if (request.participants && request.participants.indexOf(sender) > -1) { //update waiitng time if write an  agent (member of participants)
                       winston.debug("updateWaitingTimeByRequestId");

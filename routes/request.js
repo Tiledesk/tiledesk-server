@@ -429,10 +429,14 @@ router.put('/:requestid/participants', function (req, res) {
 
   //setParticipantsByRequestId(request_id, id_project, participants)
   return requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then(function (updatedRequest) {
-
     winston.debug("participant set", updatedRequest);
-
     return res.json(updatedRequest);
+
+  }).catch((err) => {
+    winston.error("Error setParticipantsByRequestId: ", err);
+    let error_code = err?.code || 500;
+    let error = err?.error || err || "General error";
+    return res.status(error_code).send({ success: false, error: error })
   });
 
 });
@@ -569,7 +573,8 @@ router.put('/:requestid/assign', function (req, res) {
 
         return res.json(updatedRequest);
       }).catch(function (error) {
-        winston.error('Error changing the department.', error)
+        // TODO: error log removed due to attempt to reduces logs when no department is found
+        winston.verbose('Error changing the department.', error)
         return res.status(500).send({ success: false, msg: 'Error changing the department.' });
       })
     });
@@ -585,7 +590,8 @@ router.put('/:requestid/departments', function (req, res) {
 
     return res.json(updatedRequest);
   }).catch(function (error) {
-    winston.error('Error changing the department.', error)
+    // TODO: error log removed due to attempt to reduces logs when no department is found
+    winston.verbose('Error changing the department.', error)
     return res.status(500).send({ success: false, msg: 'Error changing the department.' });
   })
 });
@@ -619,7 +625,8 @@ router.put('/:requestid/agent', async (req, res) => {
 
     return res.json(updatedRequest);
   }).catch(function (error) {
-    winston.error('Error changing the department.', error)
+    // TODO: error log removed due to attempt to reduces logs when no department is found
+    winston.verbose('Error changing the department.', error)
     return res.status(500).send({ success: false, msg: 'Error changing the department.' });
   })
 
@@ -1052,8 +1059,8 @@ router.delete('/:requestid', function (req, res) {
 
   var projectuser = req.projectuser;
 
-
-  if (projectuser.role != "owner") {
+  // request_role_check
+  if (!projectuser.hasPermissionOrRole('request_delete', 'owner')){
     return res.status(403).send({ success: false, msg: 'Unauthorized.' });
   }
 
@@ -1108,8 +1115,8 @@ router.delete('/id/:id', function (req, res) {
 
   var projectuser = req.projectuser;
 
-
-  if (projectuser.role != "owner") {
+  // request_role_check
+  if (!projectuser.hasPermissionOrRole('request_delete', 'owner')){
     return res.status(403).send({ success: false, msg: 'Unauthorized.' });
   }
 
@@ -1170,15 +1177,23 @@ router.get('/', function (req, res, next) {
 
   if (req.user instanceof Subscription) {
     // All request 
-  } else if (projectuser && (projectuser.role == "owner" || projectuser.role == "admin")) {
+    winston.debug("Subscription All request ");
+  } else if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
     // All request 
-    // Per uni mostrare solo quelle proprie quindi solo participants
-    if (req.query.mine) {
-      query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
-    }
-  } else {
+    winston.debug("hasPermissionOrRole All request ");
+  } else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
+
     query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
+
+  } 
+  // else if (projectuser.hasPermissionOrRole('request_read_mine', ["????"])) {
+  //   query["participants"] = req.user.id;
+  // }
+  else {
+    query["participants"] = req.user.id;
+    // generate empty requests response
   }
+
 
   if (req.query.dept_id) {
     query.department = req.query.dept_id;
