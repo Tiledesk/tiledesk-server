@@ -396,7 +396,7 @@ class SubscriptionNotifier {
         winston.debug("subscriptionNotifier disableWebHookCall enabled: "+ disableWebHookCall);
         return resolve(operatorSelectedEvent);
       }
-      console.log("\noperatorSelectedEvent: ", operatorSelectedEvent)
+      console.log("\noperatorSelectedEvent: ", JSON.stringify(operatorSelectedEvent));
       subscriptionNotifier.subscribe('operator.select', operatorSelectedEvent, function(err, json) {
         winston.debug("qui callback",json, err);
         if (err) {

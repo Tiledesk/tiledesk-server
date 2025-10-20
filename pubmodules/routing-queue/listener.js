@@ -199,6 +199,7 @@ class Listener {
                     winston.debug("available_agents_not_busy after: ", available_agents_not_busy );     
                     console.log("available_agents_not_busy after", available_agents_not_busy);
                     console.log("available_agents_not_busy length after", available_agents_not_busy.length);                      
+                    console.log("res.context.request fully abadoned ? ", res.context.request.attributes.fully_abandoned);
                   }
               }
 
@@ -236,6 +237,7 @@ class Listener {
               }
           
           
+              console.log("res.context.request: ", JSON.stringify(res.context.request.attributes));
               return departmentEvent.callNextEvent('operator.select', res);
           
            
