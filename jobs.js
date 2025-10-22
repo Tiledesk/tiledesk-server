@@ -47,7 +47,10 @@ if (!databaseUri) { //TODO??
   winston.warn('DATABASE_URI not specified, falling back to localhost.');
 }
 
-var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex }, function(err) {
+let useUnifiedTopology = process.env.MONGOOSE_UNIFIED_TOPOLOGY === 'true';
+winston.info("DB useUnifiedTopology: ", useUnifiedTopology, typeof useUnifiedTopology);
+
+var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex, "useUnifiedTopology": useUnifiedTopology }, function(err) {
   if (err) { 
     winston.error('Failed to connect to MongoDB on ' + databaseUri + " ", err);
     process.exit(1);
