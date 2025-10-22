@@ -291,6 +291,10 @@ router.post('/qa', async (req, res) => {
   
   winston.debug("/qa data: ", data);
 
+  if (!data.llm) {
+    data.llm = "openai";
+  }
+
   if (data.llm === 'ollama') {
     data.gptkey = process.env.GPTKEY;
     try {
