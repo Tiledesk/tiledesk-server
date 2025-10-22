@@ -98,6 +98,7 @@
             "LABEL_PREVIEW": "Preview",
             "SWITCH_TO":"Or switch to:",
 			"MAX_ATTACHMENT": "Max allowed size {{file_size_limit}}Mb",
+			"MAX_ATTACHMENT_ERROR": "The file exceeds the maximum allowed size",
     		"EMOJI": "Emoji"
         }
     },
@@ -200,6 +201,7 @@
             "LABEL_PREVIEW": "Anteprima",
             "SWITCH_TO":"Oppure passa a:",
 			"MAX_ATTACHMENT": "Dimensione massima consentita {{file_size_limit}}Mb",
+			"MAX_ATTACHMENT_ERROR": "Il file supera la dimensione massima consentita",
     		"EMOJI": "Emoji"
         }
     },
@@ -302,6 +304,7 @@
             "LABEL_PREVIEW": "Aperçu",
             "SWITCH_TO":"Ou passer à:",
 			"MAX_ATTACHMENT": "Taille maximale autorisée {{file_size_limit}}Mb",
+			"MAX_ATTACHMENT_ERROR": "Le fichier dépasse la taille maximale autorisée",
     		"EMOJI": "Emoji"
         }
      },
@@ -404,6 +407,7 @@
             "LABEL_PREVIEW": "Avance",
             "SWITCH_TO":"O cambiar a:",
 			"MAX_ATTACHMENT": "Tamaño máximo permitido {{file_size_limit}}Mb",
+			"MAX_ATTACHMENT_ERROR": "El archivo supera el tamaño máximo permitido",
     		"EMOJI": "Emoji"
         }
     },
@@ -506,6 +510,7 @@
             "LABEL_PREVIEW": "Vorschau",
             "SWITCH_TO":"Oder wechseln Sie zu:",
 			"MAX_ATTACHMENT": "Maximal zulässige Größe {{file_size_limit}}Mb",
+			"MAX_ATTACHMENT_ERROR": "Die Datei überschreitet die maximal zulässige Größe",
     		"EMOJI": "Emoji"
         }
     },
@@ -608,6 +613,7 @@
             "LABEL_PREVIEW": "Visualizar",
             "SWITCH_TO":"Ou mude para:",
 			"MAX_ATTACHMENT": "Tamanho máximo permitido {{file_size_limit}}Mb",
+			"MAX_ATTACHMENT_ERROR": "O arquivo excede o tamanho máximo permitido",
     		"EMOJI": "Emoji"
         }
     },
@@ -710,6 +716,7 @@
             "LABEL_PREVIEW": "Превью",
             "SWITCH_TO":"Или переключитесь на:",
 			"MAX_ATTACHMENT": "Максимально допустимый размер {{file_size_limit}}Mb",
+			"MAX_ATTACHMENT_ERROR": "Файл превышает максимально допустимый размер",
     		"EMOJI": "Эмодзи"
         }
     },
@@ -812,6 +819,7 @@
             "LABEL_PREVIEW": "Ön izleme",
             "SWITCH_TO":"Veya geçiş yapın:",
 			"MAX_ATTACHMENT": "İzin verilen maksimum boyut {{file_size_limit}}Mb",
+			"MAX_ATTACHMENT_ERROR": "Dosya izin verilen maksimum boyutu aşıyor",
     		"EMOJI": "Emoji"
         }
     },
@@ -916,6 +924,7 @@
             "LABEL_PREVIEW": "Преглед",
             "SWITCH_TO":"Или пређите на:",
 			"MAX_ATTACHMENT": "Максимално дозвољена величина {{file_size_limit}}Mb",
+			"MAX_ATTACHMENT_ERROR": "Фајл прелази максимално дозвољену величину",
     		"EMOJI": "Емоџи"
         }
      },
@@ -1020,6 +1029,7 @@
             "LABEL_PREVIEW": "معاينة",
             "SWITCH_TO": "أو قم بالتبديل إلى:",
 			"MAX_ATTACHMENT": "الحد الأقصى للحجم المسموح به {{file_size_limit}}Mb",
+			"MAX_ATTACHMENT_ERROR": "الملف يتجاوز الحد الأقصى المسموح به",
     		"EMOJI": "رموز تعبيرية"
         }
     },
@@ -1124,6 +1134,7 @@
             "LABEL_PREVIEW": "Попередній перегляд",
             "SWITCH_TO": "Або перейдіть на:",
 			"MAX_ATTACHMENT": "Максимально допустимий розмір {{file_size_limit}}Mb",
+			"MAX_ATTACHMENT_ERROR": "Файл перевищує максимально допустимий розмір",
     		"EMOJI": "Емодзі"
         }
     },
@@ -1227,6 +1238,7 @@
             "LABEL_PREVIEW": "Förhandsvisning",
             "SWITCH_TO": "Eller byt till:",
 			"MAX_ATTACHMENT": "Max tillåten storlek {{file_size_limit}}Mb",
+			"MAX_ATTACHMENT_ERROR": "Filen överskrider den maximalt tillåtna storleken",
     		"EMOJI": "Emoji"
         }
     },
@@ -1330,6 +1342,7 @@
             "LABEL_PREVIEW": "Алдын ала қарау",
             "SWITCH_TO": "Немесе келесіге ауысыңыз:",
 			"MAX_ATTACHMENT": "Максималды рұқсат етілген өлшем {{file_size_limit}}Mb",
+			"MAX_ATTACHMENT_ERROR": "Файл максималды рұқсат етілген өлшемнен асады",
     		"EMOJI": "Эмодзи"
         }
     },
@@ -1433,6 +1446,7 @@
             "LABEL_PREVIEW": "Ko'rib chiqish",
             "SWITCH_TO": "Yoki o'tish:",
 			"MAX_ATTACHMENT": "Maksimal ruxsat etilgan o'lcham {{file_size_limit}}Mb",
+			"MAX_ATTACHMENT_ERROR": "Fayl maksimal ruxsat etilgan o'lchamdan oshadi",
     		"EMOJI": "Emoji"
         }
     },
@@ -1536,6 +1550,7 @@
             "LABEL_PREVIEW": "Önizləmə",
             "SWITCH_TO": "Və ya keçin:",
 			"MAX_ATTACHMENT": "Maksimal icazə verilən ölçü {{file_size_limit}}Mb",
+			"MAX_ATTACHMENT_ERROR": "Fayl maksimal icazə verilən ölçünü aşır",
     		"EMOJI": "Emoji"
         }
     }
