@@ -5,8 +5,8 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.13.25
-- Fixed bug: LLM preview doesn't works
+# 2.13.26
+- Fixed bug: LLM preview not working
 
 # 2.13.24
 - Code improvements
