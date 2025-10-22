@@ -681,8 +681,9 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
 
   chatbot.template = "empty";
   
+  let savedChatbot
   try {
-    let savedChatbot = await cs.createBot(api_url, token, chatbot, landing_project_id);
+    savedChatbot = await cs.createBot(api_url, token, chatbot, landing_project_id);
     winston.debug("savedChatbot: ", savedChatbot)
   } catch(err) {
     winston.error("Error creating new chatbot: ", err);
@@ -692,9 +693,10 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
   if (!savedChatbot) {
     return res.status(500).send({ success: false, message: "Unable to create new chatbot" });
   }
-
+  
+  let import_result
   try {
-    let import_result = await cs.importFaqs(api_url, savedChatbot._id, token, chatbot, landing_project_id);
+    import_result = await cs.importFaqs(api_url, savedChatbot._id, token, chatbot, landing_project_id);
     winston.debug("imported: ", import_result);
   } catch(err) {
     winston.error("Error importing intents on new chatbot: ", err);
