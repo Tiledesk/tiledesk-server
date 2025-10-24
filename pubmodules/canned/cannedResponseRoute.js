@@ -3,6 +3,7 @@ var router = express.Router();
 var CannedResponse = require("./cannedResponse");
 var winston = require('../../config/winston');
 const RoleConstants = require('../../models/roleConstants');
+const roleConstants = require('../../models/roleConstants');
 // const CannedResponseEvent = require('../event/CannedResponseEvent');
 
 
@@ -22,8 +23,10 @@ router.post('/', function (req, res) {
   if (req.projectuser.role == 'owner' || req.projectuser.role == 'admin') {
     newCannedResponse.shared = true;
   } else {
-    if (req.body.shared && req.body.shared === true) {
-      newCannedResponse.shared = false;
+    if (req.projectuser.roleType === roleConstants.TYPE_AGENTS) {
+      if (req.body.shared && req.body.shared === true) {
+        newCannedResponse.shared = true;
+      }
     }
   }
 
