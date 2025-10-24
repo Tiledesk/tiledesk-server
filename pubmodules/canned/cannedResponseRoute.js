@@ -143,7 +143,7 @@ router.delete('/:cannedResponseid', async function (req, res) {
     }
   } 
   else if (roleType === RoleConstants.TYPE_AGENTS) {
-    if (canned.hasOwnProperty('shared') && canned.shared === false) {
+    if (canned.hasOwnProperty('shared') && canned.shared === false && canned.createdBy !== req.user.id) {
       winston.warn("Not allowed. User " + req.user.id + " can't delete a canned response of user " + canned.createdBy);
       return res.status(403).send({ success: false, error: "Not allowed to delete a non administration canned response"})
     }
@@ -200,7 +200,7 @@ router.delete('/:cannedResponseid/physical', async function (req, res) {
     }
   } 
   else if (roleType === RoleConstants.TYPE_AGENTS) {
-    if (canned.hasOwnProperty('shared') && canned.shared === false) {
+    if (canned.hasOwnProperty('shared') && canned.shared === false && canned.createdBy !== req.user.id) {
       winston.warn("Not allowed. User " + req.user.id + " can't delete a canned response of user " + canned.createdBy);
       return res.status(403).send({ success: false, error: "Not allowed to delete a non administration canned response"})
     }
