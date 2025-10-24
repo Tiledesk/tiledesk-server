@@ -108,6 +108,7 @@ router.delete('/:cannedResponseid', async function (req, res) {
   const canned_id = req.params.cannedResponseid;
   const id_project = req.projectid;
   let user_role = req.projectuser.role;
+  let roleType = req.projectuser?.roleType || null;
 
   let canned = await CannedResponse.findOne({ _id: canned_id, id_project: id_project }).catch((err) => {
     winston.error("Error finding canned response: ", err);
@@ -164,6 +165,7 @@ router.delete('/:cannedResponseid/physical', async function (req, res) {
   const canned_id = req.params.cannedResponseid;
   const id_project = req.projectid;
   let user_role = req.projectuser.role;
+  let roleType = req.projectuser?.roleType || null;
 
   let canned = await CannedResponse.findOne({ _id: canned_id, id_project: id_project }).catch((err) => {
     winston.error("Error finding canned response: ", err);
