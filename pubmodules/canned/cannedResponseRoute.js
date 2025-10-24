@@ -17,7 +17,8 @@ router.post('/', function (req, res) {
     text: req.body.text,
     id_project: req.projectid,
     createdBy: req.user.id,
-    updatedBy: req.user.id
+    updatedBy: req.user.id,
+    shared: false
   });
 
   if (req.projectuser.role == 'owner' || req.projectuser.role == 'admin') {
