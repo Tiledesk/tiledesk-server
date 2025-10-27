@@ -34,6 +34,9 @@ const eventService = require('../pubmodules/events/eventService');
 const { Scheduler } = require('../services/Scheduler');
 const faq_kb = require('../models/faq_kb');
 const JobManager = require('@tiledesk/tiledesk-multi-worker');
+const aclConstants = require("../models/aclConstants");
+var aclService = require('../services/aclService');
+
 //const JobManager = require('../utils/jobs-worker-queue-manager-v2/JobManagerV2');
 
 // var messageService = require('../services/messageService');
@@ -185,21 +188,9 @@ router.post('/',
           priority: req.body.priority,
           followers: req.body.followers,
         };
-
+        // acl_check_here?
         return requestService.create(new_request).then(function (savedRequest) {
-          // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-          // return requestService.createWithIdAndRequester(request_id, req.projectuser._id, createdLead._id, req.projectid, 
-          //   req.body.text, req.body.departmentid, req.body.sourcePage, 
-          //   req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject).then(function (savedRequest) {
-
-
-          // return messageService.create(sender || req.user._id, fullname, request_id, req.body.text,
-          // req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata, req.body.language, undefined, req.body.channel).then(function(savedMessage){                    
-
-          // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
-          // return messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, request_id, req.body.text,
-          //   req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata).then(function(savedMessage){                    
-
+        
 
           winston.debug('res.json(savedRequest)');
           var endTimestamp = new Date();
@@ -300,7 +291,15 @@ router.patch('/:requestid', function (req, res) {
   winston.verbose("Request patch update", update);
 
   //cacheinvalidation
-  return Request.findOneAndUpdate({ "request_id": req.params.requestid, "id_project": req.projectid }, { $set: update }, { new: true, upsert: false })
+    // acl_check_here //tested
+  var query = { "request_id": req.params.requestid, "id_project": req.projectid };
+  aclService.addACLQuery(query, req.user, aclConstants.ACL_PERMISSION.ONLY_WRITE);
+
+  winston.debug("Request patch query", query);
+  winston.debug("Request patch req.user.id: " + req.user.id);
+
+
+  return Request.findOneAndUpdate(query, { $set: update }, { new: true, upsert: false })
     .populate('lead')
     .populate('department')
     .populate('participatingBots')
@@ -367,9 +366,12 @@ router.put('/:requestid/close', async function (req, res) {
 
 });
 
+//  curl -v -X PUT -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"first_text":"ciao"}' http://localhost:3000/68d4135a10e71f7bfa4dcf2f/requests/req123456/reopen
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.put('/:requestid/reopen', function (req, res) {
   winston.debug(req.body);
+ 
+  // acl_check_here?_internal
   // reopenRequestByRequestId(request_id, id_project) {
   return requestService.reopenRequestByRequestId(req.params.requestid, req.projectid).then(function (reopenRequest) {
 
@@ -388,12 +390,13 @@ router.put('/:requestid/assignee', function (req, res) {
   //TODO change assignee
 });
 
+// curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"member":"ciao"}' http://localhost:3000/68d4135a10e71f7bfa4dcf2f/requests/req123456/participants
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.post('/:requestid/participants',
   [
     check('member').notEmpty(),
   ],
-  function (req, res) {
+   async (req, res) => {
     winston.debug(req.body);
 
     const errors = validationResult(req);
@@ -401,6 +404,13 @@ router.post('/:requestid/participants',
       return res.status(422).json({ errors: errors.array() });
     }
 
+   if (await aclService.can(req.user.id, aclConstants.ACL_PERMISSION.ONLY_WRITE, req.params.requestid, req.projectid) ===false) {
+      winston.error("User with id: " + req.user.id + " can't add participant for request with request_id " + req.params.requestid + " and id_project " + req.projectid);
+      return res.status(403).send({ success: false, error: "User can't modify this request " })
+    }
+
+
+    // acl_check_here_internal
     //addParticipantByRequestId(request_id, id_project, member)
     return requestService.addParticipantByRequestId(req.params.requestid, req.projectid, req.body.member).then(function (updatedRequest) {
 
@@ -418,8 +428,16 @@ error: uncaughtException: Cannot set property 'participants' of null
 2020-03-08T12:53:35.793660+00:00 app[web.1]:     at /app/services/requestService.js:672:30
 2020-03-08T12:53:35.793661+00:00 app[web.1]:     at /app/node_modules/mongoose/lib/model.js:4779:16
 */
-router.put('/:requestid/participants', function (req, res) {
+
+//  curl -v -X PUT -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"member":"ciao"}' http://localhost:3000/68d4135a10e71f7bfa4dcf2f/requests/req123456/participants
+router.put('/:requestid/participants', async (req, res) => {
   winston.debug("req.body", req.body);
+
+
+  if (await aclService.can(req.user.id, aclConstants.ACL_PERMISSION.ONLY_WRITE, req.params.requestid, req.projectid) ===false) {
+    winston.error("User with id: " + req.user.id + " can't modify participants for request with request_id " + req.params.requestid + " and id_project " + req.projectid);
+    return res.status(403).send({ success: false, error: "User can't modify this request " })
+  }
 
   var participants = [];
   req.body.forEach(function (participant, index) {
@@ -427,6 +445,7 @@ router.put('/:requestid/participants', function (req, res) {
   });
   winston.debug("var participants", participants);
 
+  // acl_check_here_internal 
   //setParticipantsByRequestId(request_id, id_project, participants)
   return requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then(function (updatedRequest) {
 
@@ -485,6 +504,7 @@ router.put('/:requestid/replace', async (req, res) => {
   participants.push(id);
   winston.verbose("participants to be set: ", participants);
 
+  // acl_check_here_internal 
   requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then((updatedRequest) => {
     winston.debug("SetParticipant response: ", updatedRequest);
     res.status(200).send(updatedRequest);
@@ -494,9 +514,17 @@ router.put('/:requestid/replace', async (req, res) => {
   })
 })
 
+// curl -v -X DELETE -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"member":"ciao"}' http://localhost:3000/68d4135a10e71f7bfa4dcf2f/requests/req123456/participants/12
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
-router.delete('/:requestid/participants/:participantid', function (req, res) {
+router.delete('/:requestid/participants/:participantid', async (req, res) => {
   winston.debug(req.body);
+
+  if (await aclService.can(req.user.id, aclConstants.ACL_PERMISSION.ONLY_WRITE, req.params.requestid, req.projectid) ===false) {
+    winston.error("User with id: " + req.user.id + " can't delete participants for request with request_id " + req.params.requestid + " and id_project " + req.projectid);
+    return res.status(403).send({ success: false, error: "User can't modify this request " })
+  }
+
+  // acl_check_here_internal controllo interno?
   //removeParticipantByRequestId(request_id, id_project, member)
   return requestService.removeParticipantByRequestId(req.params.requestid, req.projectid, req.params.participantid).then(function (updatedRequest) {
 
@@ -558,6 +586,7 @@ router.put('/:requestid/assign', function (req, res) {
         winston.info('Request already assigned');
         return res.json(request);
       }
+      // acl_check_here_internal
       //route(request_id, departmentid, id_project) {      
       requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
 
@@ -579,6 +608,7 @@ router.put('/:requestid/assign', function (req, res) {
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.put('/:requestid/departments', function (req, res) {
   winston.debug(req.body);
+  // acl_check_here_internal
   //route(request_id, departmentid, id_project) {      
   requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
 
@@ -615,6 +645,7 @@ router.put('/:requestid/agent', async (req, res) => {
   }
   winston.debug("departmentid after: " + departmentid);
 
+  // acl_check_here_internal
   requestService.route(req.params.requestid, departmentid, req.projectid, true, undefined).then(function (updatedRequest) {
 
     winston.debug("department changed", updatedRequest);
@@ -679,8 +710,14 @@ router.patch('/:requestid/attributes', function (req, res) {
   var id_project = req.projectid;
 
   // TODO use service method
+  // acl_check_here_query
 
-  Request.findOne({ "request_id": req.params.requestid, id_project: id_project })
+
+  var query = { "request_id": req.params.requestid, id_project: id_project };
+  aclService.addACLQuery(query, req.user, aclConstants.ACL_PERMISSION.ONLY_WRITE);
+  winston.debug("query", query);
+
+  Request.findOne(query)
     .populate('lead')
     .populate('department')
     .populate('participatingBots')
@@ -751,13 +788,19 @@ router.post('/:requestid/notes', async function (req, res) {
     }
 
     // Check if the user is a participant
+    // disable this check?
     if (!request.participantsAgents.includes(req.user.id)) {
       winston.verbose("Trying to add a note from a non participating agent");
       return res.status(403).send({ success: false, error: "You are not participating in the conversation"})
     }
   }
 
-  return Request.findOneAndUpdate({ request_id: request_id, id_project: req.projectid }, { $push: { notes: note } }, { new: true, upsert: false })
+    //   // acl_check_here_query
+  var query = { request_id: request_id, id_project: req.projectid };
+  aclService.addACLQuery(query, req.user, aclConstants.ACL_PERMISSION.ONLY_WRITE);
+  winston.debug("query", query);
+
+  return Request.findOneAndUpdate(query, { $push: { notes: note } }, { new: true, upsert: false })
     .populate('lead')
     .populate('department')
     .populate('participatingBots')
@@ -797,6 +840,7 @@ router.delete('/:requestid/notes/:noteid', async function (req, res) {
     }
   
     // Check if the user is a participant
+    // disable this check?
     if (!request.participantsAgents.includes(req.user.id)) {
       winston.verbose("Trying to delete a note from a non participating agent");
       return res.status(403).send({ success: false, error: "You are not participating in the conversation"})
@@ -804,7 +848,12 @@ router.delete('/:requestid/notes/:noteid', async function (req, res) {
   }
 
   //cacheinvalidation
-  return Request.findOneAndUpdate({ request_id: request_id, id_project: req.projectid }, { $pull: { notes: { "_id": note_id } } }, { new: true, upsert: false })
+    //   // acl_check_here_query
+  var query = { request_id: request_id, id_project: req.projectid };
+  aclService.addACLQuery(query, req.user, aclConstants.ACL_PERMISSION.ONLY_WRITE);
+  winston.debug("query", query);
+
+  return Request.findOneAndUpdate(query, { $pull: { notes: { "_id": note_id } } }, { new: true, upsert: false })
     .populate('lead')
     .populate('department')
     .populate('participatingBots')
@@ -897,6 +946,7 @@ router.post('/:requestid/followers',
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
     }
+    // acl_check_here?_internal
 
     //addParticipantByRequestId(request_id, id_project, member)
     return requestService.addFollowerByRequestId(req.params.requestid, req.projectid, req.body.member).then(function (updatedRequest) {
@@ -918,6 +968,7 @@ router.put('/:requestid/followers', function (req, res) {
   });
   winston.debug("var followers", followers);
 
+  // acl_check_here?_internal
   // setFollowersByRequestId(request_id, id_project, newfollowers)
   return requestService.setFollowersByRequestId(req.params.requestid, req.projectid, followers).then(function (updatedRequest) {
 
@@ -966,7 +1017,12 @@ router.put('/:requestid/tag', async (req, res) => {
     tags: current_tags
   }
 
-  Request.findOneAndUpdate({ id_project: id_project, request_id: request_id }, update, { new: true }).then( async (updatedRequest) => {
+  var query = { id_project: id_project, request_id: request_id };
+  aclService.addACLQuery(query, req.user, aclConstants.ACL_PERMISSION.ONLY_WRITE);
+  winston.debug("query", query);
+
+  //  acl_check_here_query
+  Request.findOneAndUpdate(query, update, { new: true }).then( async (updatedRequest) => {
 
     if (!updatedRequest) {
       winston.warn("(Request) /tag The request was deleted while adding tags for request " + request_id);
@@ -1001,6 +1057,7 @@ router.put('/:requestid/tag', async (req, res) => {
 router.delete('/:requestid/followers/:followerid', function (req, res) {
   winston.debug(req.body);
 
+  // acl_check_here?_internal
   //removeFollowerByRequestId(request_id, id_project, member)
   return requestService.removeFollowerByRequestId(req.params.requestid, req.projectid, req.params.followerid).then(function (updatedRequest) {
 
@@ -1019,10 +1076,15 @@ router.delete('/:requestid/tag/:tag_id', async (req, res) => {
   let id_project = req.projectid;
   let request_id = req.params.requestid;
   let tag_id = req.params.tag_id;
+  
+  
+  var query = { id_project: id_project, request_id: request_id };
+  aclService.addACLQuery(query, req.user, aclConstants.ACL_PERMISSION.READ_WRIITE_DELETE);
+  winston.debug("query", query);
 
 
-
-  Request.findOneAndUpdate({ id_project: id_project, request_id: request_id }, { $pull: { tags: { _id: tag_id } } }, { new: true }).then( async (updatedRequest) => {
+  // acl_check_here_query
+  Request.findOneAndUpdate(query, { $pull: { tags: { _id: tag_id } } }, { new: true }).then( async (updatedRequest) => {
     
     if (!updatedRequest) {
       winston.warn("(Request) /removetag request not found with id: " + request_id)
@@ -1067,8 +1129,12 @@ router.delete('/:requestid', function (req, res) {
     winston.verbose('Messages deleted for the recipient: ' + req.params.requestid);
   });
 
+  var query = { request_id: req.params.requestid };
+  aclService.addACLQuery(query, req.user, aclConstants.ACL_PERMISSION.READ_WRIITE_DELETE);
+  winston.debug("query", query);
 
-  Request.findOneAndDelete({ request_id: req.params.requestid }, function (err, request) {
+  // acl_check_here_query
+  Request.findOneAndDelete(query, function (err, request) {
     if (err) {
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
@@ -1136,7 +1202,7 @@ router.delete('/id/:id', function (req, res) {
 });
 
 
-
+// curl -v -X GET -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 http://localhost:3000/68d4135a10e71f7bfa4dcf2f/requests
 
 router.get('/', function (req, res, next) {
 
@@ -1175,20 +1241,32 @@ router.get('/', function (req, res, next) {
     // All request 
     winston.debug("Subscription All request ");
   } else if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
-    // All request 
-    winston.debug("hasPermissionOrRole All request ");
+    // All request if owner or admin
+    winston.debug("hasPermissionOrRole All request if owner or admin");
   } else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
-
-    query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
+// snap_here
+    query["$or"] = [{ "snapshot.agents.id_user": req.user.id, "acl.group": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ}}, { "participants": req.user.id, "acl.user": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ} }];
+    winston.debug("hasPermissionOrRole request_read_group", query);
 
   } 
   // else if (projectuser.hasPermissionOrRole('request_read_mine', ["????"])) {
   //   query["participants"] = req.user.id;
   // }
   else {
-    query["participants"] = req.user.id;
+     query["$or"] = [{ "participants": req.user.id, "acl.user": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ} }];
+  
+
     // generate empty requests response
   }
+
+  if (projectuser.hasPermissionOrRole('request_read_other')) {
+     query["$or"].push({"acl.other": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ}});
+  }
+
+  
+  // last query
+  // query["$or"] = [{"acl.other": {"$gte": 4}}, { "snapshot.agents.id_user": req.user.id, "acl.group": {"$gte": 4}}, { "participants": req.user.id, "acl.user": {"$gte": 4} }];
+  // db.getCollection("requests").find({"$or":[{"acl.other":{"$gte":4}},{"acl.group":{"$gte":4},"snapshot.agents.id_user":ObjectId("6821fc203ce0764c1b23a763")},{"participants":"6821fc203ce0764c1b23a763","acl.user":{"$gte":4}}],"id_project":"68d4135a10e71f7bfa4dcf2f","preflight":false,"status":{"$lt":1000,"$nin":[50,150]}})
 
 
   if (req.query.dept_id) {
@@ -1430,6 +1508,7 @@ router.get('/', function (req, res, next) {
 
   winston.verbose('REQUEST ROUTE - REQUEST FIND QUERY ', query);
   
+    // acl_check_here_find
   var q1 = Request.find(query, projection).
     skip(skip).limit(limit);
 
@@ -2039,6 +2118,7 @@ router.get('/csv', function (req, res, next) {
   }
 
   winston.debug('REQUEST ROUTE - REQUEST FIND ', query)
+    // acl_check_here_find
   return Request.find(query, '-transcript -status -__v').
     skip(skip).limit(limit).
     //populate('department', {'_id':-1, 'name':1}).     
@@ -2309,8 +2389,13 @@ router.get('/:requestid', function (req, res) {
   var requestid = req.params.requestid;
   winston.debug("get request by id: " + requestid);
 
+  // acl_check_here_find   // acl_check_here_query
 
-  let q = Request.findOne({ request_id: requestid, id_project: req.projectid })
+
+  var query = { request_id: requestid, id_project: req.projectid };
+  aclService.addACLQuery(query, req.user, aclConstants.ACL_PERMISSION.ONLY_READ);
+
+  let q = Request.findOne(query)
     // .select("+snapshot.agents")
     .populate('lead')
     .populate('department')
