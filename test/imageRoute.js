@@ -1,6 +1,7 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 process.env.LOG_LEVEL = 'critical';
+process.env.MAX_UPLOAD_FILE_SIZE = 1024000
 
 //Require the dev-dependencies
 let chai = require('chai');
@@ -324,6 +325,43 @@ describe('ImagesRoute', () => {
                     done();
                 });
         });
+
+
+        it('new-upload-users', (done) => {
+            
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then( savedUser => {
+                projectService.create("test-images", savedUser._id).then( savedProject => {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/images/users/')
+                        .auth(email, pwd)
+                        .set('Content-Type', 'image/jpeg')
+                        .attach('file', fs.readFileSync('./test/fixtures/test-image.png'), 'test-image.png')
+                        .end((err, res) => {
+    
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+                            console.error("err: ", err);
+                            console.log("res.body", res.body);
+                            res.should.have.status(201);
+                            res.body.should.be.a('object');
+                            // expect(res.body.message).to.equal('Image uploded successfully');
+                            // expect(res.body.filename).to.not.equal(null);
+                            // expect(res.body.filename).to.containIgnoreSpaces('test-image.png');
+                            // expect(res.body.filename).to.containIgnoreSpaces('users', 'images');
+                            // expect(res.body.thumbnail).to.not.equal(null);
+                            done();
+                        });
+
+                })
+
+
+            });
+        })
+
     });
 
 });
