@@ -307,7 +307,7 @@ var RequestSchema = new Schema({
     required: false,
     index: true
   },
-  acl: AclSchema
+  acl: { type: AclSchema, required: true, default: {} }
 }, {
   timestamps: true,
   toObject: { virtuals: true }, //IMPORTANT FOR trigger used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
