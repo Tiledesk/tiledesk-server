@@ -388,7 +388,7 @@ app.options('*', cors());
 
 
 // });
-
+console.log("MAX_UPLOAD_FILE_SIZE: ", process.env.MAX_UPLOAD_FILE_SIZE);
 
 
 if (process.env.ROUTELOGGER_ENABLED==="true") {
@@ -674,12 +674,15 @@ app.use((err, req, res, next) => {
     return res.status(401).json({ err: "error ip filter" });
   }
 
+  const realIp = req.headers['x-forwarded-for']?.split(',')[0] || req.headers['x-real-ip'] || req.ip;
+
   //emitted by multer when the file is too big
   if (err.code === "LIMIT_FILE_SIZE") {
     winston.debug("LIMIT_FILE_SIZE");
     winston.warn(`LIMIT_FILE_SIZE on ${req.originalUrl}`, {
       limit: process.env.MAX_UPLOAD_FILE_SIZE,
       ip: req.ip,
+      realIp: realIp
     });
     return res.status(413).json({ err: "Content Too Large", limit_file_size: process.env.MAX_UPLOAD_FILE_SIZE });
   } 
