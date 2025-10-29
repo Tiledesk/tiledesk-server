@@ -136,6 +136,7 @@ router.post('/assets', [
     : new Date(Date.now() + 10*365*24*60*60*1000); // default 10 anni
   req.expireAt = expireAt;
 
+  const upload = getUploader(req, req.file || { mimetype: req.headers['content-type'] || '' });
   upload(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
       let status = (err.code === "LIMIT_FILE_SIZE") ? 413 : 400;
