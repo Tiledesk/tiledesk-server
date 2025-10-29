@@ -88,6 +88,7 @@
     "marked": "^3.0.4",
     "maskdata": "^1.1.10",
     "migrate-mongoose": "^4.0.0",
+    "mime-types": "^3.0.1",
     "mix-hash": "^1.0.7",
     "moment": "^2.29.3",
     "moment-timezone": "^0.5.33",

@@ -65,6 +65,9 @@ curl -u andrea.leo@f21.it:123456 \
 
   */
 
+/**
+ * IN DEPRECATION
+ */
 router.post('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], (req, res, next) => {
   winston.debug("files/users");
   if (req.query.forever) {
@@ -115,7 +118,9 @@ curl \
 
 
   // used by SMTP SERVER
-
+/**
+ * IN DEPRECATION
+ */
 router.post('/public',  (req, res, next) => {
   winston.debug("files/public")
 

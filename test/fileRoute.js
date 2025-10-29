@@ -1,6 +1,8 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 process.env.LOG_LEVEL = 'critical';
+process.env.ENABLE_ATTACHMENT_RETENTION = "true"
+
 
 //Require the dev-dependencies
 let chai = require('chai');
@@ -9,6 +11,7 @@ let server = require('../app');
 let should = chai.should();
 var fs = require('fs');
 var userService = require('../services/userService');
+let projectService = require('../services/projectService');
 
 let log = false;
 
@@ -76,6 +79,70 @@ describe('FileRoute', () => {
                 });
 
 
+        });
+
+        it('post-chat', (done) => {
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-assets-create", savedUser._id).then(function (savedProject) {
+
+                    console.log("project created")
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/files/chat')
+                        .auth(email, pwd)
+                        .set('Content-Type', 'application/pdf')
+                        .attach('file', fs.readFileSync('./test/fixtures/sample.pdf'), 'sample.pdf')
+                        .end((err, res) => {
+        
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
+                            console.log("res.status: ", res.status)
+                            console.log("res.body: ", res.body)
+        
+                            //res.should.have.status(201);
+                            // res.body.should.be.a('object');
+                            // expect(res.body.message).to.equal('File uploded successfully');
+                            // expect(res.body.filename).to.not.equal(null);
+                            // expect(res.body.thumbnail).to.not.equal(null);
+                            done();
+                        });
+                })
+            })
+        });
+
+        it('post-assets', (done) => {
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-assets-create", savedUser._id).then(function (savedProject) {
+
+                    console.log("project created")
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/files/assets')
+                        .auth(email, pwd)
+                        .set('Content-Type', 'application/pdf')
+                        .attach('file', fs.readFileSync('./test/fixtures/sample.pdf'), 'sample.pdf')
+                        .end((err, res) => {
+        
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
+                            console.log("res.status: ", res.status)
+                            console.log("res.body: ", res.body)
+        
+                            //res.should.have.status(201);
+                            // res.body.should.be.a('object');
+                            // expect(res.body.message).to.equal('File uploded successfully');
+                            // expect(res.body.filename).to.not.equal(null);
+                            // expect(res.body.thumbnail).to.not.equal(null);
+                            done();
+                        });
+                })
+            })
         });
 
 
