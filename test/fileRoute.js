@@ -119,13 +119,45 @@ describe('FileRoute', () => {
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-assets-create", savedUser._id).then(function (savedProject) {
-
+                    
                     console.log("project created")
                     chai.request(server)
                         .post('/' + savedProject._id + '/files/assets')
                         .auth(email, pwd)
                         .set('Content-Type', 'application/pdf')
                         .attach('file', fs.readFileSync('./test/fixtures/sample.pdf'), 'sample.pdf')
+                        .end((err, res) => {
+        
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
+                            console.log("res.status: ", res.status)
+                            console.log("res.body: ", res.body)
+        
+                            //res.should.have.status(201);
+                            // res.body.should.be.a('object');
+                            // expect(res.body.message).to.equal('File uploded successfully');
+                            // expect(res.body.filename).to.not.equal(null);
+                            // expect(res.body.thumbnail).to.not.equal(null);
+                            done();
+                        });
+                })
+            })
+        });
+
+        it('post-assets-images', (done) => {
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-assets-create", savedUser._id).then(function (savedProject) {
+                    
+                    console.log("project created")
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/files/assets')
+                        .auth(email, pwd)
+                        .set('Content-Type', 'image/jpeg')
+                        .attach('file', fs.readFileSync('./test/fixtures/test-image.png'), 'test-image.png')
                         .end((err, res) => {
         
                             if (err) { console.error("err: ", err); }
