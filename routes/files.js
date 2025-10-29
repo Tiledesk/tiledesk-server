@@ -30,40 +30,33 @@ if (MAX_UPLOAD_FILE_SIZE) {
   winston.info("Max upload file size is infinity");
 }
 
-let files_allowed = process.env.UPLOAD_FILES_ALLOW_LIST || "text/html,text/plain,application/octet-stream,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,audio/mpeg,application/json,application/pdf";
-winston.info("Files upload allowed list "+ files_allowed);
-
-
-//  curl -u andrea.leo@f21.it:123456 -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/public/wstest/index.html;type=text/plain"   http://localhost:3000/files/users/
+let files_allowed = process.env.UPLOAD_FILES_ALLOW_LIST || "text/plain,application/octet-stream,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,audio/mpeg,application/json,application/pdf";
+winston.info("Files upload allowed list " + files_allowed);
 
 const fileFilter = (req, file, cb) => {
-  winston.debug("fileFilter "+ files_allowed);
-  winston.debug("fileFilter file" , file);
+  winston.debug("fileFilter " + files_allowed);
+  const ext = file.originalname.toLowerCase().endsWith('.html') || file.originalname.toLowerCase().endsWith('.htm');
 
-  winston.debug("req.file ",req.file);
+  if (ext) {
+      winston.debug("file extension not allowed: " + file.originalname);
+      cb(new multer.MulterError('fileFilter not allowed'));
+      return;
+  }
 
-  
-
-  if (files_allowed==="*" || (files_allowed && files_allowed.length>0 && files_allowed.split(",").indexOf(file.mimetype)>-1) ) {
-     winston.debug("file.mimetype allowed: "+ file.mimetype);
+  if (files_allowed === "*" ||
+      (files_allowed && files_allowed.length > 0 && files_allowed.split(",").indexOf(file.mimetype) > -1)) {
+      winston.debug("file.mimetype allowed: " + file.mimetype);
       cb(null, true);
   } else {
       winston.debug("file.mimetype not allowed. " + file.mimetype);
-      // cb(null, false);
-      cb(new multer.MulterError('fileFilter not allowed'))
+      cb(new multer.MulterError('fileFilter not allowed'));
   }
-}
+};
 
 
 const upload = multer({ storage: fileService.getStorage("files"),  fileFilter: fileFilter, limits: uploadlimits}).single('file');
 
-/*
 
-curl -u andrea.leo@f21.it:123456 \
-  -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/README.md" \
-  http://localhost:3000/files/users/
-
-  */
 
 /**
  * IN DEPRECATION
@@ -108,6 +101,8 @@ router.post('/users', [passport.authenticate(['basic', 'jwt'], { session: false 
 });
 
 /*
+
+
 curl \
   -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/README.md" \
   http://localhost:3000/files/public/
@@ -160,22 +155,37 @@ router.post('/public',  (req, res, next) => {
 
 
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   winston.debug('path', req.query.path);
-  // if (path.indexOf("/users/"))
-  fileService.getFileDataAsStream(req.query.path).pipe(res);
-  // const file = gfs
-  //   .find({
-  //     filename: req.query.path
-  //   })
-  //   .toArray((err, files) => {
-  //     if (!files || files.length === 0) {
-  //       return res.status(404).json({
-  //         err: "no files exist"
-  //       });
-  //     }
-  //     gfs.openDownloadStreamByName(req.query.path).pipe(res);
-  //   });
+  
+
+  try {
+    let file = await fileService.find(req.query.path);
+    // console.log("file", file);
+
+    res.set({ "Content-Length": file.length});
+    res.set({ "Content-Type": file.contentType});
+
+  } catch (e) {
+    if (e.code == "ENOENT") {
+      winston.debug('File not found: '+req.query.path);
+      return res.status(404).send({success: false, msg: 'File not found.'});
+    }else {
+      winston.error('Error getting the image', e);
+      return res.status(500).send({success: false, msg: 'Error getting file.'});
+    }      
+  }
+  
+  fileService.getFileDataAsStream(req.query.path).on('error', (e)=> {
+        if (e.code == "ENOENT") {
+          winston.debug('File not found: '+req.query.path);
+          return res.status(404).send({success: false, msg: 'File not found.'});
+        }else {
+          winston.error('Error getting the file', e);
+          return res.status(500).send({success: false, msg: 'Error getting file.'});
+        }      
+      }).pipe(res);
+  
 });
 
 

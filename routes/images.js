@@ -482,6 +482,10 @@ the image binary file
 
 Example:
 
+
+curl -v -X POST -H 'Content-Type: multipart/form-data' -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test.jpg" http://localhost:3000/images/public/
+
+
 ```text
 curl -v -X POST -H 'Content-Type: multipart/form-data' -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test.jpg" https://api.tiledesk.com/v2/images/public
 ```

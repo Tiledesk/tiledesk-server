@@ -5,6 +5,40 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.13.26
+- Fixed bug: LLM preview not working
+
+# 2.13.24
+- Code improvements
+
+# 2.13.23
+- Updated whatsapp-connector to 1.0.9
+- Updated messenger-connector to 0.1.28
+- Code improvements
+
+# 2.13.22
+- Updated whatsapp-connector to 1.0.9
+
+# 2.13.21
+- Updated whatsapp-connector to 1.0.8
+
+# 2.13.20
+- Minor bug fix on email channel
+
+# 2.13.19
+- Improved: llm preview to support openai models
+- Updated: 2.0.30
+- Fix tokens usage for llm preview
+
+# 2.13.17
+- Updated: whatsapp-connector to 1.0.7
+
+# 2.13.16
+- Updated: whatsapp-connector to 1.0.6
+
+# 2.13.15
+- Bug fix: email quota reached sent to project admin
+
 # 2.13.14
 - Bug fix: slug duplicated error on publish chatbot
 - Updated: whatsapp-connector to 1.0.5

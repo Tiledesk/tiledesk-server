@@ -199,13 +199,12 @@ class AiService {
   }
 
   askNamespace(data) {
-    winston.info("askNamespace data: ", data);
+    winston.debug("askNamespace data: ", data);
     let base_url = kb_endpoint_qa;
     if (data.hybrid || data.search_type === 'hybrid') {
       base_url = kb_endpoint_qa_gpu;
     }
     winston.debug("[OPENAI SERVICE] kb endpoint: " + base_url);
-    winston.info("[OPENAI SERVICE] kb endpoint: " + base_url);
     
     return new Promise((resolve, reject) => {
 
@@ -225,7 +224,7 @@ class AiService {
     })
   }
 
-  getContentChunks(namespace_id, content_id, engine, hybrid) {
+  getContentChunks(namespace_id, content_id, engine) {
     let base_url = kb_endpoint_train;
     winston.debug("[OPENAI SERVICE] kb endpoint: " + base_url);
 
@@ -233,6 +232,7 @@ class AiService {
 
       let payload = { engine: engine };
       let token = jwt.sign(payload, secret);
+      console.log("token: ", token)
       axios({
         url: base_url + "/id/" + content_id + "/namespace/" + namespace_id + "/" + token,
         headers: {
