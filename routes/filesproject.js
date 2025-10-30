@@ -15,6 +15,7 @@ const fallbackFileService = new FileGridFsService("images");
 const mime = require('mime-types');
 const path = require('path');
 const sharp = require('sharp');
+const verifyFileContent = require('../middleware/file-type.js');
 
 
 let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE || 1024000;
@@ -110,6 +111,9 @@ router.post('/chat', [
     }
 
     try {
+      
+      await verifyFileContent(req.file);
+
       await mongoose.connection.db.collection('files.chunks').updateMany(
         { files_id: req.file.id }, 
         { $set: { "metadata.expireAt": req.file.metadata.expireAt }}
@@ -117,6 +121,9 @@ router.post('/chat', [
       return res.status(201).send({ message: "File uploaded successfully", filename: req.file.filename });
 
     } catch(err) {
+      if (err?.source === "FileContentVerification") {
+        return res.status(403).send({ success: false, msg: err.message });  
+      }
       return res.status(500).send({ success: false, msg: "Error updating file chunks" });
     }
   })
