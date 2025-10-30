@@ -121,6 +121,7 @@ router.post('/chat', [
       return res.status(201).send({ message: "File uploaded successfully", filename: req.file.filename });
 
     } catch(err) {
+      console.log("--> Err: ", err)
       if (err?.source === "FileContentVerification") {
         return res.status(403).send({ success: false, msg: err.message });  
       }
