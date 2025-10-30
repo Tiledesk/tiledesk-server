@@ -7,6 +7,7 @@ process.env.ENABLE_ATTACHMENT_RETENTION = "true"
 //Require the dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');
+chai.use(require('chai-string'));
 let server = require('../app');
 let should = chai.should();
 var fs = require('fs');
@@ -177,7 +178,61 @@ describe('FileRoute', () => {
             })
         });
 
+        it('post-assets-images-retro', (done) => {
 
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-assets-create", savedUser._id).then(function (savedProject) {
+                    
+                    chai.request(server)
+                    .post('/images/users/')
+                    .auth(email, pwd)
+                    .set('Content-Type', 'image/jpeg')
+                    .attach('file', fs.readFileSync('./test/fixtures/test-image.png'), 'test-image.png')
+                    // .field('delimiter', ';')            
+                    .end((err, res) => {
+
+                        if (err) { console.error("err: ", err); }
+                        if (log) { console.log("res.body", res.body); }
+
+                        console.log("res.body", res.body);
+                        res.should.have.status(201);
+                        res.body.should.be.a('object');
+                        expect(res.body.message).to.equal('Image uploded successfully');
+                        expect(res.body.filename).to.not.equal(null);
+                        expect(res.body.filename).to.containIgnoreSpaces('test-image.png');
+                        expect(res.body.filename).to.containIgnoreSpaces('users', 'images');
+                        expect(res.body.thumbnail).to.not.equal(null);
+
+                        console.log("res.body.filename: ", res.body.filename);
+                        let filepath = res.body.filename;
+
+                        chai.request(server)
+                            .get('/' + savedProject._id + '/files?path=' + filepath)
+                            .auth(email, pwd)
+                            .end((err, res) => {
+            
+                                if (err) { console.error("err: ", err); }
+                                if (log) { console.log("res.body", res.body); }
+    
+                                console.log("res.status: ", res.status)
+                                console.log("res.body: ", res.body)
+            
+                                //res.should.have.status(201);
+                                // res.body.should.be.a('object');
+                                // expect(res.body.message).to.equal('File uploded successfully');
+                                // expect(res.body.filename).to.not.equal(null);
+                                // expect(res.body.thumbnail).to.not.equal(null);
+                                done();
+                            });
+                    });
+
+                })
+            })
+        });
 
     });
 

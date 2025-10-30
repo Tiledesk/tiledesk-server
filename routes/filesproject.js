@@ -11,6 +11,7 @@ const mongoose = require('mongoose');
 const FileGridFsService = require('../services/fileGridFsService.js');
 const roleConstants = require('../models/roleConstants.js');
 const fileService = new FileGridFsService("files");
+const fallbackFileService = new FileGridFsService("images");
 const mime = require('mime-types');
 const path = require('path');
 const sharp = require('sharp');
@@ -184,9 +185,49 @@ router.post('/assets', [
 router.get("/", [
   passport.authenticate(['basic', 'jwt'], { session: false }), 
   validtoken,
-], (req, res) => {
+], async (req, res) => {
   winston.debug('path', req.query.path);
-  fileService.getFileDataAsStream(req.query.path).pipe(res);
+
+  if (req.query.as_attachment) {
+    res.set({ "Content-Disposition": "attachment; filename=\""+req.query.path+"\"" });
+  }
+  
+  let fService = fileService;
+  try {
+    let file = await fileService.find(req.query.path);
+    res.set({ "Content-Length": file.length});
+    res.set({ "Content-Type": file.contentType});
+  } catch (e) {
+    if (e.code == "ENOENT") {
+      winston.debug(`File ${req.query.path} not found on primary file service. Fallback to secondary.`)
+      console.log(`File ${req.query.path} not found on primary file service. Fallback to secondary.`)
+
+      // To instantiate fallbackFileService here where needed you need to wait for the open event.
+      // Instance moved on top
+      // await new Promise(r => fallbackFileService.conn.once("open", r));
+
+      try {
+        let file2 = await fallbackFileService.find(req.query.path)
+        res.set({ "Content-Length": file2.length});
+        res.set({ "Content-Type": file2.contentType});
+        fService = fallbackFileService;
+      } catch (e) {
+        if (e.code == "ENOENT") {
+          winston.debug(`File ${req.query.path} not found on seconday file service.`)
+          return res.status(404).send({ success: false, msg: 'File not found.' });
+        }else {
+          winston.error('Error getting file: ', e);
+          return res.status(500).send({success: false, msg: 'Error getting file.'});
+        }
+      }
+
+    } else {
+      winston.error('Error getting file', e);
+      return res.status(500).send({success: false, msg: 'Error getting file.'});
+    }
+  }
+  
+  fService.getFileDataAsStream(req.query.path).pipe(res);
 });
 
 
