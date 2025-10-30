@@ -33,55 +33,70 @@ if (MAX_UPLOAD_FILE_SIZE) {
  * Examples:
  * - '30' (30 seconds)
  */
-const chatFileExpirationTime = parseInt(process.env.CHAT_FILE_EXPIRATION_TIME || '2592000', 10) // default: '2592000' (30 days), examples: '30' (30 seconds);
+const chatFileExpirationTime = parseInt(process.env.CHAT_FILE_EXPIRATION_TIME || '2592000', 10)
 //const default_allowed_extension = process.env.UPLOAD_FILES_ALLOW_LIST || "application/pdf,image/png";
 /**
  * Default: ".jpg,.jpeg,.png,.gif,.pdf,.txt"
  * Examples: 
- * - '* /*' (all extension) (without spaces)
+ * - '* /*' without spaces (all extension)
  * Deprecated: "application/pdf,image/png,..."
  */
-const default_allowed_extensions = process.env.UPLOAD_FILES_ALLOW_LIST || ".pdf,.png,.jpeg"; // default: ".jpg,.jpeg,.png,.gif,.pdf,.txt", examples: "*/*" (all extension)
+const default_chat_allowed_extensions = process.env.CHAT_FILES_ALLOW_LIST || ".jpg,.jpeg,.png,.gif,.pdf,.txt"; 
+const default_assets_allowed_extensions = process.env.ASSETS_FILE_ALLOW_LISTALLOWED_EXTENSIONS || ".jpg,.jpeg,.png,.gif,.pdf,.txt,.csv,.doc,.docx,.xls,.xlsx"; //,.ppt,.pptx,.zip,.rar
+
+const images_extensions = [ ".png", ".jpg", ".jpeg", ".gif" ];
 
 
-const fileFilter = (req, file, cb) => {
+const fileFilter = (extensionsSource = 'chat') => {
 
-  const project = req.project;
-  const pu = req.projectuser;
-  
-  let allowed_extensions;
-  let allowed_mime_types;
+  return (req, file, cb) => {
+    const default_allowed_extensions = ".jpg,.jpeg,.png,.gif,.pdf,.txt";
+    const assets_allowed_extensions = ".jpg,.jpeg,.png,.gif,.pdf,.txt,.csv,.doc,.docx,.xls,.xlsx";
+    
+    let allowed_extensions;
+    let allowed_mime_types;
 
-  if (pu.roleType === 2 || pu.role === roleConstants.GUEST) {
-    allowed_extensions = project?.widget?.allowedUploadExtentions || default_allowed_extensions;
-  } else {
-    allowed_extensions = project?.settings?.allowed_upload_extentions || default_allowed_extensions;
-  }
-
-  if (allowed_extensions !== "*/*") {
-
-    allowed_mime_types = getMimeTypes(allowed_extensions);
-
-    const ext = path.extname(file.originalname).toLowerCase();
-
-    if (!allowed_extensions.includes(ext)) {
-      const error = new Error("Extension not allowed");
-      error.status = 403;
-      return cb(error);
+    if (extensionsSource === 'assets') {
+      allowed_extensions = assets_allowed_extensions;
+    } else {
+      allowed_extensions = default_allowed_extensions;
     }
 
-    if (!allowed_mime_types.includes(file.mimetype)) {
-      const error = new Error("Mimetype mismatch detected");
-      error.status = 403;
-      return cb(error);
+    if (allowed_extensions !== "*/*") {
+      allowed_mime_types = getMimeTypes(allowed_extensions);
+      const ext = path.extname(file.originalname).toLowerCase();
+
+      if (!allowed_extensions.includes(ext)) {
+        const error = new Error("Extension not allowed");
+        error.status = 403;
+        return cb(error);
+      }
+
+      const expectedMimetype = mime.lookup(ext);
+      if (expectedMimetype && file.mimetype !== expectedMimetype) {
+          const error = new Error("Mimetype mismatch detected");
+          error.status = 403;
+          return cb(error);
+      }
+      
+      return cb(null, true);
+    } else {
+      return cb(null, true);
     }
-    cb(null, true)
-  } else {
-    cb(null, true);
   }
 }
 
-const upload = multer({ storage: fileService.getStorage("files"), fileFilter: fileFilter, limits: uploadlimits}).single('file');
+const uploadChat = multer({ 
+  storage: fileService.getStorage("files"), 
+  fileFilter: fileFilter("chat"), 
+  limits: uploadlimits
+}).single('file');
+
+const uploadAssets = multer({ 
+  storage: fileService.getStorage("files"), 
+  fileFilter: fileFilter("assets"), 
+  limits: uploadlimits
+}).single('file');
 
 
 router.post('/chat', [
@@ -94,7 +109,7 @@ router.post('/chat', [
   req.expireAt = expireAt;
 
 
-  upload(req, res, async (err) => {
+  uploadChat(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
       // A Multer error occurred when uploading.
       winston.error(`Multer replied with code ${err?.code} and message "${err?.message}"`);
@@ -111,8 +126,9 @@ router.post('/chat', [
     }
 
     try {
-      
-      await verifyFileContent(req.file);
+
+      const buffer = await fileService.getFileDataAsBuffer(req.file.filename);
+      await verifyFileContent(buffer, req.file.mimetype);
 
       await mongoose.connection.db.collection('files.chunks').updateMany(
         { files_id: req.file.id }, 
@@ -121,10 +137,12 @@ router.post('/chat', [
       return res.status(201).send({ message: "File uploaded successfully", filename: req.file.filename });
 
     } catch(err) {
-      console.log("--> Err: ", err)
       if (err?.source === "FileContentVerification") {
-        return res.status(403).send({ success: false, msg: err.message });  
+        let error_message = err.message || "Content verification failed";
+        winston.warn("File content verification failed. Message: ", error_message);
+        return res.status(403).send({ success: false, msg: error_message });  
       }
+      winston.error("Error saving file: ", err);
       return res.status(500).send({ success: false, msg: "Error updating file chunks" });
     }
   })
@@ -145,7 +163,7 @@ router.post('/assets', [
   }
   req.expireAt = expireAt;
 
-  upload(req, res, async (err) => {
+  uploadAssets(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
       let status = (err.code === "LIMIT_FILE_SIZE") ? 413 : 400;
       return res.status(status).send({ success: false, msg: err.message, code: err.code });
@@ -154,6 +172,9 @@ router.post('/assets', [
     }
 
     try {
+      
+      const buffer = await fileService.getFileDataAsBuffer(req.file.filename);
+      await verifyFileContent(buffer, req.file.mimetype);
       // metadata update
       await mongoose.connection.db.collection('files.chunks').updateMany(
         { files_id: req.file.id },
@@ -164,7 +185,7 @@ router.post('/assets', [
       let thumbnail;
 
       // generate thumb for images
-      if ([".png", ".jpg", ".jpeg", ".gif"].includes(ext)) {
+      if (images_extensions.includes(ext)) {
         const buffer = await fileService.getFileDataAsBuffer(req.file.filename);
         const thumFilename = req.file.filename.replace(/([^/]+)$/, "thumbnails_200_200-$1");
         const resized = await sharp(buffer).resize(200,200).toBuffer();
@@ -182,9 +203,14 @@ router.post('/assets', [
         thumbnail: thumbnail ? encodeURIComponent(thumbnail) : undefined
       });
 
-    } catch(e) {
-      winston.error("Error uploading asset", e);
-      console.error("Error uploading asset", e);
+    } catch(err) {
+      if (err?.source === "FileContentVerification") {
+        let error_message = err.message || "Content verification failed";
+        winston.warn("File content verification failed. Message: ", error_message);
+        return res.status(403).send({ success: false, msg: error_message });  
+      }
+
+      winston.error("Error uploading asset", err);
       return res.status(500).send({ success: false, msg: "Error processing file" });
     }
   });
@@ -208,16 +234,15 @@ router.get("/", [
   } catch (e) {
     if (e.code == "ENOENT") {
       winston.debug(`File ${req.query.path} not found on primary file service. Fallback to secondary.`)
-      console.log(`File ${req.query.path} not found on primary file service. Fallback to secondary.`)
-
+      
       // To instantiate fallbackFileService here where needed you need to wait for the open event.
       // Instance moved on top
       // await new Promise(r => fallbackFileService.conn.once("open", r));
 
       try {
-        let file2 = await fallbackFileService.find(req.query.path)
-        res.set({ "Content-Length": file2.length});
-        res.set({ "Content-Type": file2.contentType});
+        let file = await fallbackFileService.find(req.query.path)
+        res.set({ "Content-Length": file.length });
+        res.set({ "Content-Type": file.contentType });
         fService = fallbackFileService;
       } catch (e) {
         if (e.code == "ENOENT") {
