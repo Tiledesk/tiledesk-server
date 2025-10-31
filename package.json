@@ -74,7 +74,7 @@
     "express-session": "^1.17.3",
     "express-validator": "^6.14.2",
     "fast-csv": "^4.3.6",
-    "file-type": "^21.0.0",
+    "file-type": "^16.5.4",
     "geoip-lite": "^1.4.5",
     "handlebars": "^4.7.7",
     "handlebars-dateformat": "^1.1.3",
