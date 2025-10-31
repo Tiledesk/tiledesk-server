@@ -123,7 +123,7 @@ router.post('/chat', [
       if (err.code === "LIMIT_FILE_SIZE") {
         status = 413;
       }
-      return res.status(status).send({ success: false, msg: err.message || "Multer error on file uploading", code: err.code })
+      return res.status(status).send({ success: false, msg: err.message || "Error on file uploading", code: err.code })
     } else if (err) {
       // An unknown error occurred when uploading.
       winston.error(`Multer replied with status ${err?.status} and message "${err?.message}"`);
