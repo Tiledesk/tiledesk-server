@@ -220,10 +220,7 @@ router.put('/users/photo', [
 //   //   });
 // });
 
-router.get("/", [
-  passport.authenticate(['basic', 'jwt'], { session: false }), 
-  validtoken,
-], async (req, res) => {
+router.get("/", async (req, res) => {
   winston.debug('path', req.query.path);
 
   if (req.query.as_attachment) {
