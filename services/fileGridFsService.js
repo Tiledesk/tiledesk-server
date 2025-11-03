@@ -211,7 +211,20 @@ class FileGridFsService extends FileService {
 
                 var subfolder = "/public";
                 if (req.user && req.user.id) {
-                    subfolder = "/users/" + req.user.id;
+                    folder = "photo.jpg";
+                    var userid = req.user.id;
+
+                    if (req.query.bot_id) {
+                        winston.debug("req.query.user_id: "+ req.query.user_id);
+                        // winston.info("req.projectuser ",req.projectuser);
+
+                        // TODO pass also project_id ?user_id=abc&project_id=123 and find PU
+                        // if (req.project_user && req.project_user.role === ) {
+
+                        // }
+                        userid = req.query.bot_id;
+                    }
+                    subfolder = "/users/"+userid;
                 }
                 const path = 'uploads' + subfolder + "/" + folderName + "/" + folder;
                 req.folder = folder;
@@ -230,7 +243,8 @@ class FileGridFsService extends FileService {
                 if (req.expireAt) {
                     expireAt = req.expireAt;
                 }
-
+                console.log("filename: ", file.originalname)
+                console.log(`${path}/${file.originalname}`)
                 return {
                     bucketName: folderName,
                     filename: `${path}/${file.originalname}`,

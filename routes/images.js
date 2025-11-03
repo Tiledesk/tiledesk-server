@@ -332,7 +332,7 @@ router.put('/users/photo', [passport.authenticate(['basic', 'jwt'], { session: f
       entity_id = bot_id;
     }
 
-     var destinationFolder = 'uploads/users/' + entity_id + "/images/";
+     var destinationFolder = 'uploads/users/' + entity_id + "/files/";
      winston.debug("destinationFolder:"+destinationFolder);
 
      var thumFilename = destinationFolder+'thumbnails_200_200-photo.jpg';

@@ -10,6 +10,12 @@ var router = express.Router();
 const FileGridFsService = require('../services/fileGridFsService.js');
 const fileService = new FileGridFsService("files");
 const fallbackFileService = new FileGridFsService("images");
+const mime = require('mime-types');
+const path = require('path');
+const faq_kb = require('../models/faq_kb');
+const project_user = require('../models/project_user');
+const roleConstants = require('../models/roleConstants');
+const sharp = require('sharp');
 
 
 let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE || 1024000;
@@ -67,6 +73,12 @@ const uploadAssets = multer({
   limits: uploadlimits
 }).single('file');
 
+const uploadAvatar = multer({
+  storaga: fileService.getStorageAvatar("files"),
+  fileFilter: fileFilter("assets"),
+  limits: uploadlimits
+}).single('file');
+
 
 
 
@@ -101,11 +113,12 @@ const uploadAssets = multer({
 // const upload = multer({ storage: fileService.getStorage("files"),  fileFilter: fileFilter, limits: uploadlimits}).single('file');
 
 
-router.put('/users/photo', [
+router.post('/users/photo', [
   passport.authenticate(['basic', 'jwt'], { session: false }),
   validtoken
 ], async (req, res, next) => {
 
+  console.log("\n/users/photo")
   uploadAssets(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
       // A Multer error occurred when uploading.
@@ -139,11 +152,13 @@ router.put('/users/photo', [
 
       if (req.query.bot_id) {
         bot_id = req.query.bot_id;
+        console.log("bot_id: ", bot_id)
 
         let chatbot = await faq_kb.findById(bot_id).catch((err) => {
           winston.error("Error finding bot ", err);
           return res.status(500).send({ success: false, error: "Unable to find chatbot with id " + bot_id });
         })
+        console.log("chatbot: ", chatbot)
 
         if (!chatbot) {
           return res.status(404).send({ success: false, error: "Chatbot not found" })
@@ -166,14 +181,17 @@ router.put('/users/photo', [
         }
 
         entity_id = bot_id;
+        console.log("entity_id: ", entity_id)
       }
 
-      var destinationFolder = 'uploads/users/' + entity_id + "/images/";
+      var destinationFolder = 'uploads/users/' + entity_id + "/files/";
       winston.debug("destinationFolder:" + destinationFolder);
+      console.log("destinationFolder: ", destinationFolder)
 
       var thumFilename = destinationFolder + 'thumbnails_200_200-photo.jpg';
 
       winston.debug("req.file.filename:" + req.file.filename);
+      console.log("req.file.filename:" + req.file.filename);
       fileService.getFileDataAsBuffer(req.file.filename).then(function (buffer) {
 
         sharp(buffer).resize(200, 200).toBuffer((err, resizeImage, info) => {
@@ -196,6 +214,7 @@ router.put('/users/photo', [
       }
 
       winston.error("Error uploading asset", err);
+      console.error("Error uploading asset", err);
       return res.status(500).send({ success: false, msg: "Error processing file" });
     }
   });
@@ -275,6 +294,15 @@ router.get("/download", (req, res) => {
   res.attachment(filename);
   fileService.getFileDataAsStream(req.query.path).pipe(res);
 });
+
+
+function getMimeTypes(allowed_extension) {
+  const extension = allowed_extension.split(',').map(e => e.trim().toLowerCase());
+  const allowedMimeTypes = extension.map(ext => mime.lookup(ext)).filter(Boolean);
+  return allowedMimeTypes;
+}
+
+
 
 
 /*

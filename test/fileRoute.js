@@ -50,7 +50,7 @@ describe('FileRoute', () => {
                         expect(res.body.message).to.equal('File uploded successfully');
                         expect(res.body.filename).to.not.equal(null);
                         expect(res.body.thumbnail).to.not.equal(null);
-                        
+
                         done();
                     });
             });
@@ -82,8 +82,60 @@ describe('FileRoute', () => {
 
         });
 
-    });
+        it('post-chatbot-photo', (done) => {
 
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ "name": "testbot", type: "tilebot", language: 'en' })
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testbot");
+                            expect(res.body.language).to.equal("en");
+
+                            let chatbot_id = res.body._id;
+
+
+
+                            chai.request(server)
+                                .post('/files/users/photo?bot_id=' + chatbot_id)
+                                .auth(email, pwd)
+                                .set('Content-Type', 'images/png')
+                                .attach('file', fs.readFileSync('./test/fixtures/test-image.png'), 'test-image.png')
+                                // .field('delimiter', ';')            
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+                                    console.log("res.body", res.body);
+
+                                    // res.should.have.status(201);
+                                    // res.body.should.be.a('object');
+                                    // expect(res.body.message).to.equal('File uploded successfully');
+                                    // expect(res.body.filename).to.not.equal(null);
+                                    // expect(res.body.thumbnail).to.not.equal(null);
+
+                                    done();
+                                });
+                        });
+
+
+                });
+            });
+
+        }).timeout(5000)
+
+    })
 });
 
 
