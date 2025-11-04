@@ -287,6 +287,13 @@ if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {
 const JSON_BODY_LIMIT = process.env.JSON_BODY_LIMIT || '500KB';
 winston.debug("JSON_BODY_LIMIT : " + JSON_BODY_LIMIT);
 
+const WEBHOOK_BODY_LIMIT = process.env.WEBHOOK_BODY_LIMIT || '5mb';
+winston.debug("WEBHOOK_BODY_LIMIT : " + WEBHOOK_BODY_LIMIT);
+
+const webhookParser = bodyParser.json({ limit: WEBHOOK_BODY_LIMIT });
+
+app.use('/webhook', webhookParser, webhook);
+
 app.use(bodyParser.json({limit: JSON_BODY_LIMIT,
   verify: function (req, res, buf) {
     // var url = req.originalUrl;
@@ -517,7 +524,7 @@ app.use('/users_util', usersUtil);
 app.use('/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], logs);
 app.use('/requests_util', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], requestUtilRoot);
 
-app.use('/webhook', webhook);
+//app.use('/webhook', webhook); // moved on top before body parser middleware
 
 // TODO security issues
 if (process.env.DISABLE_TRANSCRIPT_VIEW_PAGE ) {
@@ -685,9 +692,15 @@ app.use((err, req, res, next) => {
       realIp: realIp
     });
     return res.status(413).json({ err: "Content Too Large", limit_file_size: process.env.MAX_UPLOAD_FILE_SIZE });
-  } 
+  }
+  
+  if (err.type === "entity.too.large" || err.name === "PayloadTooLargeError") {
+    winston.warn("Payload too large", { expected: err.expected, limit: err.limit, length: err.length });
+    return res.status(413).json({ err: "Request entity too large", limit: err.limit});
+  }
 
-  winston.error("General error:: ", err);
+
+  winston.error("General error: ", err);
   return res.status(500).json({ err: "error" });
 });
 
