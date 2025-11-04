@@ -300,6 +300,9 @@ if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {
 const JSON_BODY_LIMIT = process.env.JSON_BODY_LIMIT || '500KB';
 winston.debug("JSON_BODY_LIMIT : " + JSON_BODY_LIMIT);
 
+const WEBHOOK_BODY_LIMIT = process.env.WEBHOOK_BODY_LIMIT || '5mb';
+const webhookParser = bodyParser.json({ limit: WEBHOOK_BODY_LIMIT });
+
 app.use(bodyParser.json({limit: JSON_BODY_LIMIT,
   verify: function (req, res, buf) {
     // var url = req.originalUrl;
@@ -530,7 +533,8 @@ app.use('/users_util', usersUtil);
 app.use('/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], logs);
 app.use('/requests_util', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], requestUtilRoot);
 
-app.use('/webhook', webhook);
+//app.use('/webhook', webhook);
+app.use('/webhook', webhookParser, webhook);
 
 // TODO security issues
 if (process.env.DISABLE_TRANSCRIPT_VIEW_PAGE ) {
