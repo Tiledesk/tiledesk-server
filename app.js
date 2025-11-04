@@ -305,28 +305,28 @@ const webhookParser = bodyParser.json({ limit: WEBHOOK_BODY_LIMIT });
 
 app.use('/webhook', webhookParser, webhook);
 
-// Parser globale ma ESCLUDE /webhook
-app.use((req, res, next) => {
-  if (req.path.startsWith('/webhook')) {
-    return next(); // salta bodyParser.json globale
-  }
-  bodyParser.json({
-    limit: JSON_BODY_LIMIT,
-    verify: function (req, res, buf) {
-      req.rawBody = buf.toString();
-    }
-  })(req, res, next);
-});
-
-// app.use(bodyParser.json({limit: JSON_BODY_LIMIT,
-//   verify: function (req, res, buf) {
-//     // var url = req.originalUrl;
-//     // if (url.indexOf('/stripe/')) {
-//       req.rawBody = buf.toString();
-//       winston.debug("bodyParser verify stripe", req.rawBody);
-//     // } 
+// // Parser globale ma ESCLUDE /webhook
+// app.use((req, res, next) => {
+//   if (req.path.startsWith('/webhook')) {
+//     return next(); // salta bodyParser.json globale
 //   }
-// }));
+//   bodyParser.json({
+//     limit: JSON_BODY_LIMIT,
+//     verify: function (req, res, buf) {
+//       req.rawBody = buf.toString();
+//     }
+//   })(req, res, next);
+// });
+
+app.use(bodyParser.json({limit: JSON_BODY_LIMIT,
+  verify: function (req, res, buf) {
+    // var url = req.originalUrl;
+    // if (url.indexOf('/stripe/')) {
+      req.rawBody = buf.toString();
+      winston.debug("bodyParser verify stripe", req.rawBody);
+    // } 
+  }
+}));
 
 app.use(bodyParser.urlencoded({limit: JSON_BODY_LIMIT, extended: true }));
 
