@@ -1821,7 +1821,6 @@ router.get('/tags/:type', async (req, res) => {
   
   // Assembly final result
   let data = { dates, series };
-  console.log(data);
 
   return res.status(200).send(data);
   
