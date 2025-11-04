@@ -18,10 +18,10 @@ router.post('/', async (req, res) => {
 
     // check if project is not null/undefined
     let quotes = await quoteManager.getAllQuotes(req.project, obj);
+    let currentSlot = await quoteManager.getCurrentSlot(req.project);
 
     winston.debug("quotes: ", quotes);
-    res.status(200).send({ message: 'ok', quotes: quotes });
-
+    res.status(200).send({ success: true, quotes: quotes, slot: currentSlot });
 })
 
 router.get('/:type', async (req, res) => {

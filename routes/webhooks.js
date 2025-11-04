@@ -80,8 +80,8 @@ router.post('/', async (req, res) => {
   webhook.save((err, savedWebhook) => {
     if (err) {
       if (err.code === 11000) {
-        winston.verbose("Webhook already exists for chatbot " + chatbot_id);
-        return res.status(403).send({ success: false, message: "Webhook already exists for chatbot " + chatbot_id });
+        winston.verbose("Webhook already exists for chatbot " + webhook.chatbot_id);
+        return res.status(403).send({ success: false, message: "Webhook already exists for chatbot " + webhook.chatbot_id });
       } 
       winston.error("Error saving new webhook ", err);
       return res.status(500).send({ success: false, error: err });

@@ -22,7 +22,7 @@ class ChatbotService {
       return resbody.data;
     }).catch((err) => {
       winston.error("(ChatbotService) fork error " + err);
-      return err;
+      throw err;
     })
 
   }
@@ -47,7 +47,7 @@ class ChatbotService {
         return chatbot;
       }).catch((err) => {
         winston.error('(ChatbotService) FAQ_KB EXPORTJSON ERROR ' + err);
-        return err;
+        throw err;
       })
 
     // public bot
@@ -65,7 +65,7 @@ class ChatbotService {
         return chatbot
       }).catch((err) => {
         winston.error('(ChatbotService) FAQ_KB CHATBOT TEMPLATES ERROR ' + err);
-        return err;
+        throw err;
       })
     }
 
@@ -88,7 +88,7 @@ class ChatbotService {
       return resbody.data;
     }).catch((err) => {
       winston.error("(ChatbotService) CREATE NEW CHATBOT ERROR " + err);
-      return err;
+      throw err;
     })
 
   }
@@ -110,7 +110,7 @@ class ChatbotService {
       return resbody.data;
     }).catch((err) => {
       winston.error("(ChatbotService) IMPORT FAQS ERROR " + err);
-      return err;
+      throw err;
     })
   }
 
