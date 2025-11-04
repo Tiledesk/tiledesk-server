@@ -106,7 +106,7 @@ class RateManager {
         try {
             return project.findById(id_project);
         } catch (err) {
-            winston.error("(RateManager)Error getting project ", err);
+            winston.error("(RateManager) Error getting project ", err);
             return null;
         }
     }
