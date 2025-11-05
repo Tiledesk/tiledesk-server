@@ -24,6 +24,9 @@ requestEvent.on('request.create.simple', function(request) {
 
     winston.debug("request.create.simple");
     //no cache required here. because is always new (empty)
+
+    winston.info("main_flow_cache_3 requestEvent populate");
+
     request
         .populate(
             [           
@@ -40,6 +43,8 @@ requestEvent.on('request.create.simple', function(request) {
                 winston.error('error getting request', err);
                 return requestEvent.emit('request.create', request);
             }
+
+            winston.info("main_flow_cache_3 requestEvent populate end");
 
             winston.debug('emitting request.create', requestComplete.toObject());
 
