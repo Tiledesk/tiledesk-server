@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.13.28
+- Minor improvements
+
 # 2.13.27
 - Added rate manager for webhook call
 - Increased json body limit for /webhook endpoint
