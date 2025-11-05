@@ -2855,7 +2855,10 @@ class RequestService {
         winston.debug("[RequestService] response: ", response);
         resolve(response.data);
       }).catch((err) => {
-        winston.error("get request parameter error: ", err.response.data);
+        winston.error("get request parameter error:", {
+          message: err.message,
+          data: err.response?.data
+        });
         reject(err);
       })
     })
