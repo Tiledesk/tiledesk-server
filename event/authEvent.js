@@ -11,8 +11,10 @@ class AuthEvent extends EventEmitter {
 const authEvent = new AuthEvent();
 
 authEvent.on("project_user.update",  function(event) { 
+      console.log("AuthEvent event ", event)
       if (event.updatedProject_userPopulated) {
         var pu = event.updatedProject_userPopulated;
+        console.log("AuthEvent pu.roleType: ", pu.roleType)
         if (pu.roleType === RoleConstants.TYPE_AGENTS) {          
           authEvent.emit("project_user.update.agent", event);
         } else {
