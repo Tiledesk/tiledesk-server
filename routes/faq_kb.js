@@ -681,17 +681,29 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
 
   chatbot.template = "empty";
   
-  let savedChatbot = await cs.createBot(api_url, token, chatbot, landing_project_id);
-  winston.debug("savedChatbot: ", savedChatbot)
+  let savedChatbot
+  try {
+    savedChatbot = await cs.createBot(api_url, token, chatbot, landing_project_id);
+    winston.debug("savedChatbot: ", savedChatbot)
+  } catch(err) {
+    winston.error("Error creating new chatbot: ", err);
+    return res.status(500).send({ success: false, message: "An error occurred during chatbot creation"});
+  }
 
   if (!savedChatbot) {
     return res.status(500).send({ success: false, message: "Unable to create new chatbot" });
   }
+  
+  let import_result
+  try {
+    import_result = await cs.importFaqs(api_url, savedChatbot._id, token, chatbot, landing_project_id);
+    winston.debug("imported: ", import_result);
+  } catch(err) {
+    winston.error("Error importing intents on new chatbot: ", err);
+    return res.status(500).send({ success: false, message: "Error importing intents in the chatbot"});
+  }
 
-  let import_result = await cs.importFaqs(api_url, savedChatbot._id, token, chatbot, landing_project_id);
-  winston.debug("imported: ", import_result);
-
-  if (import_result.success == "false") {
+  if (import_result?.success == false) {
     return res.status(500).send({ success: false, message: "Unable to import intents in the new chatbot" });
   }
 

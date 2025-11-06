@@ -86,6 +86,14 @@ var KBSchema = new Schema({
     type: String,
     required: false
   },
+  sitemap_origin_id: {
+    type: String,
+    required: false
+  },
+  sitemap_origin: {
+    type: String,
+    required: false
+  },
   namespace: {
     type: String,
     required: false
