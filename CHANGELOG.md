@@ -5,7 +5,7 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.13.28
+# 2.13.29
 - Minor improvements
 
 # 2.13.27
