@@ -107,19 +107,6 @@ class WebSocketServer {
         winston.debug('queryParameter', queryParameter);
 
         var token = queryParameter.token;
-        if (!token) {
-          try {
-            console.log("WS Token passed through headers");
-            const htoken = req.headers['sec-websocket-protocol'];
-            token = Array.isArray(htoken) ? htoken[0] : htoken;
-            token = token?.replace(/^"|"$/g, '').trim(); // rimuove virgolette e spazi
-            console.log("WS Token:", token);
-          } catch (e) {
-            console.error("Errore nel recupero del token dai headers:", e);
-            token = null;
-          }
-        }
-
         winston.debug('token:' + token);
         winston.debug('configSecretOrPubicKay:' + configSecretOrPubicKay);
 
