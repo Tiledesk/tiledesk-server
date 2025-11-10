@@ -91,8 +91,11 @@ class WebSocketServer {
             console.log("WS Token passed through headers");
             //const htoken = req.headers['sec-websocket-protocol'];
             const protocol = info.req.headers['sec-websocket-protocol'];
+            console.log("protocol: ", protocol)
             const htoken = Buffer.from(protocol.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8');
+            console.log("htoken: ", htoken)
             token = Array.isArray(htoken) ? htoken[0] : htoken;
+            console.log("token: ", token)
             token = token?.replace(/^"|"$/g, '').trim(); // rimuove virgolette e spazi
             console.log("WS Token:", token);
           } catch (e) {
