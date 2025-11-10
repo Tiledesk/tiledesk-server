@@ -103,7 +103,8 @@ let contexts = {
   "gpt-4o-mini":          "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
   "gpt-4.1":              "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
   "gpt-4.1-mini":         "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-4.1-nano":         "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end=="
+  "gpt-4.1-nano":         "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+  "general":              "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end=="
 }
 
 /**
@@ -348,10 +349,11 @@ router.post('/qa', async (req, res) => {
 
   // Check if "Advanced Mode" is active. In such case the default_context must be not appended
   if (!data.advancedPrompt) {
+    const contextTemplate = contexts[data.model] || contexts["general"];
     if (data.system_context) {
-      data.system_context = data.system_context + " \n" + contexts[data.model];
+      data.system_context = data.system_context + " \n" + contextTemplate;
     } else {
-      data.system_context = contexts[data.model];
+      data.system_context = contextTemplate;
     }
   }
 
@@ -376,12 +378,12 @@ router.post('/qa', async (req, res) => {
 
   if (data.llm === 'vllm') {
     if (!vllm_integration.value.url) {
-      return res.status(422).send({ success: false, error: "Server url for ollama is empty or invalid"})
+      return res.status(422).send({ success: false, error: "Server url for vllm is empty or invalid"})
     }
     data.model = {
       name: data.model,
       url: vllm_integration.value.url,
-      provider: 'ollama'
+      provider: 'vllm'
     }
     data.stream = false;
   }
