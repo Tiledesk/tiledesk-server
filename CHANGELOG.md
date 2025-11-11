@@ -5,9 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.13.30
+# 2.13.31
 - Added default context for general LLM
-- Updated tybot-connector to 2.0.33
+- Updated tybot-connector to 2.0.35
 
 # 2.13.29
 - Minor improvements
