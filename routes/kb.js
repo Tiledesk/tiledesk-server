@@ -391,11 +391,15 @@ router.post('/qa', async (req, res) => {
   } else {
     try {
       let key = await integrationService.getKeyFromIntegration(project_id, data.llm);
-
+      console.log("key from integration: ", key);
       if (!key) {
+        console.log("key not found in integration");
+        console.log("llm: ", data.llm);
         if (data.llm === 'openai') {
           data.gptkey = process.env.GPTKEY;
+          console.log("set key for openai: ", data.gptkey);
           publicKey = true;
+          console.log("set publicKey to: ", publicKey);
         } else {
           return res.status(404).send({ success: false, error: `Invalid or empty key provided for ${data.llm}` });
         }
@@ -481,8 +485,10 @@ router.post('/qa', async (req, res) => {
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
 
+    console.log("after answer publicKey")
     if (publicKey === true) {
       let multiplier = MODELS_MULTIPLIER[data.model];
+      console.log("multiplier: ", multiplier)
       if (!multiplier) {
         multiplier = 1;
         winston.info("No multiplier found for AI model")
