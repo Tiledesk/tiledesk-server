@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.13.32
+- Fix bug on create chatbot from public template
+
 # 2.13.31
 - Added default context for general LLM
 - Updated tybot-connector to 2.0.35
