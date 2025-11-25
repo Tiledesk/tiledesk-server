@@ -966,14 +966,24 @@ router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), (req, res) =>
   const chatbot_id = req.params.id_faq_kb;
   const id_project = req.projectid;
 
-  Faq_kb.findOne({ _id: chatbot_id, id_project: id_project }, (err, faq_kb) => {
+  Faq_kb.findOne({ _id: chatbot_id }, (err, faq_kb) => {
     if (err) {
       winston.error('GET FAQ-KB ERROR ', err)
       return res.status(500).send({ success: false, msg: 'Error getting bot.' });
     }
     
     if (!faq_kb) {
-      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
+      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id });
+    }
+
+    const isPublic = faq_kb.public === true;
+    const isOwner = faq_kb.id_project === id_project;
+
+    if (!isPublic && !isOwner) {
+      return res.status(403).send({
+        success: false,
+        msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project
+      });
     }
 
     winston.debug('FAQ-KB: ', faq_kb)
