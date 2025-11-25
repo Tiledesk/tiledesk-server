@@ -318,11 +318,13 @@ router.post('/qa', async (req, res) => {
   } else {
     try {
       let key = await integrationService.getKeyFromIntegration(project_id, data.llm);
-
+      console.log("key from integration: ", key);
       if (!key) {
+        console.log("key not found in integration")
         if (data.llm === 'openai') {
           data.gptkey = process.env.GPTKEY;
           publicKey = true;
+          console.log("set gptkey to " + data.gptkey + " and publicKey to " + publicKey);
         } else {
           return res.status(404).send({ success: false, error: `Invalid or empty key provided for ${data.llm}` });
         }
@@ -409,6 +411,7 @@ router.post('/qa', async (req, res) => {
       }
       obj.multiplier = multiplier;
       obj.tokens = answer.prompt_token_size;
+      console.log("is publicKey TRUE: ", obj)
 
       let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
       winston.verbose("incremented_key: ", incremented_key);

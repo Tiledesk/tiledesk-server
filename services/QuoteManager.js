@@ -97,7 +97,9 @@ class QuoteManager {
         }
 
         let tokens = data.tokens * data.multiplier;
+        console.log("incr tokens by ", tokens);
         await this.tdCache.incrbyfloat(key, tokens);
+        console.log("token increased");
         // await this.tdCache.incrby(key, tokens);
         this.sendEmailIfQuotaExceeded(project, data, 'tokens', key);
         return key;
