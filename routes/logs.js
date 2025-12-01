@@ -43,7 +43,7 @@ router.get('/whatsapp/:transaction_id', async (req, res) => {
     let project_id = req.projectid;
 
     let transaction_id = req.params.transaction_id;
-    winston.info("Get logs for whatsapp transaction_id " + transaction_id);;
+    winston.info("Get logs for whatsapp transaction_id " + transaction_id);
 
     MessageLog.find({ id_project: project_id, transaction_id: transaction_id }).lean().exec((err, logs) => {
         if (err) {
@@ -56,6 +56,27 @@ router.get('/whatsapp/:transaction_id', async (req, res) => {
         let clearLogs = logs.map(({ _id, __v, ...keepAttrs }) => keepAttrs)
         winston.verbose("clearLogs: ", clearLogs)
 
+        res.status(200).send(clearLogs);
+    })
+
+})
+
+router.get('/whatsapp/user/:phone_number', async (req, res) => {
+
+    const { id_project, phone_number } = req.query;
+
+    let query = { id_project: id_project, "json_message.to": phone_number };
+
+    MessageLog.find(query).lean().exec((err, logs) => {
+        if (err) {
+            winston.error("Error find logs for phone_number " + phone_number);
+            return res.status(400).send({ success: false, message: "Unable to find logs for phone_number " + phone_number })
+        }
+        winston.verbose("Logs found: ", logs);
+
+        let clearLogs = logs.map(({ _id, __v, ...keepAttrs }) => keepAttrs)
+        winston.verbose("clearLogs: ", clearLogs)
+    
         res.status(200).send(clearLogs);
     })
 
