@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.13.34
+- Updated whatsapp-connector to 1.0.14
+- Added /logs/whatsapp/:phone_number endpoint to logs route
+
 # 2.13.33
 - Fix bug on create chatbot from public template
 
