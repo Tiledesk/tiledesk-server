@@ -64,19 +64,23 @@ router.get('/whatsapp/:transaction_id', async (req, res) => {
 router.get('/whatsapp/user/:phone_number', async (req, res) => {
 
     const { id_project, phone_number } = req.query;
+    console.log("id_project: ", id_project);
+    console.log("phone_number: ", phone_number);
 
     let query = { id_project: id_project, "json_message.to": phone_number };
+    console.log("query: ", query);
 
     MessageLog.find(query).lean().exec((err, logs) => {
         if (err) {
             winston.error("Error find logs for phone_number " + phone_number);
             return res.status(400).send({ success: false, message: "Unable to find logs for phone_number " + phone_number })
         }
+        console.log("logs: ", logs);
         winston.verbose("Logs found: ", logs);
 
         let clearLogs = logs.map(({ _id, __v, ...keepAttrs }) => keepAttrs)
         winston.verbose("clearLogs: ", clearLogs)
-    
+        console.log("clearLogs: ", clearLogs);
         res.status(200).send(clearLogs);
     })
 
