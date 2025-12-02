@@ -113,7 +113,7 @@
     "retry-request": "^4.2.2",
     "serve-favicon": "~2.5.0",
     "sharp": "^0.27.2",
-    "sitemapper": "^3.2.8",
+    "sitemapper": "^3.2.24",
     "stripe": "^7.2.0",
     "uniqid": "^5.4.0",
     "uuid": "^3.3.3",
