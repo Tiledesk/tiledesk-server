@@ -337,8 +337,10 @@ class RequestService {
               })
             }
 
+            console.log("no_populate: ", no_populate)
             if (no_populate === "true" || no_populate === true) {
               winston.debug("no_populate is true");
+              requestEvent.emit('request.update', request);
               return resolve(request);
             }
            winston.info('info: main_flow_cache_2.3.1');
