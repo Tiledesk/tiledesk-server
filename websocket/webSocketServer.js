@@ -820,6 +820,7 @@ class WebSocketServer {
 
     winston.debug('requestUpdateKey: ' + requestUpdateKey);
     requestEvent.on(requestUpdateKey, async function (request) {
+      console.log("webSocketServer ", JSON.stringify(request, null, 2));
       setImmediate(async () => {
 
         // TODO setImmediate(() => {        
@@ -864,8 +865,10 @@ class WebSocketServer {
           // aggiungere controllo sui permessi qui
 
           if (requestJSON.draft !== true) {
+            console.log("pub on /requests")
             pubSubServer.handlePublishMessage('/' + request.id_project + '/requests', requestJSON, undefined, true, "UPDATE");
           }
+          console.log("pub on /requests/" + request.request_id)
           pubSubServer.handlePublishMessage('/' + request.id_project + '/requests/' + request.request_id, requestJSON, undefined, true, "UPDATE");
 
         }
