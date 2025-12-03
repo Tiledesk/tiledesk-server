@@ -373,7 +373,7 @@ class WebSocketServer {
             }
             winston.debug('projectuser', projectuser.toObject());
 
-            var query = { "id_project": projectId, "status": { $lt: 1000, $gt: 50, $ne: 150 }, preflight: false, "draft": { $in: [false, null] } };
+            var query = { "id_project": projectId, "status": { $lt: 1000, $gt: 50 }, preflight: false, "draft": { $in: [false, null] } };
             
             if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
               winston.debug('ws requests query admin: ' + JSON.stringify(query));
