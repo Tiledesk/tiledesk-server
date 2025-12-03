@@ -62,10 +62,12 @@ router.get('/whatsapp/:transaction_id', async (req, res) => {
 })
 
 router.get('/whatsapp/user/:phone_number', async (req, res) => {
-
-    const { id_project, phone_number } = req.params;
+    
+    const id_project = req.projectid;
+    const phone_number = req.params.phone_number;
     
     let query = { id_project: id_project, "json_message.to": phone_number };
+    console.log("logs query: ", query)
 
     MessageLog.find(query).lean().exec((err, logs) => {
         if (err) {
