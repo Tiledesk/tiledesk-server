@@ -820,7 +820,7 @@ class WebSocketServer {
 
     winston.debug('requestUpdateKey: ' + requestUpdateKey);
     requestEvent.on(requestUpdateKey, async function (request) {
-      console.log("webSocketServer ", JSON.stringify(request, null, 2));
+      console.log("webSocketServer ", JSON.stringify(request));
       setImmediate(async () => {
 
         // TODO setImmediate(() => {        
@@ -915,7 +915,7 @@ class WebSocketServer {
     }
     winston.debug('eventEmitKey: ' + eventEmitKey);
     eventEvent.on(eventEmitKey, function (event) {
-      console.log("webSocketServer event.emit")
+      console.log("webSocketServer event.emit: ", JSON.stringify(event));
       setImmediate(async () => {
         winston.debug('event', event);
         if (event.project_user === undefined) {
@@ -925,7 +925,9 @@ class WebSocketServer {
         }
         if (event.project_user) {
           console.log("webSocketServer event.emit project user exists");
-        } 
+        } else {
+          console.log("webSocketServer event.emit project user NOT exists");
+        }
         pubSubServer.handlePublishMessage('/' + event.id_project + '/events/' + event.project_user._id, event, undefined, true, "CREATE");
       });
     });
