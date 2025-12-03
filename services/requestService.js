@@ -320,6 +320,7 @@ class RequestService {
             beforeDepartmentId === afterDepartmentId &&
             requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
 
+            console.log("set to fully abandoned");
             winston.verbose("Request " + request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
 
             if (routedRequest.attributes && routedRequest.attributes.fully_abandoned && routedRequest.attributes.fully_abandoned === true) {
@@ -365,8 +366,11 @@ class RequestService {
                 winston.debug("addedParticipants ", addedParticipants);
 
                 requestEvent.emit('request.update', requestComplete);
+                console.log("request.update event emitted")
                 requestEvent.emit("request.update.comment", { comment: "REROUTE", request: requestComplete });//Deprecated
+                console.log("request.update.comment event emitted")
                 requestEvent.emit("request.updated", { comment: "REROUTE", request: requestComplete, patch: { removedParticipants: removedParticipants, addedParticipants: addedParticipants } });
+                console.log("request.updated event emitted")
                 
                 requestEvent.emit('request.participants.update', {
                   beforeRequest: request,
@@ -374,6 +378,7 @@ class RequestService {
                   addedParticipants: addedParticipants,
                   request: requestComplete
                 });
+                console.log("request.participants.update event emitted")
 
                 return resolve(requestComplete);
               });

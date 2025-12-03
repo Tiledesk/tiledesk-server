@@ -150,10 +150,8 @@ class Listener {
                   }            
                   
                   winston.debug("maxAssignedchatForUser: "+ maxAssignedchatForUser);
-                  console.log(`user managing ${aa.openRequetsCount} / ${maxAssignedchatForUser}`)
                   if (aa.openRequetsCount < maxAssignedchatForUser) {
                     winston.debug("adding  "+ aa.project_user.id_user+ " with openRequetsCount: "+ aa.openRequetsCount +" and with maxAssignedchatForUser " + maxAssignedchatForUser +" to available_agents_not_busy" );
-                    console.log("adding to available agents")
                     available_agents_not_busy.push(aa.project_user);
                   }
                 }
@@ -162,11 +160,8 @@ class Listener {
               }
           
               winston.debug("available_agents_not_busy", available_agents_not_busy);
-              console.log("available_agents_not_busy", available_agents_not_busy);
-              console.log("available_agents_not_busy length", available_agents_not_busy.length);
               
-          
-          
+              
 
                  // TODO non riassegnare allo stesso utente usa history oppure lastabandonedby in attributes 
             // in project_user sengni il numero di abandoni se uguale a psettng lo metto offline

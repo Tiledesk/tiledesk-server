@@ -915,6 +915,7 @@ class WebSocketServer {
     }
     winston.debug('eventEmitKey: ' + eventEmitKey);
     eventEvent.on(eventEmitKey, function (event) {
+      console.log("webSocketServer event.emit")
       setImmediate(async () => {
         winston.debug('event', event);
         if (event.project_user === undefined) {
@@ -922,6 +923,9 @@ class WebSocketServer {
           winston.debug('not sending with ws event with project_user undefined', event);
           return;
         }
+        if (event.project_user) {
+          console.log("webSocketServer event.emit project user exists");
+        } 
         pubSubServer.handlePublishMessage('/' + event.id_project + '/events/' + event.project_user._id, event, undefined, true, "CREATE");
       });
     });
