@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.13.36
+- Fixed /logs/whatsapp/:phone_number endpoint to logs route
+
 # 2.13.35
 - Updated whatsapp-connector to 1.0.15
 
