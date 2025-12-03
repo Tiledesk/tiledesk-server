@@ -820,7 +820,7 @@ class WebSocketServer {
 
     winston.debug('requestUpdateKey: ' + requestUpdateKey);
     requestEvent.on(requestUpdateKey, async function (request) {
-      console.log("webSocketServer ", JSON.stringify(request));
+
       setImmediate(async () => {
 
         // TODO setImmediate(() => {        
@@ -865,10 +865,8 @@ class WebSocketServer {
           // aggiungere controllo sui permessi qui
 
           if (requestJSON.draft !== true) {
-            console.log("pub on /requests")
             pubSubServer.handlePublishMessage('/' + request.id_project + '/requests', requestJSON, undefined, true, "UPDATE");
           }
-          console.log("pub on /requests/" + request.request_id)
           pubSubServer.handlePublishMessage('/' + request.id_project + '/requests/' + request.request_id, requestJSON, undefined, true, "UPDATE");
 
         }
@@ -915,18 +913,12 @@ class WebSocketServer {
     }
     winston.debug('eventEmitKey: ' + eventEmitKey);
     eventEvent.on(eventEmitKey, function (event) {
-      console.log("webSocketServer event.emit: ", JSON.stringify(event));
       setImmediate(async () => {
         winston.debug('event', event);
         if (event.project_user === undefined) {
           //with "faqbot.answer_not_found" project_user is undefined but it's ok 
           winston.debug('not sending with ws event with project_user undefined', event);
           return;
-        }
-        if (event.project_user) {
-          console.log("webSocketServer event.emit project user exists");
-        } else {
-          console.log("webSocketServer event.emit project user NOT exists");
         }
         pubSubServer.handlePublishMessage('/' + event.id_project + '/events/' + event.project_user._id, event, undefined, true, "CREATE");
       });

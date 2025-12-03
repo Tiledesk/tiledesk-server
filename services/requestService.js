@@ -337,14 +337,20 @@ class RequestService {
               })
             }
 
-            console.log("no_populate: ", no_populate)
-            if (no_populate === "true" || no_populate === true) {
-              winston.debug("no_populate is true");
-              requestEvent.emit('request.update', request);
-              return resolve(request);
-            }
-           winston.info('info: main_flow_cache_2.3.1');
-           winston.info("main_flow_cache_3 populate");
+            
+            /**
+             * TODO: Restore proper functioning
+             * Option commented on 03/12/2025 by Johnny in order to allows clients to receive the request populated
+             * in such case of Abandoned Request (Status 150)
+            */
+            // if (no_populate === "true" || no_populate === true) {
+            //   winston.debug("no_populate is true");
+            //   requestEvent.emit('request.update', request);
+            //   return resolve(request);
+            // }
+            
+            winston.info('info: main_flow_cache_2.3.1');
+            winston.info("main_flow_cache_3 populate");
 
             return request
               .populate('lead')
@@ -368,11 +374,8 @@ class RequestService {
                 winston.debug("addedParticipants ", addedParticipants);
 
                 requestEvent.emit('request.update', requestComplete);
-                console.log("request.update event emitted")
                 requestEvent.emit("request.update.comment", { comment: "REROUTE", request: requestComplete });//Deprecated
-                console.log("request.update.comment event emitted")
                 requestEvent.emit("request.updated", { comment: "REROUTE", request: requestComplete, patch: { removedParticipants: removedParticipants, addedParticipants: addedParticipants } });
-                console.log("request.updated event emitted")
                 
                 requestEvent.emit('request.participants.update', {
                   beforeRequest: request,
@@ -380,7 +383,6 @@ class RequestService {
                   addedParticipants: addedParticipants,
                   request: requestComplete
                 });
-                console.log("request.participants.update event emitted")
 
                 return resolve(requestComplete);
               });
