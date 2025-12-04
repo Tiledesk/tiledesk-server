@@ -5,6 +5,11 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.13.38
+- Updated tybot-connector to 2.0.38
+- Updated /qa to support reranking with hybrid namespaces
+- Updated default AI contexts
+
 # 2.13.37
 - Improved abandoned requests management
 
