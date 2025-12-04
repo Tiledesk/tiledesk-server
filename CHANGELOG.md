@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.13.37
+- Improved abandoned requests management
+
 # 2.13.36
 - Fixed /logs/whatsapp/:phone_number endpoint to logs route
 
