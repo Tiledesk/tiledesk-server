@@ -4,7 +4,7 @@ process.env.GPTKEY = "fakegptkey";
 process.env.LOG_LEVEL = 'critical'
 process.env.KB_WEBHOOK_TOKEN = "testtoken"
 process.env.PINECONE_INDEX = "test-index";
-process.env.PINECONE_TYPE = "pod";
+process.env.PINECONE_TYPE = "serverless";
 process.env.PINECONE_INDEX_HYBRID = "test-index-hybrid";
 process.env.PINECONE_TYPE_HYBRID = "serverless";
 process.env.ADMIN_EMAIL = "admin@tiledesk.com";
@@ -47,6 +47,66 @@ mongoose.connect(config.databasetest);
 chai.use(chaiHttp);
 
 describe('KbRoute', () => {
+    
+    describe('/qa', () => {
+        
+        it('ask-kb', (done) => {
+
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("get namespaces res.body: ", res.body); }
+
+                            res.should.have.status(200);
+                            expect(res.body.length).to.equal(1);
+                            expect(res.body[0].engine.index_name).to.equal('test-index')
+
+                            let namespace_id = res.body[0].id;
+
+                            let data = {
+                                question: "sample question?",
+                                namespace: namespace_id,
+                                llm: "openai",
+                                model: "gpt-4o",
+                                temperature: 0.7,
+                                max_tokens: 128,
+                                top_k: 4,
+                                chunks_only: false,
+                                system_context: "",
+                                advancedPrompt: false,
+                                citations: true
+                            }
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb/qa')
+                                .auth(email, pwd)
+                                .send(data)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("ask kb res.body: ", res.body); }
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    
+                                    done();
+                                })
+                        })
+                });
+            });
+
+        })
+    })
 
     describe('/create', () => {
 
@@ -493,10 +553,10 @@ describe('KbRoute', () => {
                             if (err) { console.error("err: ", err); }
                             if (log) { console.log("res.body: ", res.body) }
 
-                            res.should.have.status(403);
+                            res.should.have.status(404);
                             res.should.be.a('object')
                             expect(res.body.success).to.equal(false);
-                            let error_response = "No namespace found for the selected project " + savedProject._id + ". Cannot add content to a non-existent namespace."
+                            let error_response = "Namespace not found with id 123456"
                             expect(res.body.error).to.equal(error_response);
 
                             done();
@@ -540,10 +600,10 @@ describe('KbRoute', () => {
                                     if (err) { console.error("err: ", err); }
                                     if (log) { console.log("res.body: ", res.body) }
 
-                                    res.should.have.status(403);
+                                    res.should.have.status(404);
                                     res.should.be.a('object');
                                     expect(res.body.success).to.equal(false);
-                                    let error_response = "Not allowed. The namespace does not belong to the current project."
+                                    let error_response = "Namespace not found with id fakenamespaceid";
                                     expect(res.body.error).to.equal(error_response);
 
                                     done();
@@ -719,6 +779,57 @@ describe('KbRoute', () => {
             });
 
         }).timeout(10000)
+
+        it('import-sitemap', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+          
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-kb-import-sitemap", savedUser._id).then((savedProject) => {
+
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+                            
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body: ", res.body) }
+
+                            res.should.have.status(200)
+                            expect(res.body.length).to.equal(1);
+
+                            let namespace_id = res.body[0].id;
+
+                            let content = {
+                                name: "https://www.sitemaps.org/sitemap.xml",
+                                type: "sitemap",
+                                source: "https://www.sitemaps.org/sitemap.xml",
+                                content: "",
+                                namespace: namespace_id
+                            }
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb/sitemap/import?namespace=' + namespace_id)
+                                .auth(email, pwd)
+                                .send(content)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body: ", res.body) }
+                                    res.should.have.status(200)
+                                    should.exist(res.body[0]._id);
+                                    should.exist(res.body[0].sitemap_origin_id);
+                                    let sitemap_content = res.body.find(e => e.type === 'sitemap');
+                                    expect(res.body[0].sitemap_origin).to.equal("https://www.sitemaps.org/sitemap.xml");
+
+                                    done();
+                                })
+
+                        })
+                })
+            })
+        })
 
         it('scrape-single', (done) => {
 
@@ -1502,6 +1613,7 @@ describe('KbRoute', () => {
             })
         }).timeout(10000)
 
+
         /**
          * Delete namespace
          * !! Unable to test it due to external request
@@ -1915,5 +2027,7 @@ describe('KbRoute', () => {
             });
         });
     });
+
+    
 
 });
