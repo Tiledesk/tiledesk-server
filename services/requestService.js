@@ -325,10 +325,16 @@ class RequestService {
               })
             }
 
-            if (no_populate === "true" || no_populate === true) {
-              winston.debug("no_populate is true");
-              return resolve(request);
-            }
+            /**
+             * TODO: Restore proper functioning
+             * Option commented on 03/12/2025 by Johnny in order to allows clients to receive the request populated
+             * in such case of Abandoned Request (Status 150)
+            */
+            // if (no_populate === "true" || no_populate === true) {
+            //   winston.debug("no_populate is true");
+            //   requestEvent.emit('request.update', request);
+            //   return resolve(request);
+            // }
 
             return request
               .populate('lead')

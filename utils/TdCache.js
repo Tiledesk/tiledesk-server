@@ -113,10 +113,8 @@ class TdCache {
       return new Promise( async (resolve, reject) => {
         try {
           await this.client.incrbyfloat(key, increment);
-          console.log("incrbyfloat OK")
         }
         catch(error) {
-          console.error("Error on incrby: ", error);
           reject(error);
         }
         return resolve();
