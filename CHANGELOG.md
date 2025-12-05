@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.13.40
+- Changed minimum role access to agent for route /:project_id/logs
+
 # 2.13.39
 - Fixed bug on /qa with reranking
 
