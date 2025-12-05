@@ -366,9 +366,8 @@ router.post('/qa', async (req, res) => {
     data.search_type = 'hybrid';
     
     if (data.reranking === true) {
-      json.reranking = true;
-      json.reranking_multiplier = 3;
-      json.reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2";
+      data.reranking_multiplier = 3;
+      data.reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2";
     }
   }
 
