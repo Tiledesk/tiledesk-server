@@ -119,14 +119,17 @@ class AiManager {
       let namespace = await Namespace.findOne({ id: namespace_id }).catch((err) => {
         winston.error("Error getting namespace ", err);
         reject(err);
+        return;
       })
       if (!namespace) {
         winston.warn("Namespace not found with id " + namespace_id);
         reject({ errorCode: 404, error: "Namespace not found with id " + namespace_id });
+        return;
       }
       if (namespace.id_project !== id_project) {
         winston.warn("Namespace not belonging to project " + id_project);
         reject({ errorCode: 403,  error: "Namespace not belonging to project " + id_project });
+        return;
       }
 
       resolve(namespace);
@@ -146,11 +149,13 @@ class AiManager {
   
       if (kbs_count >= kbs_limit) {
         reject({ errorCode: 403, error: "Maximum number of resources reached for the current plan", plan_limit: kbs_limit });
+        return;
       }
 
       let total_count = kbs_count + ncontents;
       if (total_count > kbs_limit) {
         reject({ errorCode: 403, error: "Cannot exceed the number of resources in the current plan", plan_limit: kbs_limit });
+        return;
       }
 
       resolve(true);
@@ -168,10 +173,12 @@ class AiManager {
 
       const data = await sitemap.fetch().catch((err) => {
         reject(err);
+        return;
       })
 
       if (data.errors && data.errors.length > 0) {
         reject(data.errors[0]);
+        return;
       }
 
       const urls = Array.isArray(data.sites) ? data.sites : [];
@@ -215,6 +222,7 @@ class AiManager {
       let integration = await Integrations.findOne({ id_project: project_id, name: 'openai' }).catch((err) => {
         winston.error("Unable to find openai integration for the current project " + project_id);
         resolve(null);
+        return;
       })
       if (integration && integration.value && integration.value.apikey) {
         resolve(integration.value.apikey);
