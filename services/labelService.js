@@ -156,7 +156,6 @@ getAll_Cached(id_project) {
                     var query = {"id_project": id_project};
                     
                     winston.debug("query /", query);
-                    console.log("label query: ", query);
     
                     // add cache
                     var q = Label.findOne(query).lean();
@@ -173,8 +172,6 @@ getAll_Cached(id_project) {
                         }
                        
                         winston.debug("getAll returnval",label);
-                        console.log("saving label: ", label);
-                    
 
 
                         if (label!=undefined) {
