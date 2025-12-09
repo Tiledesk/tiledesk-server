@@ -129,18 +129,26 @@ getAll_Cached(id_project) {
 
                 try {
                     
-                const value = await cacheClient.get(cacheKey);
-                winston.debug("getAll value", value);
+                const cachedValue = await cacheClient.get(cacheKey);
+                winston.debug("getAll value", cachedValue);
                 // console.log("getAll value", value);
 
             
-                if (value) {
-                    if (value == "empty") {
+                if (cachedValue) {
+                    if (cachedValue == "empty") {
                         winston.debug("getAll empty value so i return false");
                         return resolve(null);
                     } else {
                         winston.debug("getAll value is not empty return value");
-                        return resolve(value);
+                        let parsedValue = cachedValue;
+                        if (typeof cachedValue === "string") {
+                            try {
+                                parsedValue = JSON.parse(cachedValue);
+                            } catch (e) {
+                                winston.error("Error parsing cached label value", e);
+                            }
+                        }
+                        return resolve(parsedValue);
                     }
             
                 } else {
@@ -158,7 +166,7 @@ getAll_Cached(id_project) {
                     //     winston.info('project cache enabled for getAll');
                     // }
                     //@DISABLED_CACHE .cache(cacheUtil.longTTL, id_project+":labels:query:all")  //label_cache
-                    return q.exec(function (err, label) {
+                    return q.exec(async function (err, label) {
                         if (err) {
                             winston.error('Label ROUTE - REQUEST FIND ERR ', err)
                             return reject({ msg: 'Error getting object.' });
@@ -172,10 +180,14 @@ getAll_Cached(id_project) {
                         if (label!=undefined) {
                             // await this.tdCache.set(nKey, 'true', { EX: 2592000 }); //seconds in one month = 2592000
                             // this is a TDCache instance and not a Native Redis client
-                            cacheClient.set(cacheKey, label, { EX:  cacheUtil.longTTL, callback: function() {
+                            try {
+                                await cacheClient.setJSON(cacheKey, label, { EX:  cacheUtil.longTTL, callback: function() {
                                 winston.verbose("Created cache for label",{err:err});
                                 winston.debug("Created cache for label: " + label);
-                            }});
+                                }});
+                            } catch (cacheErr) {
+                                winston.error("Error creating cache for label", cacheErr);
+                            }
                             
                         } else {
                             cacheClient.set(cacheKey, "empty", { EX:  cacheUtil.longTTL, callback: function() {
