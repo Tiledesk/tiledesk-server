@@ -345,6 +345,29 @@ class RequestService {
               .execPopulate(function (err, requestComplete) {
                 winston.debug("requestComplete", requestComplete);
 
+                var oldParticipants = beforeParticipants;
+                winston.debug("oldParticipants ", oldParticipants);
+
+                let newParticipants = requestComplete.participants;
+                winston.debug("newParticipants ", newParticipants);
+
+                var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
+                winston.debug("removedParticipants ", removedParticipants);
+
+                var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
+                winston.debug("addedParticipants ", addedParticipants);
+
+                requestEvent.emit('request.update', requestComplete);
+                requestEvent.emit("request.update.comment", { comment: "REROUTE", request: requestComplete });//Deprecated
+                requestEvent.emit("request.updated", { comment: "REROUTE", request: requestComplete, patch: { removedParticipants: removedParticipants, addedParticipants: addedParticipants } });
+                
+                requestEvent.emit('request.participants.update', {
+                  beforeRequest: request,
+                  removedParticipants: removedParticipants,
+                  addedParticipants: addedParticipants,
+                  request: requestComplete
+                });
+
                 return resolve(requestComplete);
               });
           }
