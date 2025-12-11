@@ -1,3 +1,10 @@
+#!/bin/bash
+
+# Load .env variables
+if [ -f .env ]; then
+  export $(grep -v '^#' .env | xargs)
+fi
+
 # Check if the token is set
 if [ -z "$NPM_PUBLISH_TOKEN" ]; then
   echo "⚠️ Missing NPM_PUBLISH_TOKEN in environment."
