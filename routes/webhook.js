@@ -1,17 +1,13 @@
 var express = require('express');
 var router = express.Router();
-const uuidv4 = require('uuid/v4');
 var { KB, Namespace } = require('../models/kb_setting');
 var winston = require('../config/winston');
 const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
-const { Scheduler } = require('../services/Scheduler');
 const { AiReindexService } = require('../services/aiReindexService');
 const { Webhook } = require('../models/webhook');
-const httpUtil = require('../utils/httpUtil');
-var jwt = require('jsonwebtoken');
-const Faq_kb = require('../models/faq_kb');
 const webhookService = require('../services/webhookService');
 const errorCodes = require('../errorCodes');
+const aiManager = require('../services/aiManager');
 var ObjectId = require('mongoose').Types.ObjectId;
 
 const port = process.env.PORT || '3000';
@@ -41,10 +37,18 @@ jobManager.connectAndStartPublisher((status, error) => {
 
 let default_engine = {
   name: "pinecone",
-  type: process.env.PINECONE_TYPE,
+  type: process.env.PINECONE_TYPE || "pod",
   apikey: "",
   vector_size: 1536,
   index_name: process.env.PINECONE_INDEX
+}
+
+let default_engine_hybrid = {
+  name: "pinecone",
+  type: process.env.PINECONE_TYPE_HYBRID || "serverless",
+  apikey: "",
+  vector_size: 1536,
+  index_name: process.env.PINECONE_INDEX_HYBRID
 }
 
 router.post('/kb/reindex', async (req, res) => {
@@ -69,6 +73,7 @@ router.post('/kb/reindex', async (req, res) => {
     return res.status(500).send({ success: false, error: "Error getting content with id " + content_id });
   })
 
+  
   if (!kb) {
     winston.warn("(webhook) Kb content not found with id " + content_id + ". Deleting scheduler...");
 
@@ -86,6 +91,71 @@ router.post('/kb/reindex', async (req, res) => {
       return;
     }, 10000);
     
+    return;
+  } 
+
+  const namespace_id = kb.namespace;
+  let namespace;
+  try {
+    namespace = await aiManager.checkNamespace(kb.id_project, namespace_id);
+  } catch (err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
+  }
+  
+  
+  if (kb.type === 'sitemap') {
+
+    const urls = await aiManager.fetchSitemap(kb.source).catch((err) => {
+      winston.error("(webhook) Error fetching sitemap: ", err);
+      return res.status(500).send({ success: false, error: err });
+    })
+
+    if (urls.length === 0) {
+      return res.status(400).send({ success: false, error: "No url found on sitemap" });
+    }
+
+    let existingKbs;
+    try {
+      existingKbs = await KB.find({ id_project: kb.id_project, namespace: namespace_id, sitemap_origin_id: content_id}).lean().exec();
+    } catch(err) {
+      winston.error("(webhook) Error finding existing contents: ", err);
+      return res.status(500).send({ success: false, error: "Error finding existing sitemap contents" });
+    }
+
+    const result = await aiManager.foundSitemapChanges(existingKbs, urls).catch((err) => {
+      winston.error("(webhook) error finding sitemap differecens ", err);
+      return res.status(400).send({ success: false, error: "Error finding sitemap differecens" });
+    })
+
+    if (!result) return; // esco qui
+
+    const { addedUrls, removedIds } = result;
+
+    if (removedIds.length > 0) {
+      const idsSet = new Set(removedIds);
+      const kbsToDelete = existingKbs.filter(obj => idsSet.has(obj._id));
+
+      aiManager.removeMultipleContents(namespace, kbsToDelete).catch((err) => {
+        winston.error("(webhook) error deleting multiple contents: ", err);
+      })
+    }
+
+    if (addedUrls.length > 0) {
+      const options = {
+        sitemap_origin_id: kb.id,
+        sitemap_origin: kb.source,
+        scrape_type: kb.scrape_type,
+        scrape_options: kb.scrape_options,
+        refresh_rate: kb.refresh_rate
+      }
+      aiManager.addMultipleUrls(namespace, addedUrls, options).catch((err) => {
+        winston.error("(webhook) error adding multiple urls contents: ", err);
+      })
+    }
+
+    res.status(200).send({ success: true, message: "Content queued for reindexing" });
+
   } else {
 
     let json = {
@@ -120,13 +190,13 @@ router.post('/kb/reindex', async (req, res) => {
       return res.status(500).send({ success: false, error: err })
     }
   
-    json.engine = namespace.engine || default_engine;
-  
+    json.engine = namespace.engine || (namespace.hybrid ? default_engine_hybrid : default_engine);
+
     let resources = [];
     resources.push(json);
   
     if (process.env.NODE_ENV !== 'test') {
-      scheduleScrape(resources);
+      aiManager.scheduleScrape(resources, namespace.hybrid);
     }
   
     res.status(200).send({ success: true, message: "Content queued for reindexing" });
@@ -273,37 +343,20 @@ router.all('/:webhook_id/dev', async (req, res) => {
   
 })
 
-async function scheduleScrape(resources) {
 
-  let scheduler = new Scheduler({ jobManager: jobManager });
+// async function generateChatbotToken(chatbot) {
+//   let signOptions = {
+//     issuer: 'https://tiledesk.com',
+//     subject: 'bot',
+//     audience: 'https://tiledesk.com/bots/' + chatbot._id,
+//     jwtid: uuidv4()
+//   };
 
-  resources.forEach(r => {
-    winston.debug("(Webhook) Schedule job with following data: ", r);
-    scheduler.trainSchedule(r, async (err, result) => {
-      if (err) {
-        winston.error("Scheduling error: ", err);
-      } else {
-        winston.verbose("Scheduling result: ", result);
-      }
-    });
-  })
+//   let botPayload = chatbot.toObject();
+//   let botSecret = botPayload.secret;
 
-  return true;
-}
-
-async function generateChatbotToken(chatbot) {
-  let signOptions = {
-    issuer: 'https://tiledesk.com',
-    subject: 'bot',
-    audience: 'https://tiledesk.com/bots/' + chatbot._id,
-    jwtid: uuidv4()
-  };
-
-  let botPayload = chatbot.toObject();
-  let botSecret = botPayload.secret;
-
-  var bot_token = jwt.sign(botPayload, botSecret, signOptions);
-  return bot_token;
-}
+//   var bot_token = jwt.sign(botPayload, botSecret, signOptions);
+//   return bot_token;
+// }
 
 module.exports = router;
