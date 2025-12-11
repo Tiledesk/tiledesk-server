@@ -52,7 +52,7 @@
     "@tiledesk/tiledesk-tybot-connector": "^2.0.40",
     "@tiledesk/tiledesk-voice-twilio-connector": "^0.1.22",
     "@tiledesk/tiledesk-vxml-connector": "^0.1.87",
-    "@tiledesk/tiledesk-whatsapp-connector": "1.0.17",
+    "@tiledesk/tiledesk-whatsapp-connector": "1.0.18",
     "@tiledesk/tiledesk-whatsapp-jobworker": "^0.0.13",
     "amqplib": "^0.5.5",
     "app-root-path": "^3.0.0",
