@@ -1,3 +1,5 @@
+const axios = require("axios").default;
+require('dotenv').config();
 let elevenlabs_endpoint = process.env.ELEVENLABS_ENDPOINT || "https://api.elevenlabs.io";
 
 class VoiceService {

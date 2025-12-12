@@ -36,7 +36,7 @@ router.get('/voices', async (req, res) => {
     try {
         const id_project = req.projectid;
 
-        let integration = await Integration.findOne({ id_project: id_project, type: 'elevenlabs' }).catch((err) => {
+        let integration = await Integration.findOne({ id_project: id_project, name: 'elevenlabs' }).catch((err) => {
             winston.error("find integration error: ", err)
             res.status(500).send({ success: false, error: "Error getting ElevenLabs integration" })
         })
