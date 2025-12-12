@@ -64,10 +64,13 @@ var autoIndex = true;
 if (process.env.MONGOOSE_AUTOINDEX) {
   autoIndex = process.env.MONGOOSE_AUTOINDEX;
 }
-
 winston.info("DB AutoIndex: " + autoIndex);
 
-var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex }, function(err) {
+let useUnifiedTopology = process.env.MONGOOSE_UNIFIED_TOPOLOGY === 'true';
+winston.info("DB useUnifiedTopology: ", useUnifiedTopology, typeof useUnifiedTopology);
+
+
+var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex, "useUnifiedTopology": useUnifiedTopology }, function(err) {
   if (err) { 
     winston.error('Failed to connect to MongoDB on ' + databaseUri + " ", err);
     process.exit(1);
@@ -75,11 +78,12 @@ var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoI
   winston.info("Mongoose connection done on host: "+mongoose.connection.host + " on port: " + mongoose.connection.port + " with name: "+ mongoose.connection.name)// , mongoose.connection.db);
 });
 if (process.env.MONGOOSE_DEBUG==="true") {
+  winston.info("Mongoose log enabled");
   mongoose.set('debug', true);
 }
 mongoose.set('useFindAndModify', false); // https://mongoosejs.com/docs/deprecations.html#-findandmodify-
 mongoose.set('useCreateIndex', true);
-mongoose.set('useUnifiedTopology', false); 
+//mongoose.set('useUnifiedTopology', useUnifiedTopology); 
 
 // CONNECT REDIS - CHECK IT
 const { TdCache } = require('./utils/TdCache');
@@ -90,6 +94,9 @@ let tdCache = new TdCache({
 });
 
 tdCache.connect();
+
+var cacheManager = require('./utils/cacheManager');
+cacheManager.setClient(tdCache);
 
 // ROUTES DECLARATION
 var troubleshooting = require('./routes/troubleshooting');
@@ -127,6 +134,7 @@ var quotes = require('./routes/quotes');
 var integration = require('./routes/integration')
 var kbsettings = require('./routes/kbsettings');
 var kb = require('./routes/kb');
+var unanswered = require('./routes/unanswered');
 
 // var admin = require('./routes/admin');
 var faqpub = require('./routes/faqpub');
@@ -145,6 +153,7 @@ var property = require('./routes/property');
 var segment = require('./routes/segment');
 var webhook = require('./routes/webhook');
 var webhooks = require('./routes/webhooks');
+var roles = require('./routes/roles');
 var copilot = require('./routes/copilot');
 var voice = require('./routes/voice');
 
@@ -217,9 +226,13 @@ var BanUserNotifier = require('./services/banUserNotifier');
 BanUserNotifier.listen();
 const { ChatbotService } = require('./services/chatbotService');
 const { QuoteManager } = require('./services/QuoteManager');
+const RateManager = require('./services/RateManager');
 
 let qm = new QuoteManager({ tdCache: tdCache });
 qm.start();
+
+let rm = new RateManager({ tdCache: tdCache });
+
 
 var modulesManager = undefined;
 try {
@@ -255,7 +268,8 @@ app.set('view engine', 'jade');
 app.set('chatbot_service', new ChatbotService())
 app.set('redis_client', tdCache);
 app.set('quote_manager', qm);
-
+app.set('rate_manager', rm);
+app.set('trust proxy', true);
 
 // TODO DELETE IT IN THE NEXT RELEASE
 if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {  
@@ -286,6 +300,13 @@ if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {
 
 const JSON_BODY_LIMIT = process.env.JSON_BODY_LIMIT || '500KB';
 winston.debug("JSON_BODY_LIMIT : " + JSON_BODY_LIMIT);
+
+const WEBHOOK_BODY_LIMIT = process.env.WEBHOOK_BODY_LIMIT || '5mb';
+winston.debug("WEBHOOK_BODY_LIMIT : " + WEBHOOK_BODY_LIMIT);
+
+const webhookParser = bodyParser.json({ limit: WEBHOOK_BODY_LIMIT });
+
+app.use('/webhook', webhookParser, webhook);
 
 app.use(bodyParser.json({limit: JSON_BODY_LIMIT,
   verify: function (req, res, buf) {
@@ -344,7 +365,12 @@ if (process.env.DISABLE_SESSION_STRATEGY==true ||  process.env.DISABLE_SESSION_S
           store: redisStore,
           resave: false, // required: force lightweight session keep alive (touch)
           saveUninitialized: false, // recommended: only save session when data exists
-          secret: sessionSecret
+          secret: sessionSecret,
+          cookie: {
+            secure: true,           // ✅ Use HTTPS
+            httpOnly: true,         // ✅ Only accessible by the server (not client-side JS)
+            sameSite: 'None'        // ✅ Allows cross-origin (e.g., Keycloak on a different domain)
+          }
         })
       )
       winston.info("Express Session with Redis enabled with Secret: " + sessionSecret);
@@ -383,7 +409,7 @@ app.options('*', cors());
 
 
 // });
-
+console.log("MAX_UPLOAD_FILE_SIZE: ", process.env.MAX_UPLOAD_FILE_SIZE);
 
 
 if (process.env.ROUTELOGGER_ENABLED==="true") {
@@ -512,7 +538,7 @@ app.use('/users_util', usersUtil);
 app.use('/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], logs);
 app.use('/requests_util', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], requestUtilRoot);
 
-app.use('/webhook', webhook);
+//app.use('/webhook', webhook); // moved on top before body parser middleware
 
 // TODO security issues
 if (process.env.DISABLE_TRANSCRIPT_VIEW_PAGE ) {
@@ -615,6 +641,7 @@ app.use('/:projectid/quotes', [passport.authenticate(['basic', 'jwt'], { session
 app.use('/:projectid/integration', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], integration )
 
 app.use('/:projectid/kbsettings', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], kbsettings);
+app.use('/:projectid/kb/unanswered', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], unanswered);
 app.use('/:projectid/kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], kb);
 
 app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], logs);
@@ -622,6 +649,8 @@ app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: 
 app.use('/:projectid/webhooks', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], webhooks);
 app.use('/:projectid/copilot', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], copilot);
 app.use('/:projectid/voice', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], voice);
+app.use('/:projectid/roles', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], roles);
+
 
 if (pubModulesManager) {
   pubModulesManager.useUnderProjects(app);
@@ -668,13 +697,26 @@ app.use((err, req, res, next) => {
     return res.status(401).json({ err: "error ip filter" });
   }
 
+  const realIp = req.headers['x-forwarded-for']?.split(',')[0] || req.headers['x-real-ip'] || req.ip;
+
   //emitted by multer when the file is too big
   if (err.code === "LIMIT_FILE_SIZE") {
     winston.debug("LIMIT_FILE_SIZE");
+    winston.warn(`LIMIT_FILE_SIZE on ${req.originalUrl}`, {
+      limit: process.env.MAX_UPLOAD_FILE_SIZE,
+      ip: req.ip,
+      realIp: realIp
+    });
     return res.status(413).json({ err: "Content Too Large", limit_file_size: process.env.MAX_UPLOAD_FILE_SIZE });
-  } 
+  }
+  
+  if (err.type === "entity.too.large" || err.name === "PayloadTooLargeError") {
+    winston.warn("Payload too large", { expected: err.expected, limit: err.limit, length: err.length });
+    return res.status(413).json({ err: "Request entity too large", limit: err.limit});
+  }
 
-  winston.error("General error:: ", err);
+
+  winston.error("General error: ", err);
   return res.status(500).json({ err: "error" });
 });
 

@@ -80,8 +80,8 @@ router.post('/', async (req, res) => {
   webhook.save((err, savedWebhook) => {
     if (err) {
       if (err.code === 11000) {
-        winston.verbose("Webhook already exists for chatbot " + chatbot_id);
-        return res.status(403).send({ success: false, message: "Webhook already exists for chatbot " + chatbot_id });
+        winston.verbose("Webhook already exists for chatbot " + webhook.chatbot_id);
+        return res.status(403).send({ success: false, message: "Webhook already exists for chatbot " + webhook.chatbot_id });
       } 
       winston.error("Error saving new webhook ", err);
       return res.status(500).send({ success: false, error: err });
@@ -99,10 +99,11 @@ router.post('/preload/:webhook_id', async (req, res) => {
   let request_id = "automation-request-" + id_project + "-" + new ObjectId() + "-" + webhook_id;
   let redis_client = req.app.get('redis_client');
 
+  
   try {
     let key = "logs:webhook:" + id_project + ":" + webhook_id;
     let value = JSON.stringify({ request_id: request_id });
-    redis_client.set(key, value, { EX: 900 });
+    await redis_client.set(key, value, { EX: 900 });
     res.status(200).send({ success: true, message: "Webhook preloaded successfully", request_id: request_id });
   } catch(err) {
     winston.error("Error adding key in cache ", err);

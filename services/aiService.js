@@ -5,9 +5,10 @@ const jwt = require("jsonwebtoken")
 const FormData = require('form-data');
 
 let openai_endpoint = process.env.OPENAI_ENDPOINT;
-let kb_endpoint = process.env.KB_ENDPOINT;
 let kb_endpoint_train = process.env.KB_ENDPOINT_TRAIN;
 let kb_endpoint_qa = process.env.KB_ENDPOINT_QA;
+let kb_endpoint_train_gpu = process.env.KB_ENDPOINT_TRAIN_GPU;
+let kb_endpoint_qa_gpu = process.env.KB_ENDPOINT_QA_GPU;
 let secret = process.env.JWT_SECRET_KEY;
 
 class AiService {
@@ -85,79 +86,83 @@ class AiService {
     })
   }
 
+  // KB - Deprecated?
+  // checkStatus(data) {
+  //   winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint);
 
-  // KB
-  checkStatus(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint);
+  //   return new Promise((resolve, reject) => {
 
-    return new Promise((resolve, reject) => {
+  //     axios({
+  //       url: kb_endpoint + "/scrape/status",
+  //       headers: {
+  //         'Content-Type': 'application/json'
+  //       },
+  //       data: data,
+  //       method: 'POST'
+  //     }).then((resbody) => {
+  //       resolve(resbody);
+  //     }).catch((err) => {
+  //       reject(err);
+  //     })
 
-      axios({
-        url: kb_endpoint + "/scrape/status",
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        data: data,
-        method: 'POST'
-      }).then((resbody) => {
-        resolve(resbody);
-      }).catch((err) => {
-        reject(err);
-      })
+  //   })
+  // }
 
-    })
-  }
+  // Deprecated? 
+  // startScrape(data) {
+  //   winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint);
 
-  startScrape(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint);
+  //   return new Promise((resolve, reject) => {
 
-    return new Promise((resolve, reject) => {
+  //     axios({
+  //       url: kb_endpoint + "/scrape",
+  //       headers: {
+  //         'Content-Type': 'application/json'
+  //       },
+  //       data: data,
+  //       method: 'POST'
+  //     }).then((resbody) => {
+  //       resolve(resbody);
+  //     }).catch((err) => {
+  //       reject(err);
+  //     })
 
-      axios({
-        url: kb_endpoint + "/scrape",
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        data: data,
-        method: 'POST'
-      }).then((resbody) => {
-        resolve(resbody);
-      }).catch((err) => {
-        reject(err);
-      })
+  //   })
+  // }
 
-    })
-  }
+  // Deprecated?  
+  // ask(data) {
+  //   winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint);
 
-  ask(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint);
+  //   return new Promise((resolve, reject) => {
 
-    return new Promise((resolve, reject) => {
+  //     axios({
+  //       url: kb_endpoint + "/qa",
+  //       headers: {
+  //         'Content-Type': 'application/json'
+  //       },
+  //       data: data,
+  //       method: 'POST'
+  //     }).then((resbody) => {
+  //       resolve(resbody);
+  //     }).catch((err) => {
+  //       reject(err);
+  //     })
 
-      axios({
-        url: kb_endpoint + "/qa",
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        data: data,
-        method: 'POST'
-      }).then((resbody) => {
-        resolve(resbody);
-      }).catch((err) => {
-        reject(err);
-      })
+  //   })
+  // }
 
-    })
-  }
-
-  // PUGLIA AI V2
   singleScrape(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_train);
+    let base_url = kb_endpoint_train;
+    if (data.hybrid) {
+      base_url = kb_endpoint_train_gpu;
+    }
+    winston.debug("[OPENAI SERVICE] kb endpoint: " + base_url);
 
     return new Promise((resolve, reject) => {
 
       axios({
-        url: kb_endpoint_train + "/scrape/single",
+        url: base_url + "/scrape/single",
         headers: {
           'Content-Type': 'application/json'
         },
@@ -173,12 +178,13 @@ class AiService {
   }
 
   scrapeStatus(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_train);
+    let base_url = kb_endpoint_train;
+    winston.debug("[OPENAI SERVICE] kb endpoint: " + base_url);
 
     return new Promise((resolve, reject) => {
 
       axios({
-        url: kb_endpoint_train + "/scrape/status",
+        url: base_url + "/scrape/status",
         headers: {
           'Content-Type': 'application/json'
         },
@@ -193,12 +199,17 @@ class AiService {
   }
 
   askNamespace(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_qa);
-
+    winston.debug("askNamespace data: ", data);
+    let base_url = kb_endpoint_qa;
+    if (data.hybrid || data.search_type === 'hybrid') {
+      base_url = kb_endpoint_qa_gpu;
+    }
+    winston.debug("[OPENAI SERVICE] kb endpoint: " + base_url);
+    
     return new Promise((resolve, reject) => {
 
       axios({
-        url: kb_endpoint_qa + "/qa",
+        url: base_url + "/qa",
         headers: {
           'Content-Type': 'application/json'
         },
@@ -214,14 +225,16 @@ class AiService {
   }
 
   getContentChunks(namespace_id, content_id, engine) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_train);
+    let base_url = kb_endpoint_train;
+    winston.debug("[OPENAI SERVICE] kb endpoint: " + base_url);
 
     return new Promise((resolve, reject) => {
 
       let payload = { engine: engine };
       let token = jwt.sign(payload, secret);
+      console.log("token: ", token)
       axios({
-        url: kb_endpoint_train + "/id/" + content_id + "/namespace/" + namespace_id + "/" + token,
+        url: base_url + "/id/" + content_id + "/namespace/" + namespace_id + "/" + token,
         headers: {
           'Content-Type': 'application/json'
         },
@@ -235,12 +248,13 @@ class AiService {
   }
 
   deleteIndex(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_train);
+    let base_url = kb_endpoint_train;
+    winston.debug("[OPENAI SERVICE] kb endpoint: " + base_url);
 
     return new Promise((resolve, reject) => {
 
       axios({
-        url: kb_endpoint_train + "/delete/id",
+        url: base_url + "/delete/id",
         headers: {
           'Content-Type': 'application/json'
         },
@@ -255,12 +269,13 @@ class AiService {
   }
 
   deleteNamespace(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_train);
+    let base_url = kb_endpoint_train;
+    winston.debug("[OPENAI SERVICE] kb endpoint: " + base_url);
 
     return new Promise((resolve, reject) => {
 
       axios({
-        url: kb_endpoint_train + "/delete/namespace",
+        url: base_url + "/delete/namespace",
         headers: {
           'Content-Type': 'application/json'
         },

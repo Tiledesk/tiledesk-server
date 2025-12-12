@@ -3,6 +3,7 @@ var router = express.Router();
 var CannedResponse = require("./cannedResponse");
 var winston = require('../../config/winston');
 const RoleConstants = require('../../models/roleConstants');
+const roleConstants = require('../../models/roleConstants');
 // const CannedResponseEvent = require('../event/CannedResponseEvent');
 
 
@@ -16,13 +17,18 @@ router.post('/', function (req, res) {
     text: req.body.text,
     id_project: req.projectid,
     createdBy: req.user.id,
-    updatedBy: req.user.id
+    updatedBy: req.user.id,
+    shared: false
   });
 
   if (req.projectuser.role == 'owner' || req.projectuser.role == 'admin') {
     newCannedResponse.shared = true;
   } else {
-    newCannedResponse.shared = false;
+    if (req.projectuser.roleType === roleConstants.TYPE_AGENTS) {
+      if (req.body.shared && req.body.shared === true) {
+        newCannedResponse.shared = true;
+      }
+    }
   }
 
   newCannedResponse.save(function (err, savedCannedResponse) {
@@ -38,29 +44,28 @@ router.post('/', function (req, res) {
 
 router.put('/:cannedResponseid', async function (req, res) {
   winston.debug(req.body);
-  let canned_id = req.params.cannedResponseid;
-  let user_role = req.projectuser.role;
-  
+  const canned_id = req.params.cannedResponseid;
+  const id_project = req.projectid;
+  let user_role = req.projectuser?.role;
+  let roleType = req.projectuser?.roleType || null;
   var update = {};
-  
-  if (req.body.title!=undefined) {
-    update.title = req.body.title; 
-  }  
-  if (req.body.text!=undefined) {
-    update.text = req.body.text;   
-  }
-  if (req.body.attributes!=undefined) {
-    update.attributes = req.body.attributes;
-  }
 
-  let canned = await CannedResponse.findById(canned_id).catch((err) => {
+  const allowedFields = ['title', 'text', 'attributes']
+
+  allowedFields.forEach(f => {
+    if (req.body[f] !== undefined) {
+      update[f] = req.body[f];
+    }
+  })
+  
+  let canned = await CannedResponse.findOne({ _id: canned_id, id_project: id_project }).catch((err) => {
     winston.error("Error finding canned response: ", err);
     return res.status(500).send({ success: false, error: "General error: cannot find the canned response with id " + canned_id })
   })
 
   if (!canned) {
     winston.verbose("Canned response with id " + canned_id + " not found.");
-    return res.status(404).send({ success: false, error: "Canned response with id " + canned_id + " not found." })
+    return res.status(404).send({ success: false, error: "Canned response not found with id " + canned_id + " for project " + id_project })
   }
 
   /**
@@ -77,6 +82,12 @@ router.put('/:cannedResponseid', async function (req, res) {
   }
   else if (user_role === RoleConstants.OWNER || user_role === RoleConstants.ADMIN) {
     if (canned.hasOwnProperty('shared') && canned.shared === false) {
+      winston.warn("Not allowed. User " + req.user.id + " can't modify a canned response of user " + canned.createdBy);
+      return res.status(403).send({ success: false, error: "Not allowed to modify a non administration canned response"})
+    }
+  }
+  else if (roleType === RoleConstants.TYPE_AGENTS) {
+    if (canned.hasOwnProperty('shared') && canned.shared === false && canned.createdBy !== req.user.id) {
       winston.warn("Not allowed. User " + req.user.id + " can't modify a canned response of user " + canned.createdBy);
       return res.status(403).send({ success: false, error: "Not allowed to modify a non administration canned response"})
     }
@@ -98,17 +109,19 @@ router.put('/:cannedResponseid', async function (req, res) {
 
 router.delete('/:cannedResponseid', async function (req, res) {
   winston.debug(req.body);
-  let canned_id = req.params.cannedResponseid;
+  const canned_id = req.params.cannedResponseid;
+  const id_project = req.projectid;
   let user_role = req.projectuser.role;
+  let roleType = req.projectuser?.roleType || null;
 
-  let canned = await CannedResponse.findById(canned_id).catch((err) => {
+  let canned = await CannedResponse.findOne({ _id: canned_id, id_project: id_project }).catch((err) => {
     winston.error("Error finding canned response: ", err);
     return res.status(500).send({ success: false, error: "General error: cannot find the canned response with id " + canned_id })
   })
 
   if (!canned) {
     winston.verbose("Canned response with id " + canned_id + " not found.");
-    return res.status(404).send({ success: false, error: "Canned response with id " + canned_id + " not found." })
+    return res.status(404).send({ success: false, error: "Canned response not found with id " + canned_id + " for project " + id_project })
   }
 
   /**
@@ -128,12 +141,19 @@ router.delete('/:cannedResponseid', async function (req, res) {
       winston.warn("Not allowed. User " + req.user.id + " can't delete a canned response of user " + canned.createdBy);
       return res.status(403).send({ success: false, error: "Not allowed to delete a non administration canned response"})
     }
-  } else {
+  } 
+  else if (roleType === RoleConstants.TYPE_AGENTS) {
+    if (canned.hasOwnProperty('shared') && canned.shared === false && canned.createdBy !== req.user.id) {
+      winston.warn("Not allowed. User " + req.user.id + " can't delete a canned response of user " + canned.createdBy);
+      return res.status(403).send({ success: false, error: "Not allowed to delete a non administration canned response"})
+    }
+  }
+  else {
     winston.warn("User " + req.user.id + "trying to delete canned with role " + user_role);
     return res.status(401).send({ success: false, error: "Unauthorized"})
   }
 
-  CannedResponse.findByIdAndUpdate(req.params.cannedResponseid, {status: 1000}, { new: true, upsert: true }, function (err, updatedCannedResponse) {
+  CannedResponse.findByIdAndUpdate(canned_id, {status: 1000}, { new: true, upsert: true }, function (err, updatedCannedResponse) {
     if (err) {
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
@@ -146,16 +166,19 @@ router.delete('/:cannedResponseid', async function (req, res) {
 
 router.delete('/:cannedResponseid/physical', async function (req, res) {
   winston.debug(req.body);
-  let canned_id = req.params.cannedResponseid;
+  const canned_id = req.params.cannedResponseid;
+  const id_project = req.projectid;
+  let user_role = req.projectuser.role;
+  let roleType = req.projectuser?.roleType || null;
 
-  let canned = await CannedResponse.findById(canned_id).catch((err) => {
+  let canned = await CannedResponse.findOne({ _id: canned_id, id_project: id_project }).catch((err) => {
     winston.error("Error finding canned response: ", err);
     return res.status(500).send({ success: false, error: "General error: cannot find the canned response with id " + canned_id })
   })
 
   if (!canned) {
     winston.verbose("Canned response with id " + canned_id + " not found.");
-    return res.status(404).send({ success: false, error: "Canned response with id " + canned_id + " not found." })
+    return res.status(404).send({ success: false, error: "Canned response not found with id " + canned_id + " for project " + id_project })
   }
 
   /**
@@ -175,12 +198,19 @@ router.delete('/:cannedResponseid/physical', async function (req, res) {
       winston.warn("Not allowed. User " + req.user.id + " can't delete a canned response of user " + canned.createdBy);
       return res.status(403).send({ success: false, error: "Not allowed to delete a non administration canned response"})
     }
-  } else {
+  } 
+  else if (roleType === RoleConstants.TYPE_AGENTS) {
+    if (canned.hasOwnProperty('shared') && canned.shared === false && canned.createdBy !== req.user.id) {
+      winston.warn("Not allowed. User " + req.user.id + " can't delete a canned response of user " + canned.createdBy);
+      return res.status(403).send({ success: false, error: "Not allowed to delete a non administration canned response"})
+    }
+  }
+  else {
     winston.warn("User " + req.user.id + "trying to delete canned with role " + user_role);
     return res.status(401).send({ success: false, error: "Unauthorized"})
   }
 
-  CannedResponse.remove({ _id: req.params.cannedResponseid }, function (err, cannedResponse) {
+  CannedResponse.remove({ _id: canned_id }, function (err, cannedResponse) {
     if (err) {
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
