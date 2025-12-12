@@ -34,6 +34,29 @@ if (pKey) {
   configSecretOrPubicKay = pKey.replace(/\\n/g, '\n');
 }
 
+// Cache for tracking invalid token logs to prevent spam
+const invalidTokenCache = new Map();
+
+function logInvalidToken(req, err) {
+  const ip = req.socket.remoteAddress;
+  const ua = req.headers['user-agent'] || 'unknown';
+  const now = Date.now();
+
+  const cacheKey = `${ip}_${req.url}`;
+  const lastLog = invalidTokenCache.get(cacheKey);
+
+  if (!lastLog || now - lastLog > 60000) {
+    invalidTokenCache.set(cacheKey, now);
+    console.warn('[⚠️ INVALID WS TOKEN]', {
+      ip,
+      ua,
+      url: req.url,
+      time: new Date().toISOString(),
+      message: err.message,
+    });
+  }
+}
+
 var cacheEnabler = require("../services/cacheEnabler");
 
 
@@ -93,7 +116,8 @@ class WebSocketServer {
           token = token.replace('JWT ', '');
           jwt.verify(token, configSecretOrPubicKay, function (err, decoded) {  //pub_jwt pp_jwt
             if (err) {
-              winston.error('WebSocket error verifing websocket jwt token: ' + token, err);
+              // Log invalid token with rate limiting
+              logInvalidToken(info.req, err);
               return cb(false, 401, 'Unauthorized');
             } else {
               // uncomment it
@@ -310,7 +334,7 @@ class WebSocketServer {
 
                 // db.getCollection('requests').find({"id_project":"5e15bef09877c800176d217f","status":{"$lt":1000},"$or":[{"agents":{"id_user":"5ddd30bff0195f0017f72c6d"}},{"participants":"5ddd30bff0195f0017f72c6d"}]})
                 // pubblica dopo toni
-                var query = { "id_project": projectId, "status": { $lt: 1000, $gt: 50, $ne: 150 }, preflight: false, "draft": { $in: [false, null] } };
+                var query = { "id_project": projectId, "status": { $lt: 1000, $gt: 50 }, preflight: false, "draft": { $in: [false, null] } };
                 // add hasBot:false
 
                 // var query = {"id_project":projectId, "status": { $lt: 1000, $gt: 50 }, $or:[ {preflight:false}, { preflight : { $exists: false } } ] };

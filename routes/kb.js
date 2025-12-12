@@ -18,6 +18,7 @@ const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
 const { kbTypes } = require('../models/kbConstants');
 const Sitemapper = require('sitemapper');
 const aiManager = require('../services/aiManager');
+const integrationService = require('../services/integrationService');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
@@ -94,14 +95,18 @@ let default_engine_hybrid = {
 //let default_context = "Answer if and ONLY if the answer is contained in the context provided. If the answer is not contained in the context provided ALWAYS answer with <NOANS>\n{context}"
 //let default_context = "You are an helpful assistant for question-answering tasks.\nUse ONLY the following pieces of retrieved context to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf none of the retrieved context answer the question, add this word to the end <NOANS>\n\n{context}";
 let contexts = {
-  "gpt-3.5-turbo":        "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### to answer the question.\nIf you don't know the answer, just say: \"I don't know<NOANS>\"\n\n####{context}####",
-  "gpt-4":                "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf and only if none of the retrieved context is useful for your task, add this word to the end <NOANS>\n\n####{context}####",
-  "gpt-4-turbo-preview":  "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf and only if none of the retrieved context is useful for your task, add this word to the end <NOANS>\n\n####{context}####",
-  "gpt-4o":               "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-4o-mini":          "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-4.1":              "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-4.1-mini":         "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-4.1-nano":         "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end=="
+      "gpt-3.5-turbo":        process.env.GPT_3_5_CONTEXT       || "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### and the chat history to answer the question.\nIf you don't know the answer, just say: \"I don't know<NOANS>\"\n\n####{context}####",
+      "gpt-4":                process.env.GPT_4_CONTEXT         || "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### and the chat history to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf and only if none of the retrieved context is useful for your task, add this word to the end <NOANS>\n\n####{context}####",
+      "gpt-4-turbo-preview":  process.env.GPT_4T_CONTEXT        || "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### and the chat history to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf and only if none of the retrieved context is useful for your task, add this word to the end <NOANS>\n\n####{context}####",
+      "gpt-4o":               process.env.GPT_4O_CONTEXT        || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+      "gpt-4o-mini":          process.env.GPT_4O_MINI_CONTEXT   || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+      "gpt-4.1":              process.env.GPT_4_1_CONTEXT       || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+      "gpt-4.1-mini":         process.env.GPT_4_1_MINI_CONTEXT  || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+      "gpt-4.1-nano":         process.env.GPT_4_1_NANO_CONTEXT  || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+      "gpt-5":                process.env.GPT_5_CONTEXT         || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+      "gpt-5-mini":           process.env.GPT_5_MINI_CONTEXT    || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+      "gpt-5-nano":           process.env.GPT_5_NANO_CONTEXT    || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+      "general":              process.env.GENERAL_CONTEXT       || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end=="
 }
 
 /**
@@ -337,6 +342,8 @@ router.post('/qa', async (req, res) => {
   let project_id = req.projectid;
   let publicKey = false;
   let data = req.body;
+  let ollama_integration;
+  let vllm_integration;
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
     winston.error("find namespaces error: ", err)
@@ -356,16 +363,48 @@ router.post('/qa', async (req, res) => {
   
   winston.debug("/qa data: ", data);
 
-  if (!data.gptkey) {
-    let gptkey = await aiManager.getKeyFromIntegrations(project_id);
-    if (!gptkey) {
-      gptkey = process.env.GPTKEY;
-      publicKey = true;
+  if (!data.llm) {
+    data.llm = "openai";
+  }
+
+  if (data.llm === 'ollama') {
+    data.gptkey = process.env.GPTKEY;
+    try {
+      ollama_integration = await integrationService.getIntegration(project_id, 'ollama');
+    } catch (err) {
+      let error_code = err.code || 500;
+      let error_message = err.error || `Unable to get integration for ${data.llm}`;
+      return res.status(error_code).send({ success: false, error: error_message });
     }
-    if (!gptkey) {
-      return res.status(403).send({ success: false, error: "GPT apikey undefined" })
+  }
+  else if (data.llm === 'vllm') {
+    data.gptkey = process.env.GPTKEY;
+    try {
+      vllm_integration = await integrationService.getIntegration(project_id, 'vllm')
+    } catch (err) {
+      let error_code = err.code || 500;
+      let error_message = err.error || `Unable to get integration for ${data.llm}`;
+      return res.status(error_code).send({ success: false, error: error_message });
     }
-    data.gptkey = gptkey;
+  } else {
+    try {
+      let key = await integrationService.getKeyFromIntegration(project_id, data.llm);
+      if (!key) {
+        if (data.llm === 'openai') {
+          data.gptkey = process.env.GPTKEY;
+          publicKey = true;
+        } else {
+          return res.status(404).send({ success: false, error: `Invalid or empty key provided for ${data.llm}` });
+        }
+      } else {
+        data.gptkey = key;
+      }
+
+    } catch (err) {
+      let error_code = err.code || 500;
+      let error_message = err.error || `Unable to get integration for ${data.llm}`;
+      return res.status(error_code).send({ success: false, error: error_message });
+    }
   }
 
   let obj = { createdAt: new Date() };
@@ -380,10 +419,11 @@ router.post('/qa', async (req, res) => {
 
   // Check if "Advanced Mode" is active. In such case the default_context must be not appended
   if (!data.advancedPrompt) {
+    const contextTemplate = contexts[data.model] || contexts["general"];
     if (data.system_context) {
-      data.system_context = data.system_context + " \n" + contexts[data.model];
+      data.system_context = data.system_context + " \n" + contextTemplate;
     } else {
-      data.system_context = contexts[data.model];
+      data.system_context = contextTemplate;
     }
   }
 
@@ -392,9 +432,37 @@ router.post('/qa', async (req, res) => {
 
   if (ns.hybrid === true) {
     data.search_type = 'hybrid';
+    
+    if (data.reranking === true) {
+      data.reranking_multiplier = 3;
+      data.reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2";
+    }
   }
 
-  
+  if (data.llm === 'ollama') {
+    if (!ollama_integration.value.url) {
+      return res.status(422).send({ success: false, error: "Server url for ollama is empty or invalid"})
+    }
+    data.model = {
+      name: data.model,
+      url: ollama_integration.value.url,
+      provider: 'ollama'
+    }
+    data.stream = false;
+  }
+
+  if (data.llm === 'vllm') {
+    if (!vllm_integration.value.url) {
+      return res.status(422).send({ success: false, error: "Server url for vllm is empty or invalid"})
+    }
+    data.model = {
+      name: data.model,
+      url: vllm_integration.value.url,
+      provider: 'vllm'
+    }
+    data.stream = false;
+  }
+
   delete data.advancedPrompt;
   winston.verbose("ask data: ", data);
   

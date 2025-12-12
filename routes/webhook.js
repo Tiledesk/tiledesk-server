@@ -274,6 +274,13 @@ router.all('/:webhook_id', async (req, res) => {
     return res.status(422).send({ success: false, error: "Webhook " + webhook_id + " is currently turned off"})
   }
 
+  const rate_manager = req.app.get("rate_manager");
+  const allowed = await rate_manager.canExecute(webhook.id_project, null, 'webhook');
+  if (!allowed) {
+    winston.warn("Webhook rate limit exceeded for project " + webhook.id_project)
+    return res.status(429).send({ message: "Rate limit exceeded"});
+  }
+
   payload.request_id = "automation-request-" + webhook.id_project + "-" + new ObjectId() + "-" + webhook_id;
 
   // To delete - Start

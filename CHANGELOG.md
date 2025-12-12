@@ -5,6 +5,97 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.13.46
+- Updated whatsapp-connector to 1.0.18
+
+# 2.13.45
+- Updated tybot-connector to 2.0.40
+
+# 2.13.44 - aborted
+- Updated tybot-connector to 2.0.39
+
+# 2.13.43
+- Updated requestService to improve fully abandoned management
+
+# 2.13.42
+- Updated whatsapp-connector to 1.0.17
+
+# 2.13.40
+- Changed minimum role access to agent for route /:project_id/logs
+
+# 2.13.39
+- Fixed bug on /qa with reranking
+
+# 2.13.38
+- Updated tybot-connector to 2.0.38
+- Updated /qa to support reranking with hybrid namespaces
+- Updated default AI contexts
+
+# 2.13.37
+- Improved abandoned requests management
+
+# 2.13.36
+- Fixed /logs/whatsapp/:phone_number endpoint to logs route
+
+# 2.13.35
+- Updated whatsapp-connector to 1.0.15
+
+# 2.13.34
+- Updated whatsapp-connector to 1.0.14
+- Added /logs/whatsapp/:phone_number endpoint to logs route
+
+# 2.13.33
+- Fix bug on create chatbot from public template
+
+# 2.13.31
+- Added default context for general LLM
+- Updated tybot-connector to 2.0.35
+
+# 2.13.29
+- Minor improvements
+
+# 2.13.27
+- Added rate manager for webhook call
+- Increased json body limit for /webhook endpoint
+
+# 2.13.26
+- Fixed bug: LLM preview not working
+
+# 2.13.24
+- Code improvements
+
+# 2.13.23
+- Updated whatsapp-connector to 1.0.9
+- Updated messenger-connector to 0.1.28
+- Code improvements
+
+# 2.13.22
+- Updated whatsapp-connector to 1.0.9
+
+# 2.13.21
+- Updated whatsapp-connector to 1.0.8
+
+# 2.13.20
+- Minor bug fix on email channel
+
+# 2.13.19
+- Improved: llm preview to support openai models
+- Updated: 2.0.30
+- Fix tokens usage for llm preview
+
+# 2.13.17
+- Updated: whatsapp-connector to 1.0.7
+
+# 2.13.16
+- Updated: whatsapp-connector to 1.0.6
+
+# 2.13.15
+- Bug fix: email quota reached sent to project admin
+
+# 2.13.14
+- Bug fix: slug duplicated error on publish chatbot
+- Updated: whatsapp-connector to 1.0.5
+
 # 2.13.12
 - Updated: whatsapp-connector to 1.0.4
 

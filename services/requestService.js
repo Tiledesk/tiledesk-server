@@ -325,10 +325,16 @@ class RequestService {
               })
             }
 
-            if (no_populate === "true" || no_populate === true) {
-              winston.debug("no_populate is true");
-              return resolve(request);
-            }
+            /**
+             * TODO: Restore proper functioning
+             * Option commented on 03/12/2025 by Johnny in order to allows clients to receive the request populated
+             * in such case of Abandoned Request (Status 150)
+            */
+            // if (no_populate === "true" || no_populate === true) {
+            //   winston.debug("no_populate is true");
+            //   requestEvent.emit('request.update', request);
+            //   return resolve(request);
+            // }
 
             return request
               .populate('lead')
@@ -338,6 +344,29 @@ class RequestService {
               .populate({ path: 'requester', populate: { path: 'id_user' } })
               .execPopulate(function (err, requestComplete) {
                 winston.debug("requestComplete", requestComplete);
+
+                var oldParticipants = beforeParticipants;
+                winston.debug("oldParticipants ", oldParticipants);
+
+                let newParticipants = requestComplete.participants;
+                winston.debug("newParticipants ", newParticipants);
+
+                var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
+                winston.debug("removedParticipants ", removedParticipants);
+
+                var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
+                winston.debug("addedParticipants ", addedParticipants);
+
+                requestEvent.emit('request.update', requestComplete);
+                requestEvent.emit("request.update.comment", { comment: "REROUTE", request: requestComplete });//Deprecated
+                requestEvent.emit("request.updated", { comment: "REROUTE", request: requestComplete, patch: { removedParticipants: removedParticipants, addedParticipants: addedParticipants } });
+                
+                requestEvent.emit('request.participants.update', {
+                  beforeRequest: request,
+                  removedParticipants: removedParticipants,
+                  addedParticipants: addedParticipants,
+                  request: requestComplete
+                });
 
                 return resolve(requestComplete);
               });
@@ -1959,6 +1988,23 @@ class RequestService {
             winston.error('Request not found for request_id ' + request_id + ' and id_project ' + id_project);
             return reject('Request not found for request_id ' + request_id + ' and id_project ' + id_project);
           }
+
+          if (request.channel?.name === 'form' || request.channel?.name === 'email') {
+            if (Array.isArray(request.participantsAgents)) {
+              if (request.participantsAgents.length === 1) {
+                winston.error('Cannot add participants: participantsAgents already has one element for request_id ' + request_id + ' and id_project ' + id_project);
+                return reject('Cannot add participants: only one participant allowed for this request');
+              } else if (request.participantsAgents.length === 0) {
+                if (Array.isArray(newparticipants) && newparticipants.length === 1) {
+                  // ok, allow to add one participant
+                } else {
+                  winston.error('Can only add one participant for request_id ' + request_id + ' and id_project ' + id_project);
+                  return reject('Can only add one participant for this request');
+                }
+              }
+            }
+          }
+
           var oldParticipants = request.participants;
           winston.debug('oldParticipants', oldParticipants);
           winston.debug('newparticipants', newparticipants);
@@ -2838,7 +2884,10 @@ class RequestService {
         winston.debug("[RequestService] response: ", response);
         resolve(response.data);
       }).catch((err) => {
-        winston.error("get request parameter error: ", err.response.data);
+        winston.error("get request parameter error:", {
+          message: err.message,
+          data: err.response?.data
+        });
         reject(err);
       })
     })

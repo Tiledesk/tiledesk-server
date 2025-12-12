@@ -217,9 +217,13 @@ var BanUserNotifier = require('./services/banUserNotifier');
 BanUserNotifier.listen();
 const { ChatbotService } = require('./services/chatbotService');
 const { QuoteManager } = require('./services/QuoteManager');
+const RateManager = require('./services/RateManager');
 
 let qm = new QuoteManager({ tdCache: tdCache });
 qm.start();
+
+let rm = new RateManager({ tdCache: tdCache });
+
 
 var modulesManager = undefined;
 try {
@@ -255,7 +259,7 @@ app.set('view engine', 'jade');
 app.set('chatbot_service', new ChatbotService())
 app.set('redis_client', tdCache);
 app.set('quote_manager', qm);
-
+app.set('rate_manager', rm);
 
 // TODO DELETE IT IN THE NEXT RELEASE
 if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {  
@@ -286,6 +290,13 @@ if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {
 
 const JSON_BODY_LIMIT = process.env.JSON_BODY_LIMIT || '500KB';
 winston.debug("JSON_BODY_LIMIT : " + JSON_BODY_LIMIT);
+
+const WEBHOOK_BODY_LIMIT = process.env.WEBHOOK_BODY_LIMIT || '5mb';
+winston.debug("WEBHOOK_BODY_LIMIT : " + WEBHOOK_BODY_LIMIT);
+
+const webhookParser = bodyParser.json({ limit: WEBHOOK_BODY_LIMIT });
+
+app.use('/webhook', webhookParser, webhook);
 
 app.use(bodyParser.json({limit: JSON_BODY_LIMIT,
   verify: function (req, res, buf) {
@@ -388,7 +399,7 @@ app.options('*', cors());
 
 
 // });
-
+console.log("MAX_UPLOAD_FILE_SIZE: ", process.env.MAX_UPLOAD_FILE_SIZE);
 
 
 if (process.env.ROUTELOGGER_ENABLED==="true") {
@@ -517,7 +528,7 @@ app.use('/users_util', usersUtil);
 app.use('/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], logs);
 app.use('/requests_util', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], requestUtilRoot);
 
-app.use('/webhook', webhook);
+//app.use('/webhook', webhook); // moved on top before body parser middleware
 
 // TODO security issues
 if (process.env.DISABLE_TRANSCRIPT_VIEW_PAGE ) {
@@ -623,7 +634,7 @@ app.use('/:projectid/kbsettings', [passport.authenticate(['basic', 'jwt'], { ses
 app.use('/:projectid/kb/unanswered', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], unanswered);
 app.use('/:projectid/kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], kb);
 
-app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], logs);
+app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], logs);
 
 app.use('/:projectid/webhooks', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], webhooks);
 app.use('/:projectid/copilot', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], copilot);
@@ -674,13 +685,26 @@ app.use((err, req, res, next) => {
     return res.status(401).json({ err: "error ip filter" });
   }
 
+  const realIp = req.headers['x-forwarded-for']?.split(',')[0] || req.headers['x-real-ip'] || req.ip;
+
   //emitted by multer when the file is too big
   if (err.code === "LIMIT_FILE_SIZE") {
     winston.debug("LIMIT_FILE_SIZE");
+    winston.warn(`LIMIT_FILE_SIZE on ${req.originalUrl}`, {
+      limit: process.env.MAX_UPLOAD_FILE_SIZE,
+      ip: req.ip,
+      realIp: realIp
+    });
     return res.status(413).json({ err: "Content Too Large", limit_file_size: process.env.MAX_UPLOAD_FILE_SIZE });
-  } 
+  }
+  
+  if (err.type === "entity.too.large" || err.name === "PayloadTooLargeError") {
+    winston.warn("Payload too large", { expected: err.expected, limit: err.limit, length: err.length });
+    return res.status(413).json({ err: "Request entity too large", limit: err.limit});
+  }
 
-  winston.error("General error:: ", err);
+
+  winston.error("General error: ", err);
   return res.status(500).json({ err: "error" });
 });
 
