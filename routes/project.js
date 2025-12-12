@@ -349,9 +349,6 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
     update["settings.email.notification.conversation.pooled"] = req.body["settings.email.notification.conversation.pooled"];
   }
 
-
-
-
   if (req.body["settings.email.templates.assignedRequest"]!=undefined) {
     update["settings.email.templates.assignedRequest"] = req.body["settings.email.templates.assignedRequest"];
   }
@@ -379,7 +376,6 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   if (req.body["settings.email.templates.emailDirect"]!=undefined) {
     update["settings.email.templates.emailDirect"] = req.body["settings.email.templates.emailDirect"];
   }
-
 
   if (req.body["settings.email.from"]!=undefined) {
     update["settings.email.from"] = req.body["settings.email.from"];
@@ -451,6 +447,22 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
 
   if (req.body["settings.chatbots_attributes_hidden"]!=undefined) {
     update["settings.chatbots_attributes_hidden"] = req.body["settings.chatbots_attributes_hidden"];
+  }
+
+  if (req.body["settings.allow_send_emoji"]!=undefined) {
+    update["settings.allow_send_emoji"] = req.body["settings.allow_send_emoji"];
+  }
+
+  if (req.body["settings.allowed_urls"]!=undefined) {
+    update["settings.allowed_urls"] = req.body["settings.allowed_urls"];
+  }
+
+  if (req.body["settings.allowed_urls_list"]!=undefined) {
+    update["settings.allowed_urls_list"] = req.body["settings.allowed_urls_list"];
+  }
+
+  if (req.body["settings.allowed_upload_extentions"]!=undefined) {
+    update["settings.allowed_upload_extentions"] = req.body["settings.allowed_upload_extentions"];
   }
   
   if (req.body.widget!=undefined) {
@@ -888,8 +900,10 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   var sortQuery={};
   sortQuery[sortField] = direction;
 
+// rolequery
 
-  Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active"}).
+  Project_user.find({ id_user: req.user._id , roleType: RoleConstants.TYPE_AGENTS, status: "active"}).
+  // Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active"}).
     // populate('id_project').
     populate({
       path: 'id_project',
@@ -1025,8 +1039,10 @@ router.get('/:projectid/users/availables', async  (req, res) => {
   if (isOpen === false) {
     return res.json(available_agents_array);
   }
+// rolequery
+  let query = { id_project: projectid, user_available: true, roleType: RoleConstants.TYPE_AGENTS };
+  // let query = { id_project: projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]} };
 
-  let query = { id_project: projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]} };
 
   if (dep_id) {
     let department = await Department.findById(dep_id).catch((err) => {
@@ -1040,7 +1056,41 @@ router.get('/:projectid/users/availables', async  (req, res) => {
     }
 
     let group_id = department.id_group;
-    if (group_id) {
+    let groups = department.groups;
+
+    if (groups && Array.isArray(groups) && groups.length > 0) {
+      // Converti i group_id in ObjectId per la query
+      const groupIds = groups
+        .map(g => g.group_id)
+        .filter(id => !!id)
+        .map(id => mongoose.Types.ObjectId(id));
+    
+      if (groupIds.length > 0) {
+        const dbGroups = await Group.find({ _id: { $in: groupIds } }).catch((err) => {
+          winston.error("(Users Availables) find groups error: ", err);
+          return res.status(500).send({ success: false, error: err });
+        });
+    
+        if (!dbGroups || dbGroups.length === 0) {
+          winston.error("(Users Availables) no valid groups found");
+          return res.status(404).send({ success: false, error: "No valid groups found" });
+        }
+    
+        // Filtra i gruppi abilitati
+        const enabledGroups = dbGroups.filter(g => g.enabled !== false);
+    
+        if (enabledGroups.length === 0) {
+          winston.error("(Users Availables) all groups are disabled");
+          return res.status(403).send({ success: false, error: "All groups are currently disabled" });
+        }
+    
+        // Raccogli tutti i membri (stringhe) e rimuovi duplicati
+        const members = [...new Set(enabledGroups.flatMap(g => g.members))];
+    
+        query.id_user = { $in: members };
+      }
+    }
+    else if (group_id) {
       let group = await Group.findById(group_id).catch((err) => {
         winston.error("(Users Availables) find group error: ", err)
         return res.status(500).send({ success: false, error: err })
@@ -1049,6 +1099,11 @@ router.get('/:projectid/users/availables', async  (req, res) => {
       if (!group) {
         winston.error("(Users Availables) group not found")
         return res.status(404).send({ success: false, error: "Group " + group_id + " not found" })
+      }
+
+      if (group.enabled === false) {
+        winston.error("(Users Availables) group disabled")
+        return res.status(403).send({ success: false, error: "Group " + group_id + " is currently disabled" })
       }
 
       query.id_user = { $in: group.members.map(id => mongoose.Types.ObjectId(id) )}

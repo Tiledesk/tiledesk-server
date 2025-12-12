@@ -45,7 +45,7 @@ router.post('/',
 // ],
 async (req, res)  => {
 
-  winston.debug('req.body post message', req.body);
+  winston.info('req.body post message', req.body);
   winston.debug('req.params: ', req.params);
   winston.debug('req.params.request_id: ' + req.params.request_id);
 
@@ -67,9 +67,11 @@ async (req, res)  => {
   let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
   winston.debug('messageStatus: ' + messageStatus);
 
+  winston.info('router.post create message');
+
       let q = Request.findOne({request_id: req.params.request_id, id_project: req.projectid}); 
       if (cacheEnabler.request) {
-        q.cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+req.params.request_id+":simple") //request_cache
+        q.cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+req.params.request_id+":basic") //request_cache
         winston.debug('request cache enabled');
       }
       // cacherequest       // requestcachefarequi nocachepopulatereqired
@@ -258,7 +260,11 @@ async (req, res)  => {
       
 
           winston.debug("request  exists", request.toObject());
-      
+          if (request.channel?.name === 'form' || request.channel?.name === 'email') {
+            if (!sender && request.participantsAgents?.[0] !== req.user.id) {
+              return res.status(403).send({ success: false, message: "Error creating message", err: "You don't belong the conversation" });
+            }
+          }
          
                // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type, channel) {                 
               return messageService.create(sender || req.user._id, fullname, req.params.request_id, req.body.text,
@@ -267,6 +273,12 @@ async (req, res)  => {
                   // TOOD update also request attributes and sourcePage
                   // return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
                     // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
+                    if (sender && sender !== 'system') {
+                      Request.findOneAndUpdate({request_id: request.request_id, id_project: request.id_project}, { "attributes.last_message": savedMessage}).catch((err) => {
+                        winston.error("Create message - saving last message in request error: ", err);
+                      })
+                    }
+
                      
                     if (request.participants && request.participants.indexOf(sender) > -1) { //update waiitng time if write an  agent (member of participants)
                       winston.debug("updateWaitingTimeByRequestId");
@@ -281,7 +293,7 @@ async (req, res)  => {
                       let message = savedMessage.toJSON();
 
                       winston.debug("getting request for response");
-
+                      winston.info('router.post 2 create message');
                       let q =
                       Request.findOne({request_id:  request.request_id, id_project: request.id_project})
                       // request

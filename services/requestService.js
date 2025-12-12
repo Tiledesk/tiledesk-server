@@ -23,7 +23,7 @@ const axios = require("axios").default;
 let port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/ext/";;
 if (process.env.TILEBOT_ENDPOINT) {
-    TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/"
+    TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/";
 }
 
 let tdCache = new TdCache({
@@ -252,13 +252,16 @@ class RequestService {
       winston.debug("id_project:" + id_project);
       winston.debug("nobot:" + nobot);
 
+      winston.info("main_flow_cache_3 route");
+
+
       let q = Request
         .findOne({ request_id: request_id, id_project: id_project });
 
-      // if (cacheEnabler.request) {  //(node:60837) UnhandledPromiseRejectionWarning: VersionError: No matching document found for id "633efe246a6cc0eda5732684" version 0 modifiedPaths "status, participants, participantsAgents, department, assigned_at, snapshot, snapshot.department, snapshot.department.updatedAt, snapshot.agents"
-      //   q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id+":simple")      //request_cache
-      //   winston.debug('request cache enabled');
-      // }
+      if (cacheEnabler.request) {  //(node:60837) UnhandledPromiseRejectionWarning: VersionError: No matching document found for id "633efe246a6cc0eda5732684" version 0 modifiedPaths "status, participants, participantsAgents, department, assigned_at, snapshot, snapshot.department, snapshot.department.updatedAt, snapshot.agents"
+        q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id+":simple")      //request_cache
+        winston.debug('request cache enabled');
+      }
       return q.exec(function (err, request) {
 
         if (err) {
@@ -298,6 +301,14 @@ class RequestService {
 
           winston.debug("requestBefore status: ", requestBeforeRoute.status)
           winston.debug("routedRequest status: ", routedRequest.status)
+
+          console.log("requestBeforeRoute: ", JSON.stringify(requestBeforeRoute));
+          console.log("routedRequest: ", JSON.stringify(routedRequest));
+          console.log("------")
+          console.log(`request status from ${requestBeforeRoute.status} to ${routedRequest.status}`);
+          console.log(`request status from ${beforeDepartmentId} to ${afterDepartmentId}`);
+          console.log("same participants: ", requestUtil.arraysEqual(beforeParticipants, routedRequest.participants));
+          console.log("------")
           /**
            * Case 1
            * After internal routing:
@@ -309,6 +320,7 @@ class RequestService {
             beforeDepartmentId === afterDepartmentId &&
             requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
 
+            console.log("set to fully abandoned");
             winston.verbose("Request " + request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
 
             if (routedRequest.attributes && routedRequest.attributes.fully_abandoned && routedRequest.attributes.fully_abandoned === true) {
@@ -325,10 +337,19 @@ class RequestService {
               })
             }
 
-            if (no_populate === "true" || no_populate === true) {
-              winston.debug("no_populate is true");
-              return resolve(request);
-            }
+            /**
+             * TODO: Restore proper functioning
+             * Option commented on 03/12/2025 by Johnny in order to allows clients to receive the request populated
+             * in such case of Abandoned Request (Status 150)
+            */
+            // if (no_populate === "true" || no_populate === true) {
+            //   winston.debug("no_populate is true");
+            //   requestEvent.emit('request.update', request);
+            //   return resolve(request);
+            // }
+            
+            winston.info('info: main_flow_cache_2.3.1');
+            winston.info("main_flow_cache_3 populate");
 
             return request
               .populate('lead')
@@ -338,6 +359,29 @@ class RequestService {
               .populate({ path: 'requester', populate: { path: 'id_user' } })
               .execPopulate(function (err, requestComplete) {
                 winston.debug("requestComplete", requestComplete);
+
+                var oldParticipants = beforeParticipants;
+                winston.debug("oldParticipants ", oldParticipants);
+
+                let newParticipants = requestComplete.participants;
+                winston.debug("newParticipants ", newParticipants);
+
+                var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
+                winston.debug("removedParticipants ", removedParticipants);
+
+                var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
+                winston.debug("addedParticipants ", addedParticipants);
+
+                requestEvent.emit('request.update', requestComplete);
+                requestEvent.emit("request.update.comment", { comment: "REROUTE", request: requestComplete });//Deprecated
+                requestEvent.emit("request.updated", { comment: "REROUTE", request: requestComplete, patch: { removedParticipants: removedParticipants, addedParticipants: addedParticipants } });
+                
+                requestEvent.emit('request.participants.update', {
+                  beforeRequest: request,
+                  removedParticipants: removedParticipants,
+                  addedParticipants: addedParticipants,
+                  request: requestComplete
+                });
 
                 return resolve(requestComplete);
               });
@@ -410,6 +454,10 @@ class RequestService {
 
             winston.debug("after save savedRequest", savedRequest);
 
+
+            // winston.info('info: main_flow_cache_2.3.2');
+            winston.info('info: main_flow_cache_2 route populate ');
+
             return savedRequest
               .populate('lead')
               .populate('department')
@@ -432,6 +480,8 @@ class RequestService {
                   winston.error('Error populating the request.', err);
                   return reject(err);
                 }
+
+                winston.info('info: main_flow_cache_2 route populate end');
 
                 winston.verbose("Request routed", requestComplete.toObject());
 
@@ -481,12 +531,15 @@ class RequestService {
   }
 
 
-  reroute(request_id, id_project, nobot) {
+  reroute(request_id, id_project, nobot, no_populate) {
     var that = this;
     var startDate = new Date();
     return new Promise(function (resolve, reject) {
       // winston.debug("request_id", request_id);
       // winston.debug("newstatus", newstatus);
+
+    // winston.info("main_flow_cache_3 reroute"); //but it is cached
+      
 
       let q = Request
         .findOne({ request_id: request_id, id_project: id_project });
@@ -514,7 +567,7 @@ class RequestService {
         }
 
 
-        return that.route(request_id, request.department.toString(), id_project, nobot).then(function (routedRequest) {
+        return that.route(request_id, request.department.toString(), id_project, nobot, no_populate).then(function (routedRequest) {
 
           var endDate = new Date();
           winston.verbose("Performance Request reroute in millis: " + endDate - startDate);
@@ -757,6 +810,8 @@ class RequestService {
       }
 
       winston.debug('newRequest.', newRequest);
+
+      winston.info("main_flow_cache_ requestService create");
 
       //cacheinvalidation
       return newRequest.save( async function (err, savedRequest) {
@@ -1512,6 +1567,10 @@ class RequestService {
         return reject({ err: "Error changing first text. The field first_text is empty" });
       }
 
+
+
+      winston.info("main_flow_cache_3 changeFirstTextAndPreflightByRequestId");
+      
       return Request
         .findOneAndUpdate({ request_id: request_id, id_project: id_project }, { first_text: first_text, preflight: preflight }, { new: true, upsert: false })
         .populate('lead')
@@ -1757,7 +1816,7 @@ class RequestService {
 
 
           if (err) {
-            winston.error("Error getting closing request ", err);
+            winston.error("Error getting closing request with request_id: " + request_id, err);
             return reject(err);
           }
           if (!request) {
@@ -1921,6 +1980,8 @@ class RequestService {
 
   findByRequestId(request_id, id_project) {
     return new Promise(function (resolve, reject) {
+      winston.info("main_flow_cache_3 requestService findByRequestId");
+      
       return Request.findOne({ request_id: request_id, id_project: id_project }, function (err, request) {
         if (err) {
           return reject(err);
@@ -1959,6 +2020,23 @@ class RequestService {
             winston.error('Request not found for request_id ' + request_id + ' and id_project ' + id_project);
             return reject('Request not found for request_id ' + request_id + ' and id_project ' + id_project);
           }
+
+          if (request.channel?.name === 'form' || request.channel?.name === 'email') {
+            if (Array.isArray(request.participantsAgents)) {
+              if (request.participantsAgents.length === 1) {
+                winston.error('Cannot add participants: participantsAgents already has one element for request_id ' + request_id + ' and id_project ' + id_project);
+                return reject({ code: 403, error: 'Cannot add participants: only one participant allowed for this request' });
+              } else if (request.participantsAgents.length === 0) {
+                if (Array.isArray(newparticipants) && newparticipants.length === 1) {
+                  // ok, allow to add one participant
+                } else {
+                  winston.error('Can only add one participant for request_id ' + request_id + ' and id_project ' + id_project);
+                  return reject({ code: 403, error: 'Can only add one participant for this request' });
+                }
+              }
+            }
+          }
+
           var oldParticipants = request.participants;
           winston.debug('oldParticipants', oldParticipants);
           winston.debug('newparticipants', newparticipants);
@@ -2838,7 +2916,10 @@ class RequestService {
         winston.debug("[RequestService] response: ", response);
         resolve(response.data);
       }).catch((err) => {
-        winston.error("get request parameter error: ", err.response.data);
+        winston.error("get request parameter error:", {
+          message: err.message,
+          data: err.response?.data
+        });
         reject(err);
       })
     })
