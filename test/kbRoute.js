@@ -47,6 +47,66 @@ mongoose.connect(config.databasetest);
 chai.use(chaiHttp);
 
 describe('KbRoute', () => {
+    
+    describe('/qa', () => {
+        
+        it('ask-kb', (done) => {
+
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("get namespaces res.body: ", res.body); }
+
+                            res.should.have.status(200);
+                            expect(res.body.length).to.equal(1);
+                            expect(res.body[0].engine.index_name).to.equal('test-index')
+
+                            let namespace_id = res.body[0].id;
+
+                            let data = {
+                                question: "sample question?",
+                                namespace: namespace_id,
+                                llm: "openai",
+                                model: "gpt-4o",
+                                temperature: 0.7,
+                                max_tokens: 128,
+                                top_k: 4,
+                                chunks_only: false,
+                                system_context: "",
+                                advancedPrompt: false,
+                                citations: true
+                            }
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb/qa')
+                                .auth(email, pwd)
+                                .send(data)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("ask kb res.body: ", res.body); }
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    
+                                    done();
+                                })
+                        })
+                });
+            });
+
+        })
+    })
 
     describe('Namespaces', () => {
 
@@ -1959,5 +2019,7 @@ describe('KbRoute', () => {
             });
         });
     });
+
+    
 
 });

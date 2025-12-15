@@ -26,6 +26,11 @@ const JOB_TOPIC_EXCHANGE_HYBRID = process.env.JOB_TOPIC_EXCHANGE_TRAIN_HYBRID ||
 const KB_WEBHOOK_TOKEN = process.env.KB_WEBHOOK_TOKEN || 'kbcustomtoken';
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 
+let rerankingOff = false;
+if (process.env.RERANKING_OFF && (process.env.RERANKING_OFF === "true" || process.env.RERANKING_OFF === true)) {
+  rerankingOff = true;
+}
+
 
 let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
 let uploadlimits = undefined;
@@ -352,6 +357,7 @@ router.post('/qa', async (req, res) => {
       if (!key) {
         if (data.llm === 'openai') {
           data.gptkey = process.env.GPTKEY;
+          console.log("set key for openai: ", data.gptkey);
           publicKey = true;
         } else {
           return res.status(404).send({ success: false, error: `Invalid or empty key provided for ${data.llm}` });
@@ -432,13 +438,22 @@ router.post('/qa', async (req, res) => {
   }
 
   data.debug = true;
+  
+  if (!rerankingOff) {
+    data.reranking = true;
+    data.reranking_multiplier = 3;
+    data.reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2";
+  }
 
   aiService.askNamespace(data).then((resp) => {
+
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
 
+    console.log("after answer publicKey")
     if (publicKey === true) {
       let multiplier = MODELS_MULTIPLIER[data.model];
+      console.log("multiplier: ", multiplier)
       if (!multiplier) {
         multiplier = 1;
         winston.info("No multiplier found for AI model")
