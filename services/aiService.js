@@ -291,6 +291,6 @@ class AiService {
 
 }
 
-var aiService = new AiService();
+const aiService = new AiService();
 
 module.exports = aiService;

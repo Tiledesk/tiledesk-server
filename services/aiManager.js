@@ -15,13 +15,9 @@ const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-tra
 const JOB_TOPIC_EXCHANGE_HYBRID = process.env.JOB_TOPIC_EXCHANGE_TRAIN_HYBRID || 'tiledesk-trainer-hybrid';
 
 // Default engine configuration
-const default_engine = {
-  name: "pinecone",
-  type: process.env.PINECONE_TYPE || "pod",
-  apikey: "",
-  vector_size: 1536,
-  index_name: process.env.PINECONE_INDEX
-}
+const default_engine = require('../config/kb/engine');
+const default_engine_hybrid = require('../config/kb/engine.hybrid');
+const default_embedding = require('../config/kb/embedding');
 
 // Job managers
 let jobManager = new JobManager(AMQP_MANAGER_URL, {
@@ -59,7 +55,7 @@ class AiManager {
 
   async addMultipleUrls(namespace, urls, options) {
     return new Promise(async (resolve, reject) => {
-  
+
       let kbs = urls.map((url) => {
         let kb = {
           id_project: namespace.id_project,
@@ -77,7 +73,7 @@ class AiManager {
         }
         return kb;
       })
-  
+
       let operations = kbs.map(doc => {
         return {
           updateOne: {
@@ -88,24 +84,28 @@ class AiManager {
           }
         }
       })
-  
+
       this.saveBulk(operations, kbs, namespace.id_project, namespace.id).then( async (result) => {
-        let engine = namespace.engine || default_engine;
         let hybrid = namespace.hybrid;
+        let engine = namespace.engine || default_engine;
+        let embedding = namespace.embedding || default_embedding;
         let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
-  
+
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, scrape_options, ...rest }) => {
-          return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, engine: engine, hybrid: hybrid, ...rest}
+          return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, embedding: embedding, engine: engine, hybrid: hybrid, ...rest}
         });
-  
+
         winston.verbose("resources to be sent to worker: ", resources);
-  
-        if (process.env.NODE_ENV !== 'test') {
-          this.scheduleScrape(resources, hybrid);
+
+        if (process.env.NODE_ENV === 'test') {
+          resolve({ result, schedule_json: resources });
+          return;
         }
   
+        this.scheduleScrape(resources, hybrid);
         resolve(result);
+
       }).catch((err) => {
         winston.error("Error save contents in bulk: ", err);
         reject(err);
@@ -407,6 +407,6 @@ class AiManager {
 
 }
 
-let aiManager = new AiManager();
+const aiManager = new AiManager();
 
 module.exports = aiManager;

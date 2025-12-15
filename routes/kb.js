@@ -1,22 +1,22 @@
 var express = require('express');
-var { Namespace, KB, Engine } = require('../models/kb_setting');
 var router = express.Router();
 var winston = require('../config/winston');
 var multer = require('multer')
 var upload = multer()
-const aiService = require('../services/aiService');
 const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
-const { Scheduler } = require('../services/Scheduler');
 var configGlobal = require('../config/global');
 var mongoose = require('mongoose');
+var parsecsv = require("fast-csv");
+
+var { Namespace, KB } = require('../models/kb_setting');
 const faq = require('../models/faq');
 const faq_kb = require('../models/faq_kb');
-let Integration = require('../models/integrations');
-var parsecsv = require("fast-csv");
 
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
 const { kbTypes } = require('../models/kbConstants');
 const Sitemapper = require('sitemapper');
+
+const aiService = require('../services/aiService');
 const aiManager = require('../services/aiManager');
 const integrationService = require('../services/integrationService');
 
@@ -67,7 +67,6 @@ jobManagerHybrid.connectAndStartPublisher((status, error) => {
   }
 })
 
-
 let default_preview_settings = {
   model: 'gpt-4o',
   max_tokens: 256,
@@ -75,38 +74,25 @@ let default_preview_settings = {
   top_k: 4,
   alpha: 0.5,
   context: null
-  //context: "You are an awesome AI Assistant."
-}
-let default_engine = {
-  name: "pinecone",
-  type: process.env.PINECONE_TYPE || "pod",
-  apikey: "",
-  vector_size: 1536,
-  index_name: process.env.PINECONE_INDEX
-}
-let default_engine_hybrid = {
-  name: "pinecone",
-  type: process.env.PINECONE_TYPE_HYBRID || "serverless",
-  apikey: "",
-  vector_size: 1536,
-  index_name: process.env.PINECONE_INDEX_HYBRID
 }
 
-//let default_context = "Answer if and ONLY if the answer is contained in the context provided. If the answer is not contained in the context provided ALWAYS answer with <NOANS>\n{context}"
-//let default_context = "You are an helpful assistant for question-answering tasks.\nUse ONLY the following pieces of retrieved context to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf none of the retrieved context answer the question, add this word to the end <NOANS>\n\n{context}";
+const default_engine = require('../config/kb/engine');
+const default_engine_hybrid = require('../config/kb/engine.hybrid');
+const default_embedding = require('../config/kb/embedding');
+
 let contexts = {
-      "gpt-3.5-turbo":        process.env.GPT_3_5_CONTEXT       || "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### and the chat history to answer the question.\nIf you don't know the answer, just say: \"I don't know<NOANS>\"\n\n####{context}####",
-      "gpt-4":                process.env.GPT_4_CONTEXT         || "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### and the chat history to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf and only if none of the retrieved context is useful for your task, add this word to the end <NOANS>\n\n####{context}####",
-      "gpt-4-turbo-preview":  process.env.GPT_4T_CONTEXT        || "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### and the chat history to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf and only if none of the retrieved context is useful for your task, add this word to the end <NOANS>\n\n####{context}####",
-      "gpt-4o":               process.env.GPT_4O_CONTEXT        || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-      "gpt-4o-mini":          process.env.GPT_4O_MINI_CONTEXT   || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-      "gpt-4.1":              process.env.GPT_4_1_CONTEXT       || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-      "gpt-4.1-mini":         process.env.GPT_4_1_MINI_CONTEXT  || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-      "gpt-4.1-nano":         process.env.GPT_4_1_NANO_CONTEXT  || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-      "gpt-5":                process.env.GPT_5_CONTEXT         || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-      "gpt-5-mini":           process.env.GPT_5_MINI_CONTEXT    || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-      "gpt-5-nano":           process.env.GPT_5_NANO_CONTEXT    || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-      "general":              process.env.GENERAL_CONTEXT       || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end=="
+  "gpt-3.5-turbo":        process.env.GPT_3_5_CONTEXT       || "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### and the chat history to answer the question.\nIf you don't know the answer, just say: \"I don't know<NOANS>\"\n\n####{context}####",
+  "gpt-4":                process.env.GPT_4_CONTEXT         || "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### and the chat history to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf and only if none of the retrieved context is useful for your task, add this word to the end <NOANS>\n\n####{context}####",
+  "gpt-4-turbo-preview":  process.env.GPT_4T_CONTEXT        || "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### and the chat history to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf and only if none of the retrieved context is useful for your task, add this word to the end <NOANS>\n\n####{context}####",
+  "gpt-4o":               process.env.GPT_4O_CONTEXT        || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+  "gpt-4o-mini":          process.env.GPT_4O_MINI_CONTEXT   || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+  "gpt-4.1":              process.env.GPT_4_1_CONTEXT       || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+  "gpt-4.1-mini":         process.env.GPT_4_1_MINI_CONTEXT  || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+  "gpt-4.1-nano":         process.env.GPT_4_1_NANO_CONTEXT  || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+  "gpt-5":                process.env.GPT_5_CONTEXT         || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+  "gpt-5-mini":           process.env.GPT_5_MINI_CONTEXT    || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+  "gpt-5-nano":           process.env.GPT_5_NANO_CONTEXT    || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+  "general":              process.env.GENERAL_CONTEXT       || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end=="
 }
 
 /**
@@ -119,8 +105,8 @@ router.post('/scrape/single', async (req, res) => {
   let project_id = req.projectid;
 
   let data = req.body;
-  winston.debug("/scrape/single data: ", data);
-
+  winston.debug("/scrape/single data: ", data)
+  
   let namespace;
   try {
     namespace = await aiManager.checkNamespace(project_id, data.namespace);
@@ -128,7 +114,7 @@ router.post('/scrape/single', async (req, res) => {
     let errorCode = err?.errorCode ?? 500;
     return res.status(errorCode).send({ success: false, error: err.error });
   } 
-
+  
   if (data.type === "sitemap") {
 
     const urls = await aiManager.fetchSitemap(data.source).catch((err) => {
@@ -194,19 +180,6 @@ router.post('/scrape/single', async (req, res) => {
     return res.status(200).send({ success: true, message: "Content queued for reindexing", added_urls: addedUrls.length, removed_url: removedIds.length });
   }
 
-  // let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
-  //   winston.error("find namespaces error: ", err)
-  //   res.status(500).send({ success: false, error: err })
-  // })
-
-  // if (!namespaces || namespaces.length == 0) {
-  //   let alert = "No namespace found for the selected project " + project_id + ". Cannot add content to a non-existent namespace."
-  //   winston.warn(alert);
-  //   res.status(403).send(alert);
-  // }
-
-  // let namespaceIds = namespaces.map(namespace => namespace.id);
-
   KB.findById(data.id, (err, kb) => {
     if (err) {
       winston.error("findById error: ", err);
@@ -242,14 +215,18 @@ router.post('/scrape/single', async (req, res) => {
         }
       }
 
-      let ns = namespaces.find(n => n.id === kb.namespace);
-      json.engine = ns.engine || default_engine;
+      json.engine = namespace.engine || default_engine;
+      json.embedding = namespace.embedding || default_embedding;
 
-      if (ns.hybrid === true) {
+      if (namespace.hybrid === true) {
         json.hybrid = true;
       }
 
       winston.verbose("/scrape/single json: ", json);
+
+      if (process.env.NODE_ENV === "test") {
+        res.status(200).send({ success: true, message: "Skip indexing in test environment", data: json })
+      }
 
       aiManager.startScrape(json).then((response) => {
         winston.verbose("startScrape response: ", response);
@@ -279,24 +256,15 @@ router.post('/scrape/status', async (req, res) => {
     returnObject = true;
   }
 
-  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
-    winston.error("find namespaces error: ", err)
-    res.status(500).send({ success: false, error: err })
-  })
-
-  if (!namespaces || namespaces.length == 0) {
-    let alert = "No namespace found for the selected project " + project_id + ". Cannot add content to a non-existent namespace."
-    winston.warn(alert);
-    res.status(403).send(alert);
+  let namespace;
+  try {
+    namespace = await aiManager.checkNamespace(project_id, namespace_id);
+  } catch (err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
   }
 
-  let namespaceIds = namespaces.map(namespace => namespace.id);
-  if (!namespaceIds.includes(data.namespace)) {
-    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
-  }
-
-  let ns = namespaces.find(n => n.id === data.namespace);
-  data.engine = ns.engine || default_engine;
+  data.engine = namespace.engine || default_engine;
 
   aiService.scrapeStatus(data).then(async (response) => {
 
@@ -345,22 +313,13 @@ router.post('/qa', async (req, res) => {
   let ollama_integration;
   let vllm_integration;
 
-  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
-    winston.error("find namespaces error: ", err)
-    res.status(500).send({ success: false, error: err })
-  })
-
-  if (!namespaces || namespaces.length == 0) {
-    let alert = "No namespace found for the selected project " + project_id + ". Cannot add content to a non-existent namespace."
-    winston.warn(alert);
-    res.status(403).send(alert);
+  let namespace;
+  try {
+    namespace = await aiManager.checkNamespace(project_id, data.namespace);
+  } catch (err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
   }
-
-  let namespaceIds = namespaces.map(namespace => namespace.id);
-  if (!namespaceIds.includes(data.namespace)) {
-    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
-  }
-  
   winston.debug("/qa data: ", data);
 
   if (!data.llm) {
@@ -389,6 +348,7 @@ router.post('/qa', async (req, res) => {
   } else {
     try {
       let key = await integrationService.getKeyFromIntegration(project_id, data.llm);
+
       if (!key) {
         if (data.llm === 'openai') {
           data.gptkey = process.env.GPTKEY;
@@ -427,10 +387,11 @@ router.post('/qa', async (req, res) => {
     }
   }
 
-  let ns = namespaces.find(n => n.id === data.namespace);
-  data.engine = ns.engine || default_engine;
+  data.engine = namespace.engine || default_engine;
+  data.embedding = namespace.embedding || default_embedding;
+  data.embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
-  if (ns.hybrid === true) {
+  if (namespace.hybrid === true) {
     data.search_type = 'hybrid';
     
     if (data.reranking === true) {
@@ -511,25 +472,15 @@ router.delete('/delete', async (req, res) => {
   let data = req.body;
   winston.debug("/delete data: ", data);
 
-  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
-    winston.error("find namespaces error: ", err)
-    res.status(500).send({ success: false, error: err })
-  })
-
-  if (!namespaces || namespaces.length == 0) {
-    let alert = "No namespace found for the selected project " + project_id + ". Cannot add content to a non-existent namespace."
-    winston.warn(alert);
-    res.status(403).send(alert);
+  let namespace;
+  try {
+    namespace = await aiManager.checkNamespace(project_id, namespace_id);
+  } catch (err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
   }
 
-  let namespaceIds = namespaces.map(namespace => namespace.id);
-
-  if (!namespaceIds.includes(data.namespace)) {
-    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
-  }
-  
-  let ns = namespaces.find(n => n.id === data.namespace);
-  data.engine = ns.engine || default_engine;
+  data.engine = namespace.engine || default_engine;
 
   aiService.deleteIndex(data).then((resp) => {
     winston.debug("delete resp: ", resp.data);
@@ -548,25 +499,15 @@ router.delete('/deleteall', async (req, res) => {
   let data = req.body;
   winston.debug('/delete all data: ', data);
 
-  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
-    winston.error("find namespaces error: ", err)
-    res.status(500).send({ success: false, error: err })
-  })
-
-  if (!namespaces || namespaces.length == 0) {
-    let alert = "No namespace found for the selected project " + project_id + ". Cannot add content to a non-existent namespace."
-    winston.warn(alert);
-    res.status(403).send(alert);
+  let namespace;
+  try {
+    namespace = await aiManager.checkNamespace(project_id, namespace_id);
+  } catch (err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
   }
 
-  let namespaceIds = namespaces.map(namespace => namespace.id);
-
-  if (!namespaceIds.includes(data.namespace)) {
-    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
-  }
-
-  let ns = namespaces.find(n => n.id === data.namespace);
-  data.engine = ns.engine || default_engine;
+  data.engine = namespace.engine || default_engine;
 
   winston.verbose("/deleteall data: ", data);
 
@@ -613,7 +554,8 @@ router.get('/namespace/all', async (req, res) => {
         name: "Default",
         preview_settings: default_preview_settings,
         default: true,
-        engine: default_engine
+        engine: default_engine,
+        embedding: default_embedding
       })
 
       new_namespace.save((err, savedNamespace) => {
@@ -659,14 +601,12 @@ router.get('/namespace/:id/chunks/:content_id', async (req, res) => {
   let namespace_id = req.params.id;
   let content_id = req.params.content_id;
 
-  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
-    winston.error("find namespaces error: ", err)
-    return res.status(500).send({ success: false, error: err })
-  })
-
-  let namespaceIds = namespaces.map(namespace => namespace.id);
-  if (!namespaceIds.includes(namespace_id)) {
-    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
+  let namespace;
+  try {
+    namespace = await aiManager.checkNamespace(project_id, namespace_id);
+  } catch (err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
   }
 
   let content = await KB.find({ id_project: project_id, namespace: namespace_id, _id: content_id }).catch((err) => {
@@ -678,9 +618,7 @@ router.get('/namespace/:id/chunks/:content_id', async (req, res) => {
     return res.status(403).send({ success: false, error: "Not allowed. The content does not belong to the current namespace." })
   }
 
-  let ns = namespaces.find(n => n.id === namespace_id);
-  let engine = ns.engine || default_engine;
-  delete engine._id;
+  let engine = namespace.engine || default_engine;
 
   if (process.env.NODE_ENV === 'test') {
     return res.status(200).send({ success: true, message: "Get chunks skipped in test environment"});
@@ -693,8 +631,8 @@ router.get('/namespace/:id/chunks/:content_id', async (req, res) => {
     return res.status(200).send(chunks);
 
   }).catch((err) => {
-    console.error("error getting content chunks err.response: ", err.response)
-    console.error("error getting content chunks err.data: ", err.data)
+    winston.error("error getting content chunks err.response: ", err.response)
+    winston.error("error getting content chunks err.data: ", err.data)
     return res.status(500).send({ success: false, error: err });
   })
 
@@ -707,14 +645,12 @@ router.get('/namespace/:id/chatbots', async (req, res) => {
   
   let chatbotsArray = [];
 
-  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
-    winston.error("find namespaces error: ", err)
-    res.status(500).send({ success: false, error: err })
-  })
-
-  let namespaceIds = namespaces.map(namespace => namespace.id);
-  if (!namespaceIds.includes(namespace_id)) {
-    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
+  let namespace;
+  try {
+    namespace = await aiManager.checkNamespace(project_id, namespace_id);
+  } catch (err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
   }
 
   let intents = await faq.find({ id_project: project_id, 'actions.namespace': namespace_id }).catch((err) => {
@@ -767,14 +703,12 @@ router.get('/namespace/export/:id', async (req, res) => {
 
   query.type = { $in: [ kbTypes.URL, kbTypes.TEXT, kbTypes.FAQ ] };
 
-  let namespace = await Namespace.findOne({ id: namespace_id}).catch((err) => {
-    winston.error("Error getting namepsace for export ", err);
-    return res.status(500).send({ success: false, error: "Unable to get namespace with id " + namespace_id })
-  })
-
-  if (!namespace) {
-    winston.warn("No namespace found with id ", namespace_id);
-    return res.status(404).send({ success: false, error: "No namespace found with id " + namespace_id })
+  let namespace;
+  try {
+    namespace = await aiManager.checkNamespace(project_id, namespace_id);
+  } catch (err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
   }
 
   let name = namespace.name;
@@ -833,7 +767,8 @@ router.post('/namespace', async (req, res) => {
     name: body.name,
     hybrid: hybrid,
     preview_settings: default_preview_settings,
-    engine: engine
+    engine: engine,
+    embedding: default_embedding
   })
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
@@ -1275,6 +1210,7 @@ router.get('/', async (req, res) => {
           response.query.search = text;
         }
 
+
         return res.status(200).send(response);
       })
 
@@ -1305,45 +1241,28 @@ router.post('/', async (req, res) => {
 
   let project_id = req.projectid;
   let body = req.body;
+  let namespace_id = body.namespace;
 
   if (!body.namespace) {
     return res.status(400).send({ success: false, error: "parameter 'namespace' is not defined" });
   }
 
-  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
-    winston.error("find namespaces error: ", err)
-    res.status(500).send({ success: false, error: err })
-  })
-
-  if (!namespaces || namespaces.length == 0) {
-    let alert = "No namespace found for the selected project " + project_id + ". Cannot add content to a non-existent namespace."
-    winston.warn(alert);
-    res.status(403).send(alert);
-  }
-
-  let namespaceIds = namespaces.map(namespace => namespace.id);
-
-  if (!namespaceIds.includes(body.namespace)) {
-    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
+  let namespace;
+  try {
+    namespace = await aiManager.checkNamespace(project_id, namespace_id);
+  } catch (err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
   }
   
   let quoteManager = req.app.get('quote_manager');
-  let limits = await quoteManager.getPlanLimits(req.project);
-  let kbs_limit = limits.kbs;
-  winston.verbose("Limit of kbs for current plan: " + kbs_limit);
-
-  let kbs_count = await KB.countDocuments({ id_project: project_id }).exec();
-  winston.verbose("Kbs count: " + kbs_count);
-
-  if (kbs_count >= kbs_limit) {
-    return res.status(403).send({ success: false, error: "Maximum number of resources reached for the current plan", plan_limit: kbs_limit })
+  try {
+    await aiManager.checkQuotaAvailability(quoteManager, req.project, 1)
+  } catch(err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error, plan_limit: err.plan_limit })
   }
 
-  let total_count = kbs_count + 1;
-  if (total_count > kbs_limit) {
-    return res.status(403).send({ success: false, error: "Cannot exceed the number of resources in the current plan", plan_limit: kbs_limit })
-  }
-  
   let new_kb = {
     id_project: project_id,
     name: body.name,
@@ -1372,19 +1291,18 @@ router.post('/', async (req, res) => {
 
   winston.debug("adding kb: ", new_kb);
 
-  KB.findOneAndUpdate({ id_project: project_id, type: 'url', source: new_kb.source }, new_kb, { upsert: true, new: true, rawResult: true }, async (err, raw) => {
+  KB.findOneAndUpdate({ id_project: project_id, type: 'url', source: new_kb.source }, new_kb, { upsert: true, new: true, rawResult: true }, async (err, raw_content) => {
     if (err) {
       winston.error("findOneAndUpdate with upsert error: ", err);
       res.status(500).send({ success: false, error: err });
     }
     else {
 
-      delete raw.ok;
-      delete raw.$clusterTime;
-      delete raw.operationTime;
-      res.status(200).send(raw);
-
-      let saved_kb = raw.value;
+      delete raw_content.ok;
+      delete raw_content.$clusterTime;
+      delete raw_content.operationTime;
+      
+      let saved_kb = raw_content.value;
       let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
 
       let json = {
@@ -1406,17 +1324,20 @@ router.post('/', async (req, res) => {
       if (saved_kb.scrape_options) {
         json.parameters_scrape_type_4 = saved_kb.scrape_options;
       }
-      let ns = namespaces.find(n => n.id === body.namespace);
-      json.engine = ns.engine || default_engine;
-      json.hybrid = ns.hybrid;
-      
+      json.engine = namespace.engine || default_engine;
+      json.embedding = namespace.embedding || default_embedding;
+      json.hybrid = namespace.hybrid;
+
       let resources = [];
 
       resources.push(json);
       
-      if (process.env.NODE_ENV !== 'test') {
-        aiManager.scheduleScrape(resources, ns.hybrid);
+      if (process.env.NODE_ENV === 'test') {
+        return res.status(200).send({ success: true, message: "Schedule scrape skipped in test environment", data: raw_content, schedule_json: json });
       }
+        
+      aiManager.scheduleScrape(resources, ns.hybrid);
+      return res.status(200).send(raw_content);
 
     }
   })
@@ -1478,6 +1399,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     result = await aiManager.addMultipleUrls(namespace, list, options);
     return res.status(200).send(result);
   } catch (err) {
+    winston.error("addMultipleUrls error: ", err)
     return res.status(500).send({ success: false, error: "Unable to add multiple urls due to an error." });
   }
 
@@ -1486,6 +1408,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
   let project_id = req.projectid;
+  let namespace_id = req.query.namespace;
 
   let csv = req.file.buffer.toString('utf8');
   winston.debug("csv: ", csv);
@@ -1493,38 +1416,12 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
   let delimiter = req.body.delimiter || ";";
   winston.debug("delimiter: ", delimiter);
 
-  let namespace_id = req.query.namespace;
-  if (!namespace_id) {
-    return res.status(400).send({ success: false, error: "queryParam 'namespace' is not defined" })
-  }
-
-  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
-    winston.error("find namespaces error: ", err)
-    res.status(500).send({ success: false, error: err })
-  })
-
-  if (!namespaces || namespaces.length == 0) {
-    let alert = "No namespace found for the selected project " + project_id + ". Cannot add content to a non-existent namespace."
-    winston.warn(alert);
-    res.status(403).send({ success: false, error: alert });
-  }
-
-  let namespaceIds = namespaces.map(namespace => namespace.id);
-
-  if (!namespaceIds.includes(namespace_id)) {
-    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
-  }
-
-  let quoteManager = req.app.get('quote_manager');
-  let limits = await quoteManager.getPlanLimits(req.project);
-  let kbs_limit = limits.kbs;
-  winston.verbose("Limit of kbs for current plan: " + kbs_limit);
-
-  let kbs_count = await KB.countDocuments({ id_project: project_id }).exec();
-  winston.verbose("Kbs count: " + kbs_count);
-
-  if (kbs_count >= kbs_limit) {
-    return res.status(403).send({ success: false, error: "Maximum number of resources reached for the current plan", plan_limit: kbs_limit })
+  let namespace;
+  try {
+    namespace = await aiManager.checkNamespace(project_id, namespace_id);
+  } catch (err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
   }
 
   let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
@@ -1547,16 +1444,15 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
         status: -1
       })
     })
-    .on("end", () => {
+    .on("end", async () => {
       winston.debug("kbs after CSV parsing: ", kbs);
 
-      let total_count = kbs_count + kbs.length;
-      if (total_count >= kbs_limit) {
-        return res.status(403).send({ success: false, error: "Cannot exceed the number of resources in the current plan", plan_limit: kbs_limit })
-      }
-
-      if (kbs.length > 300) {
-        return res.status(403).send({ success: false, error: "Too many faqs. Can't index more than 300 urls at a time." })
+      try {
+        let quoteManager = req.app.get('quote_manager');
+        await aiManager.checkQuotaAvailability(quoteManager, req.project, kbs.length)
+      } catch(err) {
+        let errorCode = err?.errorCode ?? 500;
+        return res.status(errorCode).send({ success: false, error: err.error, plan_limit: err.plan_limit })
       }
 
       let operations = kbs.map(doc => {
@@ -1572,19 +1468,23 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
       aiManager.saveBulk(operations, kbs, project_id, namespace_id).then((result) => {
 
-        let ns = namespaces.find(n => n.id === namespace_id);
-        let engine = ns.engine || default_engine;
-        let hybrid = ns.hybrid;
+        let engine = namespace.engine || default_engine;
+        let embedding = namespace.embedding || default_embedding;
+        let hybrid = namespace.hybrid;
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, ...rest}) => {
-          return { id: _id, webhook: webhook, engine: engine, ...rest };
+          return { id: _id, webhook: webhook, embedding: embedding, engine: engine, ...rest };
         })
         winston.verbose("resources to be sent to worker: ", resources);
-        if (process.env.NODE_ENV !== 'test') {
-          aiManager.scheduleScrape(resources, hybrid);
+
+        if (process.env.NODE_ENV === 'test') {
+          return res.status(200).send({ success: true, message: "Schedule scrape skipped in test environment", data: result, schedule_json: resources });
         }
-        res.status(200).send(result);
+        
+        aiManager.scheduleScrape(resources, hybrid);
+        return res.status(200).send(result);
+
       }).catch((err) => {
         winston.error("Unabled to saved kbs in bulk " + err);
         res.status(500).send(err);
@@ -1605,7 +1505,7 @@ router.post('/sitemap', async (req, res) => {
   const sitemap = new Sitemapper({
     url: sitemap_url,
     timeout: 15000,
-    debug: true
+    debug: false
   });
 
   sitemap.fetch().then((data) => {
@@ -1633,21 +1533,12 @@ router.post('/sitemap/import', async (req, res) => {
     return res.status(400).send({ success: false, error: "queryParam 'namespace' is not defined" })
   }
   
-  let namespace = await Namespace.findOne({ id: namespace_id }).catch((err) => {
-    winston.error("find namespace error: ", err)
-    return res.status(500).send({ success: false, error: err })
-  })
-
-  if (!namespace) {
-    const alert = `Namespace ${namespace_id} does not exist.`;
-    winston.warn(alert);
-    return res.status(404).send({ success: false, error: alert });
-  }
-
-  if (namespace.id_project.toString() !== project_id) {
-    const alert = `Not allowed. Namespace ${namespace_id} does not belong to the current project.`;
-    winston.warn(alert);
-    return res.status(403).send({ success: false, error: alert });
+  let namespace;
+  try {
+    namespace = await aiManager.checkNamespace(project_id, namespace_id);
+  } catch (err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
   }
 
   let sitemap_url = req.body.source;
@@ -1724,6 +1615,10 @@ router.post('/sitemap/import', async (req, res) => {
   let result;
   try {
     result = await aiManager.addMultipleUrls(namespace, urls, options);
+    if (process.env.NODE_ENV === 'test') {
+      result.result.push(saved_content);
+      return res.status(200).send(result);
+    }
     result.push(saved_content);
     return res.status(200).send(result);
   } catch (err) {
@@ -1796,6 +1691,11 @@ router.delete('/:kb_id', async (req, res) => {
     id: kb_id,
     namespace: namespace_id
   }
+
+  if (!data.namespace) {
+    data.namespace = project_id;
+  }
+  
   data.engine = namespace.engine || default_engine;
   winston.verbose("/:delete_id data: ", data);
 
@@ -1827,41 +1727,13 @@ router.delete('/:kb_id', async (req, res) => {
         }
       })
     }
+
   }).catch((err) => {
     let status = err.response?.status || 500;
     res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
   })
 
-  // if (kb.type === "sitemap") {
-
-  //   let kbs = KB.find({ id_project: project_id, namespace: namespace_id, sitemap_origin_id: kb_id }).catch((err) => {
-  //     winston.error("find kbs error: ", err);
-  //     return res.status(500).send({ success: false, error: err });
-  //   })
-
-  //   if (!kbs) return;
-
-  //   try {
-  //     let result = await aiManager.removeMultipleContents(namespace, kbs);
-  //     winston.verbose("remove multiple contents result: ", result);
-  //   } catch (err) {
-  //     winston.error("remove multiple contents error: ", err);
-  //     return res.status(500).send({ success: false, error: err });
-  //   }
-
-  //   KB.findByIdAndDelete(kb_id, (err, deletedKb) => {
-  //     if (err) {
-  //       winston.error("Delete kb error: ", err);
-  //       return res.status(500).send({ success: false, error: err });
-  //     }
-  //     res.status(200).send(deletedKb);
-  //   })
-
-  // } else {
-
-  //}
 })
-
 
 /**
 * ****************************************
