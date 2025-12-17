@@ -346,7 +346,7 @@ router.post('/qa', async (req, res) => {
 
   // Check if "Advanced Mode" is active. In such case the default_context must be not appended
   if (!data.advancedPrompt) {
-    const contextTemplate = contexts[data.model.model] || contexts["general"];
+    const contextTemplate = contexts[data.model.name] || contexts["general"];
     if (data.system_context) {
       data.system_context = data.system_context + " \n" + contextTemplate;
     } else {
@@ -411,166 +411,166 @@ router.post('/qa', async (req, res) => {
 
 })
 
-router.post('/qa', async (req, res) => {
+// router.post('/qa', async (req, res) => {
 
-  let project_id = req.projectid;
-  let publicKey = false;
-  let data = req.body;
-  let ollama_integration;
-  let vllm_integration;
+//   let project_id = req.projectid;
+//   let publicKey = false;
+//   let data = req.body;
+//   let ollama_integration;
+//   let vllm_integration;
 
-  let namespace;
-  try {
-    namespace = await aiManager.checkNamespace(project_id, data.namespace);
-  } catch (err) {
-    let errorCode = err?.errorCode ?? 500;
-    return res.status(errorCode).send({ success: false, error: err.error });
-  }
-  winston.debug("/qa data: ", data);
+//   let namespace;
+//   try {
+//     namespace = await aiManager.checkNamespace(project_id, data.namespace);
+//   } catch (err) {
+//     let errorCode = err?.errorCode ?? 500;
+//     return res.status(errorCode).send({ success: false, error: err.error });
+//   }
+//   winston.debug("/qa data: ", data);
 
-  if (!data.llm) {
-    data.llm = "openai";
-  }
+//   if (!data.llm) {
+//     data.llm = "openai";
+//   }
 
-  if (data.llm === 'ollama') {
-    data.gptkey = process.env.GPTKEY;
-    try {
-      ollama_integration = await integrationService.getIntegration(project_id, 'ollama');
-    } catch (err) {
-      let error_code = err.code || 500;
-      let error_message = err.error || `Unable to get integration for ${data.llm}`;
-      return res.status(error_code).send({ success: false, error: error_message });
-    }
-  }
-  else if (data.llm === 'vllm') {
-    data.gptkey = process.env.GPTKEY;
-    try {
-      vllm_integration = await integrationService.getIntegration(project_id, 'vllm')
-    } catch (err) {
-      let error_code = err.code || 500;
-      let error_message = err.error || `Unable to get integration for ${data.llm}`;
-      return res.status(error_code).send({ success: false, error: error_message });
-    }
-  } else {
-    try {
-      let key = await integrationService.getKeyFromIntegration(project_id, data.llm);
+//   if (data.llm === 'ollama') {
+//     data.gptkey = process.env.GPTKEY;
+//     try {
+//       ollama_integration = await integrationService.getIntegration(project_id, 'ollama');
+//     } catch (err) {
+//       let error_code = err.code || 500;
+//       let error_message = err.error || `Unable to get integration for ${data.llm}`;
+//       return res.status(error_code).send({ success: false, error: error_message });
+//     }
+//   }
+//   else if (data.llm === 'vllm') {
+//     data.gptkey = process.env.GPTKEY;
+//     try {
+//       vllm_integration = await integrationService.getIntegration(project_id, 'vllm')
+//     } catch (err) {
+//       let error_code = err.code || 500;
+//       let error_message = err.error || `Unable to get integration for ${data.llm}`;
+//       return res.status(error_code).send({ success: false, error: error_message });
+//     }
+//   } else {
+//     try {
+//       let key = await integrationService.getKeyFromIntegration(project_id, data.llm);
 
-      if (!key) {
-        if (data.llm === 'openai') {
-          data.gptkey = process.env.GPTKEY;
-          publicKey = true;
-        } else {
-          return res.status(404).send({ success: false, error: `Invalid or empty key provided for ${data.llm}` });
-        }
-      } else {
-        data.gptkey = key;
-      }
+//       if (!key) {
+//         if (data.llm === 'openai') {
+//           data.gptkey = process.env.GPTKEY;
+//           publicKey = true;
+//         } else {
+//           return res.status(404).send({ success: false, error: `Invalid or empty key provided for ${data.llm}` });
+//         }
+//       } else {
+//         data.gptkey = key;
+//       }
 
-    } catch (err) {
-      let error_code = err.code || 500;
-      let error_message = err.error || `Unable to get integration for ${data.llm}`;
-      return res.status(error_code).send({ success: false, error: error_message });
-    }
-  }
+//     } catch (err) {
+//       let error_code = err.code || 500;
+//       let error_message = err.error || `Unable to get integration for ${data.llm}`;
+//       return res.status(error_code).send({ success: false, error: error_message });
+//     }
+//   }
 
-  let obj = { createdAt: new Date() };
+//   let obj = { createdAt: new Date() };
 
-  let quoteManager = req.app.get('quote_manager');
-  if (publicKey === true) {
-    let isAvailable = await quoteManager.checkQuote(req.project, obj, 'tokens');
-    if (isAvailable === false) {
-      return res.status(403).send({ success: false, message: "Tokens quota exceeded", error_code: 13001})
-    }
-  }
+//   let quoteManager = req.app.get('quote_manager');
+//   if (publicKey === true) {
+//     let isAvailable = await quoteManager.checkQuote(req.project, obj, 'tokens');
+//     if (isAvailable === false) {
+//       return res.status(403).send({ success: false, message: "Tokens quota exceeded", error_code: 13001})
+//     }
+//   }
 
-  // Check if "Advanced Mode" is active. In such case the default_context must be not appended
-  if (!data.advancedPrompt) {
-    const contextTemplate = contexts[data.model] || contexts["general"];
-    if (data.system_context) {
-      data.system_context = data.system_context + " \n" + contextTemplate;
-    } else {
-      data.system_context = contextTemplate;
-    }
-  }
+//   // Check if "Advanced Mode" is active. In such case the default_context must be not appended
+//   if (!data.advancedPrompt) {
+//     const contextTemplate = contexts[data.model] || contexts["general"];
+//     if (data.system_context) {
+//       data.system_context = data.system_context + " \n" + contextTemplate;
+//     } else {
+//       data.system_context = contextTemplate;
+//     }
+//   }
 
-  data.engine = namespace.engine || default_engine;
-  data.embedding = namespace.embedding || default_embedding;
-  data.embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+//   data.engine = namespace.engine || default_engine;
+//   data.embedding = namespace.embedding || default_embedding;
+//   data.embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
-  if (namespace.hybrid === true) {
-    data.search_type = 'hybrid';
+//   if (namespace.hybrid === true) {
+//     data.search_type = 'hybrid';
     
-    if (data.reranking === true) {
-      data.reranking_multiplier = 3;
-      data.reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2";
-    }
-  }
+//     if (data.reranking === true) {
+//       data.reranking_multiplier = 3;
+//       data.reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2";
+//     }
+//   }
 
-  if (data.llm === 'ollama') {
-    if (!ollama_integration.value.url) {
-      return res.status(422).send({ success: false, error: "Server url for ollama is empty or invalid"})
-    }
-    data.model = {
-      name: data.model,
-      url: ollama_integration.value.url,
-      provider: 'ollama'
-    }
-    data.stream = false;
-  }
+//   if (data.llm === 'ollama') {
+//     if (!ollama_integration.value.url) {
+//       return res.status(422).send({ success: false, error: "Server url for ollama is empty or invalid"})
+//     }
+//     data.model = {
+//       name: data.model,
+//       url: ollama_integration.value.url,
+//       provider: 'ollama'
+//     }
+//     data.stream = false;
+//   }
 
-  if (data.llm === 'vllm') {
-    if (!vllm_integration.value.url) {
-      return res.status(422).send({ success: false, error: "Server url for vllm is empty or invalid"})
-    }
-    data.model = {
-      name: data.model,
-      url: vllm_integration.value.url,
-      provider: 'vllm'
-    }
-    data.stream = false;
-  }
+//   if (data.llm === 'vllm') {
+//     if (!vllm_integration.value.url) {
+//       return res.status(422).send({ success: false, error: "Server url for vllm is empty or invalid"})
+//     }
+//     data.model = {
+//       name: data.model,
+//       url: vllm_integration.value.url,
+//       provider: 'vllm'
+//     }
+//     data.stream = false;
+//   }
 
-  delete data.advancedPrompt;
-  winston.verbose("ask data: ", data);
+//   delete data.advancedPrompt;
+//   winston.verbose("ask data: ", data);
   
-  if (process.env.NODE_ENV === 'test') {
-    return res.status(200).send({ success: true, message: "Question skipped in test environment", data: data });
-  }
+//   if (process.env.NODE_ENV === 'test') {
+//     return res.status(200).send({ success: true, message: "Question skipped in test environment", data: data });
+//   }
 
-  data.debug = true;
+//   data.debug = true;
 
-  aiService.askNamespace(data).then((resp) => {
-    winston.debug("qa resp: ", resp.data);
-    let answer = resp.data;
+//   aiService.askNamespace(data).then((resp) => {
+//     winston.debug("qa resp: ", resp.data);
+//     let answer = resp.data;
 
-    if (publicKey === true) {
-      let multiplier = MODELS_MULTIPLIER[data.model];
-      if (!multiplier) {
-        multiplier = 1;
-        winston.info("No multiplier found for AI model")
-      }
-      obj.multiplier = multiplier;
-      obj.tokens = answer.prompt_token_size;
+//     if (publicKey === true) {
+//       let multiplier = MODELS_MULTIPLIER[data.model];
+//       if (!multiplier) {
+//         multiplier = 1;
+//         winston.info("No multiplier found for AI model")
+//       }
+//       obj.multiplier = multiplier;
+//       obj.tokens = answer.prompt_token_size;
 
-      let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
-      winston.verbose("incremented_key: ", incremented_key);
-    }
+//       let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
+//       winston.verbose("incremented_key: ", incremented_key);
+//     }
   
-    return res.status(200).send(answer);
+//     return res.status(200).send(answer);
 
-  }).catch((err) => {
-    winston.error("qa err: ", err);
-    winston.error("qa err.response: ", err.response);
-    if (err.response && err.response.status) {
-      let status = err.response.status;
-      res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
-    }
-    else {
-      res.status(500).send({ success: false, error: err });
-    }
+//   }).catch((err) => {
+//     winston.error("qa err: ", err);
+//     winston.error("qa err.response: ", err.response);
+//     if (err.response && err.response.status) {
+//       let status = err.response.status;
+//       res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
+//     }
+//     else {
+//       res.status(500).send({ success: false, error: err });
+//     }
 
-  })
-})
+//   })
+// })
 
 router.delete('/delete', async (req, res) => {
 

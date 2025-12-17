@@ -1413,7 +1413,7 @@ describe('KbRoute', () => {
                                     expect(res.body.message).to.equal("Question skipped in test environment");
                                     res.body.data.model.should.be.a('object');
                                     expect(res.body.data.model.provider).to.equal("openai")
-                                    expect(res.body.data.model.model).to.equal("gpt-4o")
+                                    expect(res.body.data.model.name).to.equal("gpt-4o")
                                     expect(res.body.data.model.api_key).to.equal("fakegptkey");
                                     expect(res.body.data.question).to.equal("sample question");
                                     should.exist(res.body.data.engine);
@@ -1465,7 +1465,7 @@ describe('KbRoute', () => {
                                     expect(res.body.message).to.equal("Question skipped in test environment");
                                     res.body.data.model.should.be.a('object');
                                     expect(res.body.data.model.provider).to.equal("openai")
-                                    expect(res.body.data.model.model).to.equal("gpt-4o")
+                                    expect(res.body.data.model.name).to.equal("gpt-4o")
                                     expect(res.body.data.model.api_key).to.equal("fakegptkey");
                                     expect(res.body.data.search_type === "hybrid");
                                     expect(res.body.data.question).to.equal("sample question");
