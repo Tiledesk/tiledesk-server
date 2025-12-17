@@ -161,7 +161,7 @@ class AiManager {
 
       return {
         provider,
-        model,
+        name: model,
         api_key: key
       }
 
