@@ -1407,13 +1407,14 @@ describe('KbRoute', () => {
 
                                     if (err) { console.error("err: ", err) };
                                     if (log) { console.log("res.body: ", res.body) };
-                                    
+
                                     res.should.have.status(200)
                                     expect(res.body.success).to.equal(true);
                                     expect(res.body.message).to.equal("Question skipped in test environment");
-                                    expect(res.body.data.llm).to.equal("openai")
-                                    expect(res.body.data.model).to.equal("gpt-4o")
-                                    expect(res.body.data.gptkey).to.equal("fakegptkey");
+                                    res.body.data.model.should.be.a('object');
+                                    expect(res.body.data.model.provider).to.equal("openai")
+                                    expect(res.body.data.model.model).to.equal("gpt-4o")
+                                    expect(res.body.data.model.api_key).to.equal("fakegptkey");
                                     expect(res.body.data.question).to.equal("sample question");
                                     should.exist(res.body.data.engine);
                                     should.exist(res.body.data.embedding);
@@ -1462,9 +1463,10 @@ describe('KbRoute', () => {
                                     expect(res.body.data);
                                     expect(res.body.success).to.equal(true);
                                     expect(res.body.message).to.equal("Question skipped in test environment");
-                                    expect(res.body.data.llm).to.equal("openai")
-                                    expect(res.body.data.model).to.equal("gpt-4o")
-                                    expect(res.body.data.gptkey).to.equal("fakegptkey");
+                                    res.body.data.model.should.be.a('object');
+                                    expect(res.body.data.model.provider).to.equal("openai")
+                                    expect(res.body.data.model.model).to.equal("gpt-4o")
+                                    expect(res.body.data.model.api_key).to.equal("fakegptkey");
                                     expect(res.body.data.search_type === "hybrid");
                                     expect(res.body.data.question).to.equal("sample question");
                                     should.exist(res.body.data.engine);

@@ -18,6 +18,7 @@ const JOB_TOPIC_EXCHANGE_HYBRID = process.env.JOB_TOPIC_EXCHANGE_TRAIN_HYBRID ||
 const default_engine = require('../config/kb/engine');
 const default_engine_hybrid = require('../config/kb/engine.hybrid');
 const default_embedding = require('../config/kb/embedding');
+const integrationService = require('./integrationService');
 
 // Job managers
 let jobManager = new JobManager(AMQP_MANAGER_URL, {
@@ -131,6 +132,43 @@ class AiManager {
 
       resolve(namespace);
     })
+  }
+
+  async resolveLLMConfig(id_project, provider = 'openai', model) {
+
+    if (provider === 'ollama' || provider === 'vllm') {
+      try {
+        const integration = await integrationService.getIntegration(id_project, provider);
+        
+        if (!integration?.value?.url) {
+          throw { code: 422, error: `Server url for ${provider} is empty or invalid`}
+        }
+
+        return {
+          provider,
+          model,
+          url: integration.value.url,
+          api_key: integration.value.api_key || ""
+        }
+
+      } catch (err) {
+        throw { code: err.code, error: err.error }
+      }
+    }
+
+    try {
+      let key = await integrationService.getKeyFromIntegration(id_project, provider)
+
+      return {
+        provider,
+        model,
+        api_key: key
+      }
+
+    } catch (err) {
+      throw { code: err.code, error: err.error }
+    }
+
   }
 
   async checkQuotaAvailability(quoteManager, project, ncontents) {

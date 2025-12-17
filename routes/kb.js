@@ -306,6 +306,112 @@ router.post('/scrape/status', async (req, res) => {
 })
 
 router.post('/qa', async (req, res) => {
+  let id_project = req.projectid;
+  let publicKey = false;
+  let data = req.body;
+
+  let namespace;
+  try {
+    namespace = await aiManager.checkNamespace(id_project, data.namespace);
+  } catch (err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
+  }
+  winston.debug("/qa data: ", data);
+
+  let model;
+  try {
+    model = await aiManager.resolveLLMConfig(id_project, data.llm, data.model);
+  } catch (err) {
+    let errorCode = err?.code ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
+  }
+
+  if (!model.api_key && model.provider === 'openai') {
+    model.api_key = process.env.GPTKEY;
+    publicKey = true;
+  }
+
+  data.model = model;
+
+  let obj = { createdAt: new Date() };
+
+  let quoteManager = req.app.get('quote_manager');
+  if (publicKey === true) {
+    let isAvailable = await quoteManager.checkQuote(req.project, obj, 'tokens');
+    if (isAvailable === false) {
+      return res.status(403).send({ success: false, message: "Tokens quota exceeded", error_code: 13001})
+    }
+  }
+
+  // Check if "Advanced Mode" is active. In such case the default_context must be not appended
+  if (!data.advancedPrompt) {
+    const contextTemplate = contexts[data.model.model] || contexts["general"];
+    if (data.system_context) {
+      data.system_context = data.system_context + " \n" + contextTemplate;
+    } else {
+      data.system_context = contextTemplate;
+    }
+  }
+
+  data.engine = namespace.engine || default_engine;
+  data.embedding = namespace.embedding || default_embedding;
+  data.embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+
+  if (namespace.hybrid === true) {
+    data.search_type = 'hybrid';
+    
+    if (data.reranking === true) {
+      data.reranking_multiplier = 3;
+      data.reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2";
+    }
+  }
+
+  data.stream = false;
+  data.debug = true;
+  delete data.advancedPrompt;
+  winston.verbose("ask data: ", data);
+
+  if (process.env.NODE_ENV === 'test') {
+    return res.status(200).send({ success: true, message: "Question skipped in test environment", data: data });
+  }
+  console.log("5")
+  aiService.askNamespace(data).then((resp) => {
+    winston.debug("qa resp: ", resp.data);
+    let answer = resp.data;
+    console.log("6")
+    if (publicKey === true) {
+      let multiplier = MODELS_MULTIPLIER[data.model];
+      if (!multiplier) {
+        multiplier = 1;
+        winston.info("No multiplier found for AI model")
+      }
+      obj.multiplier = multiplier;
+      obj.tokens = answer.prompt_token_size;
+
+      let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
+      winston.verbose("incremented_key: ", incremented_key);
+    }
+  
+    return res.status(200).send(answer);
+
+  }).catch((err) => {
+    console.error("err: ", err);
+    winston.error("qa err: ", err);
+    winston.error("qa err.response: ", err.response);
+    if (err.response && err.response.status) {
+      let status = err.response.status;
+      res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
+    }
+    else {
+      res.status(500).send({ success: false, error: err });
+    }
+
+  })
+
+})
+
+router.post('/qa', async (req, res) => {
 
   let project_id = req.projectid;
   let publicKey = false;
