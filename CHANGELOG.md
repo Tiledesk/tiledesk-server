@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.13.49
+- Updated tybot-connector to 2.0.41
+
 # 2.13.48
 - Updated twilio-connector to 0.1.26
 
