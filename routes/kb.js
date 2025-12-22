@@ -375,11 +375,11 @@ router.post('/qa', async (req, res) => {
   if (process.env.NODE_ENV === 'test') {
     return res.status(200).send({ success: true, message: "Question skipped in test environment", data: data });
   }
-  console.log("5")
+
   aiService.askNamespace(data).then((resp) => {
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
-    console.log("6")
+
     if (publicKey === true) {
       let multiplier = MODELS_MULTIPLIER[data.model];
       if (!multiplier) {
@@ -396,7 +396,6 @@ router.post('/qa', async (req, res) => {
     return res.status(200).send(answer);
 
   }).catch((err) => {
-    console.error("err: ", err);
     winston.error("qa err: ", err);
     winston.error("qa err.response: ", err.response);
     if (err.response && err.response.status) {

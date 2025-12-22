@@ -171,6 +171,10 @@ var KBSchema = new Schema({
   last_refresh: {
     type: Date,
     required: false
+  },
+  last_error: {
+    type: Object,
+    required: false
   }
 }, {
   timestamps: true

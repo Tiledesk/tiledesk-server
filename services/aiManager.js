@@ -427,10 +427,22 @@ class AiManager {
     })
   }
 
-  async updateStatus(id, status) {
+  async updateStatus(id, status, error) {
     return new Promise((resolve) => {
 
-      KB.findByIdAndUpdate(id, { status: status }, { new: true }, (err, updatedKb) => {
+      let update = {
+        status: status,
+        last_refresh: new Date()
+      }
+
+      if (error) {
+        update.last_error = {
+          timestamp: Date.now(),
+          message: error
+        }
+      }
+
+      KB.findByIdAndUpdate(id, update, { new: true }, (err, updatedKb) => {
         if (err) {
           resolve(false)
         } else if (!updatedKb) {
