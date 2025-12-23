@@ -396,7 +396,8 @@ class AiManager {
         resolve(resp.data);
       }).catch( async (err) => {
         winston.error("singleScrape err: ", err);
-        let status_updated = await this.updateStatus(data.id, 400);
+        let error_message = err.response?.data?.error || "An unexpected error occurred";
+        let status_updated = await this.updateStatus(data.id, 400, error_message);
         winston.verbose("status of kb " + data.id + " updated: " + status_updated);
         reject(err);
       })
