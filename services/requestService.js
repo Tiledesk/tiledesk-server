@@ -508,7 +508,7 @@ class RequestService {
                 var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
                 winston.debug("addedParticipants ", addedParticipants);
 
-                console.log("[Performance] route 5: " + (Date.now() - t));
+                console.log("[Performance] route 5: " + (Date.now() - t1));
                 requestEvent.emit('request.update', requestComplete);
                 requestEvent.emit("request.update.comment", { comment: "REROUTE", request: requestComplete });//Deprecated
                 requestEvent.emit("request.updated", { comment: "REROUTE", request: requestComplete, patch: { removedParticipants: removedParticipants, addedParticipants: addedParticipants } });
