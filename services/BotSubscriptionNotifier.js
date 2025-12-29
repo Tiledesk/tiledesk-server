@@ -66,7 +66,7 @@ class BotSubscriptionNotifier {
 
 
       winston.debug("BotSubscriptionNotifier notify json ", json );
-
+      const t1 = Date.now();
           request({
             url: url,
             headers: {
@@ -81,6 +81,7 @@ class BotSubscriptionNotifier {
           }, function(err, result, json){            
             winston.verbose("SENT notify for bot with url " + url +  " with err " + err);
             winston.debug("SENT notify for bot with url ", result);
+            console.log("[Performance] BotSubscriptionNotifier notify time: " + (Date.now() - t1));
             if (err) {
               winston.error("Error sending notify for bot with url " + url + " with err " + err);
               //TODO Reply with error

@@ -733,10 +733,11 @@ class RulesTrigger {
               winston.info('triggerEventEmitter.on(request.department.bot.launch)');
 
               // reroute(request_id, id_project, nobot, no_populate)
+              const t1 = Date.now();
               requestService.reroute(request_id, id_project, false, true).then(function(request) {
 
                 winston.verbose('request.department.bot.launch action reroute request_id: ' + request_id);
-
+                console.log("[Performance] trigger invite bot reroute time: " + (Date.now() - t1));
                 // rendi dinamico /start
                 messageService.send(
                   'system', 
@@ -1162,7 +1163,9 @@ class RulesTrigger {
                       lead: createdLead, requester: puser
                     };
       
+                    const t1 = Date.now();
                     return requestService.create(new_request).then(function (savedRequest) {                   
+                      console.log("[Performance] requestService.create time: " + (Date.now() - t1));
 
                       // performance console log
                       // console.log("************* request created trigger: "+new Date().toISOString());
