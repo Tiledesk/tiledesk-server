@@ -57,7 +57,7 @@ function populateMessageWithRequest(message, eventPrefix) {
   
   var messageJson = message.toJSON();
 
-  
+  const t1 = Date.now();
     // cacherequest      // requestcachefarequi populaterequired cacheveryhightpriority
   winston.info("main_flow_cache_message event populateMessageWithRequest");
     
@@ -89,6 +89,7 @@ function populateMessageWithRequest(message, eventPrefix) {
 
     winston.info('message Event populate after query');
 
+    
 
   if (request) {
       winston.debug("request is defined in messageEvent",request );
@@ -106,6 +107,7 @@ function populateMessageWithRequest(message, eventPrefix) {
         }
 
         qbot.exec(function(err, bot) {
+          console.log("[Performance] messageEvent populateMessageWithRequest time: " + (Date.now() - t1));
           winston.debug('bot', bot);
           requestJson.department.bot = bot
           

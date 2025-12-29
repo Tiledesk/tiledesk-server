@@ -583,6 +583,7 @@ class RequestService {
 
           var endDate = new Date();
           winston.verbose("Performance Request reroute in millis: " + endDate - startDate);
+          console.log("[Performance] Request reroute in millis: " + (endDate - startDate));
 
           return resolve(routedRequest);
         }).catch(function (err) {

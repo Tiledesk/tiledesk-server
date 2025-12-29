@@ -65,10 +65,11 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                             winston.debug("setting first_text to frame");
                         }
 
-
+                        const t1 = Date.now();
                         requestService.changeFirstTextAndPreflightByRequestId(message.request.request_id, message.request.id_project, first_text, false).then(function (reqChanged) {
                         //TESTA QUESTO
-
+                        console.log("[Performance] changeFirstTextAndPreflightByRequestId time: " + (Date.now() - t1));
+                        
                                 winston.debug("message.request.status: "+message.request.status);
                                 
                                 winston.debug("message.request.hasBot: "+message.request.hasBot);
