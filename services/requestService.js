@@ -676,7 +676,7 @@ class RequestService {
         const t1 = Date.now();
         var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
         winston.debug("getOperators", result);
-        winston.debug("getOperators time: " + (Date.now() - t1));
+        console.log("getOperators time: " + (Date.now() - t1));
       } catch (err) {
         return reject(err);
       }
@@ -695,7 +695,7 @@ class RequestService {
           winston.warn("Error getting cached project. Skip conversation quota check.")
           winston.warn("Getting cached project error:  ", err)
         })
-        winston.debug("getCachedProject time: " + (Date.now() - t2));
+        console.log("getCachedProject time: " + (Date.now() - t2));
         payload = {
           project: project,
           request: request
@@ -765,7 +765,7 @@ class RequestService {
       snapshot.agents = agents;
       const t3 = Date.now();
       snapshot.availableAgentsCount = that.getAvailableAgentsCount(agents);
-      winston.debug("getAvailableAgentsCount time: " + (Date.now() - t3));
+      console.log("getAvailableAgentsCount time: " + (Date.now() - t3));
 
       if (request.requester) {
         snapshot.requester = request.requester;
@@ -820,14 +820,14 @@ class RequestService {
       //cacheinvalidation
       const t4 = Date.now();
       return newRequest.save( async function (err, savedRequest) {
-        winston.debug("save time: " + (Date.now() - t4));
+        console.log("save time: " + (Date.now() - t4));
 
         if (err) {
           winston.error('RequestService error for method createWithIdAndRequester for newRequest' + JSON.stringify(newRequest), err);
           return reject(err);
         }
         winston.debug("Request created", savedRequest.toObject());
-        winston.debug("Request created time: " + (Date.now() - t4));
+        console.log("Request created time: " + (Date.now() - t4));
         requestEvent.emit('request.create.simple', savedRequest);
 
         if (isStandardConversation) {
