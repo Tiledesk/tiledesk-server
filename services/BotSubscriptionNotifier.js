@@ -41,6 +41,12 @@ class BotSubscriptionNotifier {
       delete payload.request.snapshot
       
       var json = {timestamp: Date.now(), payload: payload};
+      console.log("[Performance] BotSubscriptionNotifier: json", JSON.stringify(json));
+      var jsonSize = Buffer.byteLength(JSON.stringify(json), 'utf8');
+      console.log("[Performance] BotSubscriptionNotifier: JSON size in bytes: " + jsonSize);
+
+
+      
     
 
       json["hook"] = bot;
