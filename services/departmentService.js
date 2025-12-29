@@ -302,7 +302,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
             winston.debug('project_user cache enabled');
           }
   
-  
+          const t1 = Date.now();
           return qpu.exec(function (err, project_users) {
             if (err) {
               winston.error('-- > 2 DEPT FIND BY ID ERR ', err)
@@ -310,11 +310,12 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
             }
             // console.log('OPERATORS - BOT IS DEFINED - MEMBERS ', project_users)
             // console.log('OPERATORS - BOT IS DEFINED - MEMBERS LENGHT ', project_users.length);
-
+            winston.debug("getOperatorsWithOperatingHours time: " + (Date.now() - t1));
             // getAvailableOperatorsWithOperatingHours: IN BASE ALLE 'OPERATING HOURS' DEL PROGETTO ESEGUE 
             // getAvailableOperator CHE RITORNA I PROJECT USER DISPONIBILI
+            const t2 = Date.now();
             return that.getAvailableOperatorsWithOperatingHours(project_users, projectid).then(function (_available_agents) {
-
+              winston.debug("getAvailableOperatorsWithOperatingHours time: " + (Date.now() - t2));
               // console.log("D -> [ OPERATORS - BOT IS DEFINED ] -> AVAILABLE PROJECT-USERS: ", _available_agents);
 
               // here subscription notifier??              
@@ -560,8 +561,9 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
         
         if (isOpen) {
 
+          const t1 = Date.now();
           var _available_agents = that.getAvailableOperator(project_users);
-
+          winston.debug("getAvailableOperator time: " + (Date.now() - t1));
           return resolve(_available_agents);
         } else {
           // console.logO ---> [ OHS ] -> PROJECT NOT FOUND("HERERERERERERE");
