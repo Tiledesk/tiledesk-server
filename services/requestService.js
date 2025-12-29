@@ -245,7 +245,7 @@ class RequestService {
   // usalo no_populate
   route(request_id, departmentid, id_project, nobot, no_populate) {
     var that = this;
-
+    const t1 = Date.now();
     return new Promise(function (resolve, reject) {
       winston.debug("request_id:" + request_id);
       winston.debug("departmentid:" + departmentid);
@@ -280,8 +280,9 @@ class RequestService {
         var beforeParticipants = requestBeforeRoute.participants;
         winston.debug("beforeParticipants: ", beforeParticipants);
 
+        const t2 = Date.now();
         return that.routeInternal(request, departmentid, id_project, nobot).then( async function (routedRequest) {
-
+          console.log("[Performance] routeInternal time: " + (Date.now() - t2));
           winston.debug("after routeInternal", routedRequest);
           winston.debug("requestBeforeRoute.status:" + requestBeforeRoute.status);
           winston.debug("routedRequest.status:" + routedRequest.status);
@@ -444,7 +445,9 @@ class RequestService {
           }
 
           //cacheinvalidation
+          const t3 = Date.now();
           return routedRequest.save(function (err, savedRequest) {
+            console.log("[Performance] save request time: " + (Date.now() - t3));
             // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
             //return routedRequest.update(function(err, savedRequest) {
             if (err) {
@@ -458,6 +461,7 @@ class RequestService {
             // winston.info('info: main_flow_cache_2.3.2');
             winston.info('info: main_flow_cache_2 route populate ');
 
+            const t4 = Date.now();
             return savedRequest
               .populate('lead')
               .populate('department')
@@ -474,7 +478,7 @@ class RequestService {
                 // .populate('participatingAgents')  
                 // .populate({path:'requester',populate:{path:'id_user'}})
                 // .exec( function(err, requestComplete) {
-
+                console.log("[Performance] populate request time: " + (Date.now() - t4));
 
                 if (err) {
                   winston.error('Error populating the request.', err);
@@ -513,7 +517,7 @@ class RequestService {
                 requestEvent.emit('request.department.update', requestComplete); //se req ha bot manda messaggio \welcome
 
                 winston.debug("here end");
-
+                console.log("[Performance] route time: " + (Date.now() - t1));
                 return resolve(requestComplete);
               });
 
@@ -676,7 +680,7 @@ class RequestService {
         const t1 = Date.now();
         var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
         winston.debug("getOperators", result);
-        console.log("getOperators time: " + (Date.now() - t1));
+        console.log("[Performance] getOperators time: " + (Date.now() - t1));
       } catch (err) {
         return reject(err);
       }
@@ -695,7 +699,7 @@ class RequestService {
           winston.warn("Error getting cached project. Skip conversation quota check.")
           winston.warn("Getting cached project error:  ", err)
         })
-        console.log("getCachedProject time: " + (Date.now() - t2));
+        console.log("[Performance] getCachedProject time: " + (Date.now() - t2));
         payload = {
           project: project,
           request: request
@@ -765,7 +769,7 @@ class RequestService {
       snapshot.agents = agents;
       const t3 = Date.now();
       snapshot.availableAgentsCount = that.getAvailableAgentsCount(agents);
-      console.log("getAvailableAgentsCount time: " + (Date.now() - t3));
+      console.log("[Performance] getAvailableAgentsCount time: " + (Date.now() - t3));
 
       if (request.requester) {
         snapshot.requester = request.requester;
@@ -820,14 +824,14 @@ class RequestService {
       //cacheinvalidation
       const t4 = Date.now();
       return newRequest.save( async function (err, savedRequest) {
-        console.log("save time: " + (Date.now() - t4));
+        console.log("[Performance] save time: " + (Date.now() - t4));
 
         if (err) {
           winston.error('RequestService error for method createWithIdAndRequester for newRequest' + JSON.stringify(newRequest), err);
           return reject(err);
         }
         winston.debug("Request created", savedRequest.toObject());
-        console.log("Request created time: " + (Date.now() - t4));
+        console.log("[Performance] Request created time: " + (Date.now() - t4));
         requestEvent.emit('request.create.simple', savedRequest);
 
         if (isStandardConversation) {
