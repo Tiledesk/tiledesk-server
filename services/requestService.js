@@ -293,6 +293,7 @@ class RequestService {
             winston.debug("beforeDepartmentId:" + beforeDepartmentId);
           }
 
+          console.log("[Performance] route 1: " + (Date.now() - t1));
 
           let afterDepartmentId;
           if (routedRequest.department) {
@@ -403,6 +404,7 @@ class RequestService {
             request: request
           }
 
+          console.log("[Performance] route 2: " + (Date.now() - t1));
           if (request.attributes && request.attributes.sourcePage && (request.attributes.sourcePage.indexOf("td_draft=true") > -1)) {
             winston.verbose("is a test conversation --> skip quote availability check")
             isTestConversation = true;
@@ -413,7 +415,9 @@ class RequestService {
           }
           else {
             isStandardConversation = true;
+            const t5 = Date.now();
             let available = await qm.checkQuote(project, request, 'requests');
+            console.log("[Performance] checkQuote time: " + (Date.now() - t5));
             if (available === false) {
               winston.info("Requests limits reached for project " + project._id)
               return reject("Requests limits reached for project " + project._id);
@@ -443,6 +447,8 @@ class RequestService {
               requestEvent.emit('request.create.quote', payload);
             }
           }
+
+          console.log("[Performance] route 3: " + (Date.now() - t1));
 
           //cacheinvalidation
           const t3 = Date.now();
@@ -489,7 +495,7 @@ class RequestService {
 
                 winston.verbose("Request routed", requestComplete.toObject());
 
-
+                console.log("[Performance] route 4: " + (Date.now() - t1));
                 var oldParticipants = beforeParticipants;
                 winston.debug("oldParticipants ", oldParticipants);
 
@@ -502,7 +508,7 @@ class RequestService {
                 var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
                 winston.debug("addedParticipants ", addedParticipants);
 
-
+                console.log("[Performance] route 5: " + (Date.now() - t));
                 requestEvent.emit('request.update', requestComplete);
                 requestEvent.emit("request.update.comment", { comment: "REROUTE", request: requestComplete });//Deprecated
                 requestEvent.emit("request.updated", { comment: "REROUTE", request: requestComplete, patch: { removedParticipants: removedParticipants, addedParticipants: addedParticipants } });
