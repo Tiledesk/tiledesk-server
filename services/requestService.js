@@ -254,7 +254,7 @@ class RequestService {
 
       winston.info("main_flow_cache_3 route");
 
-
+      const t7 = Date.now();
       let q = Request
         .findOne({ request_id: request_id, id_project: id_project });
 
@@ -263,7 +263,7 @@ class RequestService {
         winston.debug('request cache enabled');
       }
       return q.exec(function (err, request) {
-
+        console.log("[Performance] findOne time: " + (Date.now() - t7));
         if (err) {
           winston.error(err);
           return reject(err);
@@ -274,9 +274,10 @@ class RequestService {
         // cambia var in let
 
         //it is important to clone here
+        const t8 = Date.now();
         var requestBeforeRoute = Object.assign({}, request.toObject());
         winston.debug("requestBeforeRoute", requestBeforeRoute);
-
+        console.log("[Performance] toObject requestBeforeRoute time: " + (Date.now() - t8));
         var beforeParticipants = requestBeforeRoute.participants;
         winston.debug("beforeParticipants: ", beforeParticipants);
 
@@ -492,8 +493,9 @@ class RequestService {
                 }
 
                 winston.info('info: main_flow_cache_2 route populate end');
-
+                const t5 = Date.now();
                 winston.verbose("Request routed", requestComplete.toObject());
+                console.log("[Performance] toObject time: " + (Date.now() - t5));
 
                 console.log("[Performance] route 4: " + (Date.now() - t1));
                 var oldParticipants = beforeParticipants;
