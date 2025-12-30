@@ -241,306 +241,454 @@ class RequestService {
     });
   }
 
-  // TODO  changePreflightByRequestId se un agente entra in request freflight true disabilitare add agente e reassing ma mettere un bottone removePreflight???
-  // usalo no_populate
-  route(request_id, departmentid, id_project, nobot, no_populate) {
-    var that = this;
-    const t1 = Date.now();
-    return new Promise(function (resolve, reject) {
+  async route(request_id, departmentid, id_project, nobot, no_populate) {
+    const tStart = Date.now();
+    try {
       winston.debug("request_id:" + request_id);
       winston.debug("departmentid:" + departmentid);
       winston.debug("id_project:" + id_project);
       winston.debug("nobot:" + nobot);
-
       winston.info("main_flow_cache_3 route");
 
-      const t7 = Date.now();
-      let q = Request
-        .findOne({ request_id: request_id, id_project: id_project });
-
-      if (cacheEnabler.request) {  //(node:60837) UnhandledPromiseRejectionWarning: VersionError: No matching document found for id "633efe246a6cc0eda5732684" version 0 modifiedPaths "status, participants, participantsAgents, department, assigned_at, snapshot, snapshot.department, snapshot.department.updatedAt, snapshot.agents"
-        q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id+":simple")      //request_cache
+      // Find request
+      let query = Request.findOne({ request_id, id_project });
+      if (cacheEnabler.request) {
+        query = query.cache(cacheUtil.defaultTTL, id_project + ":requests:request_id:" + request_id + ":simple");
         winston.debug('request cache enabled');
       }
-      return q.exec(function (err, request) {
-        console.log("[Performance] findOne time: " + (Date.now() - t7));
-        if (err) {
-          winston.error(err);
-          return reject(err);
+      
+      const request = await query.exec();
+
+      if (!request) {
+        throw new Error(`Request not found: ${request_id}`);
+      }
+
+      // Clone before route
+      const requestBeforeRoute = request.toObject();
+      const beforeParticipants = requestBeforeRoute.participants;
+      const beforeDepartmentId = requestBeforeRoute.department?.toString();
+
+      // Route internal
+      const routedRequest = await this.routeInternal(request, departmentid, id_project, nobot);
+
+      const afterDepartmentId = routedRequest.department?.toString();
+
+      // Case 1 - No changes
+      if (
+        requestBeforeRoute.status === routedRequest.status &&
+        beforeDepartmentId === afterDepartmentId &&
+        requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)
+      ) {
+        winston.verbose(
+          `Request ${request.request_id} routed to same status/participants`
+        );
+  
+        if (routedRequest.attributes?.fully_abandoned === true) {
+          request.status = RequestConstants.ABANDONED;
+          request.attributes.fully_abandoned = true;
+          request.markModified("status");
+          request.markModified("attributes");
+  
+          try {
+            await request.save();
+            winston.verbose(`Status set to ABANDONED for request ${request._id}`);
+          } catch (err) {
+            winston.error("Error updating request to ABANDONED", err);
+          }
         }
+  
+        const requestComplete = await request
+          .populate("lead")
+          .populate("department")
+          .populate("participatingBots")
+          .populate("participatingAgents")
+          .populate({ path: "requester", populate: { path: "id_user" } })
+          .execPopulate();
+  
+        this.emitParticipantsEvents(
+          request,
+          requestComplete,
+          beforeParticipants
+        );
+  
+        return requestComplete;
+      }
 
-        winston.debug('request return', request);
+      
+      // Quota check
+      let project;
+      try {
+        project = await projectService.getCachedProject(id_project);
+      } catch (err) {
+        winston.warn("Error getting cached project, skip quota check", err);
+      }
 
-        // cambia var in let
+      const isTestConversation = request.attributes?.sourcePage?.includes("td_draft=true");
+      const isVoiceConversation = request.channel?.name === "voice-vxml";
+      const isStandardConversation = !isTestConversation && !isVoiceConversation;
 
-        //it is important to clone here
-        const t8 = Date.now();
-        var requestBeforeRoute = Object.assign({}, request.toObject());
-        winston.debug("requestBeforeRoute", requestBeforeRoute);
-        console.log("[Performance] toObject requestBeforeRoute time: " + (Date.now() - t8));
-        var beforeParticipants = requestBeforeRoute.participants;
-        winston.debug("beforeParticipants: ", beforeParticipants);
+      if (isStandardConversation) {
+        const available = await qm.checkQuote(project, request, "requests");
+        if (!available) {
+          throw new Error(`Requests limits reached for project ${project._id}`);
+        }
+      }
 
-        const t2 = Date.now();
-        return that.routeInternal(request, departmentid, id_project, nobot).then( async function (routedRequest) {
-          console.log("[Performance] routeInternal time: " + (Date.now() - t2));
-          winston.debug("after routeInternal", routedRequest);
-          winston.debug("requestBeforeRoute.status:" + requestBeforeRoute.status);
-          winston.debug("routedRequest.status:" + routedRequest.status);
+      // Case 2 - Leaving TEMP status. After internal routing: STATUS changed from 50 to 100 or 200
+      if (requestBeforeRoute.status === RequestConstants.TEMP &&
+        [RequestConstants.ASSIGNED, RequestConstants.UNASSIGNED].includes(routedRequest.status) &&
+        isStandardConversation
+      ) {
+        requestEvent.emit("request.create.quote", { project, request });
+      }
 
-          let beforeDepartmentId;
-          if (requestBeforeRoute.department) { //requestBeforeRoute.department can be empty for internal ticket
-            beforeDepartmentId = requestBeforeRoute.department.toString();
-            winston.debug("beforeDepartmentId:" + beforeDepartmentId);
-          }
+      // Case 3 - Conversation opened through proactive message. After internal routing: STATUS changed from undefined to 100
+      if (
+        !requestBeforeRoute.status &&
+        routedRequest.status === RequestConstants.ASSIGNED &&
+        isStandardConversation
+      ) {
+        requestEvent.emit("request.create.quote", { project, request });
+      }
 
-          console.log("[Performance] route 1: " + (Date.now() - t1));
+      // Save and populate
+      const t2 = Date.now();
+      const savedRequest = await routedRequest.save();
+      console.log(`[Performance] Save request time: ${Date.now() - t2} [ms]`);
 
-          let afterDepartmentId;
-          if (routedRequest.department) {
-            afterDepartmentId = routedRequest.department.toString();
-            winston.debug("afterDepartmentId:" + afterDepartmentId);
-          }
+      const t3 = Date.now();
+      const requestComplete = await savedRequest
+        .populate("lead")
+        .populate("department")
+        .populate("participatingBots")
+        .populate("participatingAgents")
+        .populate({ path: "requester", populate: { path: "id_user" } })
+        .execPopulate();
 
-          winston.debug("requestBefore status: ", requestBeforeRoute.status)
-          winston.debug("routedRequest status: ", routedRequest.status)
-
-          console.log("requestBeforeRoute: ", JSON.stringify(requestBeforeRoute));
-          console.log("routedRequest: ", JSON.stringify(routedRequest));
-          console.log("------")
-          console.log(`request status from ${requestBeforeRoute.status} to ${routedRequest.status}`);
-          console.log(`request status from ${beforeDepartmentId} to ${afterDepartmentId}`);
-          console.log("same participants: ", requestUtil.arraysEqual(beforeParticipants, routedRequest.participants));
-          console.log("------")
-          /**
-           * Case 1
-           * After internal routing:
-           * - same STATUS
-           * - same DEPARTMENT
-           * - same PARTICIPANTS
-           */
-          if (requestBeforeRoute.status === routedRequest.status &&
-            beforeDepartmentId === afterDepartmentId &&
-            requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
-
-            console.log("set to fully abandoned");
-            winston.verbose("Request " + request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
-
-            if (routedRequest.attributes && routedRequest.attributes.fully_abandoned && routedRequest.attributes.fully_abandoned === true) {
-              request.status = RequestConstants.ABANDONED;
-              request.attributes.fully_abandoned = true;
-              request.markModified('status');
-              request.markModified('attributes');
-              request.save((err, savedRequest) => {
-                if (err) {
-                  winston.error("Error updating request with status ABANDONED ", err);
-                } else {
-                  winston.verbose("Status modified in ABANDONED for request: " + savedRequest._id);
-                }
-              })
-            }
-
-            /**
-             * TODO: Restore proper functioning
-             * Option commented on 03/12/2025 by Johnny in order to allows clients to receive the request populated
-             * in such case of Abandoned Request (Status 150)
-            */
-            // if (no_populate === "true" || no_populate === true) {
-            //   winston.debug("no_populate is true");
-            //   requestEvent.emit('request.update', request);
-            //   return resolve(request);
-            // }
-            
-            winston.info('info: main_flow_cache_2.3.1');
-            winston.info("main_flow_cache_3 populate");
-
-            return request
-              .populate('lead')
-              .populate('department')
-              .populate('participatingBots')
-              .populate('participatingAgents')
-              .populate({ path: 'requester', populate: { path: 'id_user' } })
-              .execPopulate(function (err, requestComplete) {
-                winston.debug("requestComplete", requestComplete);
-
-                var oldParticipants = beforeParticipants;
-                winston.debug("oldParticipants ", oldParticipants);
-
-                let newParticipants = requestComplete.participants;
-                winston.debug("newParticipants ", newParticipants);
-
-                var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
-                winston.debug("removedParticipants ", removedParticipants);
-
-                var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
-                winston.debug("addedParticipants ", addedParticipants);
-
-                requestEvent.emit('request.update', requestComplete);
-                requestEvent.emit("request.update.comment", { comment: "REROUTE", request: requestComplete });//Deprecated
-                requestEvent.emit("request.updated", { comment: "REROUTE", request: requestComplete, patch: { removedParticipants: removedParticipants, addedParticipants: addedParticipants } });
-                
-                requestEvent.emit('request.participants.update', {
-                  beforeRequest: request,
-                  removedParticipants: removedParticipants,
-                  addedParticipants: addedParticipants,
-                  request: requestComplete
-                });
-
-                return resolve(requestComplete);
-              });
-          }
-
-          let project = await projectService.getCachedProject(id_project).catch((err) => {
-            winston.warn("Error getting cached project. Skip conversation quota check.")
-            winston.warn("Getting cached project error:  ", err)
-          })
+      console.log(`[Performance] Populate request time: ${Date.now() - t3} [ms]`);
 
 
-          let isTestConversation = false;
-          let isVoiceConversation = false;
-          let isStandardConversation = false;
-          
-          let payload = {
-            project: project,
-            request: request
-          }
+      this.emitParticipantsEvents(
+        request,
+        requestComplete,
+        beforeParticipants
+      );
 
-          console.log("[Performance] route 2: " + (Date.now() - t1));
-          if (request.attributes && request.attributes.sourcePage && (request.attributes.sourcePage.indexOf("td_draft=true") > -1)) {
-            winston.verbose("is a test conversation --> skip quote availability check")
-            isTestConversation = true;
-          }
-          else if (request.channel && (request.channel.name === 'voice-vxml')) {
-            winston.verbose("is a voice conversation --> skip quote availability check")
-            isVoiceConversation = true;
-          }
-          else {
-            isStandardConversation = true;
-            const t5 = Date.now();
-            let available = await qm.checkQuote(project, request, 'requests');
-            console.log("[Performance] checkQuote time: " + (Date.now() - t5));
-            if (available === false) {
-              winston.info("Requests limits reached for project " + project._id)
-              return reject("Requests limits reached for project " + project._id);
-            }
-          }
+      requestEvent.emit("request.department.update", requestComplete);
 
-          /**
-           * Case 2 - Leaving TEMP status
-           * After internal routing:
-           * - STATUS changed from 50 to 100 or 200
-           */
-          if (requestBeforeRoute.status === RequestConstants.TEMP && (routedRequest.status === RequestConstants.ASSIGNED || routedRequest.status === RequestConstants.UNASSIGNED)) {
-            // console.log("Case 2 - Leaving TEMP status")
-            if (isStandardConversation) {
-              requestEvent.emit('request.create.quote', payload);
-            }
-          }
+      console.log(`[Performance] Route completed in ${Date.now() - tStart} [ms]`);
 
-          /**
-           * Case 3 - Conversation opened through proactive message  
-           * After internal routing:
-           * - STATUS changed from undefined to 100
-           */
-          if ((!requestBeforeRoute.status || requestBeforeRoute.status === undefined) && routedRequest.status === RequestConstants.ASSIGNED) {
-            // console.log("Case 3 - 'Proactive' request")
-            if (isStandardConversation) { 
-              requestEvent.emit('request.create.quote', payload);
-            }
-          }
+      return requestComplete;
 
-          console.log("[Performance] route 3: " + (Date.now() - t1));
-
-          //cacheinvalidation
-          const t3 = Date.now();
-          return routedRequest.save(function (err, savedRequest) {
-            console.log("[Performance] save request time: " + (Date.now() - t3));
-            // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
-            //return routedRequest.update(function(err, savedRequest) {
-            if (err) {
-              winston.error('Error saving the request. ', { err: err, routedRequest: routedRequest });
-              return reject(err);
-            }
-
-            winston.debug("after save savedRequest", savedRequest);
-
-
-            // winston.info('info: main_flow_cache_2.3.2');
-            winston.info('info: main_flow_cache_2 route populate ');
-
-            const t4 = Date.now();
-            return savedRequest
-              .populate('lead')
-              .populate('department')
-              .populate('participatingBots')
-              .populate('participatingAgents')
-              .populate({ path: 'requester', populate: { path: 'id_user' } })
-              .execPopulate(function (err, requestComplete) {
-
-                // return Request       //to populate correctly i must re-exec the query
-                // .findById(savedRequest.id)
-                // .populate('lead')
-                // .populate('department')
-                // .populate('participatingBots')
-                // .populate('participatingAgents')  
-                // .populate({path:'requester',populate:{path:'id_user'}})
-                // .exec( function(err, requestComplete) {
-                console.log("[Performance] populate request time: " + (Date.now() - t4));
-
-                if (err) {
-                  winston.error('Error populating the request.', err);
-                  return reject(err);
-                }
-
-                winston.info('info: main_flow_cache_2 route populate end');
-                const t5 = Date.now();
-                winston.verbose("Request routed", requestComplete.toObject());
-                console.log("[Performance] toObject time: " + (Date.now() - t5));
-
-                console.log("[Performance] route 4: " + (Date.now() - t1));
-                var oldParticipants = beforeParticipants;
-                winston.debug("oldParticipants ", oldParticipants);
-
-                let newParticipants = requestComplete.participants;
-                winston.debug("newParticipants ", newParticipants);
-
-                var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
-                winston.debug("removedParticipants ", removedParticipants);
-
-                var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
-                winston.debug("addedParticipants ", addedParticipants);
-
-                console.log("[Performance] route 5: " + (Date.now() - t1));
-                requestEvent.emit('request.update', requestComplete);
-                requestEvent.emit("request.update.comment", { comment: "REROUTE", request: requestComplete });//Deprecated
-                requestEvent.emit("request.updated", { comment: "REROUTE", request: requestComplete, patch: { removedParticipants: removedParticipants, addedParticipants: addedParticipants } });
-
-                requestEvent.emit('request.participants.update', {
-                  beforeRequest: request,
-                  removedParticipants: removedParticipants,
-                  addedParticipants: addedParticipants,
-                  request: requestComplete
-                });
-
-                requestEvent.emit('request.department.update', requestComplete); //se req ha bot manda messaggio \welcome
-
-                winston.debug("here end");
-                console.log("[Performance] route time: " + (Date.now() - t1));
-                return resolve(requestComplete);
-              });
-
-
-
-          });
-
-        }).catch(function (err) {
-          return reject(err);
-        });
-
-
+    } catch (error) {
+      winston.error("Route error", {
+        err,
+        request_id,
+        id_project,
       });
-    });
+      throw err;
+    }
   }
+
+  // TODO  changePreflightByRequestId se un agente entra in request freflight true disabilitare add agente e reassing ma mettere un bottone removePreflight???
+  // usalo no_populate
+  // route(request_id, departmentid, id_project, nobot, no_populate) {
+  //   var that = this;
+  //   const t1 = Date.now();
+  //   return new Promise(function (resolve, reject) {
+  //     winston.debug("request_id:" + request_id);
+  //     winston.debug("departmentid:" + departmentid);
+  //     winston.debug("id_project:" + id_project);
+  //     winston.debug("nobot:" + nobot);
+
+  //     winston.info("main_flow_cache_3 route");
+
+  //     const t7 = Date.now();
+  //     let q = Request
+  //       .findOne({ request_id: request_id, id_project: id_project });
+
+  //     if (cacheEnabler.request) {  //(node:60837) UnhandledPromiseRejectionWarning: VersionError: No matching document found for id "633efe246a6cc0eda5732684" version 0 modifiedPaths "status, participants, participantsAgents, department, assigned_at, snapshot, snapshot.department, snapshot.department.updatedAt, snapshot.agents"
+  //       q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id+":simple")      //request_cache
+  //       winston.debug('request cache enabled');
+  //     }
+  //     return q.exec(function (err, request) {
+  //       console.log("[Performance] findOne time: " + (Date.now() - t7));
+  //       if (err) {
+  //         winston.error(err);
+  //         return reject(err);
+  //       }
+
+  //       winston.debug('request return', request);
+
+  //       // cambia var in let
+
+  //       //it is important to clone here
+  //       const t8 = Date.now();
+  //       var requestBeforeRoute = Object.assign({}, request.toObject());
+  //       winston.debug("requestBeforeRoute", requestBeforeRoute);
+  //       console.log("[Performance] toObject requestBeforeRoute time: " + (Date.now() - t8));
+  //       var beforeParticipants = requestBeforeRoute.participants;
+  //       winston.debug("beforeParticipants: ", beforeParticipants);
+
+  //       const t2 = Date.now();
+  //       return that.routeInternal(request, departmentid, id_project, nobot).then( async function (routedRequest) {
+  //         console.log("[Performance] routeInternal time: " + (Date.now() - t2));
+  //         winston.debug("after routeInternal", routedRequest);
+  //         winston.debug("requestBeforeRoute.status:" + requestBeforeRoute.status);
+  //         winston.debug("routedRequest.status:" + routedRequest.status);
+
+  //         let beforeDepartmentId;
+  //         if (requestBeforeRoute.department) { //requestBeforeRoute.department can be empty for internal ticket
+  //           beforeDepartmentId = requestBeforeRoute.department.toString();
+  //           winston.debug("beforeDepartmentId:" + beforeDepartmentId);
+  //         }
+
+  //         console.log("[Performance] route 1: " + (Date.now() - t1));
+
+  //         let afterDepartmentId;
+  //         if (routedRequest.department) {
+  //           afterDepartmentId = routedRequest.department.toString();
+  //           winston.debug("afterDepartmentId:" + afterDepartmentId);
+  //         }
+
+  //         winston.debug("requestBefore status: ", requestBeforeRoute.status)
+  //         winston.debug("routedRequest status: ", routedRequest.status)
+
+  //         console.log("requestBeforeRoute: ", JSON.stringify(requestBeforeRoute));
+  //         console.log("routedRequest: ", JSON.stringify(routedRequest));
+  //         console.log("------")
+  //         console.log(`request status from ${requestBeforeRoute.status} to ${routedRequest.status}`);
+  //         console.log(`request status from ${beforeDepartmentId} to ${afterDepartmentId}`);
+  //         console.log("same participants: ", requestUtil.arraysEqual(beforeParticipants, routedRequest.participants));
+  //         console.log("------")
+  //         /**
+  //          * Case 1
+  //          * After internal routing:
+  //          * - same STATUS
+  //          * - same DEPARTMENT
+  //          * - same PARTICIPANTS
+  //          */
+  //         if (requestBeforeRoute.status === routedRequest.status &&
+  //           beforeDepartmentId === afterDepartmentId &&
+  //           requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
+
+  //           console.log("set to fully abandoned");
+  //           winston.verbose("Request " + request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
+
+  //           if (routedRequest.attributes && routedRequest.attributes.fully_abandoned && routedRequest.attributes.fully_abandoned === true) {
+  //             request.status = RequestConstants.ABANDONED;
+  //             request.attributes.fully_abandoned = true;
+  //             request.markModified('status');
+  //             request.markModified('attributes');
+  //             request.save((err, savedRequest) => {
+  //               if (err) {
+  //                 winston.error("Error updating request with status ABANDONED ", err);
+  //               } else {
+  //                 winston.verbose("Status modified in ABANDONED for request: " + savedRequest._id);
+  //               }
+  //             })
+  //           }
+
+  //           /**
+  //            * TODO: Restore proper functioning
+  //            * Option commented on 03/12/2025 by Johnny in order to allows clients to receive the request populated
+  //            * in such case of Abandoned Request (Status 150)
+  //           */
+  //           // if (no_populate === "true" || no_populate === true) {
+  //           //   winston.debug("no_populate is true");
+  //           //   requestEvent.emit('request.update', request);
+  //           //   return resolve(request);
+  //           // }
+            
+  //           winston.info('info: main_flow_cache_2.3.1');
+  //           winston.info("main_flow_cache_3 populate");
+
+  //           return request
+  //             .populate('lead')
+  //             .populate('department')
+  //             .populate('participatingBots')
+  //             .populate('participatingAgents')
+  //             .populate({ path: 'requester', populate: { path: 'id_user' } })
+  //             .execPopulate(function (err, requestComplete) {
+  //               winston.debug("requestComplete", requestComplete);
+
+  //               var oldParticipants = beforeParticipants;
+  //               winston.debug("oldParticipants ", oldParticipants);
+
+  //               let newParticipants = requestComplete.participants;
+  //               winston.debug("newParticipants ", newParticipants);
+
+  //               var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
+  //               winston.debug("removedParticipants ", removedParticipants);
+
+  //               var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
+  //               winston.debug("addedParticipants ", addedParticipants);
+
+  //               requestEvent.emit('request.update', requestComplete);
+  //               requestEvent.emit("request.update.comment", { comment: "REROUTE", request: requestComplete });//Deprecated
+  //               requestEvent.emit("request.updated", { comment: "REROUTE", request: requestComplete, patch: { removedParticipants: removedParticipants, addedParticipants: addedParticipants } });
+                
+  //               requestEvent.emit('request.participants.update', {
+  //                 beforeRequest: request,
+  //                 removedParticipants: removedParticipants,
+  //                 addedParticipants: addedParticipants,
+  //                 request: requestComplete
+  //               });
+
+  //               return resolve(requestComplete);
+  //             });
+  //         }
+
+  //         let project = await projectService.getCachedProject(id_project).catch((err) => {
+  //           winston.warn("Error getting cached project. Skip conversation quota check.")
+  //           winston.warn("Getting cached project error:  ", err)
+  //         })
+
+
+  //         let isTestConversation = false;
+  //         let isVoiceConversation = false;
+  //         let isStandardConversation = false;
+          
+  //         let payload = {
+  //           project: project,
+  //           request: request
+  //         }
+
+  //         console.log("[Performance] route 2: " + (Date.now() - t1));
+  //         if (request.attributes && request.attributes.sourcePage && (request.attributes.sourcePage.indexOf("td_draft=true") > -1)) {
+  //           winston.verbose("is a test conversation --> skip quote availability check")
+  //           isTestConversation = true;
+  //         }
+  //         else if (request.channel && (request.channel.name === 'voice-vxml')) {
+  //           winston.verbose("is a voice conversation --> skip quote availability check")
+  //           isVoiceConversation = true;
+  //         }
+  //         else {
+  //           isStandardConversation = true;
+  //           const t5 = Date.now();
+  //           let available = await qm.checkQuote(project, request, 'requests');
+  //           console.log("[Performance] checkQuote time: " + (Date.now() - t5));
+  //           if (available === false) {
+  //             winston.info("Requests limits reached for project " + project._id)
+  //             return reject("Requests limits reached for project " + project._id);
+  //           }
+  //         }
+
+  //         /**
+  //          * Case 2 - Leaving TEMP status
+  //          * After internal routing:
+  //          * - STATUS changed from 50 to 100 or 200
+  //          */
+  //         if (requestBeforeRoute.status === RequestConstants.TEMP && (routedRequest.status === RequestConstants.ASSIGNED || routedRequest.status === RequestConstants.UNASSIGNED)) {
+  //           // console.log("Case 2 - Leaving TEMP status")
+  //           if (isStandardConversation) {
+  //             requestEvent.emit('request.create.quote', payload);
+  //           }
+  //         }
+
+  //         /**
+  //          * Case 3 - Conversation opened through proactive message  
+  //          * After internal routing:
+  //          * - STATUS changed from undefined to 100
+  //          */
+  //         if ((!requestBeforeRoute.status || requestBeforeRoute.status === undefined) && routedRequest.status === RequestConstants.ASSIGNED) {
+  //           // console.log("Case 3 - 'Proactive' request")
+  //           if (isStandardConversation) { 
+  //             requestEvent.emit('request.create.quote', payload);
+  //           }
+  //         }
+
+  //         console.log("[Performance] route 3: " + (Date.now() - t1));
+
+  //         //cacheinvalidation
+  //         const t3 = Date.now();
+  //         return routedRequest.save(function (err, savedRequest) {
+  //           console.log("[Performance] save request time: " + (Date.now() - t3));
+  //           // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
+  //           //return routedRequest.update(function(err, savedRequest) {
+  //           if (err) {
+  //             winston.error('Error saving the request. ', { err: err, routedRequest: routedRequest });
+  //             return reject(err);
+  //           }
+
+  //           winston.debug("after save savedRequest", savedRequest);
+
+
+  //           // winston.info('info: main_flow_cache_2.3.2');
+  //           winston.info('info: main_flow_cache_2 route populate ');
+
+  //           const t4 = Date.now();
+  //           return savedRequest
+  //             .populate('lead')
+  //             .populate('department')
+  //             .populate('participatingBots')
+  //             .populate('participatingAgents')
+  //             .populate({ path: 'requester', populate: { path: 'id_user' } })
+  //             .execPopulate(function (err, requestComplete) {
+
+  //               // return Request       //to populate correctly i must re-exec the query
+  //               // .findById(savedRequest.id)
+  //               // .populate('lead')
+  //               // .populate('department')
+  //               // .populate('participatingBots')
+  //               // .populate('participatingAgents')  
+  //               // .populate({path:'requester',populate:{path:'id_user'}})
+  //               // .exec( function(err, requestComplete) {
+  //               console.log("[Performance] populate request time: " + (Date.now() - t4));
+
+  //               if (err) {
+  //                 winston.error('Error populating the request.', err);
+  //                 return reject(err);
+  //               }
+
+  //               winston.info('info: main_flow_cache_2 route populate end');
+  //               const t5 = Date.now();
+  //               winston.verbose("Request routed", requestComplete.toObject());
+  //               console.log("[Performance] toObject time: " + (Date.now() - t5));
+
+  //               console.log("[Performance] route 4: " + (Date.now() - t1));
+  //               var oldParticipants = beforeParticipants;
+  //               winston.debug("oldParticipants ", oldParticipants);
+
+  //               let newParticipants = requestComplete.participants;
+  //               winston.debug("newParticipants ", newParticipants);
+
+  //               var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
+  //               winston.debug("removedParticipants ", removedParticipants);
+
+  //               var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
+  //               winston.debug("addedParticipants ", addedParticipants);
+
+  //               requestEvent.emit('request.update', requestComplete);
+  //               requestEvent.emit("request.update.comment", { comment: "REROUTE", request: requestComplete });//Deprecated
+  //               requestEvent.emit("request.updated", { comment: "REROUTE", request: requestComplete, patch: { removedParticipants: removedParticipants, addedParticipants: addedParticipants } });
+
+  //               requestEvent.emit('request.participants.update', {
+  //                 beforeRequest: request,
+  //                 removedParticipants: removedParticipants,
+  //                 addedParticipants: addedParticipants,
+  //                 request: requestComplete
+  //               });
+
+  //               requestEvent.emit('request.department.update', requestComplete); //se req ha bot manda messaggio \welcome
+
+  //               winston.debug("here end");
+
+  //               return resolve(requestComplete);
+  //             });
+
+
+
+  //         });
+
+  //       }).catch(function (err) {
+  //         return reject(err);
+  //       });
+
+
+  //     });
+  //   });
+  // }
 
 
   reroute(request_id, id_project, nobot, no_populate) {
@@ -2972,7 +3120,31 @@ class RequestService {
     })
   }
 
-
+  emitParticipantsEvents(beforeRequest, requestComplete, oldParticipants) {
+    const newParticipants = requestComplete.participants;
+  
+    const removedParticipants = oldParticipants.filter(
+      p => !newParticipants.includes(p)
+    );
+    const addedParticipants = newParticipants.filter(
+      p => !oldParticipants.includes(p)
+    );
+  
+    requestEvent.emit("request.update", requestComplete);
+    requestEvent.emit("request.updated", {
+      comment: "REROUTE",
+      request: requestComplete,
+      patch: { removedParticipants, addedParticipants }
+    });
+  
+    requestEvent.emit("request.participants.update", {
+      beforeRequest,
+      removedParticipants,
+      addedParticipants,
+      request: requestComplete
+    });
+  }
+  
 }
 
 
