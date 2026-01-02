@@ -979,9 +979,9 @@ class RequestService {
       winston.debug("getOperators", result);
       console.log("[Performance] requestService.create getOperators time: " + (Date.now() - t3));
   
-      agents = result.department._id;
+      agents = result.agents;
 
-      console.log("result.dep")
+      console.log("result.department._id: ", result.department._id);
   
       if (status == 50) {
         // skip assignment
@@ -1063,7 +1063,6 @@ class RequestService {
         }
       }
   
-      console.log("dep_id", dep_id);
       if (dep_id) {
         snapshot.department = result.department;
       }
