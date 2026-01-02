@@ -902,6 +902,8 @@ class RequestService {
 
   async create(request) {
 
+    const t0 = process.hrtime.bigint();
+
     try {
 
       const t1 = Date.now();
@@ -1136,6 +1138,7 @@ class RequestService {
         requestEvent.emit('request.create.quote', payload);;
       }
   
+      console.log("[Performance][INSIDE create TOTAL]", Number(process.hrtime.bigint() - t0) / 1e6, "ms");
       return savedRequest;
 
     } catch (err) {
