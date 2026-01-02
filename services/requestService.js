@@ -804,25 +804,29 @@ class RequestService {
 
       if (status !== RequestConstants.TEMP) {
         project = await projectService.getCachedProject(id_project);
-      }
-
-      payload = { project, request };
-
-      if (attributes?.sourcePage?.includes("td_draft=true")) {
-        isTestConversation = true;
-      } else if (channel?.name === "voice-vxml") {
-        isVoiceConversation = true;
-
-        const available = await qm.checkQuote(project, request, "voice_duration");
-        if (available === false) {
-          throw new Error(`Voice duration limits reached for project ${project._id}`);
+        
+        payload = { project, request };
+  
+        if (attributes?.sourcePage?.includes("td_draft=true")) {
+          isTestConversation = true;
+        } else if (channel?.name === "voice-vxml") {
+          isVoiceConversation = true;
+  
+          const available = await qm.checkQuote(project, request, "voice_duration");
+          if (available === false) {
+            throw new Error(`Voice duration limits reached for project ${project._id}`);
+          }
+        } else {
+          isStandardConversation = true;
+  
+          const available = await qm.checkQuote(project, request, "requests")
+          if (!available) {
+            throw new Error(`Requests limits reached for project ${project._id}`);
+          }
         }
       } else {
-        isStandardConversation = true;
-
-        const available = await qm.checkQuote(project, request, "requests")
-        if (!available) {
-          throw new Error(`Requests limits reached for project ${project._id}`);
+        if (participants.length === 0) {
+          dep_id = result.department._id;
         }
       }
 
