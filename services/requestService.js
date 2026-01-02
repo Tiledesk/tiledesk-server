@@ -766,6 +766,7 @@ class RequestService {
   async create(request) {
     try {
       // Destructuring + Normalization
+      let t1 = Date.now();
       const {
         request_id, project_user_id, lead_id, id_project, first_text, departmentid: rawDepartmentId, sourcePage, language, userAgent, status: initialStatus, createdBy: initialCreatedBy, attributes, subject, preflight, channel, location, tags, notes, priority, auto_close, followers, createdAt: rawCreatedAt
       } = request;
@@ -776,16 +777,22 @@ class RequestService {
       const participants = Array.isArray(request.participants)
         ? [...request.participants]
         : [];
+      
+      console.log("[Performance] requestService.create destructuring time: " + (Date.now() - t1));
 
+      let t2 = Date.now();
       const context = {
         request: {
           request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status: initialStatus, createdBy, attributes, subject, preflight, channel, location, participants, tags, notes, priority, auto_close, followers, createdAt
         }
       };
+      console.log("[Performance] requestService.create context creation time: " + (Date.now() - t2));
       winston.debug("context", context);
 
+      let t3 = Date.now();
       const result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
       winston.debug("getOperators", result);
+      console.log("[Performance] requestService.create getOperators time: " + (Date.now() - t3));
 
       const agents = result.agents || [];
 
@@ -803,6 +810,7 @@ class RequestService {
       let isStandardConversation = false;
 
       if (status !== RequestConstants.TEMP) {
+        let t4 = Date.now();
         project = await projectService.getCachedProject(id_project);
         
         payload = { project, request };
@@ -845,6 +853,8 @@ class RequestService {
           status = RequestConstants.UNASSIGNED;
         }
 
+        console.log("[Performance] requestService.create assignment time: " + (Date.now() - t4));
+
       } else {
         if (participants.length === 0) {
           dep_id = result.department._id;
@@ -852,6 +862,7 @@ class RequestService {
       }
 
       // Snapshot
+      let t5 = Date.now();
       const snapshot = {
         department: dep_id ? result.department : undefined,
         agents,
@@ -859,16 +870,21 @@ class RequestService {
         requester: request.requester,
         lead: request.lead
       }
+      console.log("[Performance] requestService.create snapshot time: " + (Date.now() - t5));
 
       // Create request
+      let t6 = Date.now();
       const newRequest = new Request({
         request_id, requester: project_user_id, lead: lead_id, first_text, subject, status, participants, participantsAgents, participantsBots, hasBot, department: dep_id, sourcePage, language, userAgent, assigned_at, attributes, id_project, createdBy, updatedBy: createdBy, preflight, channel, location, snapshot, tags, notes, priority, auto_close, followers, createdAt, draft: isTestConversation || undefined
       })
+      console.log("[Performance] requestService.create newRequest time: " + (Date.now() - t6));
 
       winston.debug('newRequest: ', newRequest);
 
       // Save request
+      let t7 = Date.now();
       const savedRequest = await newRequest.save();
+      console.log("[Performance] requestService.create save time: " + (Date.now() - t7));
 
       requestEvent.emit('request.create.simple', savedRequest);
 
