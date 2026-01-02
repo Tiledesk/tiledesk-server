@@ -1310,9 +1310,9 @@ class RequestService {
     }
 
     snapshot.agents = agents;
-    const t3 = Date.now();
-    snapshot.availableAgentsCount = that.getAvailableAgentsCount(agents);
-    console.log("[Performance] getAvailableAgentsCount time: " + (Date.now() - t3));
+    // const t3 = Date.now();
+    // snapshot.availableAgentsCount = that.getAvailableAgentsCount(agents);
+    // console.log("[Performance] getAvailableAgentsCount time: " + (Date.now() - t3));
 
     if (request.requester) {
       snapshot.requester = request.requester;
