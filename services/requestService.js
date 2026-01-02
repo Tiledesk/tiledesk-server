@@ -1152,8 +1152,6 @@ class RequestService {
   async create(request) {
     console.log("[Performance] Start create request ", Date.now());
     const t0 = process.hrtime.bigint();
-
-
     if (!request.createdAt) {
       request.createdAt = new Date();
     }
@@ -1220,22 +1218,22 @@ class RequestService {
     var agents = [];
     var snapshot = {};
 
-    // try {
-    //   // (method) DepartmentService.getOperators(departmentid: any, projectid: any, nobot: any, disableWebHookCall: any, context: any): Promise<any>
-    //   const t1 = Date.now();
-       var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
-    //   winston.debug("getOperators", result);
-    //   console.log("[Performance] getOperators time: " + (Date.now() - t1));
-    // } catch (err) {
-    //   return reject(err);
-    // }
+    try {
+      // (method) DepartmentService.getOperators(departmentid: any, projectid: any, nobot: any, disableWebHookCall: any, context: any): Promise<any>
+      const t1 = Date.now();
+      var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
+      winston.debug("getOperators", result);
+      console.log("[Performance] getOperators time: " + (Date.now() - t1));
+    } catch (err) {
+      return reject(err);
+    }
 
-    //agents = result.agents;
+    agents = result.agents;
 
     if (status == 50) {
       // skip assignment
       if (participants.length == 0) {
-        dep_id = departmentid
+        dep_id = result.department._id;
       }
     } else {
 
@@ -1311,10 +1309,10 @@ class RequestService {
       snapshot.department = result.department;
     }
 
-    //snapshot.agents = agents;
-    // const t3 = Date.now();
-    // snapshot.availableAgentsCount = that.getAvailableAgentsCount(agents);
-    // console.log("[Performance] getAvailableAgentsCount time: " + (Date.now() - t3));
+    snapshot.agents = agents;
+    const t3 = Date.now();
+    snapshot.availableAgentsCount = that.getAvailableAgentsCount(agents);
+    console.log("[Performance] getAvailableAgentsCount time: " + (Date.now() - t3));
 
     if (request.requester) {
       snapshot.requester = request.requester;
@@ -1349,7 +1347,7 @@ class RequestService {
       preflight: preflight,
       channel: channel,
       location: location,
-      //snapshot: snapshot,
+      snapshot: snapshot,
       tags: tags,
       notes: notes,
       priority: priority,
