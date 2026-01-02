@@ -907,6 +907,7 @@ class RulesTrigger {
 
      triggerEventEmitter.on('request.create', function(eventTrigger) {
 
+      console.log("triggerEventEmitter request.create eventTrigger: ", JSON.stringify(eventTrigger));
       try {
 
           winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
