@@ -864,7 +864,7 @@ class RequestService {
         request_id, requester: project_user_id, lead: lead_id, first_text, subject, status, participants, participantsAgents, participantsBots, hasBot, department: dep_id, sourcePage, language, userAgent, assigned_at, attributes, id_project, createdBy, updatedBy: createdBy, preflight, channel, location, snapshot, tags, notes, priority, auto_close, followers, createdAt, draft: isTestConversation || undefined
       })
 
-      winston.debug('newRequest.', newRequest);
+      winston.debug('newRequest: ', newRequest);
 
       // Save request
       const savedRequest = await newRequest.save();

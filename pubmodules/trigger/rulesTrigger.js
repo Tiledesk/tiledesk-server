@@ -1155,6 +1155,7 @@ class RulesTrigger {
                           //   language, userAgent, status, id_user, attributes, undefined, preflight).then(function (savedRequest) {
 
 
+                      console.log("send message with first text: ", text);
                     var new_request = {
                       request_id: request_id, project_user_id: project_user_id, lead_id: createdLead._id, id_project: id_project,
                       first_text: text, participants: participants, departmentid: departmentid, sourcePage: sourcePage,
@@ -1176,6 +1177,7 @@ class RulesTrigger {
                         
                         var senderFullname = fullname || 'Guest'; // guest_here
 
+                        console.log("send message with first text: ", text);
                         // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
                         return messageService.create( id_user, senderFullname , savedRequest.request_id, text,
                           id_project, id_user,  MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes, type, eventTrigger.event.metadata, language);
