@@ -975,16 +975,13 @@ class RequestService {
       var snapshot = {};
   
       const t3 = Date.now();
-      try {
-        // (method) DepartmentService.getOperators(departmentid: any, projectid: any, nobot: any, disableWebHookCall: any, context: any): Promise<any>
-        var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
-        winston.debug("getOperators", result);
-        console.log("[Performance] requestService.create getOperators time: " + (Date.now() - t3));
-      } catch (err) {
-        return reject(err);
-      }
+      var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
+      winston.debug("getOperators", result);
+      console.log("[Performance] requestService.create getOperators time: " + (Date.now() - t3));
   
-      agents = result.agents;
+      agents = result.department._id;
+
+      console.log("result.dep")
   
       if (status == 50) {
         // skip assignment
@@ -1066,6 +1063,7 @@ class RequestService {
         }
       }
   
+      console.log("dep_id", dep_id);
       if (dep_id) {
         snapshot.department = result.department;
       }
