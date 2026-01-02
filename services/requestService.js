@@ -1347,7 +1347,7 @@ class RequestService {
       preflight: preflight,
       channel: channel,
       location: location,
-      snapshot: snapshot,
+      //snapshot: snapshot,
       tags: tags,
       notes: notes,
       priority: priority,
