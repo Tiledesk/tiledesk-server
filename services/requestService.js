@@ -386,12 +386,8 @@ class RequestService {
       return requestComplete;
 
     } catch (error) {
-      winston.error("Route error", {
-        err,
-        request_id,
-        id_project,
-      });
-      throw err;
+      winston.error("Route error", { error, request_id, id_project });
+      throw error;
     }
   }
 
