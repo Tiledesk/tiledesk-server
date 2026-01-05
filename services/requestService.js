@@ -23,7 +23,7 @@ const axios = require("axios").default;
 let port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/ext/";;
 if (process.env.TILEBOT_ENDPOINT) {
-    TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/"
+    TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/";
 }
 
 let tdCache = new TdCache({
@@ -243,279 +243,164 @@ class RequestService {
 
   // TODO  changePreflightByRequestId se un agente entra in request freflight true disabilitare add agente e reassing ma mettere un bottone removePreflight???
   // usalo no_populate
-  route(request_id, departmentid, id_project, nobot, no_populate) {
-    var that = this;
+  async route(request_id, departmentid, id_project, nobot, no_populate) {
 
-    return new Promise(function (resolve, reject) {
+    try {
       winston.debug("request_id:" + request_id);
       winston.debug("departmentid:" + departmentid);
       winston.debug("id_project:" + id_project);
       winston.debug("nobot:" + nobot);
+      winston.info("main_flow_cache_3 route");
 
-      let q = Request
-        .findOne({ request_id: request_id, id_project: id_project });
+      // Find request
+      let query = Request.findOne({ request_id, id_project });
+      if (cacheEnabler.request) {
+        query = query.cache(cacheUtil.defaultTTL, id_project + ":requests:request_id:" + request_id + ":simple");
+        winston.debug('request cache enabled');
+      }
+      
+      const request = await query.exec();
 
-      // if (cacheEnabler.request) {  //(node:60837) UnhandledPromiseRejectionWarning: VersionError: No matching document found for id "633efe246a6cc0eda5732684" version 0 modifiedPaths "status, participants, participantsAgents, department, assigned_at, snapshot, snapshot.department, snapshot.department.updatedAt, snapshot.agents"
-      //   q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id+":simple")      //request_cache
-      //   winston.debug('request cache enabled');
-      // }
-      return q.exec(function (err, request) {
+      if (!request) {
+        throw new Error(`Request not found: ${request_id}`);
+      }
 
-        if (err) {
-          winston.error(err);
-          return reject(err);
+      // Clone before route
+      const requestBeforeRoute = request.toObject();
+      const beforeParticipants = requestBeforeRoute.participants;
+      const beforeDepartmentId = requestBeforeRoute.department?.toString();
+
+      // Route internal
+      const routedRequest = await this.routeInternal(request, departmentid, id_project, nobot);
+
+      const afterDepartmentId = routedRequest.department?.toString();
+
+      // Case 1 - No changes
+      if (
+        requestBeforeRoute.status === routedRequest.status &&
+        beforeDepartmentId === afterDepartmentId &&
+        requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)
+      ) {
+
+        winston.verbose(`Request ${request.request_id} routed to same status/participants`);
+  
+        if (routedRequest.attributes?.fully_abandoned === true) {
+          request.status = RequestConstants.ABANDONED;
+          request.attributes.fully_abandoned = true;
+          request.markModified("status");
+          request.markModified("attributes");
+  
+          try {
+            await request.save();
+            winston.verbose(`Status set to ABANDONED for request ${request._id}`);
+          } catch (err) {
+            winston.error("Error updating request to ABANDONED", err);
+          }
         }
 
-        winston.debug('request return', request);
+        /**
+         * TODO: Restore proper functioning
+         * Option commented on 03/12/2025 by Johnny in order to allows clients to receive the request populated
+         * in such case of Abandoned Request (Status 150)
+        */
+        // if (no_populate === "true" || no_populate === true) {
+        //   winston.debug("no_populate is true");
+        //   requestEvent.emit('request.update', request);
+        //   return request;
+        // }
+  
+        const requestComplete = await request
+          .populate("lead")
+          .populate("department")
+          .populate("participatingBots")
+          .populate("participatingAgents")
+          .populate({ path: "requester", populate: { path: "id_user" } })
+          .execPopulate();
+  
+        this.emitParticipantsEvents(
+          request,
+          requestComplete,
+          beforeParticipants
+        );
+  
+        return requestComplete;
+      }
 
-        // cambia var in let
+      
+      // Quota check
+      let project;
+      try {
+        project = await projectService.getCachedProject(id_project);
+      } catch (err) {
+        winston.warn("Error getting cached project, skip quota check", err);
+      }
 
-        //it is important to clone here
-        var requestBeforeRoute = Object.assign({}, request.toObject());
-        winston.debug("requestBeforeRoute", requestBeforeRoute);
+      const isTestConversation = request.attributes?.sourcePage?.includes("td_draft=true");
+      const isVoiceConversation = request.channel?.name === "voice-vxml";
+      const isStandardConversation = !isTestConversation && !isVoiceConversation;
 
-        var beforeParticipants = requestBeforeRoute.participants;
-        winston.debug("beforeParticipants: ", beforeParticipants);
+      if (isStandardConversation) {
+        const available = await qm.checkQuote(project, request, "requests");
+        if (!available) {
+          throw new Error(`Requests limits reached for project ${project._id}`);
+        }
+      }
 
-        return that.routeInternal(request, departmentid, id_project, nobot).then( async function (routedRequest) {
+      // Case 2 - Leaving TEMP status. After internal routing: STATUS changed from 50 to 100 or 200
+      if (requestBeforeRoute.status === RequestConstants.TEMP &&
+        [RequestConstants.ASSIGNED, RequestConstants.UNASSIGNED].includes(routedRequest.status) &&
+        isStandardConversation
+      ) {
+        requestEvent.emit("request.create.quote", { project, request });
+      }
 
-          winston.debug("after routeInternal", routedRequest);
-          winston.debug("requestBeforeRoute.status:" + requestBeforeRoute.status);
-          winston.debug("routedRequest.status:" + routedRequest.status);
+      // Case 3 - Conversation opened through proactive message. After internal routing: STATUS changed from undefined to 100
+      if (
+        !requestBeforeRoute.status &&
+        routedRequest.status === RequestConstants.ASSIGNED &&
+        isStandardConversation
+      ) {
+        requestEvent.emit("request.create.quote", { project, request });
+      }
 
-          let beforeDepartmentId;
-          if (requestBeforeRoute.department) { //requestBeforeRoute.department can be empty for internal ticket
-            beforeDepartmentId = requestBeforeRoute.department.toString();
-            winston.debug("beforeDepartmentId:" + beforeDepartmentId);
-          }
+      // Save and populate
+      const savedRequest = await routedRequest.save();
 
-
-          let afterDepartmentId;
-          if (routedRequest.department) {
-            afterDepartmentId = routedRequest.department.toString();
-            winston.debug("afterDepartmentId:" + afterDepartmentId);
-          }
-
-          winston.debug("requestBefore status: ", requestBeforeRoute.status)
-          winston.debug("routedRequest status: ", routedRequest.status)
-          /**
-           * Case 1
-           * After internal routing:
-           * - same STATUS
-           * - same DEPARTMENT
-           * - same PARTICIPANTS
-           */
-          if (requestBeforeRoute.status === routedRequest.status &&
-            beforeDepartmentId === afterDepartmentId &&
-            requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
-
-            winston.verbose("Request " + request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
-
-            if (routedRequest.attributes && routedRequest.attributes.fully_abandoned && routedRequest.attributes.fully_abandoned === true) {
-              request.status = RequestConstants.ABANDONED;
-              request.attributes.fully_abandoned = true;
-              request.markModified('status');
-              request.markModified('attributes');
-              request.save((err, savedRequest) => {
-                if (err) {
-                  winston.error("Error updating request with status ABANDONED ", err);
-                } else {
-                  winston.verbose("Status modified in ABANDONED for request: " + savedRequest._id);
-                }
-              })
-            }
-
-            /**
-             * TODO: Restore proper functioning
-             * Option commented on 03/12/2025 by Johnny in order to allows clients to receive the request populated
-             * in such case of Abandoned Request (Status 150)
-            */
-            // if (no_populate === "true" || no_populate === true) {
-            //   winston.debug("no_populate is true");
-            //   requestEvent.emit('request.update', request);
-            //   return resolve(request);
-            // }
-
-            return request
-              .populate('lead')
-              .populate('department')
-              .populate('participatingBots')
-              .populate('participatingAgents')
-              .populate({ path: 'requester', populate: { path: 'id_user' } })
-              .execPopulate(function (err, requestComplete) {
-                winston.debug("requestComplete", requestComplete);
-
-                var oldParticipants = beforeParticipants;
-                winston.debug("oldParticipants ", oldParticipants);
-
-                let newParticipants = requestComplete.participants;
-                winston.debug("newParticipants ", newParticipants);
-
-                var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
-                winston.debug("removedParticipants ", removedParticipants);
-
-                var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
-                winston.debug("addedParticipants ", addedParticipants);
-
-                requestEvent.emit('request.update', requestComplete);
-                requestEvent.emit("request.update.comment", { comment: "REROUTE", request: requestComplete });//Deprecated
-                requestEvent.emit("request.updated", { comment: "REROUTE", request: requestComplete, patch: { removedParticipants: removedParticipants, addedParticipants: addedParticipants } });
-                
-                requestEvent.emit('request.participants.update', {
-                  beforeRequest: request,
-                  removedParticipants: removedParticipants,
-                  addedParticipants: addedParticipants,
-                  request: requestComplete
-                });
-
-                return resolve(requestComplete);
-              });
-          }
-
-          let project = await projectService.getCachedProject(id_project).catch((err) => {
-            winston.warn("Error getting cached project. Skip conversation quota check.")
-            winston.warn("Getting cached project error:  ", err)
-          })
+      const requestComplete = await savedRequest
+        .populate("lead")
+        .populate("department")
+        .populate("participatingBots")
+        .populate("participatingAgents")
+        .populate({ path: "requester", populate: { path: "id_user" } })
+        .execPopulate();
 
 
-          let isTestConversation = false;
-          let isVoiceConversation = false;
-          let isStandardConversation = false;
-          
-          let payload = {
-            project: project,
-            request: request
-          }
+      this.emitParticipantsEvents(
+        request,
+        requestComplete,
+        beforeParticipants
+      );
 
-          if (request.attributes && request.attributes.sourcePage && (request.attributes.sourcePage.indexOf("td_draft=true") > -1)) {
-            winston.verbose("is a test conversation --> skip quote availability check")
-            isTestConversation = true;
-          }
-          else if (request.channel && (request.channel.name === 'voice-vxml')) {
-            winston.verbose("is a voice conversation --> skip quote availability check")
-            isVoiceConversation = true;
-          }
-          else {
-            isStandardConversation = true;
-            let available = await qm.checkQuote(project, request, 'requests');
-            if (available === false) {
-              winston.info("Requests limits reached for project " + project._id)
-              return reject("Requests limits reached for project " + project._id);
-            }
-          }
+      requestEvent.emit("request.department.update", requestComplete);
 
-          /**
-           * Case 2 - Leaving TEMP status
-           * After internal routing:
-           * - STATUS changed from 50 to 100 or 200
-           */
-          if (requestBeforeRoute.status === RequestConstants.TEMP && (routedRequest.status === RequestConstants.ASSIGNED || routedRequest.status === RequestConstants.UNASSIGNED)) {
-            // console.log("Case 2 - Leaving TEMP status")
-            if (isStandardConversation) {
-              requestEvent.emit('request.create.quote', payload);
-            }
-          }
+      return requestComplete;
 
-          /**
-           * Case 3 - Conversation opened through proactive message  
-           * After internal routing:
-           * - STATUS changed from undefined to 100
-           */
-          if ((!requestBeforeRoute.status || requestBeforeRoute.status === undefined) && routedRequest.status === RequestConstants.ASSIGNED) {
-            // console.log("Case 3 - 'Proactive' request")
-            if (isStandardConversation) { 
-              requestEvent.emit('request.create.quote', payload);
-            }
-          }
-
-          //cacheinvalidation
-          return routedRequest.save(function (err, savedRequest) {
-            // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
-            //return routedRequest.update(function(err, savedRequest) {
-            if (err) {
-              winston.error('Error saving the request. ', { err: err, routedRequest: routedRequest });
-              return reject(err);
-            }
-
-            winston.debug("after save savedRequest", savedRequest);
-
-            return savedRequest
-              .populate('lead')
-              .populate('department')
-              .populate('participatingBots')
-              .populate('participatingAgents')
-              .populate({ path: 'requester', populate: { path: 'id_user' } })
-              .execPopulate(function (err, requestComplete) {
-
-                // return Request       //to populate correctly i must re-exec the query
-                // .findById(savedRequest.id)
-                // .populate('lead')
-                // .populate('department')
-                // .populate('participatingBots')
-                // .populate('participatingAgents')  
-                // .populate({path:'requester',populate:{path:'id_user'}})
-                // .exec( function(err, requestComplete) {
-
-
-                if (err) {
-                  winston.error('Error populating the request.', err);
-                  return reject(err);
-                }
-
-                winston.verbose("Request routed", requestComplete.toObject());
-
-
-                var oldParticipants = beforeParticipants;
-                winston.debug("oldParticipants ", oldParticipants);
-
-                let newParticipants = requestComplete.participants;
-                winston.debug("newParticipants ", newParticipants);
-
-                var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
-                winston.debug("removedParticipants ", removedParticipants);
-
-                var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
-                winston.debug("addedParticipants ", addedParticipants);
-
-
-                requestEvent.emit('request.update', requestComplete);
-                requestEvent.emit("request.update.comment", { comment: "REROUTE", request: requestComplete });//Deprecated
-                requestEvent.emit("request.updated", { comment: "REROUTE", request: requestComplete, patch: { removedParticipants: removedParticipants, addedParticipants: addedParticipants } });
-
-                requestEvent.emit('request.participants.update', {
-                  beforeRequest: request,
-                  removedParticipants: removedParticipants,
-                  addedParticipants: addedParticipants,
-                  request: requestComplete
-                });
-
-                requestEvent.emit('request.department.update', requestComplete); //se req ha bot manda messaggio \welcome
-
-                winston.debug("here end");
-
-                return resolve(requestComplete);
-              });
-
-
-
-          });
-
-        }).catch(function (err) {
-          return reject(err);
-        });
-
-
-      });
-    });
+    } catch (error) {
+      winston.error("Route error", { error, request_id, id_project });
+      throw error;
+    }
   }
 
 
-  reroute(request_id, id_project, nobot) {
+  reroute(request_id, id_project, nobot, no_populate) {
     var that = this;
     var startDate = new Date();
     return new Promise(function (resolve, reject) {
       // winston.debug("request_id", request_id);
       // winston.debug("newstatus", newstatus);
+
+    // winston.info("main_flow_cache_3 reroute"); //but it is cached
+      
 
       let q = Request
         .findOne({ request_id: request_id, id_project: id_project });
@@ -543,11 +428,7 @@ class RequestService {
         }
 
 
-        return that.route(request_id, request.department.toString(), id_project, nobot).then(function (routedRequest) {
-
-          var endDate = new Date();
-          winston.verbose("Performance Request reroute in millis: " + endDate - startDate);
-
+        return that.route(request_id, request.department.toString(), id_project, nobot, no_populate).then(function (routedRequest) {
           return resolve(routedRequest);
         }).catch(function (err) {
           return reject(err);
@@ -577,799 +458,233 @@ class RequestService {
 
     return this.create(request);
   };
-
+  
   async create(request) {
+    const createdAt = request.createdAt || new Date();
 
-    if (!request.createdAt)  {
-      request.createdAt = new Date();
-    }
+    let {
+      request_id,
+      project_user_id,
+      lead_id,
+      id_project,
+      first_text,
+      sourcePage,
+      language,
+      userAgent,
+      status,
+      attributes,
+      subject,
+      preflight,
+      channel,
+      location,
+      participants = [],
+      tags,
+      notes,
+      priority,
+      auto_close,
+      followers
+    } = request;
 
-    var request_id = request.request_id;
-    var project_user_id = request.project_user_id;
-    var lead_id = request.lead_id;
-    var id_project = request.id_project;
-    var first_text = request.first_text;
-    var departmentid = request.departmentid;
-    var sourcePage = request.sourcePage;
-    var language = request.language;
-    var userAgent = request.userAgent;
-    var status = request.status;
-    var createdBy = request.createdBy;
-    var attributes = request.attributes;
-    var subject = request.subject;
-    var preflight = request.preflight;
-    var channel = request.channel;
-    var location = request.location;
-    var participants = request.participants || [];
-    var tags = request.tags;
-    var notes = request.notes;
-    var priority = request.priority;
-    var auto_close = request.auto_close;
-    var followers = request.followers;
-    let createdAt = request.createdAt;
+    let departmentid = request.departmentid || 'default';
+    let createdBy = request.createdBy || project_user_id || "system";
 
-    if (!departmentid) {
-      departmentid = 'default';
-    }
-
-    if (!createdBy) {
-      if (project_user_id) {
-        createdBy = project_user_id;
-      } else {
-        createdBy = "system";
-      }
-    }
-
-    // Utils
+    // Utils and flags
     let payload;
     let isTestConversation = false;
     let isVoiceConversation = false;
     let isStandardConversation = false;
-    var that = this;
 
-    return new Promise( async (resolve, reject) => {
-      var context = {
-        request: {
-          request_id: request_id, project_user_id: project_user_id, lead_id: lead_id, id_project: id_project,
-          first_text: first_text, departmentid: departmentid, sourcePage: sourcePage, language: language, userAgent: userAgent, status: status,
-          createdBy: createdBy, attributes: attributes, subject: subject, preflight: preflight, channel: channel, location: location,
-          participants: participants, tags: tags, notes: notes,
-          priority: priority, auto_close: auto_close, followers: followers
-        }
-      };
-      winston.debug("context", context);
+    const context = {
+      request: {
+        request_id, project_user_id, lead_id, id_project,
+        first_text, departmentid, sourcePage, language, userAgent, status,
+        createdBy, attributes, subject, preflight, channel, location,
+        participants,tags,notes,priority,auto_close,followers
+      }
+    };
 
-      var participantsAgents = [];
-      var participantsBots = [];
-      var hasBot = false;
-      var dep_id = undefined;
-      var assigned_at = undefined;
-      var agents = [];
-      var snapshot = {};
+    winston.debug("context: ", context);
 
+    // Initial assignment
+    let agents = [];
+    let participantsAgents = [];
+    let participantsBots = [];
+    let hasBot = false;
+    let dep_id;
+    let assigned_at;
+    let snapshot = {};
+
+    // Getting operators
+    let result;
+    try {
+      result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
+      winston.debug("Get operators result: ", result);
+    } catch (err) {
+      throw new Error("Error getting operators", { cause: err });
+    }
+
+    agents = result.agents;
+
+    // Status and quote management
+    if (status === RequestConstants.TEMP) {
+      // Skip assignment
+      if (participants.length === 0) {
+        dep_id = result.department._id;
+      }
+    }
+    else {
+      
+      let project;
       try {
-        // (method) DepartmentService.getOperators(departmentid: any, projectid: any, nobot: any, disableWebHookCall: any, context: any): Promise<any>
-        var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
-        winston.debug("getOperators", result);
-
+        project = await projectService.getCachedProject(id_project);
       } catch (err) {
-        return reject(err);
+        throw new Error("Error getting project", { cause: err });
       }
 
-      agents = result.agents;
+      if (!project) {
+        winston.error(`Project not found for id_project: ${id_project}`);
+        throw new Error(`Project not found for id_project: ${id_project}`);
+      }
 
-      if (status == 50) {
-        // skip assignment
-        if (participants.length == 0) {
-          dep_id = result.department._id;
+      payload = { project, request };
+
+      // Test conversation
+      if (attributes?.sourcePage?.includes("td_draft=true")) {
+        winston.verbose("is a test conversation --> skip quote availability check");
+        isTestConversation = true;
+      }
+
+      // Voice conversation
+      else if (channel?.name === "voice-vxml") {
+        isVoiceConversation = true;
+        const available = await qm.checkQuote(project, request, "voice_duration");
+        if (!available) {
+          winston.info(`Voice duration limits reached for project ${id_project}`);
+          throw new Error(`Voice duration limits reached for project ${id_project}`);
         }
-      } else {
+      }
 
-        let project = await projectService.getCachedProject(id_project).catch((err) => {
-          winston.warn("Error getting cached project. Skip conversation quota check.")
-          winston.warn("Getting cached project error:  ", err)
-        })
-
-        payload = {
-          project: project,
-          request: request
+      // Standard conversation
+      else {
+        isStandardConversation = true;
+        const available = await qm.checkQuote(project, request, "requests");
+        if (!available) {
+          winston.info(`Requests limits reached for project ${project._id}`);
+          throw new Error(`Requests limits reached for project ${project._id}`);
         }
+      }
 
-        if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
-          winston.verbose("is a test conversation --> skip quote availability check")
-          isTestConversation = true;
+      // Assignment
+      if (participants.length === 0) {
+        if (result.operators?.length > 0) {
+          participants.push(result.operators[0].id_user.toString());
         }
-        else if (channel && (channel.name === 'voice-vxml')) {
-          isVoiceConversation = true;
-          let available = await qm.checkQuote(project, request, 'voice_duration');
-          if (available === false) {
-            winston.info("Voice duration limits reached for project " + project._id);
-            return reject("Voice duration limits reached for project " + project._id);
-          }
-        }
-        else {
-          isStandardConversation = true;
-          let available = await qm.checkQuote(project, request, 'requests');
-          if (available === false) {
-            winston.info("Requests limits reached for project " + project._id)
-            return reject("Requests limits reached for project " + project._id);
-          }
-        }
+        dep_id = result.department._id;
+      }
 
+      if (participants.length > 0) {
+        status = RequestConstants.ASSIGNED;
 
-        if (participants.length == 0) {
-          if (result.operators && result.operators.length > 0) {
-            participants.push(result.operators[0].id_user.toString());
-          }
-          // for preflight it is important to save agents in req for trigger. try to optimize it
-          dep_id = result.department._id;
-        }
+        const firstParticipant = participants[0];
 
-        if (participants.length > 0) {
-          status = RequestConstants.ASSIGNED;
-          // botprefix
-          if (participants[0].startsWith("bot_")) {
-
-            hasBot = true;
-            winston.debug("hasBot:" + hasBot);
-
-            // botprefix
-            var assigned_operator_idStringBot = participants[0].replace("bot_", "");
-            winston.debug("assigned_operator_idStringBot:" + assigned_operator_idStringBot);
-
-            participantsBots.push(assigned_operator_idStringBot);
-
-          } else {
-
-            participantsAgents.push(participants[0]);
-
-          }
-
-          assigned_at = Date.now();
-
+        if (firstParticipant.startsWith("bot_")) {
+          hasBot = true;
+          const botId = firstParticipant.replace("bot_", "");
+          participantsBots.push(botId);
         } else {
-          status = RequestConstants.UNASSIGNED;
-        }
-      }
-
-      if (dep_id) {
-        snapshot.department = result.department;
-      }
-
-      snapshot.agents = agents;
-      snapshot.availableAgentsCount = that.getAvailableAgentsCount(agents);
-
-      if (request.requester) {
-        snapshot.requester = request.requester;
-      }
-      if (request.lead) {
-        snapshot.lead = request.lead;
-      }
-
-      var newRequest = new Request({
-        request_id: request_id,
-        requester: project_user_id,
-        lead: lead_id,
-        first_text: first_text,
-        subject: subject,
-        status: status,
-        participants: participants,
-        participantsAgents: participantsAgents,
-        participantsBots: participantsBots,
-        hasBot: hasBot,
-        department: dep_id,
-        // agents: agents,                
-        //others
-        sourcePage: sourcePage,
-        language: language,
-        userAgent: userAgent,
-        assigned_at: assigned_at,
-        attributes: attributes,
-        //standard
-        id_project: id_project,
-        createdBy: createdBy,
-        updatedBy: createdBy,
-        preflight: preflight,
-        channel: channel,
-        location: location,
-        snapshot: snapshot,
-        tags: tags,
-        notes: notes,
-        priority: priority,
-        auto_close: auto_close,
-        followers: followers,
-        createdAt: createdAt
-      });
-
-      if (isTestConversation) {
-        newRequest.draft = true;
-      }
-
-      winston.debug('newRequest.', newRequest);
-
-      //cacheinvalidation
-      return newRequest.save( async function (err, savedRequest) {
-
-        if (err) {
-          winston.error('RequestService error for method createWithIdAndRequester for newRequest' + JSON.stringify(newRequest), err);
-          return reject(err);
-        }
-        winston.debug("Request created", savedRequest.toObject());
-
-        requestEvent.emit('request.create.simple', savedRequest);
-
-        if (isStandardConversation) {
-          requestEvent.emit('request.create.quote', payload);;
+          participantsAgents.push(firstParticipant);
         }
 
-        return resolve(savedRequest);
+        assigned_at = Date.now();
+      } else {
+        status = RequestConstants.UNASSIGNED;
+      }
+    }
 
-      });
+    // Snapshot
+    if (dep_id) {
+      snapshot.department = result.department;
+    }
+    snapshot.agents = agents;
+    snapshot.availableAgentsCount = this.getAvailableAgentsCount(agents);
+
+    if (request.requester) {
+      snapshot.requester = request.requester;
+    }
+    if (request.lead) {
+      snapshot.lead = request.lead;
+    }
+
+    // Create request
+    const newRequest = new Request({
+      request_id,
+      requester: project_user_id,
+      lead: lead_id,
+      first_text,
+      subject,
+      status,
+      participants,
+      participantsAgents,
+      participantsBots,
+      hasBot,
+      department: dep_id,
+      sourcePage,
+      language,
+      userAgent,
+      assigned_at,
+      attributes,
+      id_project,
+      createdBy,
+      updatedBy: createdBy,
+      preflight,
+      channel,
+      location,
+      tags,
+      notes,
+      priority,
+      auto_close,
+      followers,
+      createdAt
     })
+
+    if (isTestConversation) {
+      newRequest.draft = true;
+    }
+
+    winston.debug('newRequest.', newRequest);
+    winston.info("main_flow_cache_ requestService create");
+
+    // Save request
+    try {
+      const savedRequest = await newRequest.save();      
+      winston.debug("Request created", savedRequest.toObject());
+
+      /**
+       * Se non faccio findOne usando la cache adesso, quando verrà eseguita la query in reroute() la request non ha il department.
+       */
+      let q = Request.findOne({ request_id, id_project });
+      if (cacheEnabler.request) {
+        q.cache(cacheUtil.defaultTTL, id_project + ":requests:request_id:" + request_id + ":simple");
+        winston.debug('request cache enabled');
+      }
+      await q.exec();
+
+      requestEvent.emit("request.create.simple", savedRequest);
+
+      if (isStandardConversation) {
+        requestEvent.emit("request.create.quote", payload);
+      }
+
+      return savedRequest;
+
+    } catch (err) {
+      winston.error(`RequestService error on save request ${newRequest.request_id}`, err);
+      throw new Error("RequestService error on save request", { cause: err });
+    }
+
   }
 
-  // DEPRECATED
-  // async _create(request) {
-
-  //   var startDate = new Date();
-
-  //   if (!request.createdAt) {
-  //     request.createdAt = new Date();
-  //   }
-
-
-  //     var request_id = request.request_id;
-  //     var project_user_id = request.project_user_id;
-  //     var lead_id = request.lead_id;
-  //     var id_project = request.id_project;
-
-  //     var first_text = request.first_text;
-
-  //     //removed for ticket
-  //     // // lascia che sia nico a fare il replace...certo tu devi fare il test che tutto sia ok quindi dopo demo
-  //     // var first_text;  
-  //     // if (request.first_text) {  //first_text can be empty for type image
-  //     //   first_text = request.first_text.replace(/[\n\r]+/g, ' '); //replace new line with space
-  //     // }
-
-  //     var departmentid = request.departmentid;
-  //     var sourcePage = request.sourcePage;
-  //     var language = request.language;
-  //     var userAgent = request.userAgent;
-  //     var status = request.status;
-  //     var createdBy = request.createdBy;
-  //     var attributes = request.attributes;
-  //     var subject = request.subject;
-  //     var preflight = request.preflight;
-  //     var channel = request.channel;
-  //     var location = request.location;
-  //     var participants = request.participants || [];
-
-  //     var tags = request.tags;
-  //     var notes = request.notes;
-  //     var priority = request.priority;
-
-  //     var auto_close = request.auto_close;
-
-  //     var followers = request.followers;
-  //     let createdAt = request.createdAt;
-
-
-  //     if (!departmentid) {
-  //       departmentid = 'default';
-  //     }
-
-  //     if (!createdBy) {
-  //       if (project_user_id) {
-  //         createdBy = project_user_id;
-  //       } else {
-  //         createdBy = "system";
-  //       }
-
-  //     }
-
-  //     let isTestConversation = false;
-  //     let isVoiceConversation = false;
-
-  //     var that = this;
-
-  //     return new Promise(async (resolve, reject) => {
-
-  //       let q = Project.findOne({ _id: request.id_project, status: 100 });
-  //       if (cacheEnabler.project) {
-  //         q.cache(cacheUtil.longTTL, "projects:id:" + request.id_project)  //project_cache
-  //         winston.debug('project cache enabled for /project detail');
-  //       }
-  //       q.exec(async function (err, p) {
-  //         if (err) {
-  //           winston.error('Error getting project ', err);
-  //         }
-  //         if (!p) {
-  //           winston.warn('Project not found ');
-  //         }
-    
-    
-  //         let payload = {
-  //           project: p,
-  //           request: request
-  //         }
-    
-  //         if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
-  //             winston.verbose("is a test conversation --> skip quote availability check")
-  //             isTestConversation = true;
-  //         }
-  //         else if (channel && (channel.name === 'voice-vxml')) {
-  //             winston.verbose("is a voice conversation --> skip quote availability check")
-  //             isVoiceConversation = true;
-  //         }
-  //         else {
-  //           // console.log("! check quota moved")
-  //           // let available = await qm.checkQuote(p, request, 'requests');
-  //           // if (available === false) {
-  //           //   winston.info("Requests limits reached for project " + p._id)
-  //           //   return false;
-  //           // }
-  //         }
-        
-
-  //       var context = {
-  //         request: {
-  //           request_id: request_id, project_user_id: project_user_id, lead_id: lead_id, id_project: id_project,
-  //           first_text: first_text, departmentid: departmentid, sourcePage: sourcePage, language: language, userAgent: userAgent, status: status,
-  //           createdBy: createdBy, attributes: attributes, subject: subject, preflight: preflight, channel: channel, location: location,
-  //           participants: participants, tags: tags, notes: notes,
-  //           priority: priority, auto_close: auto_close, followers: followers
-  //         }
-  //       };
-
-  //       winston.debug("context", context);
-
-  //       var participantsAgents = [];
-  //       var participantsBots = [];
-  //       var hasBot = false;
-
-  //       var dep_id = undefined;
-
-  //       var assigned_at = undefined;
-
-  //       var agents = [];
-
-  //       var snapshot = {};
-
-  //       try {
-  //         //  getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
-  //         var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
-  //         // console.log("************* after get operator: "+new Date().toISOString());
-
-  //         winston.debug("getOperators", result);
-  //       } catch (err) {
-  //         return reject(err);
-  //       }
-
-
-
-  //       agents = result.agents;
-
-  //       if (status == 50) {
-  //         // skip assignment
-  //         if (participants.length == 0) {
-  //           dep_id = result.department._id;
-  //         }
-  //       } else {
-
-  //         if (participants.length == 0) {
-  //           if (result.operators && result.operators.length > 0) {
-  //             participants.push(result.operators[0].id_user.toString());
-  //           }
-  //           // for preflight it is important to save agents in req for trigger. try to optimize it
-  //           dep_id = result.department._id;
-
-  //         }
-
-  //         if (participants.length > 0) {
-
-  //           status = RequestConstants.ASSIGNED;
-
-  //           /**
-  //            * QUOTAS - START!!!
-  //            */
-  //           if (!isTestConversation && !isVoiceConversation) {
-  //             requestEvent.emit('request.create.quote', payload);
-  //           }
-  //           /**
-  //            * QUOTAS - END!!!
-  //            */
-
-
-
-  //           // botprefix
-  //           if (participants[0].startsWith("bot_")) {
-
-  //             hasBot = true;
-  //             winston.debug("hasBot:" + hasBot);
-
-  //             // botprefix
-  //             var assigned_operator_idStringBot = participants[0].replace("bot_", "");
-  //             winston.debug("assigned_operator_idStringBot:" + assigned_operator_idStringBot);
-
-  //             participantsBots.push(assigned_operator_idStringBot);
-
-  //           } else {
-
-  //             participantsAgents.push(participants[0]);
-
-  //           }
-
-  //           assigned_at = Date.now();
-
-  //         } else {
-
-  //           status = RequestConstants.UNASSIGNED;
-
-  //         }
-
-  //       }
-
-
-
-
-  //       if (dep_id) {
-  //         snapshot.department = result.department;
-  //       }
-
-  //       // console.log("result.agents",result.agents);
-  //       snapshot.agents = agents;
-  //       snapshot.availableAgentsCount = that.getAvailableAgentsCount(agents);
-
-  //       if (request.requester) {      //.toObject()????
-  //         snapshot.requester = request.requester;
-  //       }
-  //       if (request.lead) {
-  //         snapshot.lead = request.lead;
-  //       }
-
-  //       // winston.debug("assigned_operator_id", assigned_operator_id);
-  //       // winston.debug("req status", status);
-
-  //       var newRequest = new Request({
-  //         request_id: request_id,
-  //         requester: project_user_id,
-  //         lead: lead_id,
-  //         first_text: first_text,
-  //         subject: subject,
-  //         status: status,
-  //         participants: participants,
-  //         participantsAgents: participantsAgents,
-  //         participantsBots: participantsBots,
-  //         hasBot: hasBot,
-  //         department: dep_id,
-  //         // agents: agents,                
-
-  //         //others
-  //         sourcePage: sourcePage,
-  //         language: language,
-  //         userAgent: userAgent,
-  //         assigned_at: assigned_at,
-
-  //         attributes: attributes,
-  //         //standard
-  //         id_project: id_project,
-  //         createdBy: createdBy,
-  //         updatedBy: createdBy,
-  //         preflight: preflight,
-  //         channel: channel,
-  //         location: location,
-  //         snapshot: snapshot,
-  //         tags: tags,
-  //         notes: notes,
-  //         priority: priority,
-  //         auto_close: auto_close,
-  //         followers: followers,
-  //         createdAt: createdAt
-  //       });
-
-  //       if (isTestConversation) {
-  //         newRequest.draft = true;
-  //       }
-
-  //       winston.debug('newRequest.', newRequest);
-
-
-  //       //cacheinvalidation
-  //       return newRequest.save( async function (err, savedRequest) {
-
-  //         if (err) {
-  //           winston.error('RequestService error for method createWithIdAndRequester for newRequest' + JSON.stringify(newRequest), err);
-  //           return reject(err);
-  //         }
-
-
-  //         winston.debug("Request created", savedRequest.toObject());
-
-  //         var endDate = new Date();
-  //         winston.verbose("Performance Request created in millis: " + endDate - startDate);
-
-  //         requestEvent.emit('request.create.simple', savedRequest);
-
-  //         if (!isTestConversation && !isVoiceConversation) {
-  //           // requestEvent.emit('request.create.quote', payload);;
-  //         }
-
-  //         return resolve(savedRequest);
-
-  //       });
-  //       // }).catch(function(err){
-  //       //   return reject(err);
-  //       // });
-
-  //     })
-  //     });
-    
-  // }
-
-  // DEPRECATED
-  // async __create(request) {
-
-  //   var startDate = new Date();
-
-  //   if (!request.createdAt) {
-  //     request.createdAt = new Date();
-  //   }
-
-    
-  //   var request_id = request.request_id;
-  //   var project_user_id = request.project_user_id;
-  //   var lead_id = request.lead_id;
-  //   var id_project = request.id_project;
-
-  //   var first_text = request.first_text;
-
-  //   //removed for ticket
-  //   // // lascia che sia nico a fare il replace...certo tu devi fare il test che tutto sia ok quindi dopo demo
-  //   // var first_text;  
-  //   // if (request.first_text) {  //first_text can be empty for type image
-  //   //   first_text = request.first_text.replace(/[\n\r]+/g, ' '); //replace new line with space
-  //   // }
-
-  //   var departmentid = request.departmentid;
-  //   var sourcePage = request.sourcePage;
-  //   var language = request.language;
-  //   var userAgent = request.userAgent;
-  //   var status = request.status;
-  //   var createdBy = request.createdBy;
-  //   var attributes = request.attributes;
-  //   var subject = request.subject;
-  //   var preflight = request.preflight;
-  //   var channel = request.channel;
-  //   var location = request.location;
-  //   var participants = request.participants || [];
-
-  //   var tags = request.tags;
-  //   var notes = request.notes;
-  //   var priority = request.priority;
-
-  //   var auto_close = request.auto_close;
-
-  //   var followers = request.followers;
-  //   let createdAt = request.createdAt;
-
-  //   if (!departmentid) {
-  //     departmentid = 'default';
-  //   }
-
-  //   if (!createdBy) {
-  //     if (project_user_id) {
-  //       createdBy = project_user_id;
-  //     } else {
-  //       createdBy = "system";
-  //     }
-
-  //   }
-
-  //   var that = this;
-
-  //   return new Promise(async (resolve, reject) => {
-
-  //     var context = {
-  //       request: {
-  //         request_id: request_id, project_user_id: project_user_id, lead_id: lead_id, id_project: id_project,
-  //         first_text: first_text, departmentid: departmentid, sourcePage: sourcePage, language: language, userAgent: userAgent, status: status,
-  //         createdBy: createdBy, attributes: attributes, subject: subject, preflight: preflight, channel: channel, location: location,
-  //         participants: participants, tags: tags, notes: notes,
-  //         priority: priority, auto_close: auto_close, followers: followers
-  //       }
-  //     };
-
-  //     winston.debug("context", context);
-
-  //     var participantsAgents = [];
-  //     var participantsBots = [];
-  //     var hasBot = false;
-
-  //     var dep_id = undefined;
-
-  //     var assigned_at = undefined;
-
-  //     var agents = [];
-
-  //     var snapshot = {};
-
-  //     try {
-  //       //  getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
-  //       var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
-  //       // console.log("************* after get operator: "+new Date().toISOString());
-
-  //       winston.debug("getOperators", result);
-  //     } catch (err) {
-  //       return reject(err);
-  //     }
-
-
-
-  //     agents = result.agents;
-
-  //     if (status == 50) {
-  //       // skip assignment
-  //       if (participants.length == 0) {
-  //         dep_id = result.department._id;
-  //       }
-  //     } else {
-
-  //       if (participants.length == 0) {
-  //         if (result.operators && result.operators.length > 0) {
-  //           participants.push(result.operators[0].id_user.toString());
-  //         }
-  //         // for preflight it is important to save agents in req for trigger. try to optimize it
-  //         dep_id = result.department._id;
-
-  //       }
-
-  //       if (participants.length > 0) {
-
-  //         status = RequestConstants.ASSIGNED;
-
-  //         // botprefix
-  //         if (participants[0].startsWith("bot_")) {
-
-  //           hasBot = true;
-  //           winston.debug("hasBot:" + hasBot);
-
-  //           // botprefix
-  //           var assigned_operator_idStringBot = participants[0].replace("bot_", "");
-  //           winston.debug("assigned_operator_idStringBot:" + assigned_operator_idStringBot);
-
-  //           participantsBots.push(assigned_operator_idStringBot);
-
-  //         } else {
-
-  //           participantsAgents.push(participants[0]);
-
-  //         }
-
-  //         assigned_at = Date.now();
-
-  //       } else {
-
-  //         status = RequestConstants.UNASSIGNED;
-
-  //       }
-
-  //     }
-
-
-
-
-  //     if (dep_id) {
-  //       snapshot.department = result.department;
-  //     }
-
-  //     // console.log("result.agents",result.agents);
-  //     snapshot.agents = agents;
-  //     snapshot.availableAgentsCount = that.getAvailableAgentsCount(agents);
-
-  //     if (request.requester) {      //.toObject()????
-  //       snapshot.requester = request.requester;
-  //     }
-  //     if (request.lead) {
-  //       snapshot.lead = request.lead;
-  //     }
-
-  //     // winston.debug("assigned_operator_id", assigned_operator_id);
-  //     // winston.debug("req status", status);
-
-  //     var newRequest = new Request({
-  //       request_id: request_id,
-  //       requester: project_user_id,
-  //       lead: lead_id,
-  //       first_text: first_text,
-  //       subject: subject,
-  //       status: status,
-  //       participants: participants,
-  //       participantsAgents: participantsAgents,
-  //       participantsBots: participantsBots,
-  //       hasBot: hasBot,
-  //       department: dep_id,
-  //       // agents: agents,                
-
-  //       //others
-  //       sourcePage: sourcePage,
-  //       language: language,
-  //       userAgent: userAgent,
-  //       assigned_at: assigned_at,
-
-  //       attributes: attributes,
-  //       //standard
-  //       id_project: id_project,
-  //       createdBy: createdBy,
-  //       updatedBy: createdBy,
-  //       preflight: preflight,
-  //       channel: channel,
-  //       location: location,
-  //       snapshot: snapshot,
-  //       tags: tags,
-  //       notes: notes,
-  //       priority: priority,
-  //       auto_close: auto_close,
-  //       followers: followers,
-  //       createdAt: createdAt
-  //     });
-
-  //     winston.debug('newRequest.', newRequest);
-
-
-  //     //cacheinvalidation
-  //     return newRequest.save(function (err, savedRequest) {
-
-  //       if (err) {
-  //         winston.error('RequestService error for method createWithIdAndRequester for newRequest' + JSON.stringify(newRequest), err);
-  //         return reject(err);
-  //       }
-
-
-  //       winston.debug("Request created", savedRequest.toObject());
-
-  //       var endDate = new Date();
-  //       winston.verbose("Performance Request created in millis: " + endDate - startDate);
-
-  //       requestEvent.emit('request.create.simple', savedRequest);
-
-  //       let q = Project.findOne({ _id: request.id_project, status: 100 });
-  //       if (cacheEnabler.project) {
-  //         q.cache(cacheUtil.longTTL, "projects:id:" + request.id_project)  //project_cache
-  //         winston.debug('project cache enabled for /project detail');
-  //       }
-  //       q.exec(async function (err, p) {
-  //         if (err) {
-  //           winston.error('Error getting project ', err);
-  //         }
-  //         if (!p) {
-  //           winston.warn('Project not found ');
-  //         }
-  //         //TODO REMOVE settings from project
-  //         let payload = {
-  //           project: p,
-  //           request: request
-  //         }
-
-  //         requestEvent.emit('request.create.quote', payload);;
-          
-  //       });
-
-  //       return resolve(savedRequest);
-
-  //     });
-  //     // }).catch(function(err){
-  //     //   return reject(err);
-  //     // });
-
-
-  //   });
-  // }
-
-
-
-
-
+  
   //DEPRECATED. USED ONLY IN SAME TESTS
   createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
 
@@ -1541,6 +856,10 @@ class RequestService {
         return reject({ err: "Error changing first text. The field first_text is empty" });
       }
 
+
+
+      winston.info("main_flow_cache_3 changeFirstTextAndPreflightByRequestId");
+      
       return Request
         .findOneAndUpdate({ request_id: request_id, id_project: id_project }, { first_text: first_text, preflight: preflight }, { new: true, upsert: false })
         .populate('lead')
@@ -1950,6 +1269,8 @@ class RequestService {
 
   findByRequestId(request_id, id_project) {
     return new Promise(function (resolve, reject) {
+      winston.info("main_flow_cache_3 requestService findByRequestId");
+      
       return Request.findOne({ request_id: request_id, id_project: id_project }, function (err, request) {
         if (err) {
           return reject(err);
@@ -1993,13 +1314,13 @@ class RequestService {
             if (Array.isArray(request.participantsAgents)) {
               if (request.participantsAgents.length === 1) {
                 winston.error('Cannot add participants: participantsAgents already has one element for request_id ' + request_id + ' and id_project ' + id_project);
-                return reject('Cannot add participants: only one participant allowed for this request');
+                return reject({ code: 403, error: 'Cannot add participants: only one participant allowed for this request' });
               } else if (request.participantsAgents.length === 0) {
                 if (Array.isArray(newparticipants) && newparticipants.length === 1) {
                   // ok, allow to add one participant
                 } else {
                   winston.error('Can only add one participant for request_id ' + request_id + ' and id_project ' + id_project);
-                  return reject('Can only add one participant for this request');
+                  return reject({ code: 403, error: 'Can only add one participant for this request' });
                 }
               }
             }
@@ -2921,7 +2242,31 @@ class RequestService {
     })
   }
 
-
+  emitParticipantsEvents(beforeRequest, requestComplete, oldParticipants) {
+    const newParticipants = requestComplete.participants;
+  
+    const removedParticipants = oldParticipants.filter(
+      p => !newParticipants.includes(p)
+    );
+    const addedParticipants = newParticipants.filter(
+      p => !oldParticipants.includes(p)
+    );
+  
+    requestEvent.emit("request.update", requestComplete);
+    requestEvent.emit("request.updated", {
+      comment: "REROUTE",
+      request: requestComplete,
+      patch: { removedParticipants, addedParticipants }
+    });
+  
+    requestEvent.emit("request.participants.update", {
+      beforeRequest,
+      removedParticipants,
+      addedParticipants,
+      request: requestComplete
+    });
+  }
+  
 }
 
 
