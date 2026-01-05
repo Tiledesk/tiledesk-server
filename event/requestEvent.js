@@ -24,6 +24,9 @@ requestEvent.on('request.create.simple', function(request) {
 
     winston.debug("request.create.simple");
     //no cache required here. because is always new (empty)
+
+    winston.info("main_flow_cache_3 requestEvent populate");
+    const t1 = Date.now();
     request
         .populate(
             [           
@@ -41,6 +44,8 @@ requestEvent.on('request.create.simple', function(request) {
                 return requestEvent.emit('request.create', request);
             }
 
+            winston.info("main_flow_cache_3 requestEvent populate end");
+            console.log("[Performance] requestEvent populate time: " + (Date.now() - t1));
             winston.debug('emitting request.create', requestComplete.toObject());
 
             requestEvent.emit('request.create', requestComplete);

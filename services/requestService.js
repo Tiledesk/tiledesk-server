@@ -23,7 +23,7 @@ const axios = require("axios").default;
 let port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/ext/";;
 if (process.env.TILEBOT_ENDPOINT) {
-    TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/"
+    TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/";
 }
 
 let tdCache = new TdCache({
@@ -395,13 +395,316 @@ class RequestService {
     }
   }
 
+  // TODO  changePreflightByRequestId se un agente entra in request freflight true disabilitare add agente e reassing ma mettere un bottone removePreflight???
+  // usalo no_populate
+  // route(request_id, departmentid, id_project, nobot, no_populate) {
+  //   var that = this;
+  //   const t1 = Date.now();
+  //   return new Promise(function (resolve, reject) {
+  //     winston.debug("request_id:" + request_id);
+  //     winston.debug("departmentid:" + departmentid);
+  //     winston.debug("id_project:" + id_project);
+  //     winston.debug("nobot:" + nobot);
 
-  reroute(request_id, id_project, nobot) {
+  //     winston.info("main_flow_cache_3 route");
+
+  //     const t7 = Date.now();
+  //     let q = Request
+  //       .findOne({ request_id: request_id, id_project: id_project });
+
+  //     if (cacheEnabler.request) {  //(node:60837) UnhandledPromiseRejectionWarning: VersionError: No matching document found for id "633efe246a6cc0eda5732684" version 0 modifiedPaths "status, participants, participantsAgents, department, assigned_at, snapshot, snapshot.department, snapshot.department.updatedAt, snapshot.agents"
+  //       q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id+":simple")      //request_cache
+  //       winston.debug('request cache enabled');
+  //     }
+  //     return q.exec(function (err, request) {
+  //       console.log("[Performance] findOne time: " + (Date.now() - t7));
+  //       if (err) {
+  //         winston.error(err);
+  //         return reject(err);
+  //       }
+
+  //       winston.debug('request return', request);
+
+  //       // cambia var in let
+
+  //       //it is important to clone here
+  //       const t8 = Date.now();
+  //       var requestBeforeRoute = Object.assign({}, request.toObject());
+  //       winston.debug("requestBeforeRoute", requestBeforeRoute);
+  //       console.log("[Performance] toObject requestBeforeRoute time: " + (Date.now() - t8));
+  //       var beforeParticipants = requestBeforeRoute.participants;
+  //       winston.debug("beforeParticipants: ", beforeParticipants);
+
+  //       const t2 = Date.now();
+  //       return that.routeInternal(request, departmentid, id_project, nobot).then( async function (routedRequest) {
+  //         console.log("[Performance] routeInternal time: " + (Date.now() - t2));
+  //         winston.debug("after routeInternal", routedRequest);
+  //         winston.debug("requestBeforeRoute.status:" + requestBeforeRoute.status);
+  //         winston.debug("routedRequest.status:" + routedRequest.status);
+
+  //         let beforeDepartmentId;
+  //         if (requestBeforeRoute.department) { //requestBeforeRoute.department can be empty for internal ticket
+  //           beforeDepartmentId = requestBeforeRoute.department.toString();
+  //           winston.debug("beforeDepartmentId:" + beforeDepartmentId);
+  //         }
+
+  //         console.log("[Performance] route 1: " + (Date.now() - t1));
+
+  //         let afterDepartmentId;
+  //         if (routedRequest.department) {
+  //           afterDepartmentId = routedRequest.department.toString();
+  //           winston.debug("afterDepartmentId:" + afterDepartmentId);
+  //         }
+
+  //         winston.debug("requestBefore status: ", requestBeforeRoute.status)
+  //         winston.debug("routedRequest status: ", routedRequest.status)
+
+  //         console.log("requestBeforeRoute: ", JSON.stringify(requestBeforeRoute));
+  //         console.log("routedRequest: ", JSON.stringify(routedRequest));
+  //         console.log("------")
+  //         console.log(`request status from ${requestBeforeRoute.status} to ${routedRequest.status}`);
+  //         console.log(`request status from ${beforeDepartmentId} to ${afterDepartmentId}`);
+  //         console.log("same participants: ", requestUtil.arraysEqual(beforeParticipants, routedRequest.participants));
+  //         console.log("------")
+  //         /**
+  //          * Case 1
+  //          * After internal routing:
+  //          * - same STATUS
+  //          * - same DEPARTMENT
+  //          * - same PARTICIPANTS
+  //          */
+  //         if (requestBeforeRoute.status === routedRequest.status &&
+  //           beforeDepartmentId === afterDepartmentId &&
+  //           requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
+
+  //           console.log("set to fully abandoned");
+  //           winston.verbose("Request " + request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
+
+  //           if (routedRequest.attributes && routedRequest.attributes.fully_abandoned && routedRequest.attributes.fully_abandoned === true) {
+  //             request.status = RequestConstants.ABANDONED;
+  //             request.attributes.fully_abandoned = true;
+  //             request.markModified('status');
+  //             request.markModified('attributes');
+  //             request.save((err, savedRequest) => {
+  //               if (err) {
+  //                 winston.error("Error updating request with status ABANDONED ", err);
+  //               } else {
+  //                 winston.verbose("Status modified in ABANDONED for request: " + savedRequest._id);
+  //               }
+  //             })
+  //           }
+
+  //           /**
+  //            * TODO: Restore proper functioning
+  //            * Option commented on 03/12/2025 by Johnny in order to allows clients to receive the request populated
+  //            * in such case of Abandoned Request (Status 150)
+  //           */
+  //           // if (no_populate === "true" || no_populate === true) {
+  //           //   winston.debug("no_populate is true");
+  //           //   requestEvent.emit('request.update', request);
+  //           //   return resolve(request);
+  //           // }
+            
+  //           winston.info('info: main_flow_cache_2.3.1');
+  //           winston.info("main_flow_cache_3 populate");
+
+  //           return request
+  //             .populate('lead')
+  //             .populate('department')
+  //             .populate('participatingBots')
+  //             .populate('participatingAgents')
+  //             .populate({ path: 'requester', populate: { path: 'id_user' } })
+  //             .execPopulate(function (err, requestComplete) {
+  //               winston.debug("requestComplete", requestComplete);
+
+  //               var oldParticipants = beforeParticipants;
+  //               winston.debug("oldParticipants ", oldParticipants);
+
+  //               let newParticipants = requestComplete.participants;
+  //               winston.debug("newParticipants ", newParticipants);
+
+  //               var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
+  //               winston.debug("removedParticipants ", removedParticipants);
+
+  //               var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
+  //               winston.debug("addedParticipants ", addedParticipants);
+
+  //               requestEvent.emit('request.update', requestComplete);
+  //               requestEvent.emit("request.update.comment", { comment: "REROUTE", request: requestComplete });//Deprecated
+  //               requestEvent.emit("request.updated", { comment: "REROUTE", request: requestComplete, patch: { removedParticipants: removedParticipants, addedParticipants: addedParticipants } });
+                
+  //               requestEvent.emit('request.participants.update', {
+  //                 beforeRequest: request,
+  //                 removedParticipants: removedParticipants,
+  //                 addedParticipants: addedParticipants,
+  //                 request: requestComplete
+  //               });
+
+  //               return resolve(requestComplete);
+  //             });
+  //         }
+
+  //         let project = await projectService.getCachedProject(id_project).catch((err) => {
+  //           winston.warn("Error getting cached project. Skip conversation quota check.")
+  //           winston.warn("Getting cached project error:  ", err)
+  //         })
+
+
+  //         let isTestConversation = false;
+  //         let isVoiceConversation = false;
+  //         let isStandardConversation = false;
+          
+  //         let payload = {
+  //           project: project,
+  //           request: request
+  //         }
+
+  //         console.log("[Performance] route 2: " + (Date.now() - t1));
+  //         if (request.attributes && request.attributes.sourcePage && (request.attributes.sourcePage.indexOf("td_draft=true") > -1)) {
+  //           winston.verbose("is a test conversation --> skip quote availability check")
+  //           isTestConversation = true;
+  //         }
+  //         else if (request.channel && (request.channel.name === 'voice-vxml')) {
+  //           winston.verbose("is a voice conversation --> skip quote availability check")
+  //           isVoiceConversation = true;
+  //         }
+  //         else {
+  //           isStandardConversation = true;
+  //           const t5 = Date.now();
+  //           let available = await qm.checkQuote(project, request, 'requests');
+  //           console.log("[Performance] checkQuote time: " + (Date.now() - t5));
+  //           if (available === false) {
+  //             winston.info("Requests limits reached for project " + project._id)
+  //             return reject("Requests limits reached for project " + project._id);
+  //           }
+  //         }
+
+  //         /**
+  //          * Case 2 - Leaving TEMP status
+  //          * After internal routing:
+  //          * - STATUS changed from 50 to 100 or 200
+  //          */
+  //         if (requestBeforeRoute.status === RequestConstants.TEMP && (routedRequest.status === RequestConstants.ASSIGNED || routedRequest.status === RequestConstants.UNASSIGNED)) {
+  //           // console.log("Case 2 - Leaving TEMP status")
+  //           if (isStandardConversation) {
+  //             requestEvent.emit('request.create.quote', payload);
+  //           }
+  //         }
+
+  //         /**
+  //          * Case 3 - Conversation opened through proactive message  
+  //          * After internal routing:
+  //          * - STATUS changed from undefined to 100
+  //          */
+  //         if ((!requestBeforeRoute.status || requestBeforeRoute.status === undefined) && routedRequest.status === RequestConstants.ASSIGNED) {
+  //           // console.log("Case 3 - 'Proactive' request")
+  //           if (isStandardConversation) { 
+  //             requestEvent.emit('request.create.quote', payload);
+  //           }
+  //         }
+
+  //         console.log("[Performance] route 3: " + (Date.now() - t1));
+
+  //         //cacheinvalidation
+  //         const t3 = Date.now();
+  //         return routedRequest.save(function (err, savedRequest) {
+  //           console.log("[Performance] save request time: " + (Date.now() - t3));
+  //           // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
+  //           //return routedRequest.update(function(err, savedRequest) {
+  //           if (err) {
+  //             winston.error('Error saving the request. ', { err: err, routedRequest: routedRequest });
+  //             return reject(err);
+  //           }
+
+  //           winston.debug("after save savedRequest", savedRequest);
+
+
+  //           // winston.info('info: main_flow_cache_2.3.2');
+  //           winston.info('info: main_flow_cache_2 route populate ');
+
+  //           const t4 = Date.now();
+  //           return savedRequest
+  //             .populate('lead')
+  //             .populate('department')
+  //             .populate('participatingBots')
+  //             .populate('participatingAgents')
+  //             .populate({ path: 'requester', populate: { path: 'id_user' } })
+  //             .execPopulate(function (err, requestComplete) {
+
+  //               // return Request       //to populate correctly i must re-exec the query
+  //               // .findById(savedRequest.id)
+  //               // .populate('lead')
+  //               // .populate('department')
+  //               // .populate('participatingBots')
+  //               // .populate('participatingAgents')  
+  //               // .populate({path:'requester',populate:{path:'id_user'}})
+  //               // .exec( function(err, requestComplete) {
+  //               console.log("[Performance] populate request time: " + (Date.now() - t4));
+
+  //               if (err) {
+  //                 winston.error('Error populating the request.', err);
+  //                 return reject(err);
+  //               }
+
+  //               winston.info('info: main_flow_cache_2 route populate end');
+  //               const t5 = Date.now();
+  //               winston.verbose("Request routed", requestComplete.toObject());
+  //               console.log("[Performance] toObject time: " + (Date.now() - t5));
+
+  //               console.log("[Performance] route 4: " + (Date.now() - t1));
+  //               var oldParticipants = beforeParticipants;
+  //               winston.debug("oldParticipants ", oldParticipants);
+
+  //               let newParticipants = requestComplete.participants;
+  //               winston.debug("newParticipants ", newParticipants);
+
+  //               var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
+  //               winston.debug("removedParticipants ", removedParticipants);
+
+  //               var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
+  //               winston.debug("addedParticipants ", addedParticipants);
+
+  //               requestEvent.emit('request.update', requestComplete);
+  //               requestEvent.emit("request.update.comment", { comment: "REROUTE", request: requestComplete });//Deprecated
+  //               requestEvent.emit("request.updated", { comment: "REROUTE", request: requestComplete, patch: { removedParticipants: removedParticipants, addedParticipants: addedParticipants } });
+
+  //               requestEvent.emit('request.participants.update', {
+  //                 beforeRequest: request,
+  //                 removedParticipants: removedParticipants,
+  //                 addedParticipants: addedParticipants,
+  //                 request: requestComplete
+  //               });
+
+  //               requestEvent.emit('request.department.update', requestComplete); //se req ha bot manda messaggio \welcome
+
+  //               winston.debug("here end");
+
+  //               return resolve(requestComplete);
+  //             });
+
+
+
+  //         });
+
+  //       }).catch(function (err) {
+  //         return reject(err);
+  //       });
+
+
+  //     });
+  //   });
+  // }
+
+
+  reroute(request_id, id_project, nobot, no_populate) {
     var that = this;
     var startDate = new Date();
     return new Promise(function (resolve, reject) {
       // winston.debug("request_id", request_id);
       // winston.debug("newstatus", newstatus);
+
+    // winston.info("main_flow_cache_3 reroute"); //but it is cached
+      
 
       let q = Request
         .findOne({ request_id: request_id, id_project: id_project });
@@ -429,10 +732,11 @@ class RequestService {
         }
 
 
-        return that.route(request_id, request.department.toString(), id_project, nobot).then(function (routedRequest) {
+        return that.route(request_id, request.department.toString(), id_project, nobot, no_populate).then(function (routedRequest) {
 
           var endDate = new Date();
           winston.verbose("Performance Request reroute in millis: " + endDate - startDate);
+          console.log("[Performance] Request reroute in millis: " + (endDate - startDate));
 
           return resolve(routedRequest);
         }).catch(function (err) {
@@ -463,6 +767,392 @@ class RequestService {
 
     return this.create(request);
   };
+  
+  // async create(request) {
+  //   try {
+  //     // Destructuring + Normalization
+  //     let t1 = Date.now();
+  //     const {
+  //       request_id, project_user_id, lead_id, id_project, first_text, departmentid: rawDepartmentId, sourcePage, language, userAgent, status: initialStatus, createdBy: initialCreatedBy, attributes, subject, preflight, channel, location, tags, notes, priority, auto_close, followers, createdAt: rawCreatedAt
+  //     } = request;
+
+  //     const departmentid = rawDepartmentId || "default";
+  //     const createdAt = rawCreatedAt || new Date();
+  //     const createdBy = initialCreatedBy || project_user_id || "system";
+  //     const participants = Array.isArray(request.participants)
+  //       ? [...request.participants]
+  //       : [];
+      
+  //     console.log("[Performance] requestService.create destructuring time: " + (Date.now() - t1));
+
+  //     let t2 = Date.now();
+  //     const context = {
+  //       request: {
+  //         request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status: initialStatus, createdBy, attributes, subject, preflight, channel, location, participants, tags, notes, priority, auto_close, followers, createdAt
+  //       }
+  //     };
+  //     console.log("[Performance] requestService.create context creation time: " + (Date.now() - t2));
+  //     winston.debug("context", context);
+
+  //     let t3 = Date.now();
+  //     const result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
+  //     winston.debug("getOperators", result);
+  //     console.log("[Performance] requestService.create getOperators time: " + (Date.now() - t3));
+
+  //     const agents = result.agents || [];
+
+  //     let status = initialStatus;
+  //     let dep_id;
+  //     let assigned_at;
+  //     let participantsAgents = [];
+  //     let participantsBots = [];
+  //     let hasBot = false;
+
+  //     let project;
+  //     let payload;
+  //     let isTestConversation = false;
+  //     let isVoiceConversation = false;
+  //     let isStandardConversation = false;
+
+  //     if (status !== RequestConstants.TEMP) {
+  //       let t4 = Date.now();
+  //       project = await projectService.getCachedProject(id_project);
+        
+  //       payload = { project, request };
+  
+  //       if (attributes?.sourcePage?.includes("td_draft=true")) {
+  //         isTestConversation = true;
+  //       } else if (channel?.name === "voice-vxml") {
+  //         isVoiceConversation = true;
+  
+  //         const available = await qm.checkQuote(project, request, "voice_duration");
+  //         if (available === false) {
+  //           throw new Error(`Voice duration limits reached for project ${project._id}`);
+  //         }
+  //       } else {
+  //         isStandardConversation = true;
+  
+  //         const available = await qm.checkQuote(project, request, "requests")
+  //         if (!available) {
+  //           throw new Error(`Requests limits reached for project ${project._id}`);
+  //         }
+  //       }
+
+  //       // Assignment
+  //       if (participants.length === 0 && result.operators?.length > 0) {
+  //         participants.push(result.operators[0].id_user.toString());
+  //         dep_id = result.department._id;
+  //       }
+  
+  //       if (participants.length > 0) {
+  //         status = RequestConstants.ASSIGNED;
+  //         assigned_at = Date.now();
+  
+  //         if (participants[0].startsWith("bot_")) {
+  //           hasBot = true;
+  //           participantsBots.push(participants[0].replace("bot_", ""));
+  //         } else {
+  //           participantsAgents.push(participants[0]);
+  //         }
+  //       } else {
+  //         status = RequestConstants.UNASSIGNED;
+  //       }
+
+  //       console.log("[Performance] requestService.create assignment time: " + (Date.now() - t4));
+
+  //     } else {
+  //       if (participants.length === 0) {
+  //         dep_id = result.department._id;
+  //       }
+  //     }
+
+  //     // Snapshot
+  //     let t5 = Date.now();
+  //     const snapshot = {
+  //       department: dep_id ? result.department : undefined,
+  //       agents,
+  //       availableAgentsCount: this.getAvailableAgentsCount(agents),
+  //       requester: request.requester,
+  //       lead: request.lead
+  //     }
+  //     console.log("[Performance] requestService.create snapshot time: " + (Date.now() - t5));
+
+  //     // Create request
+  //     let t6 = Date.now();
+  //     const newRequest = new Request({
+  //       request_id, requester: project_user_id, lead: lead_id, first_text, subject, status, participants, participantsAgents, participantsBots, hasBot, department: dep_id, sourcePage, language, userAgent, assigned_at, attributes, id_project, createdBy, updatedBy: createdBy, preflight, channel, location, snapshot, tags, notes, priority, auto_close, followers, createdAt, draft: isTestConversation || undefined
+  //     })
+  //     console.log("[Performance] requestService.create newRequest time: " + (Date.now() - t6));
+
+  //     winston.debug('newRequest: ', newRequest);
+
+  //     // Save request
+  //     let t7 = Date.now();
+  //     const savedRequest = await newRequest.save();
+  //     console.log("[Performance] requestService.create save time: " + (Date.now() - t7));
+
+  //     requestEvent.emit('request.create.simple', savedRequest);
+
+  //     if (isStandardConversation) {
+  //       requestEvent.emit('request.create.quote', payload);
+  //     }
+
+  //     return savedRequest;
+
+  //   } catch (error) {
+  //     winston.error("RequestService.create error", { err: error, request: request });
+  //     throw error;
+  //   }
+  // }
+
+  // async create(request) {
+
+  //   const t0 = process.hrtime.bigint();
+
+  //   try {
+
+  //     const t1 = Date.now();
+  //     if (!request.createdAt) {
+  //       request.createdAt = new Date();
+  //     }
+  
+  //     var request_id = request.request_id;
+  //     var project_user_id = request.project_user_id;
+  //     var lead_id = request.lead_id;
+  //     var id_project = request.id_project;
+  //     var first_text = request.first_text;
+  //     var departmentid = request.departmentid;
+  //     var sourcePage = request.sourcePage;
+  //     var language = request.language;
+  //     var userAgent = request.userAgent;
+  //     var status = request.status;
+  //     var createdBy = request.createdBy;
+  //     var attributes = request.attributes;
+  //     var subject = request.subject;
+  //     var preflight = request.preflight;
+  //     var channel = request.channel;
+  //     var location = request.location;
+  //     var participants = request.participants || [];
+  //     var tags = request.tags;
+  //     var notes = request.notes;
+  //     var priority = request.priority;
+  //     var auto_close = request.auto_close;
+  //     var followers = request.followers;
+  //     let createdAt = request.createdAt;
+  
+  //     if (!departmentid) {
+  //       departmentid = 'default';
+  //     }
+  
+  //     if (!createdBy) {
+  //       if (project_user_id) {
+  //         createdBy = project_user_id;
+  //       } else {
+  //         createdBy = "system";
+  //       }
+  //     }
+  //     console.log("[Performance] requestService.create initialization time: " + (Date.now() - t1));
+  
+  //     // Utils
+  //     let payload;
+  //     let isTestConversation = false;
+  //     let isVoiceConversation = false;
+  //     let isStandardConversation = false;
+  //     var that = this;
+      
+  //     const t2 = Date.now();
+  //     var context = {
+  //       request: {
+  //         request_id: request_id, project_user_id: project_user_id, lead_id: lead_id, id_project: id_project,
+  //         first_text: first_text, departmentid: departmentid, sourcePage: sourcePage, language: language, userAgent: userAgent, status: status,
+  //         createdBy: createdBy, attributes: attributes, subject: subject, preflight: preflight, channel: channel, location: location,
+  //         participants: participants, tags: tags, notes: notes,
+  //         priority: priority, auto_close: auto_close, followers: followers
+  //       }
+  //     };
+  //     winston.debug("context", context);
+  //     console.log("[Performance] requestService.create context creation time: " + (Date.now() - t2));
+  
+  //     var participantsAgents = [];
+  //     var participantsBots = [];
+  //     var hasBot = false;
+  //     var dep_id = undefined;
+  //     var assigned_at = undefined;
+  //     var agents = [];
+  //     var snapshot = {};
+  
+  //     const t3 = Date.now();
+  //     var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
+  //     winston.debug("getOperators", result);
+  //     console.log("[Performance] requestService.create getOperators time: " + (Date.now() - t3));
+  
+  //     agents = result.agents;
+
+  //     console.log("result.department._id: ", result.department._id);
+  
+  //     if (status == 50) {
+  //       // skip assignment
+  //       if (participants.length == 0) {
+  //         dep_id = result.department._id;
+  //       }
+  //     } else {
+  
+  //       const t4 = Date.now();
+  //       let project = await projectService.getCachedProject(id_project).catch((err) => {
+  //         winston.warn("Error getting cached project. Skip conversation quota check.")
+  //         winston.warn("Getting cached project error:  ", err)
+  //       })
+  //       payload = {
+  //         project: project,
+  //         request: request
+  //       }
+  //       console.log("[Performance] requestService.create getCachedProject time: " + (Date.now() - t4));
+  
+  //       const t5 = Date.now();
+  //       if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
+  //         winston.verbose("is a test conversation --> skip quote availability check")
+  //         isTestConversation = true;
+  //       }
+  //       else if (channel && (channel.name === 'voice-vxml')) {
+  //         isVoiceConversation = true;
+  //         let available = await qm.checkQuote(project, request, 'voice_duration');
+  //         if (available === false) {
+  //           winston.info("Voice duration limits reached for project " + project._id);
+  //           return reject("Voice duration limits reached for project " + project._id);
+  //         }
+  //       }
+  //       else {
+  //         isStandardConversation = true;
+  //         let available = await qm.checkQuote(project, request, 'requests');
+  //         if (available === false) {
+  //           winston.info("Requests limits reached for project " + project._id)
+  //           return reject("Requests limits reached for project " + project._id);
+  //         }
+  //       }
+  //       console.log("[Performance] requestService.create quote availability check time: " + (Date.now() - t5));
+  
+  //       const t6 = Date.now();
+  //       if (participants.length == 0) {
+  //         if (result.operators && result.operators.length > 0) {
+  //           participants.push(result.operators[0].id_user.toString());
+  //         }
+  //         // for preflight it is important to save agents in req for trigger. try to optimize it
+  //         dep_id = result.department._id;
+  //       }
+  //       console.log("[Performance] requestService.create push participants time: " + (Date.now() - t6));
+
+  //       if (participants.length > 0) {
+  //         const t7 = Date.now();
+  //         status = RequestConstants.ASSIGNED;
+  //         // botprefix
+  //         if (participants[0].startsWith("bot_")) {
+  
+  //           hasBot = true;
+  //           winston.debug("hasBot:" + hasBot);
+  
+  //           // botprefix
+  //           var assigned_operator_idStringBot = participants[0].replace("bot_", "");
+  //           winston.debug("assigned_operator_idStringBot:" + assigned_operator_idStringBot);
+  
+  //           participantsBots.push(assigned_operator_idStringBot);
+  
+  //         } else {
+  
+  //           participantsAgents.push(participants[0]);
+  
+  //         }
+  //         console.log("[Performance] requestService.create push participants time: " + (Date.now() - t7));
+  
+  //         assigned_at = Date.now();
+  
+  //       } else {
+  //         status = RequestConstants.UNASSIGNED;
+  //       }
+  //     }
+  
+  //     if (dep_id) {
+  //       snapshot.department = result.department;
+  //     }
+  
+  //     snapshot.agents = agents;
+  //     const t8 = Date.now();
+  //     snapshot.availableAgentsCount = that.getAvailableAgentsCount(agents);
+  //     console.log("[Performance] requestService.create getAvailableAgentsCount time: " + (Date.now() - t8));
+
+  //     const t9 = Date.now();
+  //     if (request.requester) {
+  //       snapshot.requester = request.requester;
+  //     }
+  //     if (request.lead) {
+  //       snapshot.lead = request.lead;
+  //     }
+  
+  //     var newRequest = new Request({
+  //       request_id: request_id,
+  //       requester: project_user_id,
+  //       lead: lead_id,
+  //       first_text: first_text,
+  //       subject: subject,
+  //       status: status,
+  //       participants: participants,
+  //       participantsAgents: participantsAgents,
+  //       participantsBots: participantsBots,
+  //       hasBot: hasBot,
+  //       department: dep_id,
+  //       // agents: agents,                
+  //       //others
+  //       sourcePage: sourcePage,
+  //       language: language,
+  //       userAgent: userAgent,
+  //       assigned_at: assigned_at,
+  //       attributes: attributes,
+  //       //standard
+  //       id_project: id_project,
+  //       createdBy: createdBy,
+  //       updatedBy: createdBy,
+  //       preflight: preflight,
+  //       channel: channel,
+  //       location: location,
+  //       snapshot: snapshot,
+  //       tags: tags,
+  //       notes: notes,
+  //       priority: priority,
+  //       auto_close: auto_close,
+  //       followers: followers,
+  //       createdAt: createdAt
+  //     });
+  
+  //     if (isTestConversation) {
+  //       newRequest.draft = true;
+  //     }
+  //     console.log("[Performance] requestService.create newRequest time: " + (Date.now() - t9));
+
+  //     winston.debug('newRequest.', newRequest);
+  
+  //     winston.info("main_flow_cache_ requestService create");
+  
+  //     //cacheinvalidation
+  //     const t10 = Date.now();
+  //     const savedRequest = await newRequest.save();
+  //     console.log("[Performance] requestService.create save time: " + (Date.now() - t10));
+  
+  //     winston.debug("Request created", savedRequest.toObject());
+  //     requestEvent.emit('request.create.simple', savedRequest);
+  
+  //     if (isStandardConversation) {
+  //       requestEvent.emit('request.create.quote', payload);;
+  //     }
+  
+  //     console.log("[Performance][INSIDE create TOTAL]", Number(process.hrtime.bigint() - t0) / 1e6, "ms");
+  //     return savedRequest;
+
+  //   } catch (err) {
+  //     winston.error("RequestService.create error", { err: err, request: request });
+  //     throw err;
+  //   }
+    
+
+  // }
 
   async create(request) {
     const createdAt = request.createdAt || new Date();
@@ -1642,6 +2332,10 @@ class RequestService {
         return reject({ err: "Error changing first text. The field first_text is empty" });
       }
 
+
+
+      winston.info("main_flow_cache_3 changeFirstTextAndPreflightByRequestId");
+      
       return Request
         .findOneAndUpdate({ request_id: request_id, id_project: id_project }, { first_text: first_text, preflight: preflight }, { new: true, upsert: false })
         .populate('lead')
@@ -2051,6 +2745,8 @@ class RequestService {
 
   findByRequestId(request_id, id_project) {
     return new Promise(function (resolve, reject) {
+      winston.info("main_flow_cache_3 requestService findByRequestId");
+      
       return Request.findOne({ request_id: request_id, id_project: id_project }, function (err, request) {
         if (err) {
           return reject(err);
@@ -2094,13 +2790,13 @@ class RequestService {
             if (Array.isArray(request.participantsAgents)) {
               if (request.participantsAgents.length === 1) {
                 winston.error('Cannot add participants: participantsAgents already has one element for request_id ' + request_id + ' and id_project ' + id_project);
-                return reject('Cannot add participants: only one participant allowed for this request');
+                return reject({ code: 403, error: 'Cannot add participants: only one participant allowed for this request' });
               } else if (request.participantsAgents.length === 0) {
                 if (Array.isArray(newparticipants) && newparticipants.length === 1) {
                   // ok, allow to add one participant
                 } else {
                   winston.error('Can only add one participant for request_id ' + request_id + ' and id_project ' + id_project);
-                  return reject('Can only add one participant for this request');
+                  return reject({ code: 403, error: 'Can only add one participant for this request' });
                 }
               }
             }
@@ -3022,7 +3718,31 @@ class RequestService {
     })
   }
 
-
+  emitParticipantsEvents(beforeRequest, requestComplete, oldParticipants) {
+    const newParticipants = requestComplete.participants;
+  
+    const removedParticipants = oldParticipants.filter(
+      p => !newParticipants.includes(p)
+    );
+    const addedParticipants = newParticipants.filter(
+      p => !oldParticipants.includes(p)
+    );
+  
+    requestEvent.emit("request.update", requestComplete);
+    requestEvent.emit("request.updated", {
+      comment: "REROUTE",
+      request: requestComplete,
+      patch: { removedParticipants, addedParticipants }
+    });
+  
+    requestEvent.emit("request.participants.update", {
+      beforeRequest,
+      removedParticipants,
+      addedParticipants,
+      request: requestComplete
+    });
+  }
+  
 }
 
 
