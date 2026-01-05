@@ -705,10 +705,10 @@ class RequestService {
       let q = Request
         .findOne({ request_id: request_id, id_project: id_project });
 
-      // if (cacheEnabler.request) {
-      //   q.cache(cacheUtil.defaultTTL, id_project + ":requests:request_id:" + request_id + ":simple")      //request_cache
-      //   winston.debug('request cache enabled');
-      // }
+      if (cacheEnabler.request) {
+        q.cache(cacheUtil.defaultTTL, id_project + ":requests:request_id:" + request_id + ":simple")      //request_cache
+        winston.debug('request cache enabled');
+      }
 
       return q.exec(function (err, request) {
 
@@ -967,6 +967,19 @@ class RequestService {
     try {
       const savedRequest = await newRequest.save();
       console.log("requestService create savedRequest: ", savedRequest);
+      
+      const r_db = await Request.findOne({ request_id, id_project });
+      console.log("requestService request from db: ", r_db.department);
+
+      let q = Request.findOne({ request_id, id_project });
+      if (cacheEnabler.request) {
+        q.cache(cacheUtil.defaultTTL, id_project + ":requests:request_id:" + request_id + ":simple");
+        winston.debug('request cache enabled');
+      }
+      const r_cache = await q.exec();
+      console.log("requestService request from cache: ", r_cache.department);
+
+      
       winston.debug("Request created", savedRequest.toObject());
       requestEvent.emit("request.create.simple", savedRequest);
 
