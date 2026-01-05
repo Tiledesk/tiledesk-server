@@ -520,6 +520,7 @@ class RulesTrigger {
 
 
               // reroute(request_id, id_project, nobot) {
+              console.log("requestService.reroute from rulesTrigger request.department.route.self")
               requestService.reroute(request_id, id_project).catch((err) => {
                 winston.error("Error runAction on reroute", err);
               });                           
@@ -734,6 +735,7 @@ class RulesTrigger {
 
               // reroute(request_id, id_project, nobot, no_populate)
               const t1 = Date.now();
+              console.log("requestService.reroute from rulesTrigger request.department.bot.launch")
               requestService.reroute(request_id, id_project, false, true).then(function(request) {
 
                 winston.verbose('request.department.bot.launch action reroute request_id: ' + request_id);
