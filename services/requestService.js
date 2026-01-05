@@ -1301,6 +1301,7 @@ class RequestService {
       snapshot.department = result.department;
     }
     snapshot.agents = agents;
+    snapshot.availableAgentsCount = this.getAvailableAgentsCount(agents);
 
     if (request.requester) {
       snapshot.requester = request.requester;
@@ -1338,7 +1339,8 @@ class RequestService {
       priority,
       auto_close,
       followers,
-      createdAt
+      createdAt,
+      snapshot
     })
 
     if (isTestConversation) {
