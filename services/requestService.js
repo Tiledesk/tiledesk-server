@@ -1348,12 +1348,14 @@ class RequestService {
       newRequest.draft = true;
     }
 
+    console.log("requestService create newRequest: ", newRequest);
     winston.debug('newRequest.', newRequest);
     winston.info("main_flow_cache_ requestService create");
 
     // Save request
     try {
       const savedRequest = await newRequest.save();
+      console.log("requestService create savedRequest: ", savedRequest);
       winston.debug("Request created", savedRequest.toObject());
       requestEvent.emit("request.create.simple", savedRequest);
 
