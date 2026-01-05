@@ -968,8 +968,8 @@ class RequestService {
       const savedRequest = await newRequest.save();
       console.log("requestService create savedRequest: ", savedRequest);
       
-      const r_db = await Request.findOne({ request_id, id_project });
-      console.log("requestService request from db: ", r_db.department);
+      // const r_db = await Request.findOne({ request_id, id_project });
+      // console.log("requestService request from db: ", r_db.department);
 
       let q = Request.findOne({ request_id, id_project });
       if (cacheEnabler.request) {
