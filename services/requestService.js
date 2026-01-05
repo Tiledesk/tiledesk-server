@@ -769,393 +769,7 @@ class RequestService {
     return this.create(request);
   };
   
-  // async create(request) {
-  //   try {
-  //     // Destructuring + Normalization
-  //     let t1 = Date.now();
-  //     const {
-  //       request_id, project_user_id, lead_id, id_project, first_text, departmentid: rawDepartmentId, sourcePage, language, userAgent, status: initialStatus, createdBy: initialCreatedBy, attributes, subject, preflight, channel, location, tags, notes, priority, auto_close, followers, createdAt: rawCreatedAt
-  //     } = request;
-
-  //     const departmentid = rawDepartmentId || "default";
-  //     const createdAt = rawCreatedAt || new Date();
-  //     const createdBy = initialCreatedBy || project_user_id || "system";
-  //     const participants = Array.isArray(request.participants)
-  //       ? [...request.participants]
-  //       : [];
-      
-  //     console.log("[Performance] requestService.create destructuring time: " + (Date.now() - t1));
-
-  //     let t2 = Date.now();
-  //     const context = {
-  //       request: {
-  //         request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status: initialStatus, createdBy, attributes, subject, preflight, channel, location, participants, tags, notes, priority, auto_close, followers, createdAt
-  //       }
-  //     };
-  //     console.log("[Performance] requestService.create context creation time: " + (Date.now() - t2));
-  //     winston.debug("context", context);
-
-  //     let t3 = Date.now();
-  //     const result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
-  //     winston.debug("getOperators", result);
-  //     console.log("[Performance] requestService.create getOperators time: " + (Date.now() - t3));
-
-  //     const agents = result.agents || [];
-
-  //     let status = initialStatus;
-  //     let dep_id;
-  //     let assigned_at;
-  //     let participantsAgents = [];
-  //     let participantsBots = [];
-  //     let hasBot = false;
-
-  //     let project;
-  //     let payload;
-  //     let isTestConversation = false;
-  //     let isVoiceConversation = false;
-  //     let isStandardConversation = false;
-
-  //     if (status !== RequestConstants.TEMP) {
-  //       let t4 = Date.now();
-  //       project = await projectService.getCachedProject(id_project);
-        
-  //       payload = { project, request };
-  
-  //       if (attributes?.sourcePage?.includes("td_draft=true")) {
-  //         isTestConversation = true;
-  //       } else if (channel?.name === "voice-vxml") {
-  //         isVoiceConversation = true;
-  
-  //         const available = await qm.checkQuote(project, request, "voice_duration");
-  //         if (available === false) {
-  //           throw new Error(`Voice duration limits reached for project ${project._id}`);
-  //         }
-  //       } else {
-  //         isStandardConversation = true;
-  
-  //         const available = await qm.checkQuote(project, request, "requests")
-  //         if (!available) {
-  //           throw new Error(`Requests limits reached for project ${project._id}`);
-  //         }
-  //       }
-
-  //       // Assignment
-  //       if (participants.length === 0 && result.operators?.length > 0) {
-  //         participants.push(result.operators[0].id_user.toString());
-  //         dep_id = result.department._id;
-  //       }
-  
-  //       if (participants.length > 0) {
-  //         status = RequestConstants.ASSIGNED;
-  //         assigned_at = Date.now();
-  
-  //         if (participants[0].startsWith("bot_")) {
-  //           hasBot = true;
-  //           participantsBots.push(participants[0].replace("bot_", ""));
-  //         } else {
-  //           participantsAgents.push(participants[0]);
-  //         }
-  //       } else {
-  //         status = RequestConstants.UNASSIGNED;
-  //       }
-
-  //       console.log("[Performance] requestService.create assignment time: " + (Date.now() - t4));
-
-  //     } else {
-  //       if (participants.length === 0) {
-  //         dep_id = result.department._id;
-  //       }
-  //     }
-
-  //     // Snapshot
-  //     let t5 = Date.now();
-  //     const snapshot = {
-  //       department: dep_id ? result.department : undefined,
-  //       agents,
-  //       availableAgentsCount: this.getAvailableAgentsCount(agents),
-  //       requester: request.requester,
-  //       lead: request.lead
-  //     }
-  //     console.log("[Performance] requestService.create snapshot time: " + (Date.now() - t5));
-
-  //     // Create request
-  //     let t6 = Date.now();
-  //     const newRequest = new Request({
-  //       request_id, requester: project_user_id, lead: lead_id, first_text, subject, status, participants, participantsAgents, participantsBots, hasBot, department: dep_id, sourcePage, language, userAgent, assigned_at, attributes, id_project, createdBy, updatedBy: createdBy, preflight, channel, location, snapshot, tags, notes, priority, auto_close, followers, createdAt, draft: isTestConversation || undefined
-  //     })
-  //     console.log("[Performance] requestService.create newRequest time: " + (Date.now() - t6));
-
-  //     winston.debug('newRequest: ', newRequest);
-
-  //     // Save request
-  //     let t7 = Date.now();
-  //     const savedRequest = await newRequest.save();
-  //     console.log("[Performance] requestService.create save time: " + (Date.now() - t7));
-
-  //     requestEvent.emit('request.create.simple', savedRequest);
-
-  //     if (isStandardConversation) {
-  //       requestEvent.emit('request.create.quote', payload);
-  //     }
-
-  //     return savedRequest;
-
-  //   } catch (error) {
-  //     winston.error("RequestService.create error", { err: error, request: request });
-  //     throw error;
-  //   }
-  // }
-
-  // async create(request) {
-
-  //   const t0 = process.hrtime.bigint();
-
-  //   try {
-
-  //     const t1 = Date.now();
-  //     if (!request.createdAt) {
-  //       request.createdAt = new Date();
-  //     }
-  
-  //     var request_id = request.request_id;
-  //     var project_user_id = request.project_user_id;
-  //     var lead_id = request.lead_id;
-  //     var id_project = request.id_project;
-  //     var first_text = request.first_text;
-  //     var departmentid = request.departmentid;
-  //     var sourcePage = request.sourcePage;
-  //     var language = request.language;
-  //     var userAgent = request.userAgent;
-  //     var status = request.status;
-  //     var createdBy = request.createdBy;
-  //     var attributes = request.attributes;
-  //     var subject = request.subject;
-  //     var preflight = request.preflight;
-  //     var channel = request.channel;
-  //     var location = request.location;
-  //     var participants = request.participants || [];
-  //     var tags = request.tags;
-  //     var notes = request.notes;
-  //     var priority = request.priority;
-  //     var auto_close = request.auto_close;
-  //     var followers = request.followers;
-  //     let createdAt = request.createdAt;
-  
-  //     if (!departmentid) {
-  //       departmentid = 'default';
-  //     }
-  
-  //     if (!createdBy) {
-  //       if (project_user_id) {
-  //         createdBy = project_user_id;
-  //       } else {
-  //         createdBy = "system";
-  //       }
-  //     }
-  //     console.log("[Performance] requestService.create initialization time: " + (Date.now() - t1));
-  
-  //     // Utils
-  //     let payload;
-  //     let isTestConversation = false;
-  //     let isVoiceConversation = false;
-  //     let isStandardConversation = false;
-  //     var that = this;
-      
-  //     const t2 = Date.now();
-  //     var context = {
-  //       request: {
-  //         request_id: request_id, project_user_id: project_user_id, lead_id: lead_id, id_project: id_project,
-  //         first_text: first_text, departmentid: departmentid, sourcePage: sourcePage, language: language, userAgent: userAgent, status: status,
-  //         createdBy: createdBy, attributes: attributes, subject: subject, preflight: preflight, channel: channel, location: location,
-  //         participants: participants, tags: tags, notes: notes,
-  //         priority: priority, auto_close: auto_close, followers: followers
-  //       }
-  //     };
-  //     winston.debug("context", context);
-  //     console.log("[Performance] requestService.create context creation time: " + (Date.now() - t2));
-  
-  //     var participantsAgents = [];
-  //     var participantsBots = [];
-  //     var hasBot = false;
-  //     var dep_id = undefined;
-  //     var assigned_at = undefined;
-  //     var agents = [];
-  //     var snapshot = {};
-  
-  //     const t3 = Date.now();
-  //     var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
-  //     winston.debug("getOperators", result);
-  //     console.log("[Performance] requestService.create getOperators time: " + (Date.now() - t3));
-  
-  //     agents = result.agents;
-
-  //     console.log("result.department._id: ", result.department._id);
-  
-  //     if (status == 50) {
-  //       // skip assignment
-  //       if (participants.length == 0) {
-  //         dep_id = result.department._id;
-  //       }
-  //     } else {
-  
-  //       const t4 = Date.now();
-  //       let project = await projectService.getCachedProject(id_project).catch((err) => {
-  //         winston.warn("Error getting cached project. Skip conversation quota check.")
-  //         winston.warn("Getting cached project error:  ", err)
-  //       })
-  //       payload = {
-  //         project: project,
-  //         request: request
-  //       }
-  //       console.log("[Performance] requestService.create getCachedProject time: " + (Date.now() - t4));
-  
-  //       const t5 = Date.now();
-  //       if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
-  //         winston.verbose("is a test conversation --> skip quote availability check")
-  //         isTestConversation = true;
-  //       }
-  //       else if (channel && (channel.name === 'voice-vxml')) {
-  //         isVoiceConversation = true;
-  //         let available = await qm.checkQuote(project, request, 'voice_duration');
-  //         if (available === false) {
-  //           winston.info("Voice duration limits reached for project " + project._id);
-  //           return reject("Voice duration limits reached for project " + project._id);
-  //         }
-  //       }
-  //       else {
-  //         isStandardConversation = true;
-  //         let available = await qm.checkQuote(project, request, 'requests');
-  //         if (available === false) {
-  //           winston.info("Requests limits reached for project " + project._id)
-  //           return reject("Requests limits reached for project " + project._id);
-  //         }
-  //       }
-  //       console.log("[Performance] requestService.create quote availability check time: " + (Date.now() - t5));
-  
-  //       const t6 = Date.now();
-  //       if (participants.length == 0) {
-  //         if (result.operators && result.operators.length > 0) {
-  //           participants.push(result.operators[0].id_user.toString());
-  //         }
-  //         // for preflight it is important to save agents in req for trigger. try to optimize it
-  //         dep_id = result.department._id;
-  //       }
-  //       console.log("[Performance] requestService.create push participants time: " + (Date.now() - t6));
-
-  //       if (participants.length > 0) {
-  //         const t7 = Date.now();
-  //         status = RequestConstants.ASSIGNED;
-  //         // botprefix
-  //         if (participants[0].startsWith("bot_")) {
-  
-  //           hasBot = true;
-  //           winston.debug("hasBot:" + hasBot);
-  
-  //           // botprefix
-  //           var assigned_operator_idStringBot = participants[0].replace("bot_", "");
-  //           winston.debug("assigned_operator_idStringBot:" + assigned_operator_idStringBot);
-  
-  //           participantsBots.push(assigned_operator_idStringBot);
-  
-  //         } else {
-  
-  //           participantsAgents.push(participants[0]);
-  
-  //         }
-  //         console.log("[Performance] requestService.create push participants time: " + (Date.now() - t7));
-  
-  //         assigned_at = Date.now();
-  
-  //       } else {
-  //         status = RequestConstants.UNASSIGNED;
-  //       }
-  //     }
-  
-  //     if (dep_id) {
-  //       snapshot.department = result.department;
-  //     }
-  
-  //     snapshot.agents = agents;
-  //     const t8 = Date.now();
-  //     snapshot.availableAgentsCount = that.getAvailableAgentsCount(agents);
-  //     console.log("[Performance] requestService.create getAvailableAgentsCount time: " + (Date.now() - t8));
-
-  //     const t9 = Date.now();
-  //     if (request.requester) {
-  //       snapshot.requester = request.requester;
-  //     }
-  //     if (request.lead) {
-  //       snapshot.lead = request.lead;
-  //     }
-  
-  //     var newRequest = new Request({
-  //       request_id: request_id,
-  //       requester: project_user_id,
-  //       lead: lead_id,
-  //       first_text: first_text,
-  //       subject: subject,
-  //       status: status,
-  //       participants: participants,
-  //       participantsAgents: participantsAgents,
-  //       participantsBots: participantsBots,
-  //       hasBot: hasBot,
-  //       department: dep_id,
-  //       // agents: agents,                
-  //       //others
-  //       sourcePage: sourcePage,
-  //       language: language,
-  //       userAgent: userAgent,
-  //       assigned_at: assigned_at,
-  //       attributes: attributes,
-  //       //standard
-  //       id_project: id_project,
-  //       createdBy: createdBy,
-  //       updatedBy: createdBy,
-  //       preflight: preflight,
-  //       channel: channel,
-  //       location: location,
-  //       snapshot: snapshot,
-  //       tags: tags,
-  //       notes: notes,
-  //       priority: priority,
-  //       auto_close: auto_close,
-  //       followers: followers,
-  //       createdAt: createdAt
-  //     });
-  
-  //     if (isTestConversation) {
-  //       newRequest.draft = true;
-  //     }
-  //     console.log("[Performance] requestService.create newRequest time: " + (Date.now() - t9));
-
-  //     winston.debug('newRequest.', newRequest);
-  
-  //     winston.info("main_flow_cache_ requestService create");
-  
-  //     //cacheinvalidation
-  //     const t10 = Date.now();
-  //     const savedRequest = await newRequest.save();
-  //     console.log("[Performance] requestService.create save time: " + (Date.now() - t10));
-  
-  //     winston.debug("Request created", savedRequest.toObject());
-  //     requestEvent.emit('request.create.simple', savedRequest);
-  
-  //     if (isStandardConversation) {
-  //       requestEvent.emit('request.create.quote', payload);;
-  //     }
-  
-  //     console.log("[Performance][INSIDE create TOTAL]", Number(process.hrtime.bigint() - t0) / 1e6, "ms");
-  //     return savedRequest;
-
-  //   } catch (err) {
-  //     winston.error("RequestService.create error", { err: err, request: request });
-  //     throw err;
-  //   }
-    
-
-  // }
-
-  async create(request) {
+  async new_create(request) {
     const createdAt = request.createdAt || new Date();
 
     let {
@@ -1372,237 +986,235 @@ class RequestService {
 
   }
 
-  // async create(request) {
+  async create(request) {
+
+    if (!request.createdAt)  {
+      request.createdAt = new Date();
+    }
+
+    var request_id = request.request_id;
+    var project_user_id = request.project_user_id;
+    var lead_id = request.lead_id;
+    var id_project = request.id_project;
+    var first_text = request.first_text;
+    var departmentid = request.departmentid;
+    var sourcePage = request.sourcePage;
+    var language = request.language;
+    var userAgent = request.userAgent;
+    var status = request.status;
+    var createdBy = request.createdBy;
+    var attributes = request.attributes;
+    var subject = request.subject;
+    var preflight = request.preflight;
+    var channel = request.channel;
+    var location = request.location;
+    var participants = request.participants || [];
+    var tags = request.tags;
+    var notes = request.notes;
+    var priority = request.priority;
+    var auto_close = request.auto_close;
+    var followers = request.followers;
+    let createdAt = request.createdAt;
+
+    if (!departmentid) {
+      departmentid = 'default';
+    }
+
+    if (!createdBy) {
+      if (project_user_id) {
+        createdBy = project_user_id;
+      } else {
+        createdBy = "system";
+      }
+    }
+
+    // Utils
+    let payload;
+    let isTestConversation = false;
+    let isVoiceConversation = false;
+    let isStandardConversation = false;
+    var that = this;
+
+    return new Promise( async (resolve, reject) => {
+      var context = {
+        request: {
+          request_id: request_id, project_user_id: project_user_id, lead_id: lead_id, id_project: id_project,
+          first_text: first_text, departmentid: departmentid, sourcePage: sourcePage, language: language, userAgent: userAgent, status: status,
+          createdBy: createdBy, attributes: attributes, subject: subject, preflight: preflight, channel: channel, location: location,
+          participants: participants, tags: tags, notes: notes,
+          priority: priority, auto_close: auto_close, followers: followers
+        }
+      };
+      winston.debug("context", context);
+
+      var participantsAgents = [];
+      var participantsBots = [];
+      var hasBot = false;
+      var dep_id = undefined;
+      var assigned_at = undefined;
+      var agents = [];
+      var snapshot = {};
+
+      try {
+        // (method) DepartmentService.getOperators(departmentid: any, projectid: any, nobot: any, disableWebHookCall: any, context: any): Promise<any>
+        var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
+        winston.debug("getOperators", result);
+
+      } catch (err) {
+        return reject(err);
+      }
+
+      agents = result.agents;
+
+      if (status == 50) {
+        // skip assignment
+        if (participants.length == 0) {
+          dep_id = result.department._id;
+        }
+      } else {
+
+        let project = await projectService.getCachedProject(id_project).catch((err) => {
+          winston.warn("Error getting cached project. Skip conversation quota check.")
+          winston.warn("Getting cached project error:  ", err)
+        })
+
+        payload = {
+          project: project,
+          request: request
+        }
+
+        if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
+          winston.verbose("is a test conversation --> skip quote availability check")
+          isTestConversation = true;
+        }
+        else if (channel && (channel.name === 'voice-vxml')) {
+          isVoiceConversation = true;
+          let available = await qm.checkQuote(project, request, 'voice_duration');
+          if (available === false) {
+            winston.info("Voice duration limits reached for project " + project._id);
+            return reject("Voice duration limits reached for project " + project._id);
+          }
+        }
+        else {
+          isStandardConversation = true;
+          let available = await qm.checkQuote(project, request, 'requests');
+          if (available === false) {
+            winston.info("Requests limits reached for project " + project._id)
+            return reject("Requests limits reached for project " + project._id);
+          }
+        }
 
 
-  //   if (!request.createdAt) {
-  //     request.createdAt = new Date();
-  //   }
+        if (participants.length == 0) {
+          if (result.operators && result.operators.length > 0) {
+            participants.push(result.operators[0].id_user.toString());
+          }
+          // for preflight it is important to save agents in req for trigger. try to optimize it
+          dep_id = result.department._id;
+        }
 
-  //   var request_id = request.request_id;
-  //   var project_user_id = request.project_user_id;
-  //   var lead_id = request.lead_id;
-  //   var id_project = request.id_project;
-  //   var first_text = request.first_text;
-  //   var departmentid = request.departmentid;
-  //   var sourcePage = request.sourcePage;
-  //   var language = request.language;
-  //   var userAgent = request.userAgent;
-  //   var status = request.status;
-  //   var createdBy = request.createdBy;
-  //   var attributes = request.attributes;
-  //   var subject = request.subject;
-  //   var preflight = request.preflight;
-  //   var channel = request.channel;
-  //   var location = request.location;
-  //   var participants = request.participants || [];
-  //   var tags = request.tags;
-  //   var notes = request.notes;
-  //   var priority = request.priority;
-  //   var auto_close = request.auto_close;
-  //   var followers = request.followers;
-  //   let createdAt = request.createdAt;
+        if (participants.length > 0) {
+          status = RequestConstants.ASSIGNED;
+          // botprefix
+          if (participants[0].startsWith("bot_")) {
 
-  //   if (!departmentid) {
-  //     departmentid = 'default';
-  //   }
+            hasBot = true;
+            winston.debug("hasBot:" + hasBot);
 
-  //   if (!createdBy) {
-  //     if (project_user_id) {
-  //       createdBy = project_user_id;
-  //     } else {
-  //       createdBy = "system";
-  //     }
-  //   }
+            // botprefix
+            var assigned_operator_idStringBot = participants[0].replace("bot_", "");
+            winston.debug("assigned_operator_idStringBot:" + assigned_operator_idStringBot);
 
-  //   // Utils
-  //   let payload;
-  //   let isTestConversation = false;
-  //   let isVoiceConversation = false;
-  //   let isStandardConversation = false;
-  //   var that = this;
+            participantsBots.push(assigned_operator_idStringBot);
 
-  //   var context = {
-  //     request: {
-  //       request_id: request_id, project_user_id: project_user_id, lead_id: lead_id, id_project: id_project,
-  //       first_text: first_text, departmentid: departmentid, sourcePage: sourcePage, language: language, userAgent: userAgent, status: status,
-  //       createdBy: createdBy, attributes: attributes, subject: subject, preflight: preflight, channel: channel, location: location,
-  //       participants: participants, tags: tags, notes: notes,
-  //       priority: priority, auto_close: auto_close, followers: followers
-  //     }
-  //   };
-  //   winston.debug("context", context);
+          } else {
 
-  //   var participantsAgents = [];
-  //   var participantsBots = [];
-  //   var hasBot = false;
-  //   var dep_id = undefined;
-  //   var assigned_at = undefined;
-  //   var agents = [];
-  //   var snapshot = {};
+            participantsAgents.push(participants[0]);
 
-  //   try {
-  //     // (method) DepartmentService.getOperators(departmentid: any, projectid: any, nobot: any, disableWebHookCall: any, context: any): Promise<any>
-  //     var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
-  //     winston.debug("getOperators", result);
-  //   } catch (err) {
-  //     return reject(err);
-  //   }
+          }
 
-  //   agents = result.agents;
+          assigned_at = Date.now();
 
-  //   if (status == 50) {
-  //     // skip assignment
-  //     if (participants.length == 0) {
-  //       dep_id = result.department._id;
-  //     }
-  //   } else {
+        } else {
+          status = RequestConstants.UNASSIGNED;
+        }
+      }
 
-  //     let project = await projectService.getCachedProject(id_project).catch((err) => {
-  //       winston.warn("Error getting cached project. Skip conversation quota check.")
-  //       winston.warn("Getting cached project error:  ", err)
-  //     })
+      if (dep_id) {
+        snapshot.department = result.department;
+      }
 
-  //     payload = {
-  //       project: project,
-  //       request: request
-  //     }
+      snapshot.agents = agents;
+      snapshot.availableAgentsCount = that.getAvailableAgentsCount(agents);
 
-  //     if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
-  //       winston.verbose("is a test conversation --> skip quote availability check")
-  //       isTestConversation = true;
-  //     }
-  //     else if (channel && (channel.name === 'voice-vxml')) {
-  //       isVoiceConversation = true;
-  //       let available = await qm.checkQuote(project, request, 'voice_duration');
-  //       if (available === false) {
-  //         winston.info("Voice duration limits reached for project " + project._id);
-  //         return reject("Voice duration limits reached for project " + project._id);
-  //       }
-  //     }
-  //     else {
-  //       isStandardConversation = true;
-  //       let available = await qm.checkQuote(project, request, 'requests');
-  //       if (available === false) {
-  //         winston.info("Requests limits reached for project " + project._id)
-  //         return reject("Requests limits reached for project " + project._id);
-  //       }
-  //     }
+      if (request.requester) {
+        snapshot.requester = request.requester;
+      }
+      if (request.lead) {
+        snapshot.lead = request.lead;
+      }
 
+      var newRequest = new Request({
+        request_id: request_id,
+        requester: project_user_id,
+        lead: lead_id,
+        first_text: first_text,
+        subject: subject,
+        status: status,
+        participants: participants,
+        participantsAgents: participantsAgents,
+        participantsBots: participantsBots,
+        hasBot: hasBot,
+        department: dep_id,
+        // agents: agents,                
+        //others
+        sourcePage: sourcePage,
+        language: language,
+        userAgent: userAgent,
+        assigned_at: assigned_at,
+        attributes: attributes,
+        //standard
+        id_project: id_project,
+        createdBy: createdBy,
+        updatedBy: createdBy,
+        preflight: preflight,
+        channel: channel,
+        location: location,
+        //snapshot: snapshot,
+        tags: tags,
+        notes: notes,
+        priority: priority,
+        auto_close: auto_close,
+        followers: followers,
+        createdAt: createdAt
+      });
 
-  //     if (participants.length == 0) {
-  //       if (result.operators && result.operators.length > 0) {
-  //         participants.push(result.operators[0].id_user.toString());
-  //       }
-  //       // for preflight it is important to save agents in req for trigger. try to optimize it
-  //       dep_id = result.department._id;
-  //     }
+      if (isTestConversation) {
+        newRequest.draft = true;
+      }
 
-  //     if (participants.length > 0) {
-  //       status = RequestConstants.ASSIGNED;
-  //       // botprefix
-  //       if (participants[0].startsWith("bot_")) {
+      winston.debug('newRequest.', newRequest);
 
-  //         hasBot = true;
-  //         winston.debug("hasBot:" + hasBot);
+      //cacheinvalidation
+      return newRequest.save( async function (err, savedRequest) {
 
-  //         // botprefix
-  //         var assigned_operator_idStringBot = participants[0].replace("bot_", "");
-  //         winston.debug("assigned_operator_idStringBot:" + assigned_operator_idStringBot);
+        if (err) {
+          winston.error('RequestService error for method createWithIdAndRequester for newRequest' + JSON.stringify(newRequest), err);
+          return reject(err);
+        }
+        winston.debug("Request created", savedRequest.toObject());
 
-  //         participantsBots.push(assigned_operator_idStringBot);
+        requestEvent.emit('request.create.simple', savedRequest);
 
-  //       } else {
+        if (isStandardConversation) {
+          requestEvent.emit('request.create.quote', payload);;
+        }
 
-  //         participantsAgents.push(participants[0]);
+        return resolve(savedRequest);
 
-  //       }
-
-  //       assigned_at = Date.now();
-
-  //     } else {
-  //       status = RequestConstants.UNASSIGNED;
-  //     }
-  //   }
-
-  //   if (dep_id) {
-  //     snapshot.department = result.department;
-  //   }
-
-  //   snapshot.agents = agents;
-  //   // const t3 = Date.now();
-  //   // snapshot.availableAgentsCount = that.getAvailableAgentsCount(agents);
-  //   // console.log("[Performance] getAvailableAgentsCount time: " + (Date.now() - t3));
-
-  //   if (request.requester) {
-  //     snapshot.requester = request.requester;
-  //   }
-  //   if (request.lead) {
-  //     snapshot.lead = request.lead;
-  //   }
-
-  //   var newRequest = new Request({
-  //     request_id: request_id,
-  //     requester: project_user_id,
-  //     lead: lead_id,
-  //     first_text: first_text,
-  //     subject: subject,
-  //     status: status,
-  //     participants: participants,
-  //     participantsAgents: participantsAgents,
-  //     participantsBots: participantsBots,
-  //     hasBot: hasBot,
-  //     department: dep_id,
-  //     // agents: agents,                
-  //     //others
-  //     sourcePage: sourcePage,
-  //     language: language,
-  //     userAgent: userAgent,
-  //     assigned_at: assigned_at,
-  //     attributes: attributes,
-  //     //standard
-  //     id_project: id_project,
-  //     createdBy: createdBy,
-  //     updatedBy: createdBy,
-  //     preflight: preflight,
-  //     channel: channel,
-  //     location: location,
-  //     //snapshot: snapshot,
-  //     tags: tags,
-  //     notes: notes,
-  //     priority: priority,
-  //     auto_close: auto_close,
-  //     followers: followers,
-  //     createdAt: createdAt
-  //   });
-
-  //   if (isTestConversation) {
-  //     newRequest.draft = true;
-  //   }
-
-  //   winston.debug('newRequest.', newRequest);
-
-  //   winston.info("main_flow_cache_ requestService create");
-
-  //   //cacheinvalidation
-  //   return newRequest.save(async function (err, savedRequest) {
-
-  //     if (err) {
-  //       winston.error('RequestService error for method createWithIdAndRequester for newRequest' + JSON.stringify(newRequest), err);
-  //       return reject(err);
-  //     }
-  //     winston.debug("Request created", savedRequest.toObject());
-  //     requestEvent.emit('request.create.simple', savedRequest);
-
-  //     if (isStandardConversation) {
-  //       requestEvent.emit('request.create.quote', payload);;
-  //     }
-
-  //     return resolve(savedRequest);
-
-  //   });
-
-  // }
+      });
+    })
+  }
 
   // DEPRECATED
   // async _create(request) {
