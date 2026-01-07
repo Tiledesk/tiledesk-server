@@ -460,7 +460,7 @@ RequestSchema.index({ id_project: 1, request_id: 1 }
 //TODO cambiare dummy con language? attento che il codice deve essere compatibile
 
 
-RequestSchema.index({transcript: 'text', rating_message: 'text', subject: 'text', "tags.tag": 'text', "notes.text": 'text', "snapshot.lead.email": 'text', "snapshot.lead.fullname": 'text' },  
+RequestSchema.index({id_project: 1, transcript: 'text', rating_message: 'text', subject: 'text', "tags.tag": 'text', "notes.text": 'text', "snapshot.lead.email": 'text', "snapshot.lead.fullname": 'text' },  
  {"name":"request_fulltext","default_language": defaultFullTextLanguage,"language_override": "dummy"}); // schema level
 
 //  let query = {id_project: operatorSelectedEvent.id_project, participants: { $exists: true, $ne: [] }};
