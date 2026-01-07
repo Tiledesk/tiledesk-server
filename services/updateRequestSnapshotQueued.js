@@ -16,7 +16,7 @@ class UpdateRequestSnapshotQueued {
   }
 
   updateRequestSnapshot() {
-    var snapshotUpdateKey = 'request.snapshot.update';
+    let snapshotUpdateKey = 'request.snapshot.update';
     if (requestEvent.queueEnabled) {
       snapshotUpdateKey = 'request.snapshot.update.queue';
     }
@@ -27,8 +27,9 @@ class UpdateRequestSnapshotQueued {
         winston.debug("updateRequestSnapshot on request.snapshot.update ", data);
         console.log("updateRequestSnapshot on request.snapshot.update ", data);
 
-        var request = data.request;
-        var snapshot = data.snapshot;
+        const request = data.request;
+        const snapshot = data.snapshot;
+        console.log("(queue) snapshot.requester", snapshot.requester);
 
         if (!request || !request.request_id || !request.id_project) {
           winston.error("updateRequestSnapshot: Invalid request data", data);
@@ -40,7 +41,7 @@ class UpdateRequestSnapshotQueued {
           return;
         }
 
-        var query = { request_id: request.request_id, id_project: request.id_project };
+        const query = { request_id: request.request_id, id_project: request.id_project };
         winston.debug("updateRequestSnapshot query ", query);
 
         Request.findOneAndUpdate(
