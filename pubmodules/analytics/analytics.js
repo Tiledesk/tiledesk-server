@@ -31,7 +31,7 @@ router.get('/requests/count', function(req, res) {
       { "$match": {"id_project":req.projectid, $or:[ {preflight:false}, { preflight : { $exists: false } } ], "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
       { "$count": "totalCount" }
     
-  ])
+  ], {readPreference: 'secondaryPreferred' })
   // .exec((err, result) => {
     .exec(function(err, result) {
 
@@ -62,7 +62,7 @@ router.get('/requests/aggregate/status', function(req, res) {
       { "$match": {"id_project":req.projectid, $or:[ {preflight:false}, { preflight : { $exists: false } } ], "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
       { "$count": "totalCount" }
     // DA IMPLEMNTARE
-  ])
+  ], {readPreference: 'secondaryPreferred' })
   // .exec((err, result) => {
     .exec(function(err, result) {
 
@@ -215,7 +215,7 @@ router.get('/requests/aggregate/status', function(req, res) {
         }},
         { "$sort": {"_id":1}},  
         // { "$limit": 7 },
-    ])
+    ], {readPreference: 'secondaryPreferred' })
     // .exec((err, result) => {
       .exec(function(err, result) {
 
@@ -283,7 +283,7 @@ router.get('/requests/aggregate/status', function(req, res) {
         }},
         { "$sort": {"_id":1}},  
         // { "$limit": 7 },
-    ])
+    ], {readPreference: 'secondaryPreferred' })
     // .exec((err, result) => {
       .exec(function(err, result) {
 
@@ -336,7 +336,7 @@ router.get('/requests/aggregate/status', function(req, res) {
         }},
         { "$sort": {"_id":1}},  
         // { "$limit": 7 },
-    ])
+    ], {readPreference: 'secondaryPreferred' })
     // .exec((err, result) => {
       .exec(function(err, result) {
 
@@ -391,7 +391,7 @@ router.get('/requests/aggregate/status', function(req, res) {
         }},
         { "$sort": {"_id":1}},  
         // { "$limit": 7 },
-    ])
+    ], {readPreference: 'secondaryPreferred' })
     // .exec((err, result) => {
       .exec(function(err, result) {
 
@@ -446,7 +446,7 @@ router.get('/requests/aggregate/status', function(req, res) {
               "count":{"$sum":1}
         }},
         { "$sort": {"_id":-1}}
-    ])
+    ], {readPreference: 'secondaryPreferred' })
     // .exec((err, result) => {
       .exec(function(err, result) {
 
@@ -501,7 +501,7 @@ router.get('/requests/aggregate/status', function(req, res) {
                 "count":{"$sum":1}
           }},
         { "$sort": {"_id":-1}}
-    ])
+    ], {readPreference: 'secondaryPreferred' })
       .exec(function(err, result) {
 
      
@@ -551,7 +551,7 @@ router.get('/requests/aggregate/status', function(req, res) {
         }
       },
       
-    ])
+    ], {readPreference: 'secondaryPreferred' })
       .exec(function(err, result) {
 
           if (err) {
@@ -597,7 +597,7 @@ router.get('/requests/aggregate/status', function(req, res) {
         }
       },
       
-    ])
+    ], {readPreference: 'secondaryPreferred' })
       .exec(function(err, result) {
 
           if (err) {
@@ -666,7 +666,7 @@ router.get('/requests/aggregate/status', function(req, res) {
       },
       { "$sort": {"_id":-1}}
       
-    ])
+    ], {readPreference: 'secondaryPreferred' })
       .exec(function(err, result) {
 
           if (err) {
@@ -701,7 +701,7 @@ router.get('/requests/aggregate/status', function(req, res) {
         }
       },
       { "$sort": {"_id":-1}}
-    ])
+    ], {readPreference: 'secondaryPreferred' })
       .exec(function(err, result) {
 
           if (err) {
@@ -753,7 +753,7 @@ router.get('/requests/aggregate/status', function(req, res) {
         }
       },
       
-    ])
+    ], {readPreference: 'secondaryPreferred' })
       .exec(function(err, result) {
 
           if (err) {
@@ -839,7 +839,7 @@ router.get('/requests/aggregate/status', function(req, res) {
       },
       { "$sort": {"_id":-1}}
       
-    ])
+    ], {readPreference: 'secondaryPreferred' })
       .exec(function(err, result) {
 
           if (err) {
@@ -874,7 +874,7 @@ router.get('/requests/aggregate/status', function(req, res) {
       },
       { "$sort": {"_id":-1}}
       
-    ])
+    ], {readPreference: 'secondaryPreferred' })
       .exec(function(err, result) {
 
           if (err) {
@@ -906,7 +906,7 @@ router.get('/requests/aggregate/status', function(req, res) {
         }
       },
       
-    ])
+    ], {readPreference: 'secondaryPreferred' })
       .exec(function(err, result) {
 
           if (err) {
@@ -972,7 +972,7 @@ router.get('/requests/aggregate/status', function(req, res) {
       },
       { "$sort": {"_id":-1}}
       
-    ])
+    ], {readPreference: 'secondaryPreferred' })
       .exec(function(err, result) {
 
           if (err) {
@@ -1006,7 +1006,7 @@ router.get('/requests/aggregate/status', function(req, res) {
         }
       },
       
-    ])
+    ], {readPreference: 'secondaryPreferred' })
       .exec(function(err, result) {
 
           if (err) {
@@ -1035,7 +1035,7 @@ router.get('/requests/hasBot/count', function(req, res) {
       { "$match": {"id_project":req.projectid, hasBot:true, $or:[ {preflight:false}, { preflight : { $exists: false } } ], "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
       { "$count": "totalCount" }
     
-  ])
+  ], {readPreference: 'secondaryPreferred' })
   // .exec((err, result) => {
     .exec(function(err, result) {
 
@@ -1103,7 +1103,7 @@ router.get('/requests/hasBot/count', function(req, res) {
         }},
         { "$sort": {"_id":1}},  
         // { "$limit": 7 },
-    ])
+    ], {readPreference: 'secondaryPreferred' })
     // .exec((err, result) => {
       .exec(function(err, result) {
 
@@ -1161,7 +1161,7 @@ router.get('/requests/hasBot/count', function(req, res) {
          }},
          { "$sort": {"_id":1}},  
          // { "$limit": 7 },
-     ])
+     ], {readPreference: 'secondaryPreferred' })
      // .exec((err, result) => {
        .exec(function(err, result) {
  
@@ -1196,7 +1196,7 @@ router.get('/project_users/count', function(req, res) {
        { "$match": {"id_project":new ObjectId(req.projectid), role: { $in : [RoleConstants.GUEST, RoleConstants.USER]}, status: "active", "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
       { "$count": "totalCount" }
     
-  ])
+  ], {readPreference: 'secondaryPreferred' })
     .exec(function(err, result) {   
       if (err) {
           winston.debug(err);
@@ -1247,7 +1247,7 @@ router.get('/project_users/count', function(req, res) {
         }},
         { "$sort": {"_id":1}},  
         // { "$limit": 7 },
-    ])
+    ], {readPreference: 'secondaryPreferred' })
     // .exec((err, result) => {
       .exec(function(err, result) {
 
@@ -1291,7 +1291,7 @@ router.get('/project_users/count', function(req, res) {
         }},
         { "$sort": {"_id":1}},  
         // { "$limit": 7 },
-    ])
+    ], {readPreference: 'secondaryPreferred' })
     // .exec((err, result) => {
       .exec(function(err, result) {
 
@@ -1334,7 +1334,7 @@ router.get('/project_users/count', function(req, res) {
         }},
         { "$sort": {"_id":1}},  
         // { "$limit": 7 },
-    ])
+    ], {readPreference: 'secondaryPreferred' })
     // .exec((err, result) => {
       .exec(function(err, result) {
 
@@ -1396,7 +1396,7 @@ router.get('/messages/count', function(req, res) {
       { "$match":query},
       { "$count": "totalCount" }
     
-  ])
+  ], {readPreference: 'secondaryPreferred' })
     .exec(function(err, result) {   
       if (err) {
           winston.debug(err);
@@ -1457,7 +1457,7 @@ router.get('/messages/count', function(req, res) {
               "count":{"$sum":1}
         }},
         { "$sort": {"_id":1}},  
-    ])
+    ], {readPreference: 'secondaryPreferred' })
       .exec(function(err, result) {
 
      
@@ -1505,7 +1505,7 @@ router.get('/messages/count', function(req, res) {
               "count":{"$sum":1}
         }},
         { "$sort": {"_id":1}},  
-    ])
+    ], {readPreference: 'secondaryPreferred' })
       .exec(function(err, result) {
         if (err) {
             winston.debug(err);
@@ -1552,7 +1552,7 @@ router.get('/messages/count', function(req, res) {
               "count":{"$sum":1}
         }},
         { "$sort": {"_id":1}},  
-    ])
+    ], {readPreference: 'secondaryPreferred' })
       .exec(function(err, result) {
         if (err) {
             winston.debug(err);
@@ -1607,7 +1607,7 @@ router.get('/messages/count', function(req, res) {
               "count":{"$sum":1}
         }},
         { "$sort": {"_id":1}},  
-    ])
+    ], {readPreference: 'secondaryPreferred' })
       .exec(function(err, result) {
 
      
@@ -1662,7 +1662,7 @@ router.get('/messages/count', function(req, res) {
             "count":{"$sum":1}
       }},
       { "$sort": {"_id":1}},  
-   ])
+   ], {readPreference: 'secondaryPreferred' })
      .exec(function(err, result) {
 
     
@@ -1727,7 +1727,7 @@ router.get('/messages/count', function(req, res) {
               "count":{"$sum":1}
         }},
         { "$sort": {"_id":1}},  
-    ])
+    ], {readPreference: 'secondaryPreferred' })
       .exec(function(err, result) {
 
      
@@ -1782,7 +1782,7 @@ router.get('/tags/:type', async (req, res) => {
 
   console.log("analytics tags query: ", query)
 
-  let result = await Analytics.find(query).catch((err) => {
+  let result = await Analytics.find(query,null, {readPreference: 'secondaryPreferred' }).catch((err) => {
     winston.error("Error finding Analytics: ", err);
     return res.status(500).send({ success: false, error: "Unable to find analytics" })
   })
