@@ -29,6 +29,7 @@ const botEvent = require('./event/botEvent');
 var channelManager = require('./channels/channelManager');
 
 var updateLeadQueued = require('./services/updateLeadQueued');
+var updateRequestSnapshotQueued = require('./services/updateRequestSnapshotQueued');
 
 
 require('./services/mongoose-cache-fn')(mongoose);
@@ -83,7 +84,7 @@ async function main()
     
 
 
-    let jobsManager = new JobsManager(undefined, geoService, botEvent, subscriptionNotifierQueued, botSubscriptionNotifier, updateLeadQueued);
+    let jobsManager = new JobsManager(undefined, geoService, botEvent, subscriptionNotifierQueued, botSubscriptionNotifier, updateLeadQueued, updateRequestSnapshotQueued);
 
     jobsManager.listen();
 

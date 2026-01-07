@@ -180,6 +180,7 @@ var geoService = require('./services/geoService');
 // geoService.listen(); //queued
 
 var updateLeadQueued = require('./services/updateLeadQueued');
+var updateRequestSnapshotQueued = require('./services/updateRequestSnapshotQueued');
 
 let JobsManager = require('./jobsManager');
 
@@ -189,7 +190,7 @@ if (process.env.JOB_WORKER_ENABLED=="true" || process.env.JOB_WORKER_ENABLED == 
 }
 winston.info("JobsManager jobWorkerEnabled: "+ jobWorkerEnabled);  
 
-let jobsManager = new JobsManager(jobWorkerEnabled, geoService, botEvent, subscriptionNotifierQueued, botSubscriptionNotifier, updateLeadQueued);
+let jobsManager = new JobsManager(jobWorkerEnabled, geoService, botEvent, subscriptionNotifierQueued, botSubscriptionNotifier, updateLeadQueued, updateRequestSnapshotQueued);
 
 var faqBotHandler = require('./services/faqBotHandler');
 faqBotHandler.listen();

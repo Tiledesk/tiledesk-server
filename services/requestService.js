@@ -675,6 +675,14 @@ class RequestService {
         requestEvent.emit("request.create.quote", payload);
       }
 
+      // Emit event to update snapshot in queue
+      if (Object.keys(snapshot).length > 0) {
+        requestEvent.emit("request.snapshot.update", {
+          request: savedRequest,
+          snapshot: snapshot
+        });
+      }
+
       return savedRequest;
 
     } catch (err) {

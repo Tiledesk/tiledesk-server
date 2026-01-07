@@ -204,9 +204,10 @@ function startWorker() {
           winston.info("Data queue", oka)
         });
 
-        
-
-
+        ch.bindQueue(_ok.queue, exchange, "request_snapshot_update", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: request_snapshot_update");
+          winston.info("Data queue", oka)
+        });
 
 
         ch.consume(queueName, processMsg, { noAck: false });
@@ -320,6 +321,11 @@ function work(msg, cb) {
     leadEvent.emit('lead.fullname.email.update.queue',  JSON.parse(message_string));
   }
 
+  if (topic === 'request_snapshot_update') {
+    winston.debug("reconnect here topic request_snapshot_update:" + topic); 
+    requestEvent.emit('request.snapshot.update.queue',  JSON.parse(message_string));
+  }
+
 
 
   cb(true);
@@ -404,6 +410,13 @@ function listen() {
       });
     });
 
+    requestEvent.on('request.snapshot.update', function(data) {
+      setImmediate(() => {
+        winston.debug("reconnect request.snapshot.update")
+        console.log("reconnect request.snapshot.update")
+        publish(exchange, "request_snapshot_update", Buffer.from(JSON.stringify(data)));
+      });
+    });
 
 
     messageEvent.on('message.create', function(message) {
