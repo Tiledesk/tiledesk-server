@@ -1,9 +1,9 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var winston = require('../config/winston');
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let winston = require('../config/winston');
 let expireAfterSeconds = process.env.UNANSWERED_QUESTION_EXPIRATION_TIME || 7 * 24 * 60 * 60; // 7 days
 
-var EngineSchema = new Schema({
+const EngineSchema = new Schema({
   name: {
     type: String,
     required: true
@@ -23,12 +23,49 @@ var EngineSchema = new Schema({
   index_name: {
     type: String,
     required: true
+  },
+  host: {
+    type: String,
+    required: false
+  },
+  port: {
+    type: String,
+    required: false
+  },
+  deployment: {
+    type: String,
+    required: false
+  },
+}, {
+  _id: false  // This is schema is always used as an embedded object inside NamespaceSchema
+})
+
+const EmbeddingSchema = new Schema({
+  provider: {
+    type: String,
+    required: true
+  },
+  name: {
+    type: String,
+    required: true
+  },
+  dimension: {
+    type: Number,
+    reuired: true
+  },
+  url: {
+    type: String,
+    required: false
+  },
+  api_key: {
+    type: String,
+    required: false
   }
 }, {
   _id: false  // This is schema is always used as an embedded object inside NamespaceSchema
 })
 
-var NamespaceSchema = new Schema({
+const NamespaceSchema = new Schema({
   id_project: {
     type: String,
     required: true
@@ -55,7 +92,11 @@ var NamespaceSchema = new Schema({
   },
   engine: {
     type: EngineSchema,
-    required: false
+    required: true
+  },
+  embedding: {
+    type: EmbeddingSchema,
+    required: true
   }
 }, {
   timestamps: true
@@ -83,6 +124,14 @@ var KBSchema = new Schema({
     required: false
   },
   content: {
+    type: String,
+    required: false
+  },
+  sitemap_origin_id: {
+    type: String,
+    required: false
+  },
+  sitemap_origin: {
     type: String,
     required: false
   },
@@ -122,6 +171,10 @@ var KBSchema = new Schema({
   last_refresh: {
     type: Date,
     required: false
+  },
+  last_error: {
+    type: Object,
+    required: false
   }
 }, {
   timestamps: true
@@ -141,14 +194,6 @@ const UnansweredQuestionSchema = new Schema({
   question: {
     type: String,
     required: true
-  },
-  created_at: {
-    type: Date,
-    default: Date.now
-  },
-  updated_at: {
-    type: Date,
-    default: Date.now
   }
 },{
   timestamps: true
@@ -158,7 +203,7 @@ const UnansweredQuestionSchema = new Schema({
 UnansweredQuestionSchema.index({ created_at: 1 }, { expireAfterSeconds: expireAfterSeconds }); // 30 days
 
 // DEPRECATED !! - Start
-var KBSettingSchema = new Schema({
+const KBSettingSchema = new Schema({
   id_project: {
     type: String,
     required: true,

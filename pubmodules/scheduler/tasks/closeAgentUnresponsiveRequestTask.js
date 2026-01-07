@@ -13,10 +13,16 @@ class CloseAgentUnresponsiveRequestTask {
 constructor() {
   this.enabled = process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_ENABLE || "false"; 
   this.cronExp = process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_CRON_EXPRESSION || '*/30 * * * *'; //every 30 minutes
-  this.queryAfterTimeout = parseInt(process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_AFTER_TIMEOUT) || 5 * 24 * 60 * 60 * 1000; //five days ago // 86400000 a day
-  this.queryLimit = parseInt(process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_QUERY_LIMIT) || 10;
-  this.queryProject = process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_QUERY_FILTER_ONLY_PROJECT;
+  
+  const afterTimeout = Number(process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_AFTER_TIMEOUT);
+  this.queryAfterTimeout = !isNaN(afterTimeout) && afterTimeout > 0
+    ? afterTimeout
+    : 2 * 24 * 60 * 60 * 1000; //two days ago //172800000 two days // 86400000 a day
 
+  const limit = Number(process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_QUERY_LIMIT);
+  this.queryLimit = !isNaN(limit) && limit > 0 ? Math.floor(limit) : 10;
+
+  this.queryProject = process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_QUERY_FILTER_ONLY_PROJECT;
   if (this.queryProject) {
     winston.info("CloseAgentUnresponsiveRequestTask filter only by projects enabled: " + this.queryProject );
   }

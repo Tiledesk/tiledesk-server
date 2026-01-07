@@ -23,7 +23,7 @@ const axios = require("axios").default;
 let port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/ext/";;
 if (process.env.TILEBOT_ENDPOINT) {
-    TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/"
+    TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/";
 }
 
 let tdCache = new TdCache({
@@ -392,12 +392,15 @@ class RequestService {
   }
 
 
-  reroute(request_id, id_project, nobot) {
+  reroute(request_id, id_project, nobot, no_populate) {
     var that = this;
     var startDate = new Date();
     return new Promise(function (resolve, reject) {
       // winston.debug("request_id", request_id);
       // winston.debug("newstatus", newstatus);
+
+    // winston.info("main_flow_cache_3 reroute"); //but it is cached
+      
 
       let q = Request
         .findOne({ request_id: request_id, id_project: id_project });
@@ -425,11 +428,7 @@ class RequestService {
         }
 
 
-        return that.route(request_id, request.department.toString(), id_project, nobot).then(function (routedRequest) {
-
-          var endDate = new Date();
-          winston.verbose("Performance Request reroute in millis: " + endDate - startDate);
-
+        return that.route(request_id, request.department.toString(), id_project, nobot, no_populate).then(function (routedRequest) {
           return resolve(routedRequest);
         }).catch(function (err) {
           return reject(err);
@@ -459,7 +458,7 @@ class RequestService {
 
     return this.create(request);
   };
-
+  
   async create(request) {
     const createdAt = request.createdAt || new Date();
 
@@ -607,6 +606,7 @@ class RequestService {
       snapshot.department = result.department;
     }
     snapshot.agents = agents;
+    snapshot.availableAgentsCount = this.getAvailableAgentsCount(agents);
 
     if (request.requester) {
       snapshot.requester = request.requester;
@@ -656,7 +656,7 @@ class RequestService {
 
     // Save request
     try {
-      const savedRequest = await newRequest.save();
+      const savedRequest = await newRequest.save();      
       winston.debug("Request created", savedRequest.toObject());
 
       /**
@@ -691,237 +691,6 @@ class RequestService {
     }
 
   }
-
-  // DEPRECATED
-  // async create(request) {
-
-  //   if (!request.createdAt)  {
-  //     request.createdAt = new Date();
-  //   }
-
-  //   var request_id = request.request_id;
-  //   var project_user_id = request.project_user_id;
-  //   var lead_id = request.lead_id;
-  //   var id_project = request.id_project;
-  //   var first_text = request.first_text;
-  //   var departmentid = request.departmentid;
-  //   var sourcePage = request.sourcePage;
-  //   var language = request.language;
-  //   var userAgent = request.userAgent;
-  //   var status = request.status;
-  //   var createdBy = request.createdBy;
-  //   var attributes = request.attributes;
-  //   var subject = request.subject;
-  //   var preflight = request.preflight;
-  //   var channel = request.channel;
-  //   var location = request.location;
-  //   var participants = request.participants || [];
-  //   var tags = request.tags;
-  //   var notes = request.notes;
-  //   var priority = request.priority;
-  //   var auto_close = request.auto_close;
-  //   var followers = request.followers;
-  //   let createdAt = request.createdAt;
-
-  //   if (!departmentid) {
-  //     departmentid = 'default';
-  //   }
-
-  //   if (!createdBy) {
-  //     if (project_user_id) {
-  //       createdBy = project_user_id;
-  //     } else {
-  //       createdBy = "system";
-  //     }
-  //   }
-
-  //   // Utils
-  //   let payload;
-  //   let isTestConversation = false;
-  //   let isVoiceConversation = false;
-  //   let isStandardConversation = false;
-  //   var that = this;
-
-  //   return new Promise( async (resolve, reject) => {
-  //     var context = {
-  //       request: {
-  //         request_id: request_id, project_user_id: project_user_id, lead_id: lead_id, id_project: id_project,
-  //         first_text: first_text, departmentid: departmentid, sourcePage: sourcePage, language: language, userAgent: userAgent, status: status,
-  //         createdBy: createdBy, attributes: attributes, subject: subject, preflight: preflight, channel: channel, location: location,
-  //         participants: participants, tags: tags, notes: notes,
-  //         priority: priority, auto_close: auto_close, followers: followers
-  //       }
-  //     };
-  //     winston.debug("context", context);
-
-  //     var participantsAgents = [];
-  //     var participantsBots = [];
-  //     var hasBot = false;
-  //     var dep_id = undefined;
-  //     var assigned_at = undefined;
-  //     var agents = [];
-  //     var snapshot = {};
-
-  //     try {
-  //       // (method) DepartmentService.getOperators(departmentid: any, projectid: any, nobot: any, disableWebHookCall: any, context: any): Promise<any>
-  //       var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
-  //       winston.debug("getOperators", result);
-
-  //     } catch (err) {
-  //       return reject(err);
-  //     }
-
-  //     agents = result.agents;
-
-  //     if (status == 50) {
-  //       // skip assignment
-  //       if (participants.length == 0) {
-  //         dep_id = result.department._id;
-  //       }
-  //     } else {
-
-  //       let project = await projectService.getCachedProject(id_project).catch((err) => {
-  //         winston.warn("Error getting cached project. Skip conversation quota check.")
-  //         winston.warn("Getting cached project error:  ", err)
-  //       })
-
-  //       payload = {
-  //         project: project,
-  //         request: request
-  //       }
-
-  //       if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
-  //         winston.verbose("is a test conversation --> skip quote availability check")
-  //         isTestConversation = true;
-  //       }
-  //       else if (channel && (channel.name === 'voice-vxml')) {
-  //         isVoiceConversation = true;
-  //         let available = await qm.checkQuote(project, request, 'voice_duration');
-  //         if (available === false) {
-  //           winston.info("Voice duration limits reached for project " + project._id);
-  //           return reject("Voice duration limits reached for project " + project._id);
-  //         }
-  //       }
-  //       else {
-  //         isStandardConversation = true;
-  //         let available = await qm.checkQuote(project, request, 'requests');
-  //         if (available === false) {
-  //           winston.info("Requests limits reached for project " + project._id)
-  //           return reject("Requests limits reached for project " + project._id);
-  //         }
-  //       }
-
-
-  //       if (participants.length == 0) {
-  //         if (result.operators && result.operators.length > 0) {
-  //           participants.push(result.operators[0].id_user.toString());
-  //         }
-  //         // for preflight it is important to save agents in req for trigger. try to optimize it
-  //         dep_id = result.department._id;
-  //       }
-
-  //       if (participants.length > 0) {
-  //         status = RequestConstants.ASSIGNED;
-  //         // botprefix
-  //         if (participants[0].startsWith("bot_")) {
-
-  //           hasBot = true;
-  //           winston.debug("hasBot:" + hasBot);
-
-  //           // botprefix
-  //           var assigned_operator_idStringBot = participants[0].replace("bot_", "");
-  //           winston.debug("assigned_operator_idStringBot:" + assigned_operator_idStringBot);
-
-  //           participantsBots.push(assigned_operator_idStringBot);
-
-  //         } else {
-
-  //           participantsAgents.push(participants[0]);
-
-  //         }
-
-  //         assigned_at = Date.now();
-
-  //       } else {
-  //         status = RequestConstants.UNASSIGNED;
-  //       }
-  //     }
-
-  //     if (dep_id) {
-  //       snapshot.department = result.department;
-  //     }
-
-  //     snapshot.agents = agents;
-  //     snapshot.availableAgentsCount = that.getAvailableAgentsCount(agents);
-
-  //     if (request.requester) {
-  //       snapshot.requester = request.requester;
-  //     }
-  //     if (request.lead) {
-  //       snapshot.lead = request.lead;
-  //     }
-
-  //     var newRequest = new Request({
-  //       request_id: request_id,
-  //       requester: project_user_id,
-  //       lead: lead_id,
-  //       first_text: first_text,
-  //       subject: subject,
-  //       status: status,
-  //       participants: participants,
-  //       participantsAgents: participantsAgents,
-  //       participantsBots: participantsBots,
-  //       hasBot: hasBot,
-  //       department: dep_id,
-  //       // agents: agents,                
-  //       //others
-  //       sourcePage: sourcePage,
-  //       language: language,
-  //       userAgent: userAgent,
-  //       assigned_at: assigned_at,
-  //       attributes: attributes,
-  //       //standard
-  //       id_project: id_project,
-  //       createdBy: createdBy,
-  //       updatedBy: createdBy,
-  //       preflight: preflight,
-  //       channel: channel,
-  //       location: location,
-  //       //snapshot: snapshot,
-  //       tags: tags,
-  //       notes: notes,
-  //       priority: priority,
-  //       auto_close: auto_close,
-  //       followers: followers,
-  //       createdAt: createdAt
-  //     });
-
-  //     if (isTestConversation) {
-  //       newRequest.draft = true;
-  //     }
-
-  //     winston.debug('newRequest.', newRequest);
-
-  //     //cacheinvalidation
-  //     return newRequest.save( async function (err, savedRequest) {
-
-  //       if (err) {
-  //         winston.error('RequestService error for method createWithIdAndRequester for newRequest' + JSON.stringify(newRequest), err);
-  //         return reject(err);
-  //       }
-  //       winston.debug("Request created", savedRequest.toObject());
-
-  //       requestEvent.emit('request.create.simple', savedRequest);
-
-  //       if (isStandardConversation) {
-  //         requestEvent.emit('request.create.quote', payload);;
-  //       }
-
-  //       return resolve(savedRequest);
-
-  //     });
-  //   })
-  // }
 
   
   //DEPRECATED. USED ONLY IN SAME TESTS
@@ -1095,6 +864,10 @@ class RequestService {
         return reject({ err: "Error changing first text. The field first_text is empty" });
       }
 
+
+
+      winston.info("main_flow_cache_3 changeFirstTextAndPreflightByRequestId");
+      
       return Request
         .findOneAndUpdate({ request_id: request_id, id_project: id_project }, { first_text: first_text, preflight: preflight }, { new: true, upsert: false })
         .populate('lead')
@@ -1504,6 +1277,8 @@ class RequestService {
 
   findByRequestId(request_id, id_project) {
     return new Promise(function (resolve, reject) {
+      winston.info("main_flow_cache_3 requestService findByRequestId");
+      
       return Request.findOne({ request_id: request_id, id_project: id_project }, function (err, request) {
         if (err) {
           return reject(err);
@@ -1547,13 +1322,13 @@ class RequestService {
             if (Array.isArray(request.participantsAgents)) {
               if (request.participantsAgents.length === 1) {
                 winston.error('Cannot add participants: participantsAgents already has one element for request_id ' + request_id + ' and id_project ' + id_project);
-                return reject('Cannot add participants: only one participant allowed for this request');
+                return reject({ code: 403, error: 'Cannot add participants: only one participant allowed for this request' });
               } else if (request.participantsAgents.length === 0) {
                 if (Array.isArray(newparticipants) && newparticipants.length === 1) {
                   // ok, allow to add one participant
                 } else {
                   winston.error('Can only add one participant for request_id ' + request_id + ' and id_project ' + id_project);
-                  return reject('Can only add one participant for this request');
+                  return reject({ code: 403, error: 'Can only add one participant for this request' });
                 }
               }
             }
@@ -2475,7 +2250,31 @@ class RequestService {
     })
   }
 
-
+  emitParticipantsEvents(beforeRequest, requestComplete, oldParticipants) {
+    const newParticipants = requestComplete.participants;
+  
+    const removedParticipants = oldParticipants.filter(
+      p => !newParticipants.includes(p)
+    );
+    const addedParticipants = newParticipants.filter(
+      p => !oldParticipants.includes(p)
+    );
+  
+    requestEvent.emit("request.update", requestComplete);
+    requestEvent.emit("request.updated", {
+      comment: "REROUTE",
+      request: requestComplete,
+      patch: { removedParticipants, addedParticipants }
+    });
+  
+    requestEvent.emit("request.participants.update", {
+      beforeRequest,
+      removedParticipants,
+      addedParticipants,
+      request: requestComplete
+    });
+  }
+  
 }
 
 
