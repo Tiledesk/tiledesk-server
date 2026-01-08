@@ -5,6 +5,11 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.13.50
+- Updated kb route to support embeddings
+- Updated tybot-connector to 2.0.41
+- Updated vxml-connector to 0.1.89
+
 # 2.13.49
 - Updated tybot-connector to 2.0.41
 
