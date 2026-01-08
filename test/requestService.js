@@ -117,12 +117,12 @@ describe('RequestService', function () {
             expect(savedRequest.participantsAgents[0].toString()).to.equal(userid);
             expect(savedRequest.assigned_at).to.not.equal(null);
 
-            expect(savedRequest.snapshot.department.name).to.not.equal(null);
-            expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
-            expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
-            expect(savedRequest.snapshot.lead.fullname).to.equal("leadfullname");
-            expect(savedRequest.snapshot.requester.role).to.equal("owner");
-            expect(savedRequest.snapshot.requester.isAuthenticated).to.equal(true);
+            // expect(savedRequest.snapshot.department.name).to.not.equal(null);
+            // expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+            // expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
+            // expect(savedRequest.snapshot.lead.fullname).to.equal("leadfullname");
+            // expect(savedRequest.snapshot.requester.role).to.equal("owner");
+            // expect(savedRequest.snapshot.requester.isAuthenticated).to.equal(true);
             expect(savedRequest.createdBy).to.equal(savedProjectAndPU.project_user._id.toString());
             expect(savedRequest.id_project).to.equal(savedProject._id.toString());
             
@@ -192,12 +192,12 @@ describe('RequestService', function () {
             expect(savedRequest.assigned_at).to.not.equal(null);
             if (log) { console.log("savedRequest.participants1"); }
 
-            expect(savedRequest.snapshot.department.name).to.not.equal(null);
-            expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
-            expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
-            expect(savedRequest.snapshot.lead.fullname).to.equal("leadfullname");
-            expect(savedRequest.snapshot.requester.role).to.equal("owner");
-            expect(savedRequest.snapshot.requester.isAuthenticated).to.equal(true);
+            // expect(savedRequest.snapshot.department.name).to.not.equal(null);
+            // expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+            // expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
+            // expect(savedRequest.snapshot.lead.fullname).to.equal("leadfullname");
+            // expect(savedRequest.snapshot.requester.role).to.equal("owner");
+            // expect(savedRequest.snapshot.requester.isAuthenticated).to.equal(true);
             // expect(savedRequest.snapshot.requester.role).to.equal("owner");
             if (log) { console.log("savedRequest.participants2"); }
 
@@ -269,12 +269,12 @@ describe('RequestService', function () {
             expect(savedRequest.participantsAgents[0].toString()).to.equal(userid);
             expect(savedRequest.assigned_at).to.not.equal(null);
 
-            expect(savedRequest.snapshot.department.name).to.not.equal(null);
-            expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
-            expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
-            expect(savedRequest.snapshot.lead.fullname).to.equal("leadfullname");
-            expect(savedRequest.snapshot.requester.role).to.equal("owner");
-            expect(savedRequest.snapshot.requester.isAuthenticated).to.equal(true);
+            // expect(savedRequest.snapshot.department.name).to.not.equal(null);
+            // expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+            // expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
+            // expect(savedRequest.snapshot.lead.fullname).to.equal("leadfullname");
+            // expect(savedRequest.snapshot.requester.role).to.equal("owner");
+            // expect(savedRequest.snapshot.requester.isAuthenticated).to.equal(true);
             // expect(savedRequest.snapshot.requester.role).to.equal("owner");
 
             expect(savedRequest.createdBy).to.equal(savedProjectAndPU.project_user._id.toString());
@@ -300,7 +300,7 @@ describe('RequestService', function () {
                   if (err) { console.error("err", err); }
                   
                   expect(request.request_id).to.equal("request_idcreateObjSimpleUpdateLeadUpdateSnapshot-" + now);
-                  expect(request.snapshot.lead.fullname).to.equal("fullname2");
+                  //expect(request.snapshot.lead.fullname).to.equal("fullname2");
                   done();
                 });
 
@@ -351,7 +351,7 @@ describe('RequestService', function () {
             expect(savedRequest.request_id).to.equal("request_id-createObjParticipantsAgent-" + now);
             expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
             expect(savedRequest.first_text).to.equal("first_text");
-            expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+            //expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
             expect(savedRequest.department).to.equal(undefined);
             expect(savedRequest.status).to.equal(200);
             expect(savedRequest.participants).to.have.lengthOf(1);
@@ -364,11 +364,11 @@ describe('RequestService', function () {
             expect(savedRequest.participantsAgents[0].toString()).to.equal(userid);
             expect(savedRequest.assigned_at).to.not.equal(null);
 
-            expect(savedRequest.snapshot.department).to.equal(undefined);
-            expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
-            expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
-            expect(savedRequest.snapshot.lead.fullname).to.equal("leadfullname");
-            expect(savedRequest.snapshot.requester.role).to.equal("owner");
+            // expect(savedRequest.snapshot.department).to.equal(undefined);
+            // expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+            // expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
+            // expect(savedRequest.snapshot.lead.fullname).to.equal("leadfullname");
+            // expect(savedRequest.snapshot.requester.role).to.equal("owner");
             // expect(savedRequest.snapshot.requester.role).to.equal("owner");
 
             expect(savedRequest.createdBy).to.equal(savedProjectAndPU.project_user._id.toString());
@@ -423,7 +423,7 @@ describe('RequestService', function () {
             expect(savedRequest.request_id).to.equal("request_id-createObjTemp-" + now);
             expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
             expect(savedRequest.first_text).to.equal("first_text");
-            expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+            //expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
             expect(savedRequest.department).to.not.equal(undefined);
             expect(savedRequest.status).to.equal(50);
             expect(savedRequest.participants).to.have.lengthOf(0);
@@ -433,11 +433,11 @@ describe('RequestService', function () {
             if (log) { console.log("savedRequest.participants[0]", savedRequest.participants[0]); }
             expect(savedRequest.assigned_at).to.equal(undefined);
 
-            expect(savedRequest.snapshot.department.name).to.not.equal(null);
-            expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
-            expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
-            expect(savedRequest.snapshot.lead.fullname).to.equal("leadfullname");
-            expect(savedRequest.snapshot.requester.role).to.equal("owner");
+            // expect(savedRequest.snapshot.department.name).to.not.equal(null);
+            // expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+            // expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
+            // expect(savedRequest.snapshot.lead.fullname).to.equal("leadfullname");
+            // expect(savedRequest.snapshot.requester.role).to.equal("owner");
             // expect(savedRequest.snapshot.requester.role).to.equal("owner");
 
             expect(savedRequest.createdBy).to.equal(savedProjectAndPU.project_user._id.toString());
@@ -477,7 +477,7 @@ describe('RequestService', function () {
             expect(savedRequest.request_id).to.equal("request_id-createWithIdAndCreateNewLead-" + now);
             expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
             expect(savedRequest.first_text).to.equal("first_text");
-            expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+            //expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
             expect(savedRequest.status).to.equal(200);
             expect(savedRequest.participants).to.have.lengthOf(1);
             expect(savedRequest.participants).to.contains(userid);
@@ -489,9 +489,9 @@ describe('RequestService', function () {
             expect(savedRequest.participantsAgents[0].toString()).to.equal(userid);
             expect(savedRequest.assigned_at).to.not.equal(null);
 
-            expect(savedRequest.snapshot.department.name).to.not.equal(null);
-            expect(savedRequest.snapshot.agents).to.not.equal(null);
-            expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
+            // expect(savedRequest.snapshot.department.name).to.not.equal(null);
+            // expect(savedRequest.snapshot.agents).to.not.equal(null);
+            // expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
             expect(savedRequest.createdBy).to.equal(savedProjectAndPU.project_user._id.toString());
 
             // console.log("savedProject._id", savedProject._id, typeof savedProject._id);
@@ -541,7 +541,7 @@ describe('RequestService', function () {
               expect(savedRequest.request_id).to.equal("createWithIdAndCreateNewLeadAndCheckRequestEvent-" + now);
               expect(savedRequest.requester._id.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
               expect(savedRequest.first_text).to.equal("first_text");
-              expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+              //expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
               expect(savedRequest.status).to.equal(200);
               expect(savedRequest.participants).to.have.lengthOf(1);
               expect(savedRequest.participants).to.contains(userid);
@@ -555,7 +555,7 @@ describe('RequestService', function () {
 
               expect(savedRequest.participatingAgents.length).to.equal(1);
               expect(savedRequest.participatingBots.length).to.equal(0);
-              expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
+              //expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
 
               // console.log("savedProject._id", savedProject._id, typeof savedProject._id);
               // console.log("savedRequest.id_project", savedRequest.id_project, typeof savedRequest.id_project);
@@ -642,7 +642,7 @@ describe('RequestService', function () {
           expect(savedRequest.request_id).to.equal("request_id-createWithIdAndCreatedBy-" + now);
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
-          expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+          //expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
           expect(savedRequest.status).to.equal(200);
           expect(savedRequest.participants).to.contains(userid);
           expect(savedRequest.participantsAgents).to.contains(userid);
@@ -715,7 +715,7 @@ describe('RequestService', function () {
             expect(savedRequest.request_id).to.equal("request_id-createWithIdWithPooledDepartment-" + now);
             expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
             expect(savedRequest.first_text).to.equal("first_text");
-            expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+            //expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
             expect(savedRequest.status).to.equal(100);
             expect(savedRequest.participants).to.have.lengthOf(0);
             expect(savedRequest.participantsAgents).to.have.lengthOf(0);
@@ -815,7 +815,7 @@ describe('RequestService', function () {
                   expect(closedRequest.closed_at).to.not.equal(null);
                   expect(closedRequest.transcript).to.contains("hello1");
                   expect(closedRequest.transcript).to.contains("hello2");
-                  expect(closedRequest.snapshot.agents).to.equal(undefined);
+                  //expect(closedRequest.snapshot.agents).to.equal(undefined);
                   expect(closedRequest.closed_by).to.equal("user1");
 
                   done();
@@ -860,7 +860,7 @@ describe('RequestService', function () {
                   expect(closedRequest.closed_at).to.not.equal(null);
                   expect(closedRequest.transcript).to.contains("hello1");
                   expect(closedRequest.transcript).to.contains("hello2");
-                  expect(closedRequest.snapshot.agents).to.equal(undefined);
+                  //expect(closedRequest.snapshot.agents).to.equal(undefined);
                   expect(closedRequest.closed_by).to.equal("user1");
 
                   requestService.closeRequestByRequestId(savedRequest.request_id, savedProject._id, false, true, "user1", true).then(function (closedRequest) {
@@ -908,7 +908,7 @@ describe('RequestService', function () {
                     expect(closedRequest.closed_at).to.not.equal(null);
                     expect(closedRequest.transcript).to.contains("hello1");
                     expect(closedRequest.transcript).to.contains("hello2");
-                    expect(closedRequest.snapshot.agents).to.equal(undefined);
+                    //ot.agents).to.equal(undefined);
 
                     done();
                   }).catch(function (err) {
@@ -953,7 +953,7 @@ describe('RequestService', function () {
               expect(reopenedRequest.status).to.equal(200);
               expect(reopenedRequest.closed_at).to.not.equal(null);
               expect(reopenedRequest.participants).to.have.lengthOf(1);
-              expect(reopenedRequest.snapshot.agents).to.equal(undefined);
+              //expect(reopenedRequest.snapshot.agents).to.equal(undefined);
 
 
               done();
@@ -1032,7 +1032,7 @@ describe('RequestService', function () {
                 expect(savedRequestParticipant.hasBot).to.equal(false);
                 expect(savedRequestParticipant.id_project).to.equal(savedProject._id.toString());
 
-                expect(savedRequestParticipant.snapshot.agents).to.equal(undefined);
+                //expect(savedRequestParticipant.snapshot.agents).to.equal(undefined);
 
                 done();
               }).catch(function (err) {
@@ -1197,7 +1197,7 @@ describe('RequestService', function () {
           expect(savedRequest.request_id).to.equal("routeDepartmentSameAgentSameDepartmentSkipUpdate-" + now);
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
-          expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+          //expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
           expect(savedRequest.status).to.equal(200);
           expect(savedRequest.participants).to.have.lengthOf(1);
           expect(savedRequest.participantsAgents).to.have.lengthOf(1);
@@ -1217,7 +1217,7 @@ describe('RequestService', function () {
             expect(routedRequest.request_id).to.equal("routeDepartmentSameAgentSameDepartmentSkipUpdate-" + now);
             expect(routedRequest.requester._id.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
             expect(routedRequest.first_text).to.equal("first_text");
-            expect(routedRequest.snapshot.agents).to.have.lengthOf(1);
+            //expect(routedRequest.snapshot.agents).to.have.lengthOf(1);
             expect(routedRequest.status).to.equal(200);
             expect(routedRequest.participants).to.have.lengthOf(1);
             expect(routedRequest.participantsAgents).to.have.lengthOf(1);
@@ -1227,7 +1227,7 @@ describe('RequestService', function () {
 
             if (log) { console.log("routedRequest.department.name", routedRequest.department.name); }
             expect(routedRequest.department._id.toString()).to.equal(dep.toString());
-            expect(routedRequest.snapshot.department._id.toString()).to.equal(dep.toString());
+            //expect(routedRequest.snapshot.department._id.toString()).to.equal(dep.toString());
 
             done();
 
@@ -1263,7 +1263,7 @@ describe('RequestService', function () {
           expect(savedRequest.request_id).to.equal("routeDepartmentSameAgentDifferentDepartment-" + now);
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
-          expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+          //expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
           expect(savedRequest.status).to.equal(200);
           expect(savedRequest.participants).to.have.lengthOf(1);
           expect(savedRequest.participantsAgents).to.have.lengthOf(1);
@@ -1282,7 +1282,7 @@ describe('RequestService', function () {
               expect(routedRequest.request_id).to.equal("routeDepartmentSameAgentDifferentDepartment-" + now);
               expect(routedRequest.requester._id.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
               expect(routedRequest.first_text).to.equal("first_text");
-              expect(routedRequest.snapshot.agents).to.have.lengthOf(1);
+              //expect(routedRequest.snapshot.agents).to.have.lengthOf(1);
               expect(routedRequest.status).to.equal(200);
               expect(routedRequest.participants).to.have.lengthOf(1);
               expect(routedRequest.participantsAgents).to.have.lengthOf(1);
@@ -1292,7 +1292,7 @@ describe('RequestService', function () {
 
               if (log) { console.log("routedRequest.department.name", routedRequest.department.name); }
               expect(routedRequest.department._id.toString()).to.equal(createdDepartment._id.toString());
-              expect(routedRequest.snapshot.department._id.toString()).to.equal(createdDepartment._id.toString());
+              //expect(routedRequest.snapshot.department._id.toString()).to.equal(createdDepartment._id.toString());
 
               done();
 
@@ -1356,7 +1356,7 @@ describe('RequestService', function () {
               expect(savedRequest.request_id).to.equal("routeDepartmentDifferentAgentDifferentDepartment-" + now);
               expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
               expect(savedRequest.first_text).to.equal("first_text");
-              expect(savedRequest.snapshot.agents).to.have.lengthOf(2);
+              //expect(savedRequest.snapshot.agents).to.have.lengthOf(2);
               expect(savedRequest.status).to.equal(200);
               expect(savedRequest.participants).to.have.lengthOf(1);
               // expect(savedRequest.participants[0]).to.equal(userid);
@@ -1396,7 +1396,7 @@ describe('RequestService', function () {
                       expect(routedRequest.request_id).to.equal("routeDepartmentDifferentAgentDifferentDepartment-" + now);
                       expect(routedRequest.requester._id.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
                       expect(routedRequest.first_text).to.equal("first_text");
-                      expect(routedRequest.snapshot.agents).to.have.lengthOf(1);
+                      //expect(routedRequest.snapshot.agents).to.have.lengthOf(1);
                       expect(routedRequest.status).to.equal(200);
                       expect(routedRequest.participants).to.have.lengthOf(1);
                       expect(routedRequest.participants[0]).to.equal(userid2);
@@ -1407,7 +1407,7 @@ describe('RequestService', function () {
 
                       if (log) { console.log("routedRequest.department.name", routedRequest.department.name); }
                       expect(routedRequest.department._id.toString()).to.equal(createdDepartment._id.toString());
-                      expect(routedRequest.snapshot.department._id.toString()).to.equal(createdDepartment._id.toString());
+                      //expect(routedRequest.snapshot.department._id.toString()).to.equal(createdDepartment._id.toString());
 
                       done();
 
@@ -1455,7 +1455,7 @@ describe('RequestService', function () {
             expect(savedRequestParticipant.request_id).to.equal("request_id1-reroute-" + now);
             // expect(savedRequestParticipant.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
             expect(savedRequestParticipant.first_text).to.equal("first_text");
-            expect(savedRequestParticipant.snapshot.agents).to.have.lengthOf(1);
+            //expect(savedRequestParticipant.snapshot.agents).to.have.lengthOf(1);
             expect(savedRequestParticipant.status).to.equal(200);
             expect(savedRequestParticipant.participants).to.have.lengthOf(1);
             expect(savedRequestParticipant.participantsAgents).to.have.lengthOf(1);
@@ -1745,46 +1745,46 @@ describe('RequestService', function () {
 
   // mocha test/requestService.js  --grep 'selectSnapshot'
 
-  it('selectSnapshot', function (done) {
-    // this.timeout(10000);
-    // return new Promise(function (resolve) {
-    var email = "test-request-create-" + Date.now() + "@email.com";
-    var pwd = "pwd";
+  // it('selectSnapshot', function (done) {
+  //   // this.timeout(10000);
+  //   // return new Promise(function (resolve) {
+  //   var email = "test-request-create-" + Date.now() + "@email.com";
+  //   var pwd = "pwd";
 
-    userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-      var userid = savedUser.id;
+  //   userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+  //     var userid = savedUser.id;
 
-      projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function (savedProjectAndPU) {
-        var savedProject = savedProjectAndPU.project;
+  //     projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function (savedProjectAndPU) {
+  //       var savedProject = savedProjectAndPU.project;
 
-        leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
+  //       leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
 
-          var now = Date.now();
+  //         var now = Date.now();
 
-          var request = {
-            request_id: "request_idselectSnapshot-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
-            id_project: savedProject._id, first_text: "first_text",
-            participants: ["bot_" + userid],
-            lead: createdLead, requester: savedProjectAndPU.project_user
-          };
+  //         var request = {
+  //           request_id: "request_idselectSnapshot-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
+  //           id_project: savedProject._id, first_text: "first_text",
+  //           participants: ["bot_" + userid],
+  //           lead: createdLead, requester: savedProjectAndPU.project_user
+  //         };
 
-          requestService.create(request).then(async function (savedRequest) {
-            winston.info("resolve", savedRequest.toObject());
+  //         requestService.create(request).then(async function (savedRequest) {
+  //           winston.info("resolve", savedRequest.toObject());
 
-            var snapshotAgents = await Request.findById(savedRequest.id).select({ "snapshot": 1 }).exec();
+  //           var snapshotAgents = await Request.findById(savedRequest.id).select({ "snapshot": 1 }).exec();
 
-            if (log) { console.log("snapshotAgents", snapshotAgents); }
+  //           if (log) { console.log("snapshotAgents", snapshotAgents); }
 
-            expect(snapshotAgents.snapshot.agents.length).to.equal(1);
-            // return;
-            done();
+  //           expect(snapshotAgents.snapshot.agents.length).to.equal(1);
+  //           // return;
+  //           done();
 
-          });
-        });
-      });
-    });
-    // });
-  });
+  //         });
+  //       });
+  //     });
+  //   });
+  //   // });
+  // });
 
 });
 

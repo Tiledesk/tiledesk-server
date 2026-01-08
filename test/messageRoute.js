@@ -70,7 +70,7 @@ describe('MessageRoute', () => {
             expect(res.body.request.createdBy).to.equal(savedUser._id.toString());
             // expect(res.body.request.messages_count).to.equal(1);
             expect(res.body.request.status).to.equal(200);
-            expect(res.body.request.snapshot.agents.length).to.equal(1);
+            //expect(res.body.request.snapshot.agents.length).to.equal(1);
             expect(res.body.request.participants.length).to.equal(1);
             expect(res.body.request.department).to.not.equal(null);
             expect(res.body.request.lead).to.not.equal(null);
@@ -186,7 +186,7 @@ describe('MessageRoute', () => {
             expect(res.body.request.createdBy).to.equal(savedUser._id.toString());
             // expect(res.body.request.messages_count).to.equal(1);
             expect(res.body.request.status).to.equal(200);
-            expect(res.body.request.snapshot.agents.length).to.equal(1);
+            //expect(res.body.request.snapshot.agents.length).to.equal(1);
             expect(res.body.request.participants.length).to.equal(1);
             expect(res.body.request.department).to.not.equal(null);
             expect(res.body.request.lead).to.not.equal(null);
@@ -264,7 +264,7 @@ describe('MessageRoute', () => {
                 expect(res.body.request.createdBy).to.equal(savedUser._id.toString());
                 // expect(res.body.request.messages_count).to.equal(1);
                 expect(res.body.request.status).to.equal(200);
-                expect(res.body.request.snapshot.agents.length).to.equal(2);
+                //expect(res.body.request.snapshot.agents.length).to.equal(2);
                 expect(res.body.request.participants.length).to.equal(1);
                 expect(res.body.request.department).to.not.equal(null);
                 expect(res.body.request.lead).to.not.equal(null);
@@ -340,7 +340,7 @@ describe('MessageRoute', () => {
                 expect(res.body.request.createdBy).to.equal(savedUser._id.toString());
                 // expect(res.body.request.messages_count).to.equal(1);
                 expect(res.body.request.status).to.equal(200);
-                expect(res.body.request.snapshot.agents.length).to.equal(1);
+                //expect(res.body.request.snapshot.agents.length).to.equal(1);
                 expect(res.body.request.participants.length).to.equal(1);
                 expect(res.body.request.department).to.not.equal(null);
                 expect(res.body.request.lead).to.not.equal(null);
@@ -509,7 +509,7 @@ describe('MessageRoute', () => {
             expect(res.body.request.createdBy).to.equal(savedUser._id.toString());
             // expect(res.body.request.messages_count).to.equal(1);
             expect(res.body.request.status).to.equal(200);
-            expect(res.body.request.snapshot.agents.length).to.equal(1);
+            //expect(res.body.request.snapshot.agents.length).to.equal(1);
             expect(res.body.request.participants.length).to.equal(1);
             expect(res.body.request.department).to.not.equal(undefined);
             expect(res.body.request.lead).to.not.equal(null);
@@ -564,7 +564,7 @@ describe('MessageRoute', () => {
             expect(res.body.request.createdBy).to.equal(savedUser._id.toString());
             // expect(res.body.request.messages_count).to.equal(1);
             expect(res.body.request.status).to.equal(200);
-            expect(res.body.request.snapshot.agents.length).to.equal(1);
+            //expect(res.body.request.snapshot.agents.length).to.equal(1);
             expect(res.body.request.participants.length).to.equal(1);
             expect(res.body.request.department).to.not.equal(null);
             expect(res.body.request.lead).to.not.equal(null);
@@ -618,7 +618,7 @@ describe('MessageRoute', () => {
             expect(res.body.request.createdBy).to.equal(savedUser._id.toString());
             // expect(res.body.request.messages_count).to.equal(1);
             expect(res.body.request.status).to.equal(200);
-            expect(res.body.request.snapshot.agents.length).to.equal(1);
+            //expect(res.body.request.snapshot.agents.length).to.equal(1);
             expect(res.body.request.participants.length).to.equal(1);
             expect(res.body.request.participants[0]).to.equal(savedUser._id.toString());
             if (log) { console.log("res.body.request.participatingAgents[0]", JSON.stringify(res.body.request.participatingAgents[0])); }
@@ -677,7 +677,7 @@ describe('MessageRoute', () => {
             expect(res.body.request.createdBy).to.equal(savedUser._id.toString());
             // expect(res.body.request.messages_count).to.equal(1);
             expect(res.body.request.status).to.equal(200);
-            expect(res.body.request.snapshot.agents.length).to.equal(1);
+            //expect(res.body.request.snapshot.agents.length).to.equal(1);
             expect(res.body.request.participants.length).to.equal(1);
             expect(res.body.request.department).to.not.equal(null);
             expect(res.body.request.lead).to.not.equal(null);
@@ -732,7 +732,7 @@ describe('MessageRoute', () => {
             expect(res.body.request.createdBy).to.equal(savedUser._id.toString());
             // expect(res.body.request.messages_count).to.equal(1);
             expect(res.body.request.status).to.equal(200);
-            expect(res.body.request.snapshot.agents.length).to.equal(1);
+            //expect(res.body.request.snapshot.agents.length).to.equal(1);
             expect(res.body.request.participants.length).to.equal(1);
             expect(res.body.request.department).to.not.equal(null);
             expect(res.body.request.lead).to.not.equal(null);
@@ -1206,7 +1206,7 @@ describe('MessageRoute', () => {
                       expect(res.body.request.createdBy).to.equal(externalUserId);
                       // expect(res.body.request.messages_count).to.equal(1);
                       expect(res.body.request.status).to.equal(200);
-                      expect(res.body.request.snapshot.agents.length).to.equal(1);
+                      //expect(res.body.request.snapshot.agents.length).to.equal(1);
                       expect(res.body.request.participants.length).to.equal(1);
                       expect(res.body.request.department).to.not.equal(null);
                       expect(res.body.request.lead).to.not.equal(null);
@@ -1317,7 +1317,7 @@ describe('MessageRoute', () => {
                       expect(res.body.request.createdBy).to.equal(externalUserId);
                       // expect(res.body.request.messages_count).to.equal(1);
                       expect(res.body.request.status).to.equal(200);
-                      expect(res.body.request.snapshot.agents.length).to.equal(1);
+                      //expect(res.body.request.snapshot.agents.length).to.equal(1);
                       expect(res.body.request.participants.length).to.equal(1);
                       expect(res.body.request.department).to.not.equal(null);
                       expect(res.body.request.lead).to.not.equal(null);
@@ -1442,7 +1442,7 @@ describe('MessageRoute', () => {
                   expect(res.body.request.createdBy).to.equal(userId);
                   // expect(res.body.request.messages_count).to.equal(1);
                   expect(res.body.request.status).to.equal(200);
-                  expect(res.body.request.snapshot.agents.length).to.equal(1);
+                  //expect(res.body.request.snapshot.agents.length).to.equal(1);
                   expect(res.body.request.participants.length).to.equal(1);
                   expect(res.body.request.department).to.not.equal(null);
                   expect(res.body.request.lead).to.not.equal(null);

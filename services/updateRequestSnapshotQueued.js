@@ -25,7 +25,6 @@ class UpdateRequestSnapshotQueued {
     requestEvent.on(snapshotUpdateKey, function (data) {
       setImmediate(() => {
         winston.debug("updateRequestSnapshot on request.snapshot.update ", data);
-        console.log("updateRequestSnapshot on request.snapshot.update ", data);
 
         var request = data.request;
         var snapshot = data.snapshot;
