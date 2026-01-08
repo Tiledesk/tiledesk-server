@@ -413,7 +413,6 @@ function listen() {
     requestEvent.on('request.snapshot.update', function(data) {
       setImmediate(() => {
         winston.debug("reconnect request.snapshot.update")
-        console.log("reconnect request.snapshot.update")
         publish(exchange, "request_snapshot_update", Buffer.from(JSON.stringify(data)));
       });
     });

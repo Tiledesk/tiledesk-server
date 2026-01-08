@@ -229,7 +229,9 @@ listen() {
                 if (project_users && project_users.length>0) {
                   project_users.forEach(project_user => {
                     if (project_user.id_user && project_user.id_user.email) {
-                      return that.sendTranscriptByEmail(project_user.id_user.email, request_id, id_project, project);                              
+                      return that.sendTranscriptByEmail(project_user.id_user.email, request_id, id_project, project).catch((err) => {
+                        winston.error("(RequestNotification) sendTranscriptByEmail error for admin", err);
+                      });                              
                     } else {
                     }
                   });  
@@ -242,7 +244,9 @@ listen() {
               return Lead.findById(request.requester_id, function(err, lead){
                 //if (lead && lead.email) {
                   if (lead && lead.email) {
-                    return that.sendTranscriptByEmail(lead.email, request_id, id_project, project);
+                    return that.sendTranscriptByEmail(lead.email, request_id, id_project, project).catch((err) => {
+                      winston.error("(RequestNotification) sendTranscriptByEmail error for lead", err);
+                    });
                   }
                   
               });

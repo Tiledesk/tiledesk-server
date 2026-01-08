@@ -363,6 +363,9 @@ router.put('/:requestid/close', async function (req, res) {
   return requestService.closeRequestByRequestId(req.params.requestid, req.projectid, false, true, closed_by, req.body.force).then(function (closedRequest) {
     winston.verbose("request closed", closedRequest);
     return res.json(closedRequest);
+  }).catch(function(err) {
+    winston.error("Error closing request", err);
+    return res.status(500).send({ success: false, error: "Error closing request" });
   });
 
 });
@@ -376,6 +379,9 @@ router.put('/:requestid/reopen', function (req, res) {
     winston.verbose("request reopen", reopenRequest);
 
     return res.json(reopenRequest);
+  }).catch(function(err) {
+    winston.error("Error reopening request", err);
+    return res.status(500).send({ success: false, error: "Error reopening request" });
   });
 
 
@@ -407,6 +413,9 @@ router.post('/:requestid/participants',
       winston.verbose("participant added", updatedRequest);
 
       return res.json(updatedRequest);
+    }).catch(function(err) {
+      winston.error("Error adding participant", err);
+      return res.status(500).send({ success: false, error: "Error adding participant" });
     });
 
   });
@@ -433,6 +442,9 @@ router.put('/:requestid/participants', function (req, res) {
     winston.debug("participant set", updatedRequest);
 
     return res.json(updatedRequest);
+  }).catch(function(err) {
+    winston.error("Error setting participants", err);
+    return res.status(500).send({ success: false, error: "Error setting participants" });
   });
 
 });
@@ -907,6 +919,9 @@ router.post('/:requestid/followers',
       winston.verbose("participant added", updatedRequest);
 
       return res.json(updatedRequest);
+    }).catch(function(err) {
+      winston.error("Error adding follower", err);
+      return res.status(500).send({ success: false, error: "Error adding follower" });
     });
 
   });
@@ -927,6 +942,9 @@ router.put('/:requestid/followers', function (req, res) {
     winston.debug("followers set", updatedRequest);
 
     return res.json(updatedRequest);
+  }).catch(function(err) {
+    winston.error("Error setting followers", err);
+    return res.status(500).send({ success: false, error: "Error setting followers" });
   });
 
 });
@@ -1010,6 +1028,9 @@ router.delete('/:requestid/followers/:followerid', function (req, res) {
     winston.verbose("follower removed", updatedRequest);
 
     return res.json(updatedRequest);
+  }).catch(function(err) {
+    winston.error("Error removing follower", err);
+    return res.status(500).send({ success: false, error: "Error removing follower" });
   });
 
 

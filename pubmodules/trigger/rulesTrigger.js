@@ -598,7 +598,9 @@ class RulesTrigger {
       
                   // closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
                   const closed_by = "_trigger";
-                  requestService.closeRequestByRequestId(request_id, id_project, false, true, closed_by);
+                  requestService.closeRequestByRequestId(request_id, id_project, false, true, closed_by).catch((err) => {
+                    winston.error("(RulesTrigger) closeRequestByRequestId error", err);
+                  });
                                       
                 } catch(e) {
                   winston.error("Error runAction", e);
@@ -634,7 +636,9 @@ class RulesTrigger {
                     winston.debug('runAction action id_project: ' + id_project);
         
                     //   reopenRequestByRequestId(request_id, id_project) {
-                    requestService.reopenRequestByRequestId(request_id, id_project);                    
+                    requestService.reopenRequestByRequestId(request_id, id_project).catch((err) => {
+                      winston.error("(RulesTrigger) reopenRequestByRequestId error", err);
+                    });                    
           
                   } catch(e) {
                     winston.error("Error runAction", e);
@@ -674,7 +678,9 @@ class RulesTrigger {
                 winston.debug('runAction action id_project: ' + id_project);
     
                 //     addParticipantByRequestId(request_id, id_project, member) {
-                requestService.addParticipantByRequestId(request_id, id_project, member);
+                requestService.addParticipantByRequestId(request_id, id_project, member).catch((err) => {
+                  winston.error("(RulesTrigger) addParticipantByRequestId error", err);
+                });
         
                        
               } catch(e) {
@@ -845,7 +851,9 @@ class RulesTrigger {
                 winston.debug('runAction action id_project: ' + id_project);
     
                 // addTagByRequestId(request_id, id_project, tag) {
-                requestService.addTagByRequestId(request_id, id_project, {tag:tag});
+                requestService.addTagByRequestId(request_id, id_project, {tag:tag}).catch((err) => {
+                  winston.error("(RulesTrigger) addTagByRequestId error", err);
+                });
         
                        
               } catch(e) {

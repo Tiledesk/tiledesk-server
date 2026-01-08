@@ -25,7 +25,9 @@ class ConciergeBot {
             winston.info(" ConciergeBot request create", request);
             if (request.status < 100 && request.department.id_bot) {
                 // addParticipantByRequestId(request_id, id_project, member) {
-                    requestService.addParticipantByRequestId(request.request_id, request.id_project, "bot_"+request.department.id_bot);
+                    requestService.addParticipantByRequestId(request.request_id, request.id_project, "bot_"+request.department.id_bot).catch((err) => {
+                      winston.error("(ConciergeBot) addParticipantByRequestId error", err);
+                    });
 devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente al primo messaggio non riceve il welcome iniziale
             }
         });

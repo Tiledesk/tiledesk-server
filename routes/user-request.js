@@ -70,6 +70,9 @@ router.put('/:requestid/closeg', function (req, res) {
 
         return res.json(closedRequest);
       
+  }).catch(function(err) {
+    winston.error("Error closing request", err);
+    return res.status(500).send({ success: false, error: "Error closing request" });
   });
 
 
