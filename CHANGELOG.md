@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.13.51
+- Refactoring of route() and create() method on RequestService in order to improve performance for firt message
+- Updated tests
+
 # 2.13.50
 - Updated kb route to support embeddings
 - Updated tybot-connector to 2.0.41
