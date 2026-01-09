@@ -1387,7 +1387,7 @@ router.post('/', async (req, res) => {
     new_kb.refresh_rate = body.refresh_rate;
     if (!body.scrape_type || body.scrape_type === 2) {
       new_kb.scrape_type = 2;
-      new_kb.scrape_options = await aiManager.setDefaultScrapeOptions();
+      new_kb.scrape_options = aiManager.setDefaultScrapeOptions();
     } else {
       new_kb.scrape_type = body.scrape_type;
       new_kb.scrape_options = body.scrape_options;
@@ -1430,9 +1430,12 @@ router.post('/', async (req, res) => {
         json.parameters_scrape_type_4 = saved_kb.scrape_options;
       }
       json.engine = namespace.engine || default_engine;
-      json.embedding = namespace.embedding || default_embedding;
       json.hybrid = namespace.hybrid;
 
+      let embedding = namespace.embedding || default_embedding;
+      embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+      json.embedding = embedding;
+      
       let resources = [];
 
       resources.push(json);
