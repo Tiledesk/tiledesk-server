@@ -32,10 +32,13 @@ requestEvent.on('request.create.simple', function(request, snapshot) {
         request.snapshot = snapshot;
     }
 
+    console.log("request.create.simple snapshot", snapshot);
+
     Request.findOneAndUpdate({ request_id: request.request_id, id_project: request.id_project }, { $set: { snapshot: snapshot } }, { new: true }, function(err, updatedRequest) {
         if (err) {
             winston.error('error updating request with snapshot', err);
         }
+        console.log("request.create.simple updatedRequest", updatedRequest);
 
         updatedRequest
             .populate(
@@ -58,6 +61,7 @@ requestEvent.on('request.create.simple', function(request, snapshot) {
                 console.log("[Performance] requestEvent populate time: " + (Date.now() - t1));
                 winston.debug('emitting request.create', requestComplete.toObject());
     
+                console.log("request.create.simple requestComplete", requestComplete);
                 requestEvent.emit('request.create', requestComplete);
     
                 //with request.create no messages are sent. So don't load messages
