@@ -5,8 +5,12 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.13.51
+# 2.14.1
 - Refactoring of route() and create() method on RequestService in order to improve performance for firt message
+- Fix bug: missing embedding apikey on add single content
+
+# 2.13.51 - aborted
+- Refactoring of route() and create() method on RequestService in order to improve performance for first message
 - Updated tests
 
 # 2.13.50
