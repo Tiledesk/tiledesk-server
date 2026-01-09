@@ -1441,7 +1441,7 @@ router.post('/', async (req, res) => {
         return res.status(200).send({ success: true, message: "Schedule scrape skipped in test environment", data: raw_content, schedule_json: json });
       }
         
-      aiManager.scheduleScrape(resources, ns.hybrid);
+      aiManager.scheduleScrape(resources, namespace.hybrid);
       return res.status(200).send(raw_content);
 
     }
