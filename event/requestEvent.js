@@ -52,12 +52,14 @@ requestEvent.on('request.create.simple', function(request, snapshot) {
             console.log("request.create.simple requestComplete", requestComplete);
 
             // // Emit event to update snapshot in queue
-            if (Object.keys(snapshot).length > 0) {
-              requestEvent.emit("request.snapshot.update", {
-                request: request,
-                snapshot: snapshot
-              });
-            }
+            // if (Object.keys(snapshot).length > 0) {
+            //   requestEvent.emit("request.snapshot.update", {
+            //     request: request,
+            //     snapshot: snapshot
+            //   });
+            // }
+
+            requestEvent.emit("request.snapshot.update", { request: request, snapshot: snapshot });
             requestEvent.emit('request.create', requestComplete);
 
             //with request.create no messages are sent. So don't load messages

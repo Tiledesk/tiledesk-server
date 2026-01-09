@@ -222,6 +222,7 @@ class RequestService {
         request.waiting_time = undefined //reset waiting_time on reroute
 
         if (!request.snapshot) { //if used other methods than .create
+          console.log("inizializzo snapshot in routeInternal");
           request.snapshot = {}
         }
 
