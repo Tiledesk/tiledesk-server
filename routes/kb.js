@@ -1436,8 +1436,10 @@ router.post('/', async (req, res) => {
         json.parameters_scrape_type_4 = saved_kb.scrape_options;
       }
       json.engine = namespace.engine || default_engine;
-      json.embedding = namespace.embedding || default_embedding;
       json.hybrid = namespace.hybrid;
+      let embedding = namespace.embedding || default_embedding;
+      embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+      json.embedding = embedding;
 
       let resources = [];
 
@@ -1447,7 +1449,7 @@ router.post('/', async (req, res) => {
         return res.status(200).send({ success: true, message: "Schedule scrape skipped in test environment", data: raw_content, schedule_json: json });
       }
         
-      aiManager.scheduleScrape(resources, ns.hybrid);
+      aiManager.scheduleScrape(resources, namespace.hybrid);
       return res.status(200).send(raw_content);
 
     }
