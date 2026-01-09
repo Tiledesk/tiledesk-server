@@ -28,56 +28,51 @@ requestEvent.on('request.create.simple', function(request, snapshot) {
     winston.info("main_flow_cache_3 requestEvent populate");
     const t1 = Date.now();
 
-    if (snapshot) {
-        request.snapshot = snapshot;
-    }
+    request
+        .populate(
+            [           
+            {path:'department'},
+            {path:'lead'},
+            {path:'participatingBots'},
+            {path:'participatingAgents'},                                         
+            {path:'requester',populate:{path:'id_user'}}
+            ]
+        )
+        .execPopulate( function(err, requestComplete) {
 
-    console.log("request.create.simple snapshot", snapshot);
+            if (err){
+                winston.error('error getting request', err);
+                return requestEvent.emit('request.create', request);
+            }
 
-    Request.findOneAndUpdate({ request_id: request.request_id, id_project: request.id_project }, { $set: { snapshot: snapshot } }, { new: true }, function(err, updatedRequest) {
-        if (err) {
-            winston.error('error updating request with snapshot', err);
-        }
-        console.log("request.create.simple updatedRequest", updatedRequest);
+            winston.info("main_flow_cache_3 requestEvent populate end");
+            console.log("[Performance] requestEvent populate time: " + (Date.now() - t1));
+            winston.debug('emitting request.create', requestComplete.toObject());
 
-        updatedRequest
-            .populate(
-                [           
-                {path:'department'},
-                {path:'lead'},
-                {path:'participatingBots'},
-                {path:'participatingAgents'},                                         
-                {path:'requester',populate:{path:'id_user'}}
-                ]
-            )
-            .execPopulate( function(err, requestComplete) {
-    
-                if (err){
-                    winston.error('error getting request', err);
-                    return requestEvent.emit('request.create', updatedRequest);
-                }
-    
-                winston.info("main_flow_cache_3 requestEvent populate end");
-                console.log("[Performance] requestEvent populate time: " + (Date.now() - t1));
-                winston.debug('emitting request.create', requestComplete.toObject());
-    
-                console.log("request.create.simple requestComplete", requestComplete);
-                requestEvent.emit('request.create', requestComplete);
-    
-                //with request.create no messages are sent. So don't load messages
-            // Message.find({recipient:  request.request_id, id_project: request.id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) {                  
-            //   if (err) {
-            //         winston.error('err', err);
-            //   }
-            //   winston.debug('requestComplete',requestComplete.toObject());
-            //   requestComplete.messages = messages;
-            //   requestEvent.emit('request.create', requestComplete);
-    
-            // //   var requestJson = request.toJSON();
-            // //   requestJson.messages = messages;
-            // //   requestEvent.emit('request.create', requestJson);
-            // });
-        });
+            console.log("request.create.simple requestComplete", requestComplete);
+
+            // // Emit event to update snapshot in queue
+            if (Object.keys(snapshot).length > 0) {
+              requestEvent.emit("request.snapshot.update", {
+                request: request,
+                snapshot: snapshot
+              });
+            }
+            requestEvent.emit('request.create', requestComplete);
+
+            //with request.create no messages are sent. So don't load messages
+        // Message.find({recipient:  request.request_id, id_project: request.id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) {                  
+        //   if (err) {
+        //         winston.error('err', err);
+        //   }
+        //   winston.debug('requestComplete',requestComplete.toObject());
+        //   requestComplete.messages = messages;
+        //   requestEvent.emit('request.create', requestComplete);
+
+        // //   var requestJson = request.toJSON();
+        // //   requestJson.messages = messages;
+        // //   requestEvent.emit('request.create', requestJson);
+        // });
     });
 
   });
