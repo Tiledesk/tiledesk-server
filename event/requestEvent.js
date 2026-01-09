@@ -15,7 +15,7 @@ class RequestEvent extends EventEmitter {
 const requestEvent = new RequestEvent();
 
 
-requestEvent.on('request.create.simple', function(request) {
+requestEvent.on('request.create.simple', function(request, snapshot) {
 
 
     // TODO setImmediate here?
