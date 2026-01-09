@@ -23,7 +23,7 @@ else
 fi
 
 git pull
-npm version minor
+npm version patch
 version=`node -e 'console.log(require("./package.json").version)'`
 echo "version $version"
 
