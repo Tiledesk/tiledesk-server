@@ -43,6 +43,7 @@ requestEvent.on('request.create.simple', function(request) {
 
             winston.debug('emitting request.create', requestComplete.toObject());
 
+            requestEvent.emit("request.snapshot.update", { request: request, snapshot: snapshot });
             requestEvent.emit('request.create', requestComplete);
 
             //with request.create no messages are sent. So don't load messages

@@ -669,19 +669,19 @@ class RequestService {
       }
       await q.exec();
 
-      requestEvent.emit("request.create.simple", savedRequest);
+      requestEvent.emit("request.create.simple", savedRequest, snapshot);
 
       if (isStandardConversation) {
         requestEvent.emit("request.create.quote", payload);
       }
 
       // Emit event to update snapshot in queue
-      if (Object.keys(snapshot).length > 0) {
-        requestEvent.emit("request.snapshot.update", {
-          request: savedRequest,
-          snapshot: snapshot
-        });
-      }
+      // if (Object.keys(snapshot).length > 0) {
+      //   requestEvent.emit("request.snapshot.update", {
+      //     request: savedRequest,
+      //     snapshot: snapshot
+      //   });
+      // }
 
       return savedRequest;
 
