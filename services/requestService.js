@@ -670,7 +670,7 @@ class RequestService {
       }
       await q.exec();
 
-      requestEvent.emit("request.create.simple", savedRequest);
+      requestEvent.emit("request.create.simple", savedRequest, snapshot);
 
       if (isStandardConversation) {
         requestEvent.emit("request.create.quote", payload);
