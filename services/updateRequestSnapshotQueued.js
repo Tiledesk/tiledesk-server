@@ -58,6 +58,7 @@ class UpdateRequestSnapshotQueued {
               return;
             }
             if (updatedRequest) {
+              console.log("updateRequestSnapshot updated request " + updatedRequest);
               winston.debug("updateRequestSnapshot updated request " + updatedRequest.request_id);
             } else {
               winston.warn("updateRequestSnapshot: Request not found for " + request.request_id);
