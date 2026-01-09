@@ -676,14 +676,14 @@ class RequestService {
         requestEvent.emit("request.create.quote", payload);
       }
 
-      console.log("snapshot.requester", snapshot.requester);
-      // Emit event to update snapshot in queue
-      if (Object.keys(snapshot).length > 0) {
-        requestEvent.emit("request.snapshot.update", {
-          request: savedRequest,
-          snapshot: snapshot
-        });
-      }
+      // console.log("snapshot.requester", snapshot.requester);
+      // // Emit event to update snapshot in queue
+      // if (Object.keys(snapshot).length > 0) {
+      //   requestEvent.emit("request.snapshot.update", {
+      //     request: savedRequest,
+      //     snapshot: snapshot
+      //   });
+      // }
 
       return savedRequest;
 

@@ -15,7 +15,7 @@ class RequestEvent extends EventEmitter {
 const requestEvent = new RequestEvent();
 
 
-requestEvent.on('request.create.simple', function(request) {
+requestEvent.on('request.create.simple', function(request, snapshot) {
 
 
     // TODO setImmediate here?
@@ -27,43 +27,55 @@ requestEvent.on('request.create.simple', function(request) {
 
     winston.info("main_flow_cache_3 requestEvent populate");
     const t1 = Date.now();
-    request
-        .populate(
-            [           
-            {path:'department'},
-            {path:'lead'},
-            {path:'participatingBots'},
-            {path:'participatingAgents'},                                         
-            {path:'requester',populate:{path:'id_user'}}
-            ]
-        )
-        .execPopulate( function(err, requestComplete) {
 
-            if (err){
-                winston.error('error getting request', err);
-                return requestEvent.emit('request.create', request);
-            }
+    if (snapshot) {
+        request.snapshot = snapshot;
+    }
 
-            winston.info("main_flow_cache_3 requestEvent populate end");
-            console.log("[Performance] requestEvent populate time: " + (Date.now() - t1));
-            winston.debug('emitting request.create', requestComplete.toObject());
+    Request.findOneAndUpdate({ request_id: request.request_id, id_project: request.id_project }, { $set: { snapshot: snapshot } }, { new: true }, function(err, updatedRequest) {
+        if (err) {
+            winston.error('error updating request with snapshot', err);
+        }
 
-            requestEvent.emit('request.create', requestComplete);
-
-            //with request.create no messages are sent. So don't load messages
-        // Message.find({recipient:  request.request_id, id_project: request.id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) {                  
-        //   if (err) {
-        //         winston.error('err', err);
-        //   }
-        //   winston.debug('requestComplete',requestComplete.toObject());
-        //   requestComplete.messages = messages;
-        //   requestEvent.emit('request.create', requestComplete);
-
-        // //   var requestJson = request.toJSON();
-        // //   requestJson.messages = messages;
-        // //   requestEvent.emit('request.create', requestJson);
-        // });
+        updatedRequest
+            .populate(
+                [           
+                {path:'department'},
+                {path:'lead'},
+                {path:'participatingBots'},
+                {path:'participatingAgents'},                                         
+                {path:'requester',populate:{path:'id_user'}}
+                ]
+            )
+            .execPopulate( function(err, requestComplete) {
+    
+                if (err){
+                    winston.error('error getting request', err);
+                    return requestEvent.emit('request.create', updatedRequest);
+                }
+    
+                winston.info("main_flow_cache_3 requestEvent populate end");
+                console.log("[Performance] requestEvent populate time: " + (Date.now() - t1));
+                winston.debug('emitting request.create', requestComplete.toObject());
+    
+                requestEvent.emit('request.create', requestComplete);
+    
+                //with request.create no messages are sent. So don't load messages
+            // Message.find({recipient:  request.request_id, id_project: request.id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) {                  
+            //   if (err) {
+            //         winston.error('err', err);
+            //   }
+            //   winston.debug('requestComplete',requestComplete.toObject());
+            //   requestComplete.messages = messages;
+            //   requestEvent.emit('request.create', requestComplete);
+    
+            // //   var requestJson = request.toJSON();
+            // //   requestJson.messages = messages;
+            // //   requestEvent.emit('request.create', requestJson);
+            // });
+        });
     });
+
   });
 
 
