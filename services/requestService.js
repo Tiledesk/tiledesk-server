@@ -221,7 +221,8 @@ class RequestService {
         request.assigned_at = assigned_at;
         request.waiting_time = undefined //reset waiting_time on reroute
 
-        console.log("request.snapshot for ", request.request_id ," exists: ", request.snapshot ? "yes" : "no\n", Date.now());
+        console.log("request.snapshot for ", request.request_id ," exists: ", request.snapshot ? "yes" : "no\n", new Date());
+        console.log("request.snapshot.agents for ", request.request_id ," exists: ", request.snapshot?.agents ? "yes" : "no\n", new Date());
         if (!request.snapshot) { //if used other methods than .create
           request.snapshot = {}
         }
@@ -607,8 +608,6 @@ class RequestService {
     if (dep_id) {
       snapshot.department = result.department;
     }
-    snapshot.agents = agents;
-
     if (request.requester) {
       snapshot.requester = request.requester;
     }
@@ -645,7 +644,8 @@ class RequestService {
       priority,
       auto_close,
       followers,
-      createdAt
+      createdAt,
+      snapshot
     })
 
     if (isTestConversation) {
@@ -670,6 +670,7 @@ class RequestService {
       }
       await q.exec();
 
+      snapshot.agents = agents; 
       requestEvent.emit("request.create.simple", savedRequest, snapshot);
 
       if (isStandardConversation) {

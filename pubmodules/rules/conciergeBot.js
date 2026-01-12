@@ -80,7 +80,10 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                                     //apply only if the status is temp and no bot is available. with agent you must reroute to assign temp request to an agent 
                                     winston.debug("rerouting");
                                     // reroute(request_id, id_project, nobot)
-                                    requestService.reroute(message.request.request_id, message.request.id_project, false ).catch((err) => {
+                                    let t1 = Date.now();    
+                                    requestService.reroute(message.request.request_id, message.request.id_project, false ).then(function() {
+                                        console.log("[Performance] (ConciergeBot) reroute time: " + (Date.now() - t1));
+                                    }).catch((err) => {
                                         winston.error("ConciergeBot error reroute: " + err);
                                     });     
                                 }

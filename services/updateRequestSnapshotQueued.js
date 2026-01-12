@@ -29,37 +29,36 @@ class UpdateRequestSnapshotQueued {
 
         const request = data.request;
         const snapshot = data.snapshot;
-        console.log("(queue) updateRequestSnapshot snapshot exists: ", snapshot ? "yes" : "no");
-        console.log("(queue) updateRequestSnapshot snapshot agents length: ", snapshot?.agents?.length);
-        console.log("(queue) updateRequestSnapshot snapshot department exists: ", snapshot.department ? "yes" : "no");
-        console.log("(queue) updateRequestSnapshot snapshot lead exists: ", snapshot.lead ? "yes" : "no");
-        console.log("(queue) updateRequestSnapshot snapshot requester exists: ", snapshot.requester ? "yes" : "no");
+        const agentsArray = snapshot?.agents || [];
+        console.log("(queue) updateRequestSnapshot snapshot agents length: ", agentsArray.length);
 
         if (!request || !request.request_id || !request.id_project) {
           winston.error("updateRequestSnapshot: Invalid request data", data);
           return;
         }
 
-        if (!snapshot || Object.keys(snapshot).length === 0) {
-          winston.debug("updateRequestSnapshot: Empty snapshot, skipping update");
+        // If there is no agents array in snapshot or it's not actually an array, skip the update
+        if (!Array.isArray(agentsArray)) {
+          winston.error("updateRequestSnapshot: snapshot.agents is not an array.", snapshot);
           return;
         }
 
         const query = { request_id: request.request_id, id_project: request.id_project };
         winston.debug("updateRequestSnapshot query ", query);
 
+        // Update ONLY the snapshot.agents field, presupposing 'snapshot' document already exists
         Request.findOneAndUpdate(
           query, 
-          { "$set": { "snapshot": snapshot } }, 
+          { "$set": { "snapshot.agents": agentsArray } }, 
           { new: true },
           function (err, updatedRequest) {
             if (err) {
-              winston.error("Error updating request snapshot updateRequestSnapshot", err);
+              winston.error("Error updating request snapshot.agents in updateRequestSnapshot", err);
               return;
             }
             if (updatedRequest) {
-              console.log("updateRequestSnapshot updated request " + updatedRequest, Date.now());
-              winston.debug("updateRequestSnapshot updated request " + updatedRequest.request_id);
+              console.log("updateRequestSnapshot updated snapshot.agents for request " + updatedRequest.request_id, new Date());
+              winston.debug("updateRequestSnapshot updated snapshot.agents for request " + updatedRequest.request_id);
             } else {
               winston.warn("updateRequestSnapshot: Request not found for " + request.request_id);
             }
