@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.14.2
+- Updated updateRequestSnapshotQueued.js to update the snapshot only
+
 # 2.14.1
 - Fixed missing snapshot parameter in event request
 - Updated twilio-connector to 0.1.28
