@@ -842,6 +842,8 @@ class RequestService {
         return reject(err);
       }
 
+      console.log("result.operators", result.operators);
+      console.log("status: ", status)
       agents = result.agents;
 
       if (status == 50) {
