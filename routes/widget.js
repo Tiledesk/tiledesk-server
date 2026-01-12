@@ -60,6 +60,8 @@ router.get('/', async (req, res, next) => {
 
         value.ip = await getIp(); //calculate ip each time without getting it from cache 
         
+        value.fromcache = true;
+
         winston.debug("value",value);
 
         res.json(value);
