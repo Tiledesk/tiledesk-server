@@ -221,11 +221,13 @@ class RequestService {
         request.assigned_at = assigned_at;
         request.waiting_time = undefined //reset waiting_time on reroute
 
+        console.log("request.snapshot for ", request.request_id ," exists: ", request.snapshot ? "yes" : "no\n", Date.now());
         if (!request.snapshot) { //if used other methods than .create
           request.snapshot = {}
         }
 
 
+        console.log("Snapshot Updated (not saved) from routeInternal on ", request.request_id, Date.now());
         request.snapshot.department = result.department;
         request.snapshot.agents = result.agents;
         request.snapshot.availableAgentsCount = that.getAvailableAgentsCount(result.agents);
@@ -292,6 +294,7 @@ class RequestService {
   
           try {
             await request.save();
+            console.log("Snapshot Updated (saved) (case 1) from route on ", request.request_id, Date.now());
             winston.verbose(`Status set to ABANDONED for request ${request._id}`);
           } catch (err) {
             winston.error("Error updating request to ABANDONED", err);
@@ -365,6 +368,7 @@ class RequestService {
 
       // Save and populate
       const savedRequest = await routedRequest.save();
+      console.log("Snapshot Updated (saved) (case 2) from route on ", request.request_id, Date.now());
 
       const requestComplete = await savedRequest
         .populate("lead")
@@ -676,12 +680,12 @@ class RequestService {
       }
 
       // Emit event to update snapshot in queue
-      if (Object.keys(snapshot).length > 0) {
-        requestEvent.emit("request.snapshot.update", {
-          request: savedRequest,
-          snapshot: snapshot
-        });
-      }
+      // if (Object.keys(snapshot).length > 0) {
+      //   requestEvent.emit("request.snapshot.update", {
+      //     request: savedRequest,
+      //     snapshot: snapshot
+      //   });
+      // }
 
       return savedRequest;
 
