@@ -193,8 +193,9 @@ router.get('/', async (req, res, next) => {
 
        //@DISABLED_CACHE .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+req.projectid+":select:-settings")            
       
-      //  -attributes -createdAt -updatedAt -createdBy
-      Project.findOne({_id: req.projectid, status: 100}).select('-ipFilter -ipFilterEnabled -ipFilterDeny -ipFilterDenyEnabled -bannedUsers -attributes').exec(function(err, project) {
+      //  -ipFilterDeny -ipFilterDenyEnabled -bannedUsers -attributes -attributes -createdAt -updatedAt -createdBy
+      // .select('-ipFilter -ipFilterEnabled')
+      Project.findOne({_id: req.projectid, status: 100}).exec(function(err, project) {
         // not use .lean I need project.trialExpired 
 
           if (err) {
