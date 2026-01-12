@@ -476,6 +476,8 @@ class RulesTrigger {
             var id_project = eventTrigger.event.id_project;
             winston.debug('runAction action id_project: ' + id_project);
 
+            winston.info('triggerEventEmitter.on(request.department.route)');
+
             // route(request_id, departmentid, id_project, nobot) {
             requestService.route(request_id, departmentid, id_project).catch((err) => {
               winston.error("Error runAction route: ", err);
@@ -514,7 +516,11 @@ class RulesTrigger {
               var id_project = eventTrigger.event.id_project;
               winston.debug('runAction action id_project: ' + id_project);
   
+              winston.info('triggerEventEmitter.on(request.department.route.self)');
+
+
               // reroute(request_id, id_project, nobot) {
+              console.log("requestService.reroute from rulesTrigger request.department.route.self")
               requestService.reroute(request_id, id_project).catch((err) => {
                 winston.error("Error runAction on reroute", err);
               });                           
@@ -731,12 +737,15 @@ class RulesTrigger {
               }
               winston.debug('runAction action startText: ' + startText);
 
+              winston.info('triggerEventEmitter.on(request.department.bot.launch)');
 
-              // reroute(request_id, id_project, nobot) {
-              requestService.reroute(request_id, id_project).then(function(request) {
+              // reroute(request_id, id_project, nobot, no_populate)
+              const t1 = Date.now();
+              console.log("requestService.reroute from rulesTrigger request.department.bot.launch")
+              requestService.reroute(request_id, id_project, false, true).then(function(request) {
 
                 winston.verbose('request.department.bot.launch action reroute request_id: ' + request_id);
-
+                console.log("[Performance] trigger invite bot reroute time: " + (Date.now() - t1));
                 // rendi dinamico /start
                 messageService.send(
                   'system', 
@@ -908,6 +917,7 @@ class RulesTrigger {
 
      triggerEventEmitter.on('request.create', function(eventTrigger) {
 
+      console.log("triggerEventEmitter request.create eventTrigger: ", JSON.stringify(eventTrigger));
       try {
 
           winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
@@ -1156,6 +1166,7 @@ class RulesTrigger {
                           //   language, userAgent, status, id_user, attributes, undefined, preflight).then(function (savedRequest) {
 
 
+                      console.log("send message with first text: ", text);
                     var new_request = {
                       request_id: request_id, project_user_id: project_user_id, lead_id: createdLead._id, id_project: id_project,
                       first_text: text, participants: participants, departmentid: departmentid, sourcePage: sourcePage,
@@ -1176,6 +1187,7 @@ class RulesTrigger {
                         
                         var senderFullname = fullname || 'Guest'; // guest_here
 
+                        console.log("send message with first text: ", text);
                         // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
                         let t2 = Date.now();
                         return messageService.create( id_user, senderFullname , savedRequest.request_id, text, id_project, id_user,  MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes, type, eventTrigger.event.metadata, language).then(function(savedMessage) {
