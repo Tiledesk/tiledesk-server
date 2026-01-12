@@ -651,8 +651,8 @@ class RequestService {
       priority,
       auto_close,
       followers,
-      createdAt,
-      snapshot
+      createdAt
+      //snapshot
     })
 
     if (isTestConversation) {
