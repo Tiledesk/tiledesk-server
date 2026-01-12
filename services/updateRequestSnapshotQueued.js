@@ -27,51 +27,54 @@ class UpdateRequestSnapshotQueued {
         winston.debug("updateRequestSnapshot on request.snapshot.update ", data);
 
         const request = data.request;
-        const snapshot = data.snapshot;
-        console.log("(queue) updateRequestSnapshot snapshot exists: ", snapshot ? "yes" : "no");
-        console.log("(queue) updateRequestSnapshot snapshot agents length: ", snapshot?.agents?.length);
-        console.log("(queue) updateRequestSnapshot snapshot department exists: ", snapshot.department ? "yes" : "no");
-        console.log("(queue) updateRequestSnapshot snapshot lead exists: ", snapshot.lead ? "yes" : "no");
-        console.log("(queue) updateRequestSnapshot snapshot requester exists: ", snapshot.requester ? "yes" : "no");
-
-        console.log("updateRequestSnapshot snapshot exists: ", snapshot ? "yes" : "no");
-        console.log("updateRequestSnapshot snapshot agents length: ", snapshot?.agents?.length);
-        console.log("updateRequestSnapshot snapshot availableAgentsCount: ", snapshot?.availableAgentsCount);
-        console.log("updateRequestSnapshot snapshot department exists: ", snapshot.department ? "yes" : "no");
-        console.log("updateRequestSnapshot snapshot lead exists: ", snapshot.lead ? "yes" : "no");
-        console.log("updateRequestSnapshot snapshot requester exists: ", snapshot.requester ? "yes" : "no");
+        const agents = data.snapshot?.agents;
 
         if (!request || !request.request_id || !request.id_project) {
           winston.error("updateRequestSnapshot: Invalid request data", data);
           return;
         }
 
-        if (!snapshot || Object.keys(snapshot).length === 0) {
-          winston.debug("updateRequestSnapshot: Empty snapshot, skipping update");
+        if (!agents) {
+          winston.debug("updateRequestSnapshot: No agents array provided, skipping update");
           return;
         }
 
         const query = { request_id: request.request_id, id_project: request.id_project };
         winston.debug("updateRequestSnapshot query ", query);
 
-        Request.findOneAndUpdate(
-          query, 
-          { "$set": { "snapshot": snapshot } }, 
-          { new: true },
-          function (err, updatedRequest) {
-            if (err) {
-              winston.error("Error updating request snapshot updateRequestSnapshot", err);
-              return;
-            }
-            if (updatedRequest) {
-              console.log("Snapshot Updated from UpdateRequestSnapshotQueued on ", new Date());
-              winston.debug("updateRequestSnapshot updated request " + updatedRequest.request_id);
-            } else {
-              winston.warn("updateRequestSnapshot: Request not found for " + request.request_id);
-            }
+        Request.findOne(query, function (err, foundRequest) {
+          if (err) {
+            winston.error("Error finding request in updateRequestSnapshot", err);
             return;
           }
-        );
+          if (!foundRequest) {
+            winston.warn("updateRequestSnapshot: Request not found for " + request.request_id);
+            return;
+          }
+
+          // Merge existing snapshot with the new agents
+          let existingSnapshot = foundRequest.snapshot || {};
+          existingSnapshot.agents = agents;
+
+          Request.findOneAndUpdate(
+            query,
+            { "$set": { "snapshot": existingSnapshot } },
+            { new: true },
+            function (err, updatedRequest) {
+              if (err) {
+                winston.error("Error updating request snapshot updateRequestSnapshot", err);
+                return;
+              }
+              if (updatedRequest) {
+                console.log("Snapshot agents Updated from UpdateRequestSnapshotQueued on ", new Date());
+                winston.debug("updateRequestSnapshot updated request " + updatedRequest.request_id);
+              } else {
+                winston.warn("updateRequestSnapshot: Request not found for " + request.request_id);
+              }
+              return;
+            }
+          );
+        });
       });
     });
   }
