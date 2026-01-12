@@ -172,7 +172,8 @@ router.get('/', async (req, res, next) => {
   
         winston.debug("query:", query);
   
-        Department.find(query).select("-createdAt -createdBy -updatedAt -tags").exec(function(err, result) {
+        //.select("-createdAt -createdBy -updatedAt -tags")
+        Department.find(query).exec(function(err, result) {
               return resolve(result);
         });
       } else {        
@@ -192,7 +193,8 @@ router.get('/', async (req, res, next) => {
 
        //@DISABLED_CACHE .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+req.projectid+":select:-settings")            
       
-      Project.findOne({_id: req.projectid, status: 100}).select('-ipFilter -ipFilterEnabled -ipFilterDeny -ipFilterDenyEnabled -bannedUsers').exec(function(err, project) {
+      //  -attributes -createdAt -updatedAt -createdBy
+      Project.findOne({_id: req.projectid, status: 100}).select('-ipFilter -ipFilterEnabled -ipFilterDeny -ipFilterDenyEnabled -bannedUsers -attributes').exec(function(err, project) {
         // not use .lean I need project.trialExpired 
 
           if (err) {
