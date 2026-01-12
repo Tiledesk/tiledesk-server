@@ -671,6 +671,7 @@ class RequestService {
       await q.exec();
 
       snapshot.agents = agents; 
+      snapshot.availableAgentsCount = this.getAvailableAgentsCount(agents);
       requestEvent.emit("request.create.simple", savedRequest, snapshot);
 
       if (isStandardConversation) {
