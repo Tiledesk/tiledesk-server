@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.14.3
+- Fixed bug: first message not sent from default chatbot. Refactored availableAgentsCount handling in requestService to ensure accurate snapshot updates during request creation.
+
 # 2.14.2
 - Updated updateRequestSnapshotQueued.js to update the snapshot only
 
