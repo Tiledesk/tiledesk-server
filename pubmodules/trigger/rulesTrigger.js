@@ -1377,6 +1377,19 @@ class RulesTrigger {
                     facts = event;
                 }
                 winston.verbose("facts", facts);
+                
+                if (eventKey === 'request.create') {
+                  console.log('[WELCOME_MSG_FLOW] rulesTrigger.exec: Facts for trigger evaluation', { 
+                    request_id: facts.request_id,
+                    first_text: facts.first_text,
+                    status: facts.status,
+                    isOpen: facts.isOpen,
+                    departmentHasBot: facts.department?.hasBot,
+                    snapshotAvailableAgentsCount: facts.snapshot?.availableAgentsCount,
+                    hasSnapshot: !!facts.snapshot,
+                    hasDepartment: !!facts.department
+                  });
+                }
 
                 engine.addFact("json", facts)                                       
 
@@ -1430,7 +1443,17 @@ class RulesTrigger {
                   triggerEvent.trigger = pickedTrigger;
                   
                   if (eventKey === 'request.create' && pickedTrigger) {
-                    console.log('[WELCOME_MSG_FLOW] rulesTrigger.exec: Trigger matched and will execute actions', { triggerCode: pickedTrigger.code, triggerName: pickedTrigger.name, actionsCount: pickedTrigger.actions?.length, actions: pickedTrigger.actions?.map(a => ({ key: a.key, text: a.parameters?.text })) });
+                    console.log('[WELCOME_MSG_FLOW] rulesTrigger.exec: Trigger matched and will execute actions', { 
+                      triggerCode: pickedTrigger.code, 
+                      triggerName: pickedTrigger.name, 
+                      actionsCount: pickedTrigger.actions?.length, 
+                      actions: pickedTrigger.actions?.map(a => ({ key: a.key, text: a.parameters?.text })) 
+                    });
+                  } else if (eventKey === 'request.create' && !pickedTrigger) {
+                    console.log('[WELCOME_MSG_FLOW] rulesTrigger.exec: No trigger matched for request.create', { 
+                      eventSuccessType: eventSuccess.type,
+                      triggersIds: triggers.map(t => t.id)
+                    });
                   }
 
                   // shiiiit https://stackoverflow.com/questions/37977602/settimeout-not-working-inside-foreach
@@ -1479,6 +1502,17 @@ class RulesTrigger {
 
                 engine.on('failure', function(eventFailure, almanac, ruleResult) {
                   winston.debug("failure eventFailure", eventFailure); 
+                  
+                  if (eventKey === 'request.create') {
+                    var failedTrigger = triggers.find(t => t.id === eventFailure.type);
+                    if (failedTrigger && (failedTrigger.code === 's_online_welcome_01' || failedTrigger.code === 's_offline_welcome_01' || failedTrigger.code === 's_invite_bot_01')) {
+                      console.log('[WELCOME_MSG_FLOW] rulesTrigger.exec: Trigger conditions did NOT match', { 
+                        triggerCode: failedTrigger.code, 
+                        triggerName: failedTrigger.name,
+                        conditions: failedTrigger.conditions?.all 
+                      });
+                    }
+                  }
 
                   var triggerEvent = {event: event, eventKey:eventKey , triggers: triggers, ruleResult:requestEvent,engine:engine };
                   winston.debug("failure triggerEvent", triggerEvent); 
