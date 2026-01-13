@@ -73,10 +73,12 @@ class RulesTrigger {
             // console.log("************* request.support_group.created: "+new Date().toISOString());
 
             // requestEvent.on('request.create', function(request) {
+            console.log('[WELCOME_MSG_FLOW] rulesTrigger: received request.support_group.created', { request_id: request.request_id, id_project: request.id_project, first_text: request.first_text });
             var requestJson = request.toJSON();
             operatingHoursService.projectIsOpenNow(request.id_project, function (isOpen, err) {       
               requestJson.isOpen = isOpen;
               winston.debug('requestJson: ', requestJson);
+              console.log('[WELCOME_MSG_FLOW] rulesTrigger: executing triggers for request.create', { request_id: requestJson.request_id, isOpen });
               that.exec(requestJson, 'request.create', success, error);
             });
           });
@@ -113,6 +115,9 @@ class RulesTrigger {
 
           eventEvent.on('event.emit', function(event) {
             winston.debug('eventEvent event.emit', event);
+            if (event.name === 'new_conversation') {
+              console.log('[WELCOME_MSG_FLOW] rulesTrigger: received event.emit for new_conversation', { id_project: event.id_project, request_id: event.attributes?.request_id });
+            }
             that.exec(event, 'event.emit', success,error);
           });
 
@@ -152,6 +157,10 @@ class RulesTrigger {
 
           var text = action.parameters.text;
           winston.debug('runAction action text: ' + text);
+          
+          if (text && (text.includes('LABEL_FIRST_MSG') || text.includes('${LABEL_FIRST_MSG}'))) {
+            console.log('[WELCOME_MSG_FLOW] rulesTrigger.message.send: Sending welcome message with LABEL_FIRST_MSG', { recipient, id_project, text, sender, fullname });
+          }
 
           var attributes = {templateProcessor: true};
 
@@ -1262,10 +1271,16 @@ class RulesTrigger {
                 }
                 if (!triggers || triggers.length==0) {
                   winston.debug('No trigger found');
+                  if (eventKey === 'request.create') {
+                    console.log('[WELCOME_MSG_FLOW] rulesTrigger.exec: No triggers found for request.create', { id_project: event.id_project, request_id: event.request_id });
+                  }
                   return 0;
                 }
 
                 winston.debug('active triggers found', triggers);
+                if (eventKey === 'request.create') {
+                  console.log('[WELCOME_MSG_FLOW] rulesTrigger.exec: Found triggers for request.create', { id_project: event.id_project, request_id: event.request_id, triggersCount: triggers.length, triggerCodes: triggers.map(t => t.code) });
+                }
 
 
                 // var engineExists = that.engines.hasOwnProperty(event.id_project);
@@ -1294,6 +1309,10 @@ class RulesTrigger {
 
                 triggers.forEach(function(trigger) { 
                   winston.debug('trigger', trigger.toObject());
+                  
+                  if (eventKey === 'event.emit' && trigger.code === 's_new_conversation_01') {
+                    console.log('[WELCOME_MSG_FLOW] rulesTrigger.exec: Found s_new_conversation_01 trigger', { triggerId: trigger._id, enabled: trigger.enabled, actions: trigger.actions });
+                  }
 
                   var rule = {
                     conditions: {
@@ -1366,7 +1385,14 @@ class RulesTrigger {
                 engine.on('success', function(eventSuccess, almanac, ruleResult) {
                   // info: runAction eventTrigger.eventSuccess: {"type":"request.create","params":{"id":"5e4a771a248688f8ea55e47a","actionParameters":{"fullName":"fullName","text":"hi"}}}
                   winston.debug("success eventSuccess", eventSuccess); 
-                  winston.debug("success ruleResult", ruleResult); 
+                  winston.debug("success ruleResult", ruleResult);
+                  
+                  if (eventKey === 'event.emit') {
+                    var matchedTrigger = triggers.find(t => t.id === eventSuccess.type);
+                    if (matchedTrigger && matchedTrigger.code === 's_new_conversation_01') {
+                      console.log('[WELCOME_MSG_FLOW] rulesTrigger.exec: s_new_conversation_01 trigger conditions matched, will execute actions', { triggerId: matchedTrigger._id, actions: matchedTrigger.actions });
+                    }
+                  } 
 
                   var triggerEvent = {event: event, eventKey:eventKey , triggers: triggers, ruleResult:requestEvent,eventSuccess:eventSuccess, engine:engine };
 
@@ -1402,8 +1428,10 @@ class RulesTrigger {
 
                   winston.debug("pickedTrigger", pickedTrigger); 
                   triggerEvent.trigger = pickedTrigger;
-
-
+                  
+                  if (eventKey === 'request.create' && pickedTrigger) {
+                    console.log('[WELCOME_MSG_FLOW] rulesTrigger.exec: Trigger matched and will execute actions', { triggerCode: pickedTrigger.code, triggerName: pickedTrigger.name, actionsCount: pickedTrigger.actions?.length, actions: pickedTrigger.actions?.map(a => ({ key: a.key, text: a.parameters?.text })) });
+                  }
 
                   // shiiiit https://stackoverflow.com/questions/37977602/settimeout-not-working-inside-foreach
 

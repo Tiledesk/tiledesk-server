@@ -679,6 +679,7 @@ class RequestService {
 
       snapshot.agents = agents; 
       snapshot.availableAgentsCount = this.getAvailableAgentsCount(agents);
+      console.log('[WELCOME_MSG_FLOW] requestService.create: emitting request.create.simple', { request_id: savedRequest.request_id, id_project: savedRequest.id_project, first_text: savedRequest.first_text, status: savedRequest.status });
       requestEvent.emit("request.create.simple", savedRequest, snapshot);
 
       if (isStandardConversation) {

@@ -99,6 +99,9 @@ class EventService {
           newEvent.project_user = pu;
 
           winston.debug("newEvent", newEvent);
+          if (name === 'new_conversation') {
+            console.log('[WELCOME_MSG_FLOW] eventService.emit: new_conversation event received', { id_project, request_id: attributes?.request_id });
+          }
           eventEvent.emit('event.emit', newEvent);
           eventEvent.emit('event.emit.'+name, newEvent);
           
