@@ -139,6 +139,7 @@ var cacheUtil = require("./utils/cacheUtil");
 var orgUtil = require("./utils/orgUtil");
 var images = require('./routes/images');
 var files = require('./routes/files');
+let filesp = require('./routes/filesp');
 var campaigns = require('./routes/campaigns');
 var logs = require('./routes/logs');
 var requestUtilRoot = require('./routes/requestUtilRoot');
@@ -642,6 +643,7 @@ app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: 
 app.use('/:projectid/webhooks', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], webhooks);
 app.use('/:projectid/copilot', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], copilot);
 
+app.use('/:projectid/files', filesp);
 
 if (pubModulesManager) {
   pubModulesManager.useUnderProjects(app);
