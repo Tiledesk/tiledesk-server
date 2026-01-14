@@ -12,8 +12,9 @@ chai.use(require('chai-string'));
 let server = require('../app');
 let should = chai.should();
 var fs = require('fs');
-var userService = require('../services/userService');
+let userService = require('../services/userService');
 let projectService = require('../services/projectService');
+let faqService = require('../services/faqService');
 
 let log = false;
 
@@ -28,7 +29,133 @@ describe('FileRoute', () => {
 
     describe('Upload', () => {
 
-        it('post-chat-pdf-q', (done) => {
+        it('post-user-photo', (done) => {
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-assets-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/files/users/photo')
+                        .auth(email, pwd)
+                        .set('Content-Type', 'image/jpeg')
+                        .attach('file', fs.readFileSync('./test/fixtures/avatar.jpg'), 'avatar.jpg')
+                        .end((err, res) => {
+        
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
+                            res.should.have.status(201);
+                            res.body.should.be.a('object');
+                            expect(res.body.message).to.equal('Image uploaded successfully');
+                            expect(res.body.filename).to.equal(`uploads%2Fusers%2F${savedUser._id}%2Fimages%2Fphoto.jpg`);
+                            expect(res.body.thumbnail).to.equal(`uploads%2Fusers%2F${savedUser._id}%2Fimages%2Fthumbnails_200_200-photo.jpg`);
+
+                            done();
+                        });
+                })
+            })
+        });
+
+        it('post-user-photo-unauthorized', (done) => {
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let attacker_email = "attacker-" + Date.now() + "@email.com";
+            let pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-assets-create", savedUser._id).then(function (savedProject) {
+                    userService.signup(attacker_email, pwd, "Test Firstname", "Test lastname").then(function (attackerUser) {
+
+                        chai.request(server)
+                            .post('/' + savedProject._id + '/files/users/photo')
+                            .auth(attacker_email, pwd)
+                            .set('Content-Type', 'image/jpeg')
+                            .attach('file', fs.readFileSync('./test/fixtures/avatar.jpg'), 'avatar.jpg')
+                            .end((err, res) => {
+            
+                                if (err) { console.error("err: ", err); }
+                                if (log) { console.log("res.body", res.body); }
+
+                                res.should.have.status(403);
+                                res.body.should.be.a('object');
+                                expect(res.body.success).to.equal(false);
+                                expect(res.body.msg).to.equal(`you dont belong to the project.`);
+    
+                                done();
+                            });
+                    })
+                })
+            })
+        });
+
+        it('post-chatbot-avatar', (done) => {
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-assets-create", savedUser._id).then(function (savedProject) {
+                    faqService.create(savedProject._id, savedUser._id, { name: "testbot" }).then(function (savedChatbot) {
+
+                        chai.request(server)
+                            .post('/' + savedProject._id + '/files/users/photo?bot_id=' + savedChatbot._id)
+                            .auth(email, pwd)
+                            .set('Content-Type', 'image/jpeg')
+                            .attach('file', fs.readFileSync('./test/fixtures/avatar.jpg'), 'avatar.jpg')
+                            .end((err, res) => {
+                                
+                                if (err) { console.error("err: ", err); }
+                                if (log) { console.log("res.body", res.body); }
+
+                                res.should.have.status(201);
+                                res.body.should.be.a('object');
+                                expect(res.body.message).to.equal('Image uploaded successfully');
+                                expect(res.body.filename).to.equal(`uploads%2Fusers%2F${savedChatbot._id}%2Fimages%2Fphoto.jpg`);
+                                expect(res.body.thumbnail).to.equal(`uploads%2Fusers%2F${savedChatbot._id}%2Fimages%2Fthumbnails_200_200-photo.jpg`);
+                                done();
+                            });
+                    })
+
+                })
+            })
+        })
+
+        it('post-chatbot-avatar-unauthorized', (done) => {
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let attacker_email = "attacker-" + Date.now() + "@email.com";
+            let pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                userService.signup(attacker_email, pwd, "Test Firstname", "Test lastname").then(function (attackerUser) {
+                    projectService.create("test-assets-create", savedUser._id).then(function (savedProject) {
+                        projectService.create("test-attacker-project", attackerUser._id).then(function (attackerProject) {
+                            faqService.create(savedProject._id, savedUser._id, { name: "testbot" }).then(function (savedChatbot) {
+        
+                                chai.request(server)
+                                    .post('/' + attackerProject._id + '/files/users/photo?bot_id=' + savedChatbot._id)
+                                    .auth(attacker_email, pwd)
+                                    .set('Content-Type', 'image/jpeg')
+                                    .attach('file', fs.readFileSync('./test/fixtures/avatar.jpg'), 'avatar.jpg')
+                                    .end((err, res) => {
+                                        
+                                        if (err) { console.error("err: ", err); }
+                                        if (log) { console.log("res.body", res.body); }
+        
+                                        res.should.have.status(401);
+                                        res.body.should.be.a('object');
+                                        expect(res.body.success).to.equal(false);
+                                        expect(res.body.error).to.equal("You don't belong to the chatbot's project");
+
+                                        done();
+                                    });
+                            })
+                        })
+                    })
+                })
+            })
+        })
+
+        it('post-chat-pdf', (done) => {
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
 

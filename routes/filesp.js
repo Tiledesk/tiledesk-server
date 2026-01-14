@@ -15,6 +15,8 @@ const roleChecker = require('../middleware/has-role.js');
 const winston = require('../config/winston.js');
 const FileGridFsService = require('../services/fileGridFsService.js');
 const roleConstants = require('../models/roleConstants.js');
+const faq_kb = require('../models/faq_kb');
+const project_user = require('../models/project_user');
 
 const fileService = new FileGridFsService("files");
 const fallbackFileService = new FileGridFsService("images");;
@@ -46,6 +48,7 @@ const chatFileExpirationTime = parseInt(process.env.CHAT_FILE_EXPIRATION_TIME ||
 const default_chat_allowed_extensions = process.env.CHAT_FILES_ALLOW_LIST || ".jpg,.jpeg,.png,.gif,.pdf,.txt"; 
 const default_assets_allowed_extensions = process.env.ASSETS_FILE_ALLOW_LISTALLOWED_EXTENSIONS || ".jpg,.jpeg,.png,.gif,.pdf,.txt,.csv,.doc,.docx"; //,.xls,.xlsx,.ppt,.pptx,.zip,.rar
 const images_extensions = [ ".png", ".jpg", ".jpeg", ".gif" ];
+const avatar_allowed_extensions = ".jpg,.jpeg,.png,.gif";
 
 const fileFilter = (extensionsSource = 'chat') => {
   return (req, file, cb) => {
@@ -104,8 +107,37 @@ const uploadChat = multer({
 }).single('file');
 
 const uploadAssets = multer({
-  storage: fileService.getStorage("files"),
+  storage: fileService.getStorageProjectAssets("files"),
   fileFilter: fileFilter('assets'),
+  limits: uploadlimits
+}).single('file');
+
+const avatarFileFilter = (req, file, cb) => {
+  if (!file.originalname) {
+    return cb(new Error("File original name is required"));
+  }
+  const ext = path.extname(file.originalname).toLowerCase();
+  const allowed = avatar_allowed_extensions.split(',').map(e => e.trim().toLowerCase());
+  
+  if (!allowed.includes(ext)) {
+    const error = new Error(`File extension ${ext} is not allowed for avatar. Allowed: ${avatar_allowed_extensions}`);
+    error.status = 403;
+    return cb(error);
+  }
+
+  const expectedMimeType = mime.lookup(ext);
+  if (expectedMimeType && file.mimetype !== expectedMimeType) {
+    const error = new Error(`File content does not match mimetype. Detected: ${file.mimetype}, provided: ${expectedMimeType}`);
+    error.status = 403;
+    return cb(error);
+  }
+
+  return cb(null, true);
+};
+
+const uploadAvatar = multer({
+  storage: fileService.getStorageAvatarFiles("files"),
+  fileFilter: avatarFileFilter,
   limits: uploadlimits
 }).single('file');
 
@@ -235,6 +267,205 @@ router.post('/assets', [
     }
   })
 })
+
+/**
+ * Upload user profile photo or bot avatar
+ * Path: uploads/users/{user_id|bot_id}/images/photo.jpg
+ * This maintains compatibility with clients that expect fixed paths
+ */
+router.post('/users/photo', [
+  passport.authenticate(['basic', 'jwt'], { session: false }),
+  validtoken,
+  roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])
+], async (req, res) => {
+
+  uploadAvatar(req, res, async (err) => {
+    if (err instanceof multer.MulterError) {
+      // A Multer error occurred when uploading
+      winston.error(`Multer replied with code ${err?.code} and message "${err?.message}"`);
+      let status = 400;
+      if (err?.code === 'LIMIT_FILE_SIZE') {
+        status = 413;
+      }
+      return res.status(status).send({ success: false, error: err?.message || 'An error occurred while uploading the file', code: err.code });
+    } else if (err) {
+      // An unknown error occurred when uploading.
+      winston.error(`Multer replied with status ${err?.status} and message "${err?.message}"`);
+      let status = err?.status || 400;
+      return res.status(status).send({ success: false, error: err.message || "An error occurred while uploading the file" })
+    }
+
+    try {
+      winston.debug("/users/photo");
+  
+      if (req.upload_file_already_exists) {
+        winston.warn('Error uploading photo image, file already exists', req.file?.filename);
+        return res.status(409).send({ success: false, error: 'Error uploading photo image, file already exists' });
+      }
+  
+      if (!req.file) {
+        return res.status(400).send({ success: false, error: 'No file uploaded' });
+      }
+  
+      let userid = req.user.id;
+      let bot_id;
+      let entity_id = userid;
+  
+      if (req.query.bot_id) {
+        bot_id = req.query.bot_id;
+  
+        let chatbot = await faq_kb.findById(bot_id).catch((err) => {
+          winston.error("Error finding bot ", err);
+          return res.status(500).send({ success: false, error: "Unable to find chatbot with id " + bot_id });
+        });
+  
+        if (!chatbot) {
+          return res.status(404).send({ success: false, error: "Chatbot not found" });
+        }
+  
+        let id_project = chatbot.id_project;
+  
+        let puser = await project_user.findOne({ id_user: userid, id_project: id_project }).catch((err) => {
+          winston.error("Error finding project user: ", err);
+          return res.status(500).send({ success: false, error: "Unable to find project user for user " + userid + "in project " + id_project });
+        });
+  
+        if (!puser) {
+          winston.warn("User " + userid + " doesn't belong to the project " + id_project);
+          return res.status(401).send({ success: false, error: "You don't belong to the chatbot's project" });
+        }
+  
+        if ((puser.role !== roleConstants.ADMIN) && (puser.role !== roleConstants.OWNER)) {
+          winston.warn("User with role " + puser.role + " can't modify the chatbot");
+          return res.status(403).send({ success: false, error: "You don't have the role required to modify the chatbot" });
+        }
+  
+        entity_id = bot_id;
+      }
+  
+      var destinationFolder = 'uploads/users/' + entity_id + "/images/";
+      winston.debug("destinationFolder:" + destinationFolder);
+  
+      var thumFilename = destinationFolder + 'thumbnails_200_200-photo.jpg';
+  
+      winston.debug("req.file.filename:" + req.file.filename);
+      const buffer = await fileService.getFileDataAsBuffer(req.file.filename);
+  
+      try {
+        const resizeImage = await sharp(buffer).resize(200, 200).toBuffer();
+        await fileService.createFile(thumFilename, resizeImage, undefined, undefined);
+        let thumFile = await fileService.find(thumFilename);
+        winston.debug("thumFile", thumFile);
+  
+        return res.status(201).json({
+          message: 'Image uploaded successfully',
+          filename: encodeURIComponent(req.file.filename),
+          thumbnail: encodeURIComponent(thumFilename)
+        });
+      } catch (thumbErr) {
+        winston.error("Error generating or creating thumbnail", thumbErr);
+        // Still return success for the main file, but log thumbnail error
+        return res.status(201).json({
+          message: 'Image uploaded successfully',
+          filename: encodeURIComponent(req.file.filename),
+          thumbnail: undefined
+        });
+      }
+  
+    } catch (error) {
+      winston.error('Error uploading user image.', error);
+      return res.status(500).send({ success: false, error: 'Error uploading user image.' });
+    }
+
+  })
+})
+
+// router.put('/users/photo2', [
+//   passport.authenticate(['basic', 'jwt'], { session: false }),
+//   validtoken,
+// ], uploadAvatar.single('file'), async (req, res) => {
+//   try {
+//     winston.debug("/users/photo");
+
+//     if (req.upload_file_already_exists) {
+//       winston.warn('Error uploading photo image, file already exists', req.file?.filename);
+//       return res.status(409).send({ success: false, error: 'Error uploading photo image, file already exists' });
+//     }
+
+//     if (!req.file) {
+//       return res.status(400).send({ success: false, error: 'No file uploaded' });
+//     }
+
+//     let userid = req.user.id;
+//     let bot_id;
+//     let entity_id = userid;
+
+//     if (req.query.bot_id) {
+//       bot_id = req.query.bot_id;
+
+//       let chatbot = await faq_kb.findById(bot_id).catch((err) => {
+//         winston.error("Error finding bot ", err);
+//         return res.status(500).send({ success: false, error: "Unable to find chatbot with id " + bot_id });
+//       });
+
+//       if (!chatbot) {
+//         return res.status(404).send({ success: false, error: "Chatbot not found" });
+//       }
+
+//       let id_project = chatbot.id_project;
+
+//       let puser = await project_user.findOne({ id_user: userid, id_project: id_project }).catch((err) => {
+//         winston.error("Error finding project user: ", err);
+//         return res.status(500).send({ success: false, error: "Unable to find project user for user " + userid + "in project " + id_project });
+//       });
+
+//       if (!puser) {
+//         winston.warn("User " + userid + " doesn't belong to the project " + id_project);
+//         return res.status(401).send({ success: false, error: "You don't belong to the chatbot's project" });
+//       }
+
+//       if ((puser.role !== roleConstants.ADMIN) && (puser.role !== roleConstants.OWNER)) {
+//         winston.warn("User with role " + puser.role + " can't modify the chatbot");
+//         return res.status(403).send({ success: false, error: "You don't have the role required to modify the chatbot" });
+//       }
+
+//       entity_id = bot_id;
+//     }
+
+//     var destinationFolder = 'uploads/users/' + entity_id + "/images/";
+//     winston.debug("destinationFolder:" + destinationFolder);
+
+//     var thumFilename = destinationFolder + 'thumbnails_200_200-photo.jpg';
+
+//     winston.debug("req.file.filename:" + req.file.filename);
+//     const buffer = await fileService.getFileDataAsBuffer(req.file.filename);
+
+//     try {
+//       const resizeImage = await sharp(buffer).resize(200, 200).toBuffer();
+//       await fileService.createFile(thumFilename, resizeImage, undefined, undefined);
+//       let thumFile = await fileService.find(thumFilename);
+//       winston.debug("thumFile", thumFile);
+
+//       return res.status(201).json({
+//         message: 'Image uploaded successfully',
+//         filename: encodeURIComponent(req.file.filename),
+//         thumbnail: encodeURIComponent(thumFilename)
+//       });
+//     } catch (thumbErr) {
+//       winston.error("Error generating or creating thumbnail", thumbErr);
+//       // Still return success for the main file, but log thumbnail error
+//       return res.status(201).json({
+//         message: 'Image uploaded successfully',
+//         filename: encodeURIComponent(req.file.filename),
+//         thumbnail: undefined
+//       });
+//     }
+
+//   } catch (error) {
+//     winston.error('Error uploading user image.', error);
+//     return res.status(500).send({ success: false, error: 'Error uploading user image.' });
+//   }
+// });
 
 router.get("/", [
   passport.authenticate(['basic', 'jwt'], { session: false }), 
