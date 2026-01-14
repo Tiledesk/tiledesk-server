@@ -5,6 +5,7 @@ require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 var winston = require('../config/winston');
 var pathlib = require('path');
+var mongoose = require('mongoose');
 
 var router = express.Router();
 
@@ -25,13 +26,20 @@ const fileService = new FileGridFsService("images");
 
 
 
+let images_allowed = process.env.UPLOAD_IMAGES_ALLOW_LIST || "image/jpeg,image/png,image/gif,image/vnd.microsoft.icon,image/webp";
+winston.info("Images upload allowed list "+ images_allowed);
+
+
+
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype == 'image/jpeg' || file.mimetype == 'image/png' 
-      || file.mimetype == 'image/gif'|| file.mimetype == 'image/vnd.microsoft.icon'
-      || file.mimetype == 'image/webp') {
+    winston.debug("fileFilter "+ images_allowed);
+  if (images_allowed==="*" || (images_allowed && images_allowed.length>0 && images_allowed.split(",").indexOf(file.mimetype)>-1) ) {
+     winston.debug("file.mimetype allowed: "+ file.mimetype);
       cb(null, true);
   } else {
-      cb(null, false);
+      winston.debug("file.mimetype not allowed. " + file.mimetype);
+      // cb(null, false);
+      cb(new multer.MulterError('fileFilter not allowed'))
   }
 }
 
@@ -54,7 +62,7 @@ if (MAX_UPLOAD_FILE_SIZE) {
 // }
 
 
-const upload = multer({ storage: fileService.getStorage("images"), fileFilter: fileFilter, limits: uploadlimits });
+const upload = multer({ storage: fileService.getStorage("images"), fileFilter: fileFilter, limits: uploadlimits }).single('file');
 
 /*
 curl -u andrea.leo@f21.it:123456 \
@@ -70,7 +78,20 @@ curl -u andrea.leo@f21.it:123456 \
 
 router.post('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken],
 // bodymiddleware, 
-upload.single('file'), (req, res, next) => {
+(req, res, next) => {
+
+ upload(req, res, function (err) {
+    winston.debug('upload:'+ err);
+    if (err instanceof multer.MulterError) {
+      // A Multer error occurred when uploading.
+      winston.error('Permission denied uploading the image.', err);
+      return res.status(403).send({success: false, msg: 'Permission denied uploading the image.'});
+    } else if (err) {
+      // An unknown error occurred when uploading.
+      winston.error('Error uploading the image.', err);
+      return res.status(500).send({success: false, msg: 'Error uploading the image.'});
+    }
+
   try {
     // winston.info("req.query.folder1:"+req.body.folder);
 
@@ -83,14 +104,35 @@ upload.single('file'), (req, res, next) => {
      var thumFilename = destinationFolder+'thumbnails_200_200-' + req.file.originalname;
 
 
-     fileService.getFileDataAsBuffer(req.file.filename).then(function(buffer) {
-
-      sharp(buffer).resize(200, 200).toBuffer((err, resizeImage, info) => {
-        //in prod nn genera thumb
-        if (err) { winston.error("Error generating thumbnail", err); }
-        fileService.createFile ( thumFilename, resizeImage, undefined, undefined);
+      //file_retention
+      mongoose.connection.db.collection('images.chunks').updateMany({"files_id": req.file.id},{ "$set": { "uploadDate": req.file.uploadDate } }, function (err, updates) {
+        if (err) {
+          winston.error("Error updating files.chunks");
+        }
+        winston.debug("files.chunks updated", updates);    
       });
 
+     fileService.getFileDataAsBuffer(req.file.filename).then(function(buffer) {
+
+      sharp(buffer).resize(200, 200).toBuffer( async (err, resizeImage, info) => {
+        //in prod nn genera thumb
+        if (err) { winston.error("Error generating thumbnail", err); }
+        await fileService.createFile ( thumFilename, resizeImage, undefined, undefined);
+
+        let thumFile = await fileService.find(thumFilename);
+        winston.debug("thumFile", thumFile);    
+
+         //file_retention for thumFile
+        mongoose.connection.db.collection('images.chunks').updateMany({"files_id": thumFile._id},{ "$set": { "uploadDate": thumFile.uploadDate } }, function (err, updates) {
+          if (err) {
+            winston.error("Error updating files.chunks");
+          }
+          winston.debug("files.chunks updated", updates);    
+        });
+       
+      });
+
+    
       return res.status(201).json({
           message: 'Image uploded successfully',
           filename: encodeURIComponent(req.file.filename),
@@ -101,6 +143,7 @@ upload.single('file'), (req, res, next) => {
     winston.error('Error uploading user image.',error);
     return res.status(500).send({success: false, msg: 'Error uploading user image.'});
   }
+});
 });
 
 
@@ -142,12 +185,33 @@ uploadFixedFolder.single('file'), (req, res, next) => {
      var thumFilename = destinationFolder+'thumbnails_200_200-' + req.file.originalname;
 
 
+       //file_retention
+      mongoose.connection.db.collection('images.chunks').updateMany({"files_id": req.file.id},{ "$set": { "uploadDate": req.file.uploadDate } }, function (err, updates) {
+        if (err) {
+          winston.error("Error updating files.chunks");
+        }
+        winston.debug("files.chunks updated", updates);    
+      });
+
      fileService.getFileDataAsBuffer(req.file.filename).then(function(buffer) {
 
-      sharp(buffer).resize(200, 200).toBuffer((err, resizeImage, info) => {
+      sharp(buffer).resize(200, 200).toBuffer(async (err, resizeImage, info) => {
         //in prod nn genera thumb
         if (err) { winston.error("Error generating thumbnail", err); }
-        fileService.createFile ( thumFilename, resizeImage, undefined, undefined);
+        await fileService.createFile ( thumFilename, resizeImage, undefined, undefined);
+
+        let thumFile = await fileService.find(thumFilename);
+        winston.debug("thumFile", thumFile);    
+
+         //file_retention for thumFile
+        mongoose.connection.db.collection('images.chunks').updateMany({"files_id": thumFile._id},{ "$set": { "uploadDate": thumFile.uploadDate } }, function (err, updates) {
+          if (err) {
+            winston.error("Error updating files.chunks");
+          }
+          winston.debug("files.chunks updated", updates);    
+        });
+       
+
       });
 
       return res.status(201).json({
@@ -388,6 +452,10 @@ the image binary file
 
 Example:
 
+
+curl -v -X POST -H 'Content-Type: multipart/form-data' -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test.jpg" http://localhost:3000/images/public/
+
+
 ```text
 curl -v -X POST -H 'Content-Type: multipart/form-data' -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test.jpg" https://api.tiledesk.com/v2/images/public
 ```
@@ -397,7 +465,20 @@ curl -v -X POST -H 'Content-Type: multipart/form-data' -F "file=@/Users/andreale
 curl -v -X POST -H 'Content-Type: multipart/form-data' -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test.jpg" https://tiledesk-server-pre.herokuapp.com/images/public/
 */
 
-router.post('/public', upload.single('file'), (req, res, next) => {
+router.post('/public', (req, res, next) => {
+
+  upload(req, res, function (err) {
+    winston.debug('upload:'+ err);
+    if (err instanceof multer.MulterError) {
+      // A Multer error occurred when uploading.
+      winston.error('Permission denied uploading the image.', err);
+      return res.status(403).send({success: false, msg: 'Permission denied uploading the image.'});
+    } else if (err) {
+      // An unknown error occurred when uploading.
+      winston.error('Error uploading the image.', err);
+      return res.status(500).send({success: false, msg: 'Error uploading the image.'});
+    }
+
   try {
      winston.debug("req",req);
      var folder = req.folder || "error";
@@ -410,15 +491,35 @@ router.post('/public', upload.single('file'), (req, res, next) => {
 
      var thumFilename = destinationFolder+'thumbnails_200_200-' + req.file.originalname;          
 
+      //file_retention
+    mongoose.connection.db.collection('images.chunks').updateMany({"files_id": req.file.id},{ "$set": { "uploadDate": req.file.uploadDate } }, function (err, updates) {
+      if (err) {
+        winston.error("Error updating files.chunks");
+      }
+        winston.debug("files.chunks updated", updates);
+  
+    });
+
 
      fileService.getFileDataAsBuffer(req.file.filename).then(function(buffer) {
 
-        sharp(buffer).resize(200, 200).toBuffer((err, resizeImage, info) => {
+        sharp(buffer).resize(200, 200).toBuffer(async (err, resizeImage, info) => {
             if (err) { winston.error("Error generating thumbnail", err); }
-            fileService.createFile ( thumFilename, resizeImage, undefined, undefined);
-        });
+            await fileService.createFile ( thumFilename, resizeImage, undefined, undefined);
 
+             let thumFile = await fileService.find(thumFilename);
+              winston.debug("thumFile", thumFile);    
 
+              //file_retention for thumFile
+              mongoose.connection.db.collection('images.chunks').updateMany({"files_id": thumFile._id},{ "$set": { "uploadDate": thumFile.uploadDate } }, function (err, updates) {
+                if (err) {
+                  winston.error("Error updating files.chunks");
+                }
+                winston.debug("files.chunks updated", updates);    
+              });
+       
+        });    
+        
         return res.status(201).json({
             message: 'Image uploded successfully',
             filename: encodeURIComponent(req.file.filename),
@@ -432,6 +533,7 @@ router.post('/public', upload.single('file'), (req, res, next) => {
     winston.error('Error deleting public image.',error);
     return res.status(500).send({success: false, msg: 'Error deleting public image.'});
   }
+});
 });
 
 
