@@ -49,6 +49,15 @@ const images_extensions = [ ".png", ".jpg", ".jpeg", ".gif" ];
 
 const fileFilter = (extensionsSource = 'chat') => {
   return (req, file, cb) => {
+    console.log('[fileFilter] Starting file filter check', {
+      extensionsSource,
+      hasFile: !!file,
+      fileName: file?.originalname,
+      fileMimeType: file?.mimetype,
+      fileFieldname: file?.fieldname,
+      hasProject: !!req.project,
+      hasProjectUser: !!req.projectuser
+    });
 
     const project = req.project;
     const pu = req.projectuser;
@@ -60,6 +69,7 @@ const fileFilter = (extensionsSource = 'chat') => {
       allowed_extensions = default_assets_allowed_extensions;
     } else {
       if (!pu) {
+        console.log('[fileFilter] Project user not found');
         return cb(new Error("Project user not found"))
       }
       if (pu.roleType === 2 || pu.role === roleConstants.GUEST) {
@@ -69,6 +79,8 @@ const fileFilter = (extensionsSource = 'chat') => {
       }
     }
     
+    console.log('[fileFilter] Allowed extensions:', allowed_extensions);
+    
     if (allowed_extensions !== "*/*") {
       allowed_mime_types = getMimeTypes(allowed_extensions);
       if (!file.originalname) {
@@ -77,6 +89,7 @@ const fileFilter = (extensionsSource = 'chat') => {
       const ext = path.extname(file.originalname).toLowerCase();
 
       if (!allowed_extensions.includes(ext)) {
+        console.log('[fileFilter] Extension not allowed:', ext);
         const error = new Error(`File extension ${ext} is not allowed`);
         error.status = 403;
         return cb(error);
@@ -84,13 +97,16 @@ const fileFilter = (extensionsSource = 'chat') => {
 
       const expectedMimeType = mime.lookup(ext);
       if (expectedMimeType && file.mimetype !== expectedMimeType) {
+        console.log('[fileFilter] Mime type mismatch:', { detected: file.mimetype, expected: expectedMimeType });
         const error = new Error(`File content does not match mimetype. Detected: ${file.mimetype}, provided: ${expectedMimeType}`);
         error.status = 403;
         return cb(error);
       }
 
+      console.log('[fileFilter] File accepted');
       return cb(null, true);
     } else {
+      console.log('[fileFilter] All extensions allowed (*/*)');
       return cb(null, true);
     }
   }
@@ -169,6 +185,16 @@ router.post('/assets', [
   validtoken,
   roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])
 ], async (req, res) => {
+  console.log('[POST /assets] Request received', {
+    method: req.method,
+    contentType: req.headers['content-type'],
+    hasBody: !!req.body,
+    bodyKeys: req.body ? Object.keys(req.body) : [],
+    query: req.query,
+    hasProject: !!req.project,
+    hasProjectUser: !!req.projectuser
+  });
+
   let customExpiration = parseInt(req.query?.expiration, 10);
   let expireAt;
   if (customExpiration && !isNaN(customExpiration)) {
@@ -177,8 +203,30 @@ router.post('/assets', [
     expireAt = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000); // default 10 year
   }
   req.expireAt = expireAt;
+  
+  console.log('[POST /assets] Expiration set', { expireAt });
 
   uploadAssets(req, res, async (err) => {
+    console.log('[uploadAssets] Callback invoked', {
+      hasError: !!err,
+      errorType: err?.constructor?.name,
+      isMulterError: err instanceof multer.MulterError,
+      errorCode: err?.code,
+      errorMessage: err?.message,
+      hasFile: !!req.file,
+      fileInfo: req.file ? {
+        filename: req.file.filename,
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        id: req.file.id,
+        hasMetadata: !!req.file.metadata
+      } : null,
+      reqBody: req.body,
+      reqFiles: req.files,
+      reqFileKeys: Object.keys(req).filter(k => k.includes('file'))
+    });
+
     if (err instanceof multer.MulterError) {
       // A Multer error occurred when uploading
       winston.error(`Multer replied with code ${err?.code} and message "${err?.message}"`);
@@ -194,24 +242,60 @@ router.post('/assets', [
       return res.status(status).send({ success: false, error: err.message || "An error occurred while uploading the file" })
     }
 
+    console.log('[uploadAssets] Before file processing', {
+      hasFile: !!req.file,
+      reqFileType: typeof req.file,
+      reqFileValue: req.file
+    });
+
+    if (!req.file) {
+      console.error('[uploadAssets] req.file is undefined!', {
+        reqKeys: Object.keys(req),
+        reqBody: req.body,
+        reqFiles: req.files,
+        contentType: req.headers['content-type'],
+        method: req.method
+      });
+      winston.error("Error uploading asset: req.file is undefined");
+      return res.status(400).send({ success: false, error: "No file was uploaded" });
+    }
+
     try {
+      console.log('[uploadAssets] Processing file', {
+        filename: req.file.filename,
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size
+      });
 
       const buffer = await fileService.getFileDataAsBuffer(req.file.filename);
+      console.log('[uploadAssets] File buffer retrieved', { bufferSize: buffer?.length });
+      
       await verifyFileContent(buffer, req.file.mimetype);
+      console.log('[uploadAssets] File content verified');
 
       // metadata update
+      console.log('[uploadAssets] Updating metadata', {
+        fileId: req.file.id,
+        expireAt: req.file.metadata?.expireAt
+      });
+      
       await mongoose.connection.db.collection('files.chunks').updateMany(
         { files_id: req.file.id },
         { $set: { "metadata.expireAt": req.file.metadata.expireAt }}
       )
+      console.log('[uploadAssets] Metadata updated');
 
       const ext = path.extname(req.file.originalname).toLowerCase();
+      console.log('[uploadAssets] File extension:', ext);
       let thumbnail;
 
       // generate thumb for iages
       if (images_extensions.includes(ext)) {
+        console.log('[uploadAssets] Generating thumbnail for image');
         const buffer = await fileService.getFileDataAsBuffer(req.file.filename);
         const thumbFilename = req.file.filename.replace(/([^/]+)$/, "thumbnails_200_200-$1");
+        console.log('[uploadAssets] Thumbnail filename:', thumbFilename);
         const resized = await sharp(buffer).resize(200, 200).toBuffer();
         await fileService.createFile(thumbFilename, resized, undefined, undefined, { metadata: { expireAt }});
         await mongoose.connection.db.collection('files.chunks').updateMany(
@@ -219,6 +303,7 @@ router.post('/assets', [
           { $set: { "metadata.expireAt": expireAt }}
         );
         thumbnail = thumbFilename;
+        console.log('[uploadAssets] Thumbnail created');
       }
 
       return res.status(201).send({
@@ -228,6 +313,17 @@ router.post('/assets', [
       })
 
     } catch (err) {
+      console.error('[uploadAssets] Error caught in try block', {
+        errorMessage: err?.message,
+        errorStack: err?.stack,
+        errorSource: err?.source,
+        hasFile: !!req.file,
+        fileInfo: req.file ? {
+          filename: req.file.filename,
+          originalname: req.file.originalname
+        } : null
+      });
+
       if (err?.source === "FileContentVerification") {
         let error_message = err?.message || "Content verification failed";
         winston.warn("File content verification failed. Message: ", error_message);

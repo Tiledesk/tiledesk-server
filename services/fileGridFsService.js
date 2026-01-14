@@ -184,30 +184,25 @@ class FileGridFsService extends FileService {
     }
 
     getStorage(folderName) {
+        console.log('[getStorage] Creating storage for folder:', folderName);
+        
         const storageMongo = new GridFsStorage({
             url: this.mongoURI,
             options: { useNewUrlParser: true, useUnifiedTopology: true },
             file: (req, file) => {
+                console.log('[getStorage.file] Storage file callback invoked', {
+                    folderName,
+                    hasFile: !!file,
+                    fileName: file?.originalname,
+                    fileMimeType: file?.mimetype,
+                    fileFieldname: file?.fieldname,
+                    hasUser: !!req.user,
+                    userId: req.user?.id,
+                    hasExpireAt: !!req.expireAt,
+                    expireAt: req.expireAt
+                });
+
                 var folder = uuidv4();
-
-                // var form = new multiparty.Form();
-
-                // form.parse(req, function(err, fields, files) {
-                //     console.log("XXX fields",fields)
-                //     console.log("XXX files",files)
-                // });
-
-                // console.log("XXX req",req)
-                // console.log("XXX req.query",JSON.stringify(req.query))
-                // console.log("XXX req.body",JSON.stringify(req.body))
-                // console.log("XXX req.folder",JSON.stringify(req.folder))
-                // console.log("XXX req.headers",JSON.stringify(req.headers))
-                // console.log("XXX file",file)
-
-                // if (req.body.folder) {
-
-                //     folder = req.body.folder;
-                // }
 
                 var subfolder = "/public";
                 if (req.user && req.user.id) {
@@ -215,30 +210,24 @@ class FileGridFsService extends FileService {
                 }
                 const path = 'uploads' + subfolder + "/" + folderName + "/" + folder;
                 req.folder = folder;
-                // const match = ["image/png", "image/jpeg"];
-
-                // if (match.indexOf(file.mimetype) === -1) {
-                //     const filename = `${Date.now()}-${file.originalname}`;
-                //     return filename;
-                // }
-
-                // console.log("Date.now()",Date.now())
-                // console.log("this.retentionPeriod*1000",this.retentionPeriod*1000)
-                // console.log("Date.now()+this.retentionPeriod*1000",Date.now()+this.retentionPeriod*1000)
 
                 let expireAt = new Date(Date.now()+ this.retentionPeriod*1000) ;
                 if (req.expireAt) {
                     expireAt = req.expireAt;
                 }
 
-                return {
+                const storageConfig = {
                     bucketName: folderName,
                     filename: `${path}/${file.originalname}`,
                     metadata: {'expireAt': expireAt}
                 };
+
+                console.log('[getStorage.file] Returning storage config', storageConfig);
+                return storageConfig;
             }
         });
 
+        console.log('[getStorage] Storage created');
         return storageMongo;
     }
 
