@@ -58,6 +58,52 @@ describe('FileRoute', () => {
             })
         });
 
+        it('post-user-photo-already-exists', (done) => {
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-assets-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/files/users/photo')
+                        .auth(email, pwd)
+                        .set('Content-Type', 'image/jpeg')
+                        .attach('file', fs.readFileSync('./test/fixtures/avatar.jpg'), 'avatar.jpg')
+                        .end((err, res) => {
+        
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
+                            res.should.have.status(201);
+                            res.body.should.be.a('object');
+                            expect(res.body.message).to.equal('Image uploaded successfully');
+                            expect(res.body.filename).to.equal(`uploads%2Fusers%2F${savedUser._id}%2Fimages%2Fphoto.jpg`);
+                            expect(res.body.thumbnail).to.equal(`uploads%2Fusers%2F${savedUser._id}%2Fimages%2Fthumbnails_200_200-photo.jpg`);
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/files/users/photo')
+                                .auth(email, pwd)
+                                .set('Content-Type', 'image/jpeg')
+                                .attach('file', fs.readFileSync('./test/fixtures/avatar.jpg'), 'avatar.jpg')
+                                .end((err, res) => {
+                                    
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+
+                                    res.should.have.status(409);
+                                    res.body.should.be.a('object');
+                                    expect(res.body.success).to.equal(false);
+                                    expect(res.body.error).to.equal('Error uploading photo image, file already exists');
+
+                                    done();
+                                })
+
+                        });
+                })
+            })
+        });
+
         it('post-user-photo-unauthorized', (done) => {
             let email = "test-signup-" + Date.now() + "@email.com";
             let attacker_email = "attacker-" + Date.now() + "@email.com";
@@ -442,6 +488,66 @@ describe('FileRoute', () => {
                             expect(res.body.error).to.equal("File content does not match mimetype. Detected: unknown, provided: application/pdf");
 
                             done();
+                        });
+                })
+            })
+        });
+
+    })
+
+    describe('Delete', () => {
+
+        it('delete-user-photo', (done) => {
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-assets-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/files/users/photo')
+                        .auth(email, pwd)
+                        .set('Content-Type', 'image/jpeg')
+                        .attach('file', fs.readFileSync('./test/fixtures/avatar.jpg'), 'avatar.jpg')
+                        .end((err, res) => {
+        
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
+                            res.should.have.status(201);
+                            res.body.should.be.a('object');
+                            expect(res.body.message).to.equal('Image uploaded successfully');
+                            expect(res.body.filename).to.equal(`uploads%2Fusers%2F${savedUser._id}%2Fimages%2Fphoto.jpg`);
+                            expect(res.body.thumbnail).to.equal(`uploads%2Fusers%2F${savedUser._id}%2Fimages%2Fthumbnails_200_200-photo.jpg`);
+
+                            let filepath = res.body.filename;
+
+                            chai.request(server)
+                                .delete('/' + savedProject._id + '/files?path=' + filepath)
+                                .auth(email, pwd)
+                                .end((err, res) => {
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    expect(res.body.message).to.equal('File deleted successfully');
+
+                                    chai.request(server)
+                                        .get('/' + savedProject._id + '/files?path=' + filepath)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("res.body", res.body); }
+                                            
+                                            res.should.have.status(404);
+                                            res.body.should.be.a('object');
+                                            expect(res.body.success).to.equal(false);
+                                            expect(res.body.error).to.equal('File not found.');
+                                            
+                                            done();
+                                        })
+                                })
                         });
                 })
             })
