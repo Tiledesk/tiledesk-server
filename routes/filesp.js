@@ -58,12 +58,17 @@ const fileFilter = (extensionsSource = 'chat') => {
 
     if (extensionsSource === 'assets') {
       allowed_extensions = default_assets_allowed_extensions;
-    } else if (pu.roleType === 2 || pu.role === roleConstants.GUEST) {
-      allowed_extensions = project?.widget?.allowedUploadExtentions || default_chat_allowed_extensions;
     } else {
-      allowed_extensions = project?.settings?.allowed_upload_extentions || default_chat_allowed_extensions;
+      if (!pu) {
+        return cb(new Error("Project user not found"))
+      }
+      if (pu.roleType === 2 || pu.role === roleConstants.GUEST) {
+        allowed_extensions = project?.widget?.allowedUploadExtentions || default_chat_allowed_extensions;
+      } else {
+        allowed_extensions = project?.settings?.allowed_upload_extentions || default_chat_allowed_extensions;
+      }
     }
-
+    
     if (allowed_extensions !== "*/*") {
       allowed_mime_types = getMimeTypes(allowed_extensions);
       if (!file.originalname) {
@@ -162,7 +167,7 @@ router.post('/chat', [
 router.post('/assets', [
   passport.authenticate(['basic', 'jwt'], { session: false }),
   validtoken,
-  roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])
+  roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])
 ], async (req, res) => {
   let customExpiration = parseInt(req.query?.expiration, 10);
   let expireAt;
