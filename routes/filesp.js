@@ -124,11 +124,56 @@ const uploadChat = multer({
   limits: uploadlimits
 }).single('file');
 
-const uploadAssets = multer({
+const uploadAssetsMulter = multer({
   storage: fileService.getStorage("files"),
   fileFilter: fileFilter('assets'),
   limits: uploadlimits
-}).single('file');
+});
+
+const uploadAssets = (req, res, next) => {
+  const contentType = req.headers['content-type'];
+  console.log('[uploadAssets middleware] Before multer processing', {
+    contentType: contentType,
+    contentLength: req.headers['content-length'],
+    method: req.method,
+    url: req.url,
+    allHeaders: Object.keys(req.headers).reduce((acc, k) => {
+      acc[k] = req.headers[k];
+      return acc;
+    }, {})
+  });
+  
+  // Check if content-type is multipart/form-data
+  if (!contentType || !contentType.includes('multipart/form-data')) {
+    console.error('[uploadAssets middleware] Invalid content-type', {
+      contentType: contentType,
+      expected: 'multipart/form-data',
+      allHeaders: req.headers
+    });
+    return res.status(400).send({ 
+      success: false, 
+      error: `Invalid content-type. Expected 'multipart/form-data', got '${contentType || 'undefined'}'` 
+    });
+  }
+  
+  uploadAssetsMulter.single('file')(req, res, (err) => {
+    console.log('[uploadAssets middleware] After multer processing', {
+      hasError: !!err,
+      errorMessage: err?.message,
+      hasFile: !!req.file,
+      fileInfo: req.file ? {
+        filename: req.file.filename,
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        id: req.file.id
+      } : null,
+      reqBody: req.body,
+      contentType: req.headers['content-type']
+    });
+    next(err);
+  });
+};
 
 
 // *********************** //
@@ -183,7 +228,23 @@ router.post('/chat', [
 router.post('/assets', [
   passport.authenticate(['basic', 'jwt'], { session: false }),
   validtoken,
-  roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])
+  roleChecker.hasRoleOrTypes('agent', ['bot','subscription']),
+  (req, res, next) => {
+    console.log('[POST /assets] Before uploadAssets middleware', {
+      method: req.method,
+      contentType: req.headers['content-type'],
+      allContentHeaders: Object.keys(req.headers).filter(k => k.toLowerCase().includes('content')).reduce((acc, k) => {
+        acc[k] = req.headers[k];
+        return acc;
+      }, {}),
+      hasBody: !!req.body,
+      bodyKeys: req.body ? Object.keys(req.body) : [],
+      query: req.query,
+      hasProject: !!req.project,
+      hasProjectUser: !!req.projectuser
+    });
+    next();
+  }
 ], async (req, res) => {
   console.log('[POST /assets] Request received', {
     method: req.method,
