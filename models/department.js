@@ -3,6 +3,8 @@ var Schema = mongoose.Schema;
 var routingConstants = require('../models/routingConstants');
 var winston = require('../config/winston');
 var TagSchema = require("../models/tag");
+var GroupMemberSchema = require("../models/groupMemberSchama");
+
 
 var DepartmentSchema = new Schema({
   id_bot: {
@@ -34,6 +36,7 @@ var DepartmentSchema = new Schema({
   id_group: {
     type: String,
   },
+  groups: [GroupMemberSchema],
   // used??
   online_msg: {
     type: String,
