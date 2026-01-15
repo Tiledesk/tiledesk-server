@@ -487,15 +487,17 @@ class FileGridFsService extends FileService {
                     }
                 }
 
-                let expireAt = new Date(Date.now()+ this.retentionPeriod*1000) ;
+                // Avatar/profile photos have no retention by default
+                // Only set expireAt if explicitly provided in req.expireAt
+                let metadata = {};
                 if (req.expireAt) {
-                    expireAt = req.expireAt;
+                    metadata = {'expireAt': req.expireAt};
                 }
 
                 return {
                     bucketName: folderName,
                     filename: `${path}/${filename}`,
-                    metadata: {'expireAt': expireAt}
+                    metadata: metadata
                 };
             }
         });
@@ -529,15 +531,17 @@ class FileGridFsService extends FileService {
                 const path = 'uploads/projects/' + projectId + "/" + folderName + "/" + folder;
                 req.folder = folder;
 
-                let expireAt = new Date(Date.now()+ this.retentionPeriod*1000) ;
+                // Assets have no retention by default
+                // Only set expireAt if explicitly provided in req.expireAt
+                let metadata = {};
                 if (req.expireAt) {
-                    expireAt = req.expireAt;
+                    metadata = {'expireAt': req.expireAt};
                 }
 
                 return {
                     bucketName: folderName,
                     filename: `${path}/${file.originalname}`,
-                    metadata: {'expireAt': expireAt}
+                    metadata: metadata
                 };
             }
         });

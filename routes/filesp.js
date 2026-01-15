@@ -46,9 +46,8 @@ const chatFileExpirationTime = parseInt(process.env.CHAT_FILE_EXPIRATION_TIME ||
  * Deprecated: "application/pdf,image/png,..."
  */
 const default_chat_allowed_extensions = process.env.CHAT_FILES_ALLOW_LIST || ".jpg,.jpeg,.png,.gif,.pdf,.txt"; 
-const default_assets_allowed_extensions = process.env.ASSETS_FILE_ALLOW_LISTALLOWED_EXTENSIONS || ".jpg,.jpeg,.png,.gif,.pdf,.txt,.csv,.doc,.docx"; //,.xls,.xlsx,.ppt,.pptx,.zip,.rar
+const default_assets_allowed_extensions = process.env.ASSETS_FILE_ALLOW_LIST || ".jpg,.jpeg,.png,.gif,.pdf,.txt,.csv,.doc,.docx"; //,.xls,.xlsx,.ppt,.pptx,.zip,.rar
 const images_extensions = [ ".png", ".jpg", ".jpeg", ".gif" ];
-const avatar_allowed_extensions = ".jpg,.jpeg,.png,.gif";
 
 const fileFilter = (extensionsSource = 'chat') => {
   return (req, file, cb) => {
@@ -59,7 +58,10 @@ const fileFilter = (extensionsSource = 'chat') => {
     let allowed_extensions;
     let allowed_mime_types;
 
-    if (extensionsSource === 'assets') {
+    if (extensionsSource === 'avatar') {
+      // Avatar only accepts image extensions
+      allowed_extensions = images_extensions.join(',');
+    } else if (extensionsSource === 'assets') {
       allowed_extensions = default_assets_allowed_extensions;
     } else if (pu.roleType === 2 || pu.role === roleConstants.GUEST) {
       allowed_extensions = project?.widget?.allowedUploadExtentions || default_chat_allowed_extensions;
@@ -75,7 +77,7 @@ const fileFilter = (extensionsSource = 'chat') => {
       const ext = path.extname(file.originalname).toLowerCase();
 
       if (!allowed_extensions.includes(ext)) {
-        const error = new Error(`File extension ${ext} is not allowed`);
+        const error = new Error(`File extension ${ext} is not allowed${extensionsSource === 'avatar' ? ' for avatar' : ''}`);
         error.status = 403;
         return cb(error);
       }
@@ -112,32 +114,9 @@ const uploadAssets = multer({
   limits: uploadlimits
 }).single('file');
 
-const avatarFileFilter = (req, file, cb) => {
-  if (!file.originalname) {
-    return cb(new Error("File original name is required"));
-  }
-  const ext = path.extname(file.originalname).toLowerCase();
-  const allowed = avatar_allowed_extensions.split(',').map(e => e.trim().toLowerCase());
-  
-  if (!allowed.includes(ext)) {
-    const error = new Error(`File extension ${ext} is not allowed for avatar. Allowed: ${avatar_allowed_extensions}`);
-    error.status = 403;
-    return cb(error);
-  }
-
-  const expectedMimeType = mime.lookup(ext);
-  if (expectedMimeType && file.mimetype !== expectedMimeType) {
-    const error = new Error(`File content does not match mimetype. Detected: ${file.mimetype}, provided: ${expectedMimeType}`);
-    error.status = 403;
-    return cb(error);
-  }
-
-  return cb(null, true);
-};
-
 const uploadAvatar = multer({
   storage: fileService.getStorageAvatarFiles("files"),
-  fileFilter: avatarFileFilter,
+  fileFilter: fileFilter('avatar'),
   limits: uploadlimits
 }).single('file');
 
@@ -196,14 +175,12 @@ router.post('/assets', [
   validtoken,
   roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])
 ], async (req, res) => {
+  // Assets have no retention by default, but can be set via query parameter
   let customExpiration = parseInt(req.query?.expiration, 10);
-  let expireAt;
-  if (customExpiration && !isNaN(customExpiration)) {
-    expireAt = new Date(Date.now() + customExpiration * 1000);
-  } else {
-    expireAt = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000); // default 10 year
+  if (customExpiration && !isNaN(customExpiration) && customExpiration > 0) {
+    req.expireAt = new Date(Date.now() + customExpiration * 1000);
   }
-  req.expireAt = expireAt;
+  // If no expiration is provided, req.expireAt remains undefined (no retention)
 
   uploadAssets(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
@@ -226,25 +203,34 @@ router.post('/assets', [
       const buffer = await fileService.getFileDataAsBuffer(req.file.filename);
       await verifyFileContent(buffer, req.file.mimetype);
 
-      // metadata update
-      await mongoose.connection.db.collection('files.chunks').updateMany(
-        { files_id: req.file.id },
-        { $set: { "metadata.expireAt": req.file.metadata.expireAt }}
-      )
+      // metadata update - only if expireAt is set
+      if (req.file.metadata && req.file.metadata.expireAt) {
+        await mongoose.connection.db.collection('files.chunks').updateMany(
+          { files_id: req.file.id },
+          { $set: { "metadata.expireAt": req.file.metadata.expireAt }}
+        );
+      }
 
       const ext = path.extname(req.file.originalname).toLowerCase();
       let thumbnail;
 
-      // generate thumb for iages
+      // generate thumb for images
       if (images_extensions.includes(ext)) {
         const buffer = await fileService.getFileDataAsBuffer(req.file.filename);
         const thumbFilename = req.file.filename.replace(/([^/]+)$/, "thumbnails_200_200-$1");
         const resized = await sharp(buffer).resize(200, 200).toBuffer();
-        await fileService.createFile(thumbFilename, resized, undefined, undefined, { metadata: { expireAt }});
-        await mongoose.connection.db.collection('files.chunks').updateMany(
-          { files_id: ( await fileService.find(thumbFilename))._id },
-          { $set: { "metadata.expireAt": expireAt }}
-        );
+        
+        // Only set expireAt metadata if it was provided
+        const thumbMetadata = req.expireAt ? { metadata: { expireAt: req.expireAt } } : undefined;
+        await fileService.createFile(thumbFilename, resized, undefined, undefined, thumbMetadata);
+        
+        // Update chunks metadata only if expireAt is set
+        if (req.expireAt) {
+          await mongoose.connection.db.collection('files.chunks').updateMany(
+            { files_id: ( await fileService.find(thumbFilename))._id },
+            { $set: { "metadata.expireAt": req.expireAt }}
+          );
+        }
         thumbnail = thumbFilename;
       }
 
@@ -278,6 +264,8 @@ router.post('/users/photo', [
   validtoken,
   roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])
 ], async (req, res) => {
+  // Profile photos/avatars have no retention
+  // req.expireAt is intentionally not set
 
   uploadAvatar(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
