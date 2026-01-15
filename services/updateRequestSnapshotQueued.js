@@ -25,12 +25,10 @@ class UpdateRequestSnapshotQueued {
     requestEvent.on(snapshotUpdateKey, function (data) {
       setImmediate(() => {
         winston.debug("updateRequestSnapshot on request.snapshot.update ", data);
-        console.log("updateRequestSnapshot on request.snapshot.update ", data);
 
         const request = data.request;
         const snapshot = data.snapshot;
         const agentsArray = snapshot?.agents || [];
-        console.log("(queue) updateRequestSnapshot snapshot agents length: ", agentsArray.length);
 
         if (!request || !request.request_id || !request.id_project) {
           winston.error("updateRequestSnapshot: Invalid request data", data);
@@ -57,7 +55,6 @@ class UpdateRequestSnapshotQueued {
               return;
             }
             if (updatedRequest) {
-              console.log("updateRequestSnapshot updated snapshot.agents for request " + updatedRequest.request_id, new Date());
               winston.debug("updateRequestSnapshot updated snapshot.agents for request " + updatedRequest.request_id);
             } else {
               winston.warn("updateRequestSnapshot: Request not found for " + request.request_id);
