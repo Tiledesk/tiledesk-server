@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.14.5
+- Fixed bug: missing embeddings on single scrape
+
 # 2.14.4
 - Fixed bug: missing embeddings on content coming from auto-reindex scheduler
 
