@@ -222,6 +222,7 @@ router.post('/scrape/single', async (req, res) => {
 
       json.engine = namespace.engine || default_engine;
       json.embedding = namespace.embedding || default_embedding;
+      json.embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
       if (namespace.hybrid === true) {
         json.hybrid = true;
@@ -1583,6 +1584,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
         let engine = namespace.engine || default_engine;
         let embedding = namespace.embedding || default_embedding;
+        embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
         let hybrid = namespace.hybrid;
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
