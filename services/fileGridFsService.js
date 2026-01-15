@@ -489,16 +489,16 @@ class FileGridFsService extends FileService {
 
                 // Avatar/profile photos have no retention by default
                 // Only set expireAt if explicitly provided in req.expireAt
-                let metadata = {};
+                let returnObj = {
+                    bucketName: folderName,
+                    filename: `${path}/${filename}`
+                };
+                
                 if (req.expireAt) {
-                    metadata = {'expireAt': req.expireAt};
+                    returnObj.metadata = {'expireAt': req.expireAt};
                 }
 
-                return {
-                    bucketName: folderName,
-                    filename: `${path}/${filename}`,
-                    metadata: metadata
-                };
+                return returnObj;
             }
         });
 
@@ -533,16 +533,16 @@ class FileGridFsService extends FileService {
 
                 // Assets have no retention by default
                 // Only set expireAt if explicitly provided in req.expireAt
-                let metadata = {};
+                let returnObj = {
+                    bucketName: folderName,
+                    filename: `${path}/${file.originalname}`
+                };
+                
                 if (req.expireAt) {
-                    metadata = {'expireAt': req.expireAt};
+                    returnObj.metadata = {'expireAt': req.expireAt};
                 }
 
-                return {
-                    bucketName: folderName,
-                    filename: `${path}/${file.originalname}`,
-                    metadata: metadata
-                };
+                return returnObj;
             }
         });
 
