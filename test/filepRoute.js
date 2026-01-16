@@ -27,7 +27,7 @@ chai.use(chaiHttp);
 
 describe('FileRoute', () => {
 
-    describe('Upload', () => {
+    describe('Upload User/Chatbot avatar', () => {
 
         it('post-user-photo', (done) => {
             var email = "test-signup-" + Date.now() + "@email.com";
@@ -201,6 +201,10 @@ describe('FileRoute', () => {
             })
         })
 
+    });
+
+    describe('Upload Chat Files', () => {
+
         it('post-chat-pdf', (done) => {
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
@@ -256,6 +260,10 @@ describe('FileRoute', () => {
                 })
             })
         });
+
+    })
+
+    describe('Upload Project Assets Files', () => {
 
         it('post-assets-pdf', (done) => {
             var email = "test-signup-" + Date.now() + "@email.com";
@@ -486,6 +494,36 @@ describe('FileRoute', () => {
                             res.body.should.be.a('object');
                             expect(res.body.success).to.equal(false);
                             expect(res.body.error).to.equal("File content does not match mimetype. Detected: unknown, provided: application/pdf");
+
+                            done();
+                        });
+                })
+            })
+        });
+
+        it('post-chat-xss-html-as-image', (done) => {
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+            // Prepare the file buffer inline, so we don't need an extra test fixture file.
+            var maliciousContent = Buffer.from('<script>alert("xss-stored")</script>', 'utf8');
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-assets-create", savedUser._id).then(function (savedProject) {
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/files/chat')
+                        .auth(email, pwd)
+                        .set('Content-Type', 'image/png')
+                        .attach('file', maliciousContent, 'xss2.html')
+                        .end((err, res) => {
+                            
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
+                            // Expect rejection since the file is actually HTML, not a PNG, and not a valid image.
+                            res.should.have.status(403);
+                            res.body.should.be.a('object');
+                            expect(res.body.success).to.equal(false);
+                            expect(res.body.error).to.equal("File extension .html is not allowed");
 
                             done();
                         });
