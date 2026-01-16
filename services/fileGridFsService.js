@@ -434,6 +434,121 @@ class FileGridFsService extends FileService {
        return storageMongo;     
     }
 
+    /**
+     * Storage for avatar/profile photos in files bucket but with fixed path structure
+     * Path: uploads/users/{user_id|bot_id}/images/photo.jpg
+     * This maintains compatibility with clients that expect fixed paths
+     */
+    getStorageAvatarFiles(folderName) {
+        const storageMongo = new GridFsStorage({ 
+            url : this.mongoURI,
+            options: { useNewUrlParser: true, useUnifiedTopology: true },
+            file: async (req, file) => {
+                var filename = "photo.jpg";
+               
+                var subfolder = "/public";
+                if (req.user && req.user.id) {
+                  var userid = req.user.id;
+
+                  if (req.query.bot_id) {
+                    winston.debug("req.query.bot_id: "+ req.query.bot_id);
+                    userid = req.query.bot_id;
+                  }
+                  subfolder = "/users/"+userid;
+                }
+                // Use "images" in path for backward compatibility with clients
+                const path = 'uploads'+ subfolder + "/images" ;
+    
+                var pathExists = `${path}/${filename}`;
+                winston.debug("pathExists: "+ pathExists);
+
+                let fileExists = await this.gfs.find({filename: pathExists}).toArray();
+                winston.debug("fileExists", fileExists);
+                
+                if (fileExists && fileExists.length>0) {
+                    if (req.query.force) {
+                        try {
+                            await this.deleteFile(pathExists);
+                        
+                            let thumbFilename = 'thumbnails_200_200-'+filename;
+                            winston.info("thumbFilename:"+thumbFilename);
+                        
+                            let thumbPath = pathExists.replace(filename,thumbFilename);
+                            winston.info("thumbPath:"+thumbPath);
+                        
+                            await this.deleteFile(thumbPath);
+                        } catch(e) {
+                            winston.error("Error deleting forced old image:",e);
+                        }
+                    } else {
+                        req.upload_file_already_exists = true;
+                        winston.debug("file already exists", pathExists);
+                        return;
+                    }
+                }
+
+                // Avatar/profile photos have no retention by default
+                // Only set expireAt if explicitly provided in req.expireAt
+                let returnObj = {
+                    bucketName: folderName,
+                    filename: `${path}/${filename}`
+                };
+                
+                if (req.expireAt) {
+                    returnObj.metadata = {'expireAt': req.expireAt};
+                }
+
+                return returnObj;
+            }
+        });
+
+       return storageMongo;     
+    }
+
+    /**
+     * Storage for project assets (logos, documents, etc.)
+     * Path: uploads/projects/{project_id}/assets/{uuid}/filename
+     * Assets belong to the project, not to the user who uploads them
+     */
+    getStorageProjectAssets(folderName) {
+        const storageMongo = new GridFsStorage({
+            url: this.mongoURI,
+            options: { useNewUrlParser: true, useUnifiedTopology: true },
+            file: (req, file) => {
+                var folder = uuidv4();
+
+                // Try to get project ID from req.project._id or req.projectid
+                let projectId;
+                if (req.project && req.project._id) {
+                    projectId = req.project._id.toString();
+                } else if (req.projectid) {
+                    projectId = req.projectid.toString();
+                } else {
+                    winston.error("Project not found in request for asset upload");
+                    throw new Error("Project is required for asset upload");
+                }
+
+                const path = 'uploads/projects/' + projectId + "/" + folderName + "/" + folder;
+                req.folder = folder;
+
+                // Assets have no retention by default
+                // Only set expireAt if explicitly provided in req.expireAt
+                let returnObj = {
+                    bucketName: folderName,
+                    filename: `${path}/${file.originalname}`
+                };
+                
+                if (req.expireAt) {
+                    returnObj.metadata = {'expireAt': req.expireAt};
+                }
+
+                return returnObj;
+            }
+        });
+
+        return storageMongo;
+    }
+
 }
 
 
