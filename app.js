@@ -69,6 +69,7 @@ winston.info("DB AutoIndex: " + autoIndex);
 let useUnifiedTopology = process.env.MONGOOSE_UNIFIED_TOPOLOGY === 'true';
 winston.info("DB useUnifiedTopology: ", useUnifiedTopology, typeof useUnifiedTopology);
 
+
 var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex, "useUnifiedTopology": useUnifiedTopology }, function(err) {
   if (err) { 
     winston.error('Failed to connect to MongoDB on ' + databaseUri + " ", err);
@@ -77,11 +78,13 @@ var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoI
   winston.info("Mongoose connection done on host: "+mongoose.connection.host + " on port: " + mongoose.connection.port + " with name: "+ mongoose.connection.name)// , mongoose.connection.db);
 });
 if (process.env.MONGOOSE_DEBUG==="true") {
+  winston.info("Mongoose log enabled");
   mongoose.set('debug', true);
 }
 mongoose.set('useFindAndModify', false); // https://mongoosejs.com/docs/deprecations.html#-findandmodify-
 mongoose.set('useCreateIndex', true);
 //mongoose.set('useUnifiedTopology', false); 
+//mongoose.set('useUnifiedTopology', useUnifiedTopology); 
 
 // CONNECT REDIS - CHECK IT
 const { TdCache } = require('./utils/TdCache');
@@ -92,6 +95,9 @@ let tdCache = new TdCache({
 });
 
 tdCache.connect();
+
+var cacheManager = require('./utils/cacheManager');
+cacheManager.setClient(tdCache);
 
 // ROUTES DECLARATION
 var troubleshooting = require('./routes/troubleshooting');
@@ -149,7 +155,9 @@ var property = require('./routes/property');
 var segment = require('./routes/segment');
 var webhook = require('./routes/webhook');
 var webhooks = require('./routes/webhooks');
+var roles = require('./routes/roles');
 var copilot = require('./routes/copilot');
+var voice = require('./routes/voice');
 
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
@@ -264,6 +272,7 @@ app.set('chatbot_service', new ChatbotService())
 app.set('redis_client', tdCache);
 app.set('quote_manager', qm);
 app.set('rate_manager', rm);
+app.set('trust proxy', true);
 
 // TODO DELETE IT IN THE NEXT RELEASE
 if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {  
@@ -642,6 +651,8 @@ app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: 
 
 app.use('/:projectid/webhooks', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], webhooks);
 app.use('/:projectid/copilot', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], copilot);
+app.use('/:projectid/voice', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], voice);
+app.use('/:projectid/roles', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], roles);
 
 app.use('/:projectid/files', filesp);
 

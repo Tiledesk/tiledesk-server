@@ -9,6 +9,7 @@ const webhookService = require('../services/webhookService');
 const errorCodes = require('../errorCodes');
 const aiManager = require('../services/aiManager');
 var ObjectId = require('mongoose').Types.ObjectId;
+const default_embedding = require('../config/kb/embedding');
 
 const port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/";;
@@ -73,15 +74,7 @@ router.post('/kb/reindex', async (req, res) => {
     return res.status(500).send({ success: false, error: "Error getting content with id " + content_id });
   })
 
-  const namespace_id = kb.namespace;
-  let namespace;
-  try {
-    namespace = await aiManager.checkNamespace(kb.id_project, namespace_id);
-  } catch (err) {
-    let errorCode = err?.errorCode ?? 500;
-    return res.status(errorCode).send({ success: false, error: err.error });
-  }
-
+  
   if (!kb) {
     winston.warn("(webhook) Kb content not found with id " + content_id + ". Deleting scheduler...");
 
@@ -99,7 +92,20 @@ router.post('/kb/reindex', async (req, res) => {
       return;
     }, 10000);
     
-  } else if (kb.type === 'sitemap') {
+    return;
+  } 
+
+  const namespace_id = kb.namespace;
+  let namespace;
+  try {
+    namespace = await aiManager.checkNamespace(kb.id_project, namespace_id);
+  } catch (err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
+  }
+  
+  
+  if (kb.type === 'sitemap') {
 
     const urls = await aiManager.fetchSitemap(kb.source).catch((err) => {
       winston.error("(webhook) Error fetching sitemap: ", err);
@@ -186,6 +192,11 @@ router.post('/kb/reindex', async (req, res) => {
     }
   
     json.engine = namespace.engine || (namespace.hybrid ? default_engine_hybrid : default_engine);
+    json.hybrid = namespace.hybrid;
+    
+    let embedding = namespace.embedding || default_embedding;
+    embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+    json.embedding = embedding;
 
     let resources = [];
     resources.push(json);
