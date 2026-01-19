@@ -6,7 +6,7 @@ const Project = require('../models/project');
 
 /**
  * POST /mcp/connect
- * Inizializza una connessione a un server MCP
+ * Initializes a connection to an MCP server
  * Body: { url: string, auth?: { type: 'bearer'|'api_key'|'basic', token?: string, key?: string, username?: string, password?: string } }
  */
 router.post('/connect', async (req, res) => {
@@ -18,14 +18,14 @@ router.post('/connect', async (req, res) => {
       return res.status(400).send({ success: false, error: "Missing required parameter 'url'" });
     }
 
-    // Costruisci la configurazione del server
+    // Build server configuration
     const serverConfig = {
       url: url,
       projectId: id_project,
       auth: auth || undefined
     };
 
-    // Inizializza la connessione
+    // Initialize the connection
     const result = await mcpService.initializeServer(serverConfig);
 
     res.status(200).send({ 
@@ -41,7 +41,7 @@ router.post('/connect', async (req, res) => {
 
 /**
  * POST /mcp/tools
- * Ottiene la lista dei tool da un server MCP
+ * Gets the list of tools from an MCP server
  * Body: { url: string, auth?: object }
  */
 router.post('/tools', async (req, res) => {
@@ -53,14 +53,14 @@ router.post('/tools', async (req, res) => {
       return res.status(400).send({ success: false, error: "Missing required parameter 'url' in body" });
     }
 
-    // Costruisci la configurazione del server
+    // Build server configuration
     const serverConfig = {
       url: url,
       projectId: id_project,
       auth: auth || undefined
     };
 
-    // listTools inizializza automaticamente se necessario
+    // listTools automatically initializes if necessary
     const tools = await mcpService.listTools(serverConfig);
 
     res.status(200).send(tools);
