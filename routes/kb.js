@@ -816,10 +816,12 @@ router.get('/namespace/export/:id', async (req, res) => {
 
   let namespace;
   try {
-    namespace = await aiManager.checkNamespace(project_id, namespace_id);
+    namespace = await aiManager.checkNamespace(id_project, namespace_id);
   } catch (err) {
+    winston.error("Error checking namespace: ", err);
     let errorCode = err?.errorCode ?? 500;
-    return res.status(errorCode).send({ success: false, error: err.error });
+    let errorMessage = err?.error || "Error checking namespace";
+    return res.status(errorCode).send({ success: false, error: errorMessage });
   }
 
   let name = namespace.name;
