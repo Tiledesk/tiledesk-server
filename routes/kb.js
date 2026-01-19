@@ -819,9 +819,13 @@ router.get('/namespace/export/:id', async (req, res) => {
   try {
     namespace = await aiManager.checkNamespace(project_id, namespace_id);
   } catch (err) {
+    winston.error("Error checking namespace: ", err);
     let errorCode = err?.errorCode ?? 500;
     return res.status(errorCode).send({ success: false, error: err.error });
   }
+
+  winston.info("namespace.name: ", namespace.name);
+  winston.info("namespace.preview_settings: ", namespace.preview_settings);
 
   let name = namespace.name;
   let preview_settings = namespace.preview_settings;
