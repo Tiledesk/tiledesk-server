@@ -825,9 +825,6 @@ router.get('/namespace/export/:id', async (req, res) => {
     return res.status(errorCode).send({ success: false, error: errorMessage });
   }
 
-  winston.info("namespace.name: ", namespace.name);
-  winston.info("namespace.preview_settings: ", namespace.preview_settings);
-
   let name = namespace.name;
   let preview_settings = namespace.preview_settings;
 
