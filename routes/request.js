@@ -1411,17 +1411,17 @@ router.get('/', function (req, res, next) {
 
 
   if (req.query.start_date_time && req.query.end_date_time) {
-    winston.info('REQUEST ROUTE - REQ QUERY start_date_time: '+ req.query.start_date_time);
-    winston.info('REQUEST ROUTE - REQ QUERY end_date_time: '+ req.query.end_date_time);
+    winston.debug('REQUEST ROUTE - REQ QUERY start_date_time: '+ req.query.start_date_time);
+    winston.debug('REQUEST ROUTE - REQ QUERY end_date_time: '+ req.query.end_date_time);
     var startDateTime = moment(req.query.start_date_time, 'DD/MM/YYYY HH:mm:ss').format('YYYY-MM-DDTHH:mm:ss.sssZ');
     var endDateTime = moment(req.query.end_date_time, 'DD/MM/YYYY HH:mm:ss').format('YYYY-MM-DDTHH:mm:ss.sssZ');
 
 
-    winston.info('REQUEST ROUTE - REQ QUERY FORMATTED START DATE TIME: '+ startDateTime);
-    winston.info('REQUEST ROUTE - REQ QUERY FORMATTED END DATE TIME: '+ endDateTime);
+    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED START DATE TIME: '+ startDateTime);
+    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE TIME: '+ endDateTime);
 
     query.createdAt = { $gte: new Date(Date.parse(startDateTime)).toISOString(), $lte: new Date(endDateTime).toISOString() }
-    winston.info('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
+    winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
   }
 
   if (req.query.snap_department_routing) {
