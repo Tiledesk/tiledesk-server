@@ -1010,7 +1010,10 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   //          import operation the content's limit is respected
   let ns = namespaces.find(n => n.id === namespace_id);
   let engine = ns.engine || default_engine;
+  let embedding = ns.embedding || default_embedding;
+  embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
   let hybrid = ns.hybrid;
+
 
   if (process.env.NODE_ENV !== "test") {
     await aiService.deleteNamespace({
@@ -1044,7 +1047,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
 
   let resources = new_contents.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
   resources = resources.map(({ _id, scrape_options, ...rest }) => {
-    return { id: _id, parameters_scrape_type_4: scrape_options, engine: engine, ...rest}
+    return { id: _id, parameters_scrape_type_4: scrape_options, embedding: embedding, engine: engine, ...rest}
   });
   
   winston.verbose("resources to be sent to worker: ", resources);
