@@ -3,26 +3,30 @@
 const axios = require('axios').default;
 const winston = require('../config/winston');
 
+
 /**
- * MCP Service - Gestisce le connessioni e le chiamate ai server MCP
- * MCP (Model Context Protocol) usa JSON-RPC 2.0 per comunicare
+ * MCP Service - Manages connections and calls to MCP servers
+ * MCP (Model Context Protocol) uses JSON-RPC 2.0 for communication
  */
 class MCPService {
 
   constructor() {
-    this.connections = new Map(); // Cache delle connessioni ai server MCP { serverId: { config, sessionId?, initialized, capabilities } }
+    // Cache of connections to MCP servers
+    // Key: `${projectId}_${url}` or just `${url}` if projectId is not provided
+    // Value: { config, sessionId?, initialized, capabilities }
+    this.connections = new Map();
   }
 
   /**
-   * Parsa una risposta in formato SSE (Server-Sent Events) e estrae l'oggetto JSON
-   * @param {String} sseData - Stringa con formato SSE
-   * @returns {Object} - Oggetto JSON parsato
+   * Parses a response in SSE (Server-Sent Events) format and extracts the JSON object
+   * @param {String} sseData - String with SSE format
+   * @returns {Object} - Parsed JSON object
    */
   parseSSEResponse(sseData) {
     const lines = sseData.split('\n');
     for (const line of lines) {
       if (line.startsWith('data: ')) {
-        const jsonStr = line.substring(6); // Rimuove "data: "
+        const jsonStr = line.substring(6); // Removes "data: "
         try {
           return JSON.parse(jsonStr);
         } catch (e) {
@@ -34,12 +38,12 @@ class MCPService {
   }
 
   /**
-   * Invia una richiesta JSON-RPC a un server MCP
-   * @param {String} url - URL del server MCP
-   * @param {Object} request - Richiesta JSON-RPC
-   * @param {Object} auth - Configurazione di autenticazione (opzionale)
-   * @param {String} sessionId - Session ID per il server MCP (opzionale)
-   * @returns {Promise<Object>} - Risposta del server (include sessionId se presente negli header)
+   * Sends a JSON-RPC request to an MCP server
+   * @param {String} url - MCP server URL
+   * @param {Object} request - JSON-RPC request
+   * @param {Object} auth - Authentication configuration (optional)
+   * @param {String} sessionId - Session ID for the MCP server (optional)
+   * @returns {Promise<Object>} - Server response (includes sessionId if present in headers)
    */
   async sendJSONRPCRequest(url, request, auth, sessionId) {
     const config = {
@@ -50,18 +54,18 @@ class MCPService {
         'Accept': 'application/json, text/event-stream'
       },
       data: request,
-      timeout: 30000, // 30 secondi di timeout
+      timeout: 30000, // 30 seconds timeout
       validateStatus: function (status) {
-        return status >= 200 && status < 500; // Accetta anche 4xx per catturare gli header
+        return status >= 200 && status < 500; // Accept also 4xx to capture headers
       }
     };
 
-    // Aggiungi session ID nell'header mcp-session-id se presente
+    // Add session ID in mcp-session-id header if present
     if (sessionId) {
       config.headers['mcp-session-id'] = sessionId;
     }
 
-    // Aggiungi autenticazione se presente
+    // Add authentication if present
     if (auth) {
       if (auth.type === 'bearer' && auth.token) {
         config.headers['Authorization'] = `Bearer ${auth.token}`;
@@ -76,26 +80,26 @@ class MCPService {
     try {
       const response = await axios(config);
 
-      // Cattura il session ID dagli header della risposta (se presente)
+      // Capture session ID from response headers (if present)
       const sessionIdFromHeader = response.headers['mcp-session-id'] || 
                                   response.headers['x-mcp-session-id'];
 
-      // Parsa la risposta: potrebbe essere SSE (text/event-stream) o JSON diretto
+      // Parse response: could be SSE (text/event-stream) or direct JSON
       let responseData;
       if (typeof response.data === 'string') {
-        // Formato SSE: estrae il JSON dalla riga "data:"
+        // SSE format: extracts JSON from "data:" line
         responseData = this.parseSSEResponse(response.data);
       } else {
-        // Risposta JSON già parsata
+        // JSON response already parsed
         responseData = response.data;
       }
 
-      // Aggiungi il session ID dalla risposta se presente negli header
+      // Add session ID from response if present in headers
       if (sessionIdFromHeader) {
         responseData.sessionId = sessionIdFromHeader;
       }
 
-      // Verifica se c'è un errore JSON-RPC
+      // Check if there's a JSON-RPC error
       if (responseData.error) {
         throw new Error(`MCP Error: ${responseData.error.message || 'Unknown error'} (code: ${responseData.error.code})`);
       }
@@ -103,7 +107,7 @@ class MCPService {
       return responseData;
     } catch (error) {
       if (error.response) {
-        // Errore HTTP
+        // HTTP error
         const status = error.response.status;
         const statusText = error.response.statusText;
         const responseData = error.response.data;
@@ -111,110 +115,86 @@ class MCPService {
         const details = responseData ? ` - ${JSON.stringify(responseData)}` : '';
         throw new Error(`${errorMessage}${details}`);
       } else if (error.request) {
-        // Nessuna risposta ricevuta
+        // No response received
         throw new Error(`No response from MCP server: ${error.message}`);
       } else {
-        // Errore nella configurazione della richiesta
+        // Request configuration error
         throw new Error(`Request error: ${error.message}`);
       }
     }
   }
 
-  async initializeSession(server_url, auth) {
-    try {
-      // Chiamata JSON-RPC per inizializzare la sessione
-      const response = await this.sendJSONRPCRequest(server_url, {
-        jsonrpc: '2.0',
-        id: Date.now(),
-        method: 'initialize',
-        params: {
-          protocolVersion: '2024-11-05',
-          capabilities: {},
-          clientInfo: {
-            name: 'tiledesk-server',
-            version: '1.0.0'
-          }
-        }
-      }, auth, null);
-
-      // Il session ID viene restituito nell'header 'mcp-session-id' dalla risposta
-      // ed è stato già aggiunto a response.sessionId dalla funzione sendJSONRPCRequest
-      if (response.sessionId) {
-        return response.sessionId;
-      }
-
-      // Se non c'è session ID, il server potrebbe non richiederlo (stateless)
-      // Ritorniamo null invece di lanciare un errore
-      return null;
-    } catch (error) {
-      // Se l'inizializzazione fallisce, potremmo non aver bisogno di session ID
-      // Rilanciamo l'errore ma sarà gestito dal chiamante
-      throw error;
-    }
+  /**
+   * Generates a unique cache key based on URL and projectId
+   * @param {String} url - MCP server URL
+   * @param {String} projectId - Project ID (optional)
+   * @returns {String} - Unique cache key
+   */
+  getCacheKey(url, projectId) {
+    return projectId ? `${projectId}_${url}` : url;
   }
 
-
-
   /**
-   * Inizializza una connessione a un server MCP
-   * @param {Object} serverConfig - Configurazione del server MCP { name, url, transport, auth? }
-   * @returns {Promise<Object>} - Risultato dell'inizializzazione
+   * Initializes a connection to an MCP server
+   * @param {Object} serverConfig - MCP server configuration { url, projectId?, auth? }
+   * @returns {Promise<Object>} - Initialization result
    */
   async initializeServer(serverConfig) {
     if (!serverConfig || !serverConfig.url) {
       throw new Error('Server MCP configuration is missing or invalid');
     }
 
-    const serverId = serverConfig.name || serverConfig.url;
+    const serverId = this.getCacheKey(serverConfig.url, serverConfig.projectId);
 
     try {
-      // Prova prima ad inizializzare la sessione (alcuni server MCP richiedono session ID)
+      // Initialize session (some MCP servers require session ID)
       let sessionId = null;
+      let initializeResponse = null;
+      
       try {
-        sessionId = await this.initializeSession(serverConfig.url, serverConfig.auth);
+        // JSON-RPC call to initialize the server
+        const response = await this.sendJSONRPCRequest(serverConfig.url, {
+          jsonrpc: '2.0',
+          id: Date.now(),
+          method: 'initialize',
+          params: {
+            protocolVersion: '2024-11-05',
+            capabilities: {
+              tools: {}
+            },
+            clientInfo: {
+              name: 'tiledesk-server',
+              version: '1.0.0'
+            }
+          }
+        }, serverConfig.auth, null);
+
+        // Session ID is returned in 'mcp-session-id' header from response
+        sessionId = response.sessionId || null;
+        initializeResponse = response;
+
         if (sessionId) {
           winston.debug(`MCP Server ${serverId} session initialized with ID: ${sessionId}`);
         } else {
           winston.debug(`MCP Server ${serverId} initialized (stateless, no session ID required)`);
         }
       } catch (initError) {
-        // Se l'inizializzazione fallisce, proviamo comunque senza session ID
-        // (alcuni server MCP non richiedono session ID)
-        winston.debug(`MCP Server ${serverId} initialization failed, proceeding without session ID: ${initError.message}`);
+        // If initialization fails, try anyway without session ID
+        // (some MCP servers don't require session ID)
+        winston.debug(`MCP Server ${serverId} initialization failed: ${initError.message}`);
+        throw initError;
       }
 
-      // Chiamata JSON-RPC per inizializzare il server (per ottenere capabilities)
-      const response = await this.sendJSONRPCRequest(serverConfig.url, {
-        jsonrpc: '2.0',
-        id: Date.now(),
-        method: 'initialize',
-        params: {
-          protocolVersion: '2024-11-05',
-          capabilities: {
-            tools: {}
-          },
-          clientInfo: {
-            name: 'tiledesk-server',
-            version: '1.0.0'
-          }
-        }
-      }, serverConfig.auth, sessionId);
-
-      // Se abbiamo ricevuto un session ID nella risposta, usiamolo
-      if (response.sessionId && !sessionId) {
-        sessionId = response.sessionId;
-      }
-
-      // Salva la connessione nella cache con il session ID
+      // Save connection in cache with session ID
       this.connections.set(serverId, {
         config: serverConfig,
         sessionId: sessionId,
         initialized: true,
-        capabilities: response.result?.capabilities || {}
+        capabilities: initializeResponse.result?.capabilities || {}
       });
 
       winston.info(`MCP Server initialized: ${serverId}${sessionId ? ` (session: ${sessionId})` : ' (stateless)'}`);
-      return response.result;
+      return initializeResponse.result;
     } catch (error) {
       winston.error(`Error initializing MCP server ${serverId}:`, error);
       throw error;
@@ -222,19 +202,19 @@ class MCPService {
   }
 
   /**
-   * Ottiene la lista dei tool disponibili da un server MCP
-   * @param {Object} serverConfig - Configurazione del server MCP
-   * @returns {Promise<Array>} - Lista dei tool disponibili
+   * Gets the list of available tools from an MCP server
+   * @param {Object} serverConfig - MCP server configuration { url, projectId?, auth? }
+   * @returns {Promise<Array>} - List of available tools
    */
   async listTools(serverConfig) {
     if (!serverConfig || !serverConfig.url) {
       throw new Error('Server MCP configuration is missing or invalid');
     }
 
-    const serverId = serverConfig.name || serverConfig.url;
+    const serverId = this.getCacheKey(serverConfig.url, serverConfig.projectId);
 
     try {
-      // Verifica se il server è già inizializzato
+      // Check if server is already initialized
       let connection = this.connections.get(serverId);
       if (!connection) {
         await this.initializeServer(serverConfig);
@@ -243,8 +223,8 @@ class MCPService {
 
       const sessionId = connection?.sessionId || null;
 
-      // Chiamata JSON-RPC per ottenere la lista dei tool
-      // Se il server richiede session ID ma non ce l'abbiamo, proviamo prima senza
+      // JSON-RPC call to get the list of tools
+      // If server requires session ID but we don't have it, try first without
       let response;
       try {
         response = await this.sendJSONRPCRequest(serverConfig.url, {
@@ -254,7 +234,7 @@ class MCPService {
           params: {}
         }, serverConfig.auth, sessionId);
       } catch (error) {
-        // Se fallisce e abbiamo un errore "No valid session ID", proviamo senza session ID
+        // If it fails and we have a "No valid session ID" error, try without session ID
         if (sessionId && error.message && error.message.includes('No valid session ID')) {
           winston.debug(`Retrying tools/list without session ID for server ${serverId}...`);
           response = await this.sendJSONRPCRequest(serverConfig.url, {
@@ -277,16 +257,19 @@ class MCPService {
     }
   }
 
+
   /**
-   * Rimuove una connessione dalla cache
-   * @param {String} serverId - ID del server
+   * Removes a connection from cache
+   * @param {String} url - MCP server URL
+   * @param {String} projectId - Project ID (optional)
    */
-  removeConnection(serverId) {
+  removeConnection(url, projectId) {
+    const serverId = this.getCacheKey(url, projectId);
     this.connections.delete(serverId);
   }
 
   /**
-   * Pulisce tutte le connessioni dalla cache
+   * Clears all connections from cache
    */
   clearConnections() {
     this.connections.clear();
