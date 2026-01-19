@@ -247,6 +247,7 @@ router.post('/scrape/status', async (req, res) => {
   let project_id = req.projectid;
   // (EXAMPLE) body: { id, namespace }
   let data = req.body;
+  let namespace_id = data.namespace;
   winston.debug("/scrapeStatus req.body: ", req.body);
 
   let returnObject = false;
