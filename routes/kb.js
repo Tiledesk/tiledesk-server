@@ -364,8 +364,11 @@ router.post('/qa', async (req, res) => {
     data.search_type = 'hybrid';
     
     if (data.reranking === true) {
-      data.reranking_multiplier = 3;
       data.reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2";
+
+      if (!data.reranking_multiplier) {
+        data.reranking_multiplier = 3;
+      }
     }
   }
 
