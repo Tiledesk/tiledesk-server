@@ -26,6 +26,11 @@ const JOB_TOPIC_EXCHANGE_HYBRID = process.env.JOB_TOPIC_EXCHANGE_TRAIN_HYBRID ||
 const KB_WEBHOOK_TOKEN = process.env.KB_WEBHOOK_TOKEN || 'kbcustomtoken';
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 
+let rerankingOff = false;
+if (process.env.RERANKING_OFF && (process.env.RERANKING_OFF === "true" || process.env.RERANKING_OFF === true)) {
+  rerankingOff = true;
+}
+
 
 let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
 let uploadlimits = undefined;
@@ -378,6 +383,7 @@ router.post('/qa', async (req, res) => {
   }
 
   aiService.askNamespace(data).then((resp) => {
+
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
 
@@ -811,10 +817,12 @@ router.get('/namespace/export/:id', async (req, res) => {
 
   let namespace;
   try {
-    namespace = await aiManager.checkNamespace(project_id, namespace_id);
+    namespace = await aiManager.checkNamespace(id_project, namespace_id);
   } catch (err) {
+    winston.error("Error checking namespace: ", err);
     let errorCode = err?.errorCode ?? 500;
-    return res.status(errorCode).send({ success: false, error: err.error });
+    let errorMessage = err?.error || "Error checking namespace";
+    return res.status(errorCode).send({ success: false, error: errorMessage });
   }
 
   let name = namespace.name;
@@ -1432,7 +1440,6 @@ router.post('/', async (req, res) => {
       }
       json.engine = namespace.engine || default_engine;
       json.hybrid = namespace.hybrid;
-      
       let embedding = namespace.embedding || default_embedding;
       embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
       json.embedding = embedding;
