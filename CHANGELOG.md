@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.14.7
+- Added embedding configuration to namespace import route
+
 # 2.14.6
 - Fix namespace checking in export route and improve error handling
 
