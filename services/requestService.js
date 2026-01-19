@@ -250,7 +250,7 @@ class RequestService {
       winston.debug("departmentid:" + departmentid);
       winston.debug("id_project:" + id_project);
       winston.debug("nobot:" + nobot);
-      winston.info("main_flow_cache_3 route");
+      //winston.info("main_flow_cache_3 route");
 
       // Find request
       let query = Request.findOne({ request_id, id_project });
@@ -654,7 +654,7 @@ class RequestService {
     }
 
     winston.debug('newRequest.', newRequest);
-    winston.info("main_flow_cache_ requestService create");
+    //winston.info("main_flow_cache_ requestService create");
 
     // Save request
     try {
