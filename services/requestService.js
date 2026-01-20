@@ -1552,13 +1552,13 @@ class RequestService {
             if (Array.isArray(request.participantsAgents)) {
               if (request.participantsAgents.length === 1) {
                 winston.error('Cannot add participants: participantsAgents already has one element for request_id ' + request_id + ' and id_project ' + id_project);
-                return reject('Cannot add participants: only one participant allowed for this request');
+                return reject({ code: 403, error: 'Cannot add participants: only one participant allowed for this request' });
               } else if (request.participantsAgents.length === 0) {
                 if (Array.isArray(newparticipants) && newparticipants.length === 1) {
                   // ok, allow to add one participant
                 } else {
                   winston.error('Can only add one participant for request_id ' + request_id + ' and id_project ' + id_project);
-                  return reject('Can only add one participant for this request');
+                  return reject({ code: 403, error: 'Can only add one participant for this request' });
                 }
               }
             }
@@ -1715,6 +1715,7 @@ class RequestService {
 
           // return Request.findById(id).then(function (request) {
           if (request.participants.indexOf(member) == -1) {
+            var oldParticipants = request.participants.slice(); // Clone array to preserve old state
             request.participants.push(member);
 
             // botprefix
@@ -1768,6 +1769,16 @@ class RequestService {
                   requestEvent.emit("request.update.comment", { comment: "PARTICIPANT_ADD", request: requestComplete });//Deprecated
                   requestEvent.emit("request.updated", { comment: "PARTICIPANT_ADD", request: requestComplete, patch: { member: member } });
                   requestEvent.emit('request.participants.join', { member: member, request: requestComplete });
+                  
+                  // Emit participants.update to sync chat21 cache
+                  var removedParticipants = oldParticipants.filter(d => !requestComplete.participants.includes(d));
+                  var addedParticipants = requestComplete.participants.filter(d => !oldParticipants.includes(d));
+                  requestEvent.emit('request.participants.update', {
+                    beforeRequest: request,
+                    removedParticipants: removedParticipants,
+                    addedParticipants: addedParticipants,
+                    request: requestComplete
+                  });
 
                   return resolve(requestComplete);
                 });
@@ -1826,6 +1837,7 @@ class RequestService {
           // winston.debug("index", index);
 
           if (index > -1) {
+            var oldParticipants = request.participants.slice(); // Clone array to preserve old state
             request.participants.splice(index, 1);
             // winston.debug(" request.participants",  request.participants);
 
@@ -1917,7 +1929,16 @@ class RequestService {
                   requestEvent.emit("request.update.comment", { comment: "PARTICIPANT_REMOVE", request: requestComplete });//Deprecated
                   requestEvent.emit("request.updated", { comment: "PARTICIPANT_REMOVE", request: requestComplete, patch: { member: member } });
                   requestEvent.emit('request.participants.leave', { member: member, request: requestComplete });
-
+                  
+                  // Emit participants.update to sync chat21 cache
+                  var removedParticipants = oldParticipants.filter(d => !requestComplete.participants.includes(d));
+                  var addedParticipants = requestComplete.participants.filter(d => !oldParticipants.includes(d));
+                  requestEvent.emit('request.participants.update', {
+                    beforeRequest: request,
+                    removedParticipants: removedParticipants,
+                    addedParticipants: addedParticipants,
+                    request: requestComplete
+                  });
 
                   return resolve(requestComplete);
 
