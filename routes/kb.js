@@ -26,6 +26,11 @@ const JOB_TOPIC_EXCHANGE_HYBRID = process.env.JOB_TOPIC_EXCHANGE_TRAIN_HYBRID ||
 const KB_WEBHOOK_TOKEN = process.env.KB_WEBHOOK_TOKEN || 'kbcustomtoken';
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 
+let rerankingOff = false;
+if (process.env.RERANKING_OFF && (process.env.RERANKING_OFF === "true" || process.env.RERANKING_OFF === true)) {
+  rerankingOff = true;
+}
+
 
 let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
 let uploadlimits = undefined;
@@ -364,8 +369,11 @@ router.post('/qa', async (req, res) => {
     data.search_type = 'hybrid';
     
     if (data.reranking === true) {
-      data.reranking_multiplier = 3;
       data.reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2";
+
+      if (!data.reranking_multiplier) {
+        data.reranking_multiplier = 3;
+      }
     }
   }
 
@@ -379,6 +387,7 @@ router.post('/qa', async (req, res) => {
   }
 
   aiService.askNamespace(data).then((resp) => {
+
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
 
@@ -1438,7 +1447,6 @@ router.post('/', async (req, res) => {
       }
       json.engine = namespace.engine || default_engine;
       json.hybrid = namespace.hybrid;
-      
       let embedding = namespace.embedding || default_embedding;
       embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
       json.embedding = embedding;
