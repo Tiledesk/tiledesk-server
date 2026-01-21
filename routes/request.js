@@ -1291,6 +1291,7 @@ router.get('/', function (req, res, next) {
   // }
 
   let timezone = req.query.timezone || 'Europe/Rome';
+  console.log("Timezone: ", timezone);
   /**
    **! *** DATE RANGE  USECASE 1 ***
    *  in the tiledesk dashboard's HISTORY PAGE

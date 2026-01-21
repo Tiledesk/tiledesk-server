@@ -15,13 +15,21 @@ class DatesUtil {
       throw new Error(`The date must be a string: ${dateString}`);
     }
 
-    if (!timezone || typeof timezone !== 'string') {
-      throw new Error(`The timezone must be a string: ${timezone}`);
+    // Ensure timezone is a string and not empty
+    if (!timezone) {
+      throw new Error(`The timezone must be provided: ${timezone}`);
+    }
+    
+    // Convert to string if it's not already (handles edge cases)
+    const timezoneStr = String(timezone).trim();
+    
+    if (!timezoneStr || timezoneStr.length === 0) {
+      throw new Error(`The timezone must be a non-empty string: ${timezone}`);
     }
 
     // Validate timezone: check if it's a valid IANA timezone
-    if (!moment.tz.zone(timezone)) {
-      throw new Error(`Invalid timezone: ${timezone}. Please use a valid IANA timezone (e.g., "Europe/Rome", "America/New_York")`);
+    if (!moment.tz.zone(timezoneStr)) {
+      throw new Error(`Invalid timezone: ${timezoneStr}. Please use a valid IANA timezone (e.g., "Europe/Rome", "America/New_York")`);
     }
 
     const trimmedDate = dateString.trim();
@@ -42,16 +50,22 @@ class DatesUtil {
 
     // Try every format until one valid is found
     for (const format of formats) {
-      // Parse the date directly in the specified timezone
-      // This interprets the date as if it were in that timezone and converts it correctly
-      const dateWithTimezone = moment.tz(trimmedDate, format, timezone, true); // strict mode
-      
-      if (dateWithTimezone && dateWithTimezone.isValid && dateWithTimezone.isValid()) {
-        return dateWithTimezone;
+      try {
+        // Parse the date directly in the specified timezone
+        // This interprets the date as if it were in that timezone and converts it correctly
+        const dateWithTimezone = moment.tz(trimmedDate, format, timezoneStr, true); // strict mode
+        
+        if (dateWithTimezone && dateWithTimezone.isValid && dateWithTimezone.isValid()) {
+          return dateWithTimezone;
+        }
+      } catch (err) {
+        // If moment.tz throws an error for this format, try the next one
+        // This can happen if the format doesn't match
+        continue;
       }
     }
 
-    throw new Error(`Unable to parse the date: ${dateString} with timezone: ${timezone}`);
+    throw new Error(`Unable to parse the date: ${dateString} with timezone: ${timezoneStr}`);
   }
 
   /**
