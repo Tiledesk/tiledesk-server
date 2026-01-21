@@ -1314,10 +1314,12 @@ router.get('/', function (req, res, next) {
   if (req.query.start_date || req.query.end_date) {
     let rangeQuery = datesUtil.createDateRangeQuery(req.query.start_date, req.query.end_date, timezone, filterRangeField);
     Object.assign(query, rangeQuery);
+    console.log("Query with date range: ", query);
   }
   else if (req.query.start_date_time || req.query.end_date_time) {
     let rangeQuery = datesUtil.createDateRangeQuery(req.query.start_date_time, req.query.end_date_time, timezone, filterRangeField);
     Object.assign(query, rangeQuery);
+    console.log("Query with date range: ", query);
   }
 
   if (req.query.snap_department_routing) {
