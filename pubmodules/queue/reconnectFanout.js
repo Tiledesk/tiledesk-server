@@ -184,10 +184,6 @@ function work(msg, cb) {
     winston.debug("reconnectfanout here topic faqbot_update:" + topic);
     botEvent.emit('faqbot.update.queue.pubsub', JSON.parse(message_string));
   }
-  if (topic === 'request_snapshot_add') {
-    winston.debug("reconnectfanout here topic request_snapshot_add:" + topic); 
-    requestEvent.emit('request.snapshot.add.queue.pubsub', JSON.parse(message_string));
-  }
   cb(true);
 //   WebSocket.cb(true);
 //   requestEvent.on(msg.KEYYYYYYY+'.ws', msg.content);
