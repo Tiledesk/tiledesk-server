@@ -1291,8 +1291,8 @@ router.get('/', function (req, res, next) {
   //fixato. secondo me qui manca un parentesi tonda per gli or
   if (history_search === true && req.project && req.project.profile && ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false))) {
     let limitedStartDate = moment().subtract(14, "days").format("YYYY/MM/DD");
-    let rangeQuery = datesUtil.createDateRangeQuery(limitedStartDate, null, timezone);
-    query[filterRangeField] = rangeQuery;
+    let rangeQuery = datesUtil.createDateRangeQuery(limitedStartDate, null, timezone, filterRangeField);
+    Object.assign(query, rangeQuery);
   }
 
   /**
@@ -1302,12 +1302,12 @@ router.get('/', function (req, res, next) {
     */
 
   if (req.query.start_date || req.query.end_date) {
-    let rangeQuery = datesUtil.createDateRangeQuery(req.query.start_date, req.query.end_date, timezone);
-    query[filterRangeField] = rangeQuery;
+    let rangeQuery = datesUtil.createDateRangeQuery(req.query.start_date, req.query.end_date, timezone, filterRangeField);
+    Object.assign(query, rangeQuery);
   }
   else if (req.query.start_date_time || req.query.end_date_time) {
-    let rangeQuery = datesUtil.createDateRangeQuery(req.query.start_date_time, req.query.end_date_time, timezone);
-    query[filterRangeField] = rangeQuery;
+    let rangeQuery = datesUtil.createDateRangeQuery(req.query.start_date_time, req.query.end_date_time, timezone, filterRangeField);
+    Object.assign(query, rangeQuery);
   }
 
   if (req.query.snap_department_routing) {
