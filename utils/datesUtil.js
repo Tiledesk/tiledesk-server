@@ -42,17 +42,11 @@ class DatesUtil {
 
     // Try every format until one valid is found
     for (const format of formats) {
-      // Parse the date in the specified format (without timezone)
-      const parsed = moment(trimmedDate, format, true); // strict mode
-      if (parsed && parsed.isValid && parsed.isValid()) {
-        // Apply the timezone to the parsed date
-        const dateWithTimezone = parsed.tz(timezone);
-        
-        // Verify that the timezone was applied correctly
-        if (!dateWithTimezone || !dateWithTimezone.isValid || !dateWithTimezone.isValid()) {
-          throw new Error(`Unable to apply timezone ${timezone} to date: ${dateString}`);
-        }
-        
+      // Parse the date directly in the specified timezone
+      // This interprets the date as if it were in that timezone and converts it correctly
+      const dateWithTimezone = moment.tz(trimmedDate, format, timezone, true); // strict mode
+      
+      if (dateWithTimezone && dateWithTimezone.isValid && dateWithTimezone.isValid()) {
         return dateWithTimezone;
       }
     }
