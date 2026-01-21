@@ -97,6 +97,10 @@ MessageSchema.index({ recipient: 1, updatedAt:1 });
 MessageSchema.index({ id_project: 1, recipient:1, updatedAt: 1 });
 MessageSchema.index({ id_project: 1, "attributes._answerid": 1 });
 
+// Analytics optimization indexes
+MessageSchema.index({ id_project: 1, sender: 1, createdAt: 1 });
+MessageSchema.index({ id_project: 1, "channel.name": 1, createdAt: 1 });
+
 
 
 // https://docs.mongodb.com/manual/core/index-text/
