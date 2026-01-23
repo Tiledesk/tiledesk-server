@@ -33,6 +33,7 @@ const RoleConstants = require('../models/roleConstants');
 const eventService = require('../pubmodules/events/eventService');
 const { Scheduler } = require('../services/Scheduler');
 const faq_kb = require('../models/faq_kb');
+const JobManager = require('@tiledesk/tiledesk-multi-worker');
 //const JobManager = require('../utils/jobs-worker-queue-manager-v2/JobManagerV2');
 
 // var messageService = require('../services/messageService');
@@ -438,13 +439,14 @@ router.put('/:requestid/participants', function (req, res) {
 
   //setParticipantsByRequestId(request_id, id_project, participants)
   return requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then(function (updatedRequest) {
-
     winston.debug("participant set", updatedRequest);
-
     return res.json(updatedRequest);
-  }).catch(function(err) {
-    winston.error("Error setting participants", err);
-    return res.status(500).send({ success: false, error: "Error setting participants" });
+
+  }).catch((err) => {
+    winston.error("Error setParticipantsByRequestId: ", err);
+    let error_code = err?.code || 500;
+    let error = err?.error || err || "General error";
+    return res.status(error_code).send({ success: false, error: error })
   });
 
 });
@@ -958,7 +960,7 @@ router.put('/:requestid/tag', async (req, res) => {
   winston.debug("(Request) /tag tags_list: ", tags_list)
 
   if (tags_list.length == 0) {
-    winston.warn("(Request) /tag no tag specified")
+    winston.verbose("(Request) /tag no tag specified")
     return res.status(400).send({ success: false, message: "No tag specified" })
   }
 
@@ -1079,8 +1081,8 @@ router.delete('/:requestid', function (req, res) {
 
   var projectuser = req.projectuser;
 
-
-  if (projectuser.role != "owner") {
+  // request_role_check
+  if (!projectuser.hasPermissionOrRole('request_delete', 'owner')){
     return res.status(403).send({ success: false, msg: 'Unauthorized.' });
   }
 
@@ -1135,8 +1137,8 @@ router.delete('/id/:id', function (req, res) {
 
   var projectuser = req.projectuser;
 
-
-  if (projectuser.role != "owner") {
+  // request_role_check
+  if (!projectuser.hasPermissionOrRole('request_delete', 'owner')){
     return res.status(403).send({ success: false, msg: 'Unauthorized.' });
   }
 
@@ -1197,15 +1199,23 @@ router.get('/', function (req, res, next) {
 
   if (req.user instanceof Subscription) {
     // All request 
-  } else if (projectuser && (projectuser.role == "owner" || projectuser.role == "admin")) {
+    winston.debug("Subscription All request ");
+  } else if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
     // All request 
-    // Per uni mostrare solo quelle proprie quindi solo participants
-    if (req.query.mine) {
-      query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
-    }
-  } else {
+    winston.debug("hasPermissionOrRole All request ");
+  } else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
+
     query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
+
+  } 
+  // else if (projectuser.hasPermissionOrRole('request_read_mine', ["????"])) {
+  //   query["participants"] = req.user.id;
+  // }
+  else {
+    query["participants"] = req.user.id;
+    // generate empty requests response
   }
+
 
   if (req.query.dept_id) {
     query.department = req.query.dept_id;
@@ -1345,6 +1355,22 @@ router.get('/', function (req, res, next) {
     }
 
     winston.debug('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
+  }
+
+
+  
+  if (req.query.start_date_time && req.query.end_date_time) {
+    winston.debug('REQUEST ROUTE - REQ QUERY start_date_time: '+ req.query.start_date_time);
+    winston.debug('REQUEST ROUTE - REQ QUERY end_date_time: '+ req.query.end_date_time);
+    var startDateTime = moment(req.query.start_date_time, 'DD/MM/YYYY HH:mm:ss').format('YYYY-MM-DDTHH:mm:ss.sssZ');
+    var endDateTime = moment(req.query.end_date_time, 'DD/MM/YYYY HH:mm:ss').format('YYYY-MM-DDTHH:mm:ss.sssZ');
+
+
+    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED START DATE TIME: '+ startDateTime);
+    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE TIME: '+ endDateTime);
+
+    query.createdAt = { $gte: new Date(Date.parse(startDateTime)).toISOString(), $lte: new Date(endDateTime).toISOString() }
+    winston.debug('REQUEST ROUTE - QUERY START DATE TIME CREATED AT ', query.createdAt);
   }
 
   if (req.query.snap_department_routing) {

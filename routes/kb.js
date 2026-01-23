@@ -26,6 +26,11 @@ const JOB_TOPIC_EXCHANGE_HYBRID = process.env.JOB_TOPIC_EXCHANGE_TRAIN_HYBRID ||
 const KB_WEBHOOK_TOKEN = process.env.KB_WEBHOOK_TOKEN || 'kbcustomtoken';
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 
+let rerankingOff = false;
+if (process.env.RERANKING_OFF && (process.env.RERANKING_OFF === "true" || process.env.RERANKING_OFF === true)) {
+  rerankingOff = true;
+}
+
 
 let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
 let uploadlimits = undefined;
@@ -217,6 +222,7 @@ router.post('/scrape/single', async (req, res) => {
 
       json.engine = namespace.engine || default_engine;
       json.embedding = namespace.embedding || default_embedding;
+      json.embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
       if (namespace.hybrid === true) {
         json.hybrid = true;
@@ -246,6 +252,7 @@ router.post('/scrape/status', async (req, res) => {
   let project_id = req.projectid;
   // (EXAMPLE) body: { id, namespace }
   let data = req.body;
+  let namespace_id = data.namespace;
   winston.debug("/scrapeStatus req.body: ", req.body);
 
   let returnObject = false;
@@ -362,8 +369,11 @@ router.post('/qa', async (req, res) => {
     data.search_type = 'hybrid';
     
     if (data.reranking === true) {
-      data.reranking_multiplier = 3;
       data.reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2";
+
+      if (!data.reranking_multiplier) {
+        data.reranking_multiplier = 3;
+      }
     }
   }
 
@@ -377,6 +387,7 @@ router.post('/qa', async (req, res) => {
   }
 
   aiService.askNamespace(data).then((resp) => {
+
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
 
@@ -810,10 +821,12 @@ router.get('/namespace/export/:id', async (req, res) => {
 
   let namespace;
   try {
-    namespace = await aiManager.checkNamespace(project_id, namespace_id);
+    namespace = await aiManager.checkNamespace(id_project, namespace_id);
   } catch (err) {
+    winston.error("Error checking namespace: ", err);
     let errorCode = err?.errorCode ?? 500;
-    return res.status(errorCode).send({ success: false, error: err.error });
+    let errorMessage = err?.error || "Error checking namespace";
+    return res.status(errorCode).send({ success: false, error: errorMessage });
   }
 
   let name = namespace.name;
@@ -1007,7 +1020,10 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   //          import operation the content's limit is respected
   let ns = namespaces.find(n => n.id === namespace_id);
   let engine = ns.engine || default_engine;
+  let embedding = ns.embedding || default_embedding;
+  embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
   let hybrid = ns.hybrid;
+
 
   if (process.env.NODE_ENV !== "test") {
     await aiService.deleteNamespace({
@@ -1041,7 +1057,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
 
   let resources = new_contents.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
   resources = resources.map(({ _id, scrape_options, ...rest }) => {
-    return { id: _id, parameters_scrape_type_4: scrape_options, engine: engine, ...rest}
+    return { id: _id, parameters_scrape_type_4: scrape_options, embedding: embedding, engine: engine, ...rest}
   });
   
   winston.verbose("resources to be sent to worker: ", resources);
@@ -1431,7 +1447,6 @@ router.post('/', async (req, res) => {
       }
       json.engine = namespace.engine || default_engine;
       json.hybrid = namespace.hybrid;
-      
       let embedding = namespace.embedding || default_embedding;
       embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
       json.embedding = embedding;
@@ -1578,6 +1593,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
         let engine = namespace.engine || default_engine;
         let embedding = namespace.embedding || default_embedding;
+        embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
         let hybrid = namespace.hybrid;
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
