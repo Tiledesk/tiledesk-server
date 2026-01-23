@@ -25,15 +25,28 @@ const fileService = new FileGridFsService("images");
 
 
 
+let images_allowed = process.env.UPLOAD_IMAGES_ALLOW_LIST || "image/jpeg,image/png,image/gif,image/vnd.microsoft.icon,image/webp";
+winston.info("Images upload allowed list " + images_allowed);
+
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype == 'image/jpeg' || file.mimetype == 'image/png' 
-      || file.mimetype == 'image/gif'|| file.mimetype == 'image/vnd.microsoft.icon'
-      || file.mimetype == 'image/webp') {
-      cb(null, true);
-  } else {
-      cb(null, false);
-  }
-}
+    winston.debug("fileFilter " + images_allowed);
+    const ext = file.originalname.toLowerCase().endsWith('.html') || file.originalname.toLowerCase().endsWith('.htm');
+
+    if (ext) {
+        winston.debug("file extension not allowed: " + file.originalname);
+        cb(new multer.MulterError('fileFilter not allowed'));
+        return;
+    }
+
+    if (images_allowed === "*" ||
+        (images_allowed && images_allowed.length > 0 && images_allowed.split(",").indexOf(file.mimetype) > -1)) {
+        winston.debug("file.mimetype allowed: " + file.mimetype);
+        cb(null, true);
+    } else {
+        winston.debug("file.mimetype not allowed. " + file.mimetype);
+        cb(new multer.MulterError('fileFilter not allowed'));
+    }
+};
 
 
 let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
@@ -54,7 +67,7 @@ if (MAX_UPLOAD_FILE_SIZE) {
 // }
 
 
-const upload = multer({ storage: fileService.getStorage("images"), fileFilter: fileFilter, limits: uploadlimits });
+const upload = multer({ storage: fileService.getStorage("images"), fileFilter: fileFilter, limits: uploadlimits }).single('file');
 
 /*
 curl -u andrea.leo@f21.it:123456 \
@@ -70,7 +83,20 @@ curl -u andrea.leo@f21.it:123456 \
 
 router.post('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken],
 // bodymiddleware, 
-upload.single('file'), (req, res, next) => {
+(req, res, next) => {
+
+ upload(req, res, function (err) {
+    winston.debug('upload:'+ err);
+    if (err instanceof multer.MulterError) {
+      // A Multer error occurred when uploading.
+      winston.error('Permission denied uploading the image.', err);
+      return res.status(403).send({success: false, msg: 'Permission denied uploading the image.'});
+    } else if (err) {
+      // An unknown error occurred when uploading.
+      winston.error('Error uploading the image.', err);
+      return res.status(500).send({success: false, msg: 'Error uploading the image.'});
+    }
+
   try {
     // winston.info("req.query.folder1:"+req.body.folder);
 
@@ -101,6 +127,7 @@ upload.single('file'), (req, res, next) => {
     winston.error('Error uploading user image.',error);
     return res.status(500).send({success: false, msg: 'Error uploading user image.'});
   }
+});
 });
 
 
@@ -388,6 +415,10 @@ the image binary file
 
 Example:
 
+
+curl -v -X POST -H 'Content-Type: multipart/form-data' -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test.jpg" http://localhost:3000/images/public/
+
+
 ```text
 curl -v -X POST -H 'Content-Type: multipart/form-data' -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test.jpg" https://api.tiledesk.com/v2/images/public
 ```
@@ -397,7 +428,20 @@ curl -v -X POST -H 'Content-Type: multipart/form-data' -F "file=@/Users/andreale
 curl -v -X POST -H 'Content-Type: multipart/form-data' -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test.jpg" https://tiledesk-server-pre.herokuapp.com/images/public/
 */
 
-router.post('/public', upload.single('file'), (req, res, next) => {
+router.post('/public', (req, res, next) => {
+
+  upload(req, res, function (err) {
+    winston.debug('upload:'+ err);
+    if (err instanceof multer.MulterError) {
+      // A Multer error occurred when uploading.
+      winston.error('Permission denied uploading the image.', err);
+      return res.status(403).send({success: false, msg: 'Permission denied uploading the image.'});
+    } else if (err) {
+      // An unknown error occurred when uploading.
+      winston.error('Error uploading the image.', err);
+      return res.status(500).send({success: false, msg: 'Error uploading the image.'});
+    }
+
   try {
      winston.debug("req",req);
      var folder = req.folder || "error";
@@ -432,6 +476,7 @@ router.post('/public', upload.single('file'), (req, res, next) => {
     winston.error('Error deleting public image.',error);
     return res.status(500).send({success: false, msg: 'Error deleting public image.'});
   }
+});
 });
 
 
