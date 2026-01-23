@@ -1331,7 +1331,7 @@ router.get('/', function (req, res, next) {
       Object.assign(query, rangeQuery);
     } catch (error) {
       winston.error('Error creating date range query: ', error);
-      return res.status(500).send({ success: false, error: error });
+      return res.status(500).send({ success: false, error: error?.message });
     }
   }
 
