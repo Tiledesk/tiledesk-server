@@ -1281,6 +1281,9 @@ router.get('/', function (req, res, next) {
   // }
 
   let timezone = req.query.timezone || 'Europe/Rome';
+  let queryDateRange = false;
+  let queryStartDate;
+  let queryEndDate;
   /**
    **! *** DATE RANGE  USECASE 1 ***
    *  in the tiledesk dashboard's HISTORY PAGE
@@ -1290,9 +1293,9 @@ router.get('/', function (req, res, next) {
    */
   //fixato. secondo me qui manca un parentesi tonda per gli or
   if (history_search === true && req.project && req.project.profile && ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false))) {
-    let limitedStartDate = moment().subtract(14, "days").format("YYYY/MM/DD");
-    let rangeQuery = datesUtil.createDateRangeQuery(limitedStartDate, null, timezone, filterRangeField);
-    Object.assign(query, rangeQuery);
+    queryDateRange = true;    
+    queryStartDate = moment().subtract(14, "days").format("YYYY/MM/DD");
+    queryEndDate = null;
   }
 
   /**
@@ -1302,12 +1305,24 @@ router.get('/', function (req, res, next) {
     */
 
   if (req.query.start_date || req.query.end_date) {
-    let rangeQuery = datesUtil.createDateRangeQuery(req.query.start_date, req.query.end_date, timezone, filterRangeField);
-    Object.assign(query, rangeQuery);
+    queryDateRange = true; 
+    queryStartDate = req.query.start_date;
+    queryEndDate = req.query.end_date;
   }
   else if (req.query.start_date_time || req.query.end_date_time) {
-    let rangeQuery = datesUtil.createDateRangeQuery(req.query.start_date_time, req.query.end_date_time, timezone, filterRangeField);
-    Object.assign(query, rangeQuery);
+    queryDateRange = true; 
+    queryStartDate = req.query.start_date_time;
+    queryEndDate = req.query.end_date_time;
+  }
+
+  if (queryDateRange) {
+    try {
+      let rangeQuery = datesUtil.createDateRangeQuery(queryStartDate, queryEndDate, timezone, filterRangeField);
+      Object.assign(query, rangeQuery);
+    } catch (error) {
+      winston.error('Error creating date range query: ', error);
+      return res.status(500).send({ success: false, error: error });
+    }
   }
 
   if (req.query.snap_department_routing) {
