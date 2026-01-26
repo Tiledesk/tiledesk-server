@@ -469,25 +469,26 @@ class FileGridFsService extends FileService {
                 let fileExists = await this.gfs.find({filename: pathExists}).toArray();
                 winston.debug("fileExists", fileExists);
                 
+                // Always delete old photo and thumbnail if they exist (allow profile photo updates)
                 if (fileExists && fileExists.length>0) {
-                    if (req.query.force) {
+                    try {
+                        await this.deleteFile(pathExists);
+                        winston.debug("Deleted old profile photo:", pathExists);
+                    
+                        let thumbFilename = 'thumbnails_200_200-'+filename;
+                        let thumbPath = pathExists.replace(filename,thumbFilename);
+                        winston.debug("thumbPath:"+thumbPath);
+                    
                         try {
-                            await this.deleteFile(pathExists);
-                        
-                            let thumbFilename = 'thumbnails_200_200-'+filename;
-                            winston.info("thumbFilename:"+thumbFilename);
-                        
-                            let thumbPath = pathExists.replace(filename,thumbFilename);
-                            winston.info("thumbPath:"+thumbPath);
-                        
                             await this.deleteFile(thumbPath);
-                        } catch(e) {
-                            winston.error("Error deleting forced old image:",e);
+                            winston.debug("Deleted old thumbnail:", thumbPath);
+                        } catch(thumbErr) {
+                            // Thumbnail might not exist, that's ok
+                            winston.debug("Thumbnail not found or already deleted:", thumbPath);
                         }
-                    } else {
-                        req.upload_file_already_exists = true;
-                        winston.debug("file already exists", pathExists);
-                        return;
+                    } catch(e) {
+                        winston.error("Error deleting old profile photo:",e);
+                        // Continue anyway - the new upload will overwrite
                     }
                 }
 
