@@ -21,6 +21,10 @@ const TransactionSchema = mongoose.Schema({
     type: String,
     required: false
   },
+  broadcast: {
+    type: Boolean,
+    required: false
+  },
   createdAt: {
     type: Date,
     default: Date.now

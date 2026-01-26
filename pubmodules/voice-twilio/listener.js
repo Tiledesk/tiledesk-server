@@ -36,6 +36,9 @@ class Listener {
 
         let gpt_key = process.env.GPTKEY;
 
+        let elevenlabs_endpoint = process.env.ELEVENLABS_ENDPOINT || "https://api.elevenlabs.io";
+        winston.debug("ElevenLabs Endpoint: ", elevenlabs_endpoint);
+
         let log = process.env.VOICE_TWILIO_LOG || false
         winston.debug("Voice log: "+ log);
         
@@ -50,6 +53,7 @@ class Listener {
             BRAND_NAME: brand_name,
             OPENAI_ENDPOINT: openai_endpoint,
             GPT_KEY: gpt_key,
+            ELEVENLABS_ENDPOINT: elevenlabs_endpoint,
             log: log
         }, (err) => {
             if (!err) {
