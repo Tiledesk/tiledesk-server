@@ -94,9 +94,13 @@ class FileGridFsService extends FileService {
         if (options && options.metadata) {
             metadata = options.metadata;
         }
-        const stream = await this.gfs.openUploadStream(filename, {
+        const streamOptions = {
             metadata: metadata,
-            });
+        };
+        if (contentType) {
+            streamOptions.contentType = contentType;
+        }
+        const stream = await this.gfs.openUploadStream(filename, streamOptions);
         
         await stream.write(data);
         stream.end();

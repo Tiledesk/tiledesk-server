@@ -220,7 +220,8 @@ router.post('/assets', [
         const resized = await sharp(buffer).resize(200, 200).toBuffer();
         
         const thumbMetadata = req.expireAt ? { metadata: { expireAt: req.expireAt } } : undefined;
-        await fileService.createFile(thumbFilename, resized, undefined, undefined, thumbMetadata);
+        // Use the same contentType as the original file for the thumbnail
+        await fileService.createFile(thumbFilename, resized, undefined, req.file.mimetype, thumbMetadata);
         
         if (req.expireAt) {
           await mongoose.connection.db.collection('files.chunks').updateMany(
@@ -337,7 +338,8 @@ router.post('/users/photo', [
   
       try {
         const resizeImage = await sharp(buffer).resize(200, 200).toBuffer();
-        await fileService.createFile(thumFilename, resizeImage, undefined, undefined);
+        // Use the same contentType as the original file for the thumbnail
+        await fileService.createFile(thumFilename, resizeImage, undefined, req.file.mimetype);
         let thumFile = await fileService.find(thumFilename);
         winston.debug("thumFile", thumFile);
   
