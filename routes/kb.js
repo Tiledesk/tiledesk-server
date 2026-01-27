@@ -365,9 +365,17 @@ router.post('/qa', async (req, res) => {
     
     if (data.reranking === true) {
       data.reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2";
-
+      
       if (!data.reranking_multiplier) {
         data.reranking_multiplier = 3;
+      }
+
+      if ((data.top_k * data.reranking_multiplier) > 100) {
+        let calculatedRerankingMultiplier = Math.floor(100 / data.top_k);
+        if (calculatedRerankingMultiplier < 1) {
+          calculatedRerankingMultiplier = 1;
+        }
+        data.reranking_multiplier = calculatedRerankingMultiplier;
       }
     }
   }
