@@ -83,8 +83,14 @@ findUnresponsiveRequests() {
     winston.debug("CloseBotUnresponsiveRequestTask query",query);
 
     Request.find(query)
-    .sort({createdAt: 'asc'}) //DA TESTARE
-    .limit(this.queryLimit).exec(function(err, requests) {
+      .sort({ createdAt: 'asc'})
+      .limit(this.queryLimit)
+      .hint({ status: 1, hasBot: 1, createdAt: 1 })
+      .exec(function(err, requests) {
+
+    // Request.find(query)
+    // .sort({createdAt: 'asc'}) //DA TESTARE
+    // .limit(this.queryLimit).exec(function(err, requests) {
       //it is limited to 1000 results but after same days it all ok
       if (err) {
           winston.error("CloseBotUnresponsiveRequestTask error getting unresponsive requests ", err);
