@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.14.10
+- Added support for a custom reranking_multiplier parameter in the /qa endpoint
+- Improved DB performance by optimizing the query used to find conversations to be closed automatically
+
 # 2.14.9
 - Improved the requests search function and added the ability to specify a timezone when searching
 
