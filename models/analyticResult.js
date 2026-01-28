@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 // mongoose.set('debug', true);
 var winston = require('../config/winston');
+let config = require('../config/database');
 
 
 var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
