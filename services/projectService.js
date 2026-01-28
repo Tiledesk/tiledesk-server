@@ -93,6 +93,25 @@ class ProjectService {
     })
   }
 
+  applyPatchHelper(data, fields) {
+    let update = {};
+    fields.forEach(field => {
+      const value = data[field];
+      if (value !== undefined) {
+        if (value === "" || value === null) {
+          // remove from db
+          update.$unset = update.$unset || {};
+          update.$unset[field] = "";
+        } else {
+          // set value
+          update.$set = update.$set || {};
+          update.$set[field] = value;
+        }
+      }
+    });
+    return update;
+  }
+
 
 }
 

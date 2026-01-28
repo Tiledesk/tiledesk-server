@@ -3,6 +3,7 @@ var Schema = mongoose.Schema;
 var winston = require('../config/winston');
 var Profile = require('../models/profile');
 var Channel = require('../models/channel');
+var ProjectSettingsSchema = require('./projectSettings');
 var pjson = require('../package.json');
 const uuidv4 = require('uuid/v4');
 
@@ -38,15 +39,11 @@ var ProjectSchema = new Schema({
     type: Object,
   },
   settings: {
-    type: Object,
+    type: ProjectSettingsSchema,
     default: function () {
-      var defaultValue = {};
-
-      if (ChatLimitOn) {
-        defaultValue.chat_limit_on = true;
-      }
-      
-      return defaultValue; 
+      // Ensures settings exists as an object when creating a new Project,
+      // allowing Mongoose to apply defaults from ProjectSettingsSchema
+      return {};
     }
   },
   widget: {

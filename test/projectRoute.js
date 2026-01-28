@@ -398,54 +398,6 @@ describe('ProjectRoute', () => {
 
     describe('Update', () => {
 
-        it("updateProjectEmailSettings", (done) => {
-
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
-
-            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
-                projectService.create("test-project-create", savedUser._id).then((savedProject) => {
-
-                    chai.request(server)
-                        .put('/projects/' + savedProject._id)
-                        .auth(email, pwd)
-                        .send({ settings: { email: { from: "test@test.com", config: { host: "test.com", port: 587, secure: false, user: "test@test.com", pass: "test" } } } })
-                        .end((err, res) => {
-
-                            if (err) { console.error("err: ", err); }
-                            if (log) { console.log("update project email settings res.body: ", res.body) };
-
-                            res.should.have.status(200);
-                            res.body.should.be.a('object');
-                            expect(res.body.settings.email.from).to.equal("test@test.com");
-                            expect(res.body.settings.email.config.host).to.equal("test.com");
-                            expect(res.body.settings.email.config.port).to.equal(587);
-                            expect(res.body.settings.email.config.secure).to.equal(false);
-                            expect(res.body.settings.email.config.user).to.equal("test@test.com");
-                            expect(res.body.settings.email.config.pass).to.equal("test");
-
-                            chai.request(server)
-                                .put('/projects/' + savedProject._id)
-                                .auth(email, pwd)
-                                .send({ settings: { email: {}}})
-                                .end((err, res) => {
-
-                                    if (err) { console.error("err: ", err); }
-                                    if (log) { console.log("update project email settings res.body: ", res.body) };
-
-                                    console.log("update project email settings res.body: ", res.body)
-
-                                    res.should.have.status(200);
-                                    res.body.should.be.a('object');
-                                    expect(res.body.settings?.email).to.equal(undefined);
-
-                                    done();
-                                })
-                        })
-                })
-            })
-        })
-
         it("updateProjectEmailSettingsSingleFields", (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
@@ -454,10 +406,23 @@ describe('ProjectRoute', () => {
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-project-create", savedUser._id).then((savedProject) => {
 
+                    let body = {
+                        name: "updated-project-name",
+                        "settings.email.notification.conversation.assigned": true,
+                        "settings.email.templates.assignedRequest": "test-assigned-request",
+                        "settings.email.templates.assignedEmailMessage": "test-assigned-email-message",
+                        "settings.email.from": "mail@test.com",
+                        "settings.email.config.host": "smtp.test.com",
+                        "settings.email.config.port": 587,
+                        "settings.email.config.secure": false,
+                        "settings.email.config.user": "test@test.com",
+                        "settings.email.config.pass": "test"
+                    }
+
                     chai.request(server)
                         .put('/projects/' + savedProject._id)
                         .auth(email, pwd)
-                        .send({ settings: { email: { from: "test@test.com", config: { host: "test.com", port: 587, secure: false, user: "test@test.com", pass: "test" } } } })
+                        .send(body)
                         .end((err, res) => {
 
                             if (err) { console.error("err: ", err); }
@@ -465,14 +430,19 @@ describe('ProjectRoute', () => {
 
                             res.should.have.status(200);
                             res.body.should.be.a('object');
-                            expect(res.body.settings.email.from).to.equal("test@test.com");
-                            expect(res.body.settings.email.config.host).to.equal("test.com");
+                            expect(res.body.name).to.equal("updated-project-name");
+                            expect(res.body.settings.email.notification.conversation.assigned).to.equal(true);
+                            expect(res.body.settings.email.templates.assignedRequest).to.equal("test-assigned-request");
+                            expect(res.body.settings.email.templates.assignedEmailMessage).to.equal("test-assigned-email-message");
+                            expect(res.body.settings.email.from).to.equal("mail@test.com");
+                            expect(res.body.settings.email.config.host).to.equal("smtp.test.com");
                             expect(res.body.settings.email.config.port).to.equal(587);
                             expect(res.body.settings.email.config.secure).to.equal(false);
                             expect(res.body.settings.email.config.user).to.equal("test@test.com");
                             expect(res.body.settings.email.config.pass).to.equal("test");
 
                             let body = {
+                                "settings.email.from": null,
                                 "settings.email.config.host": null,
                                 "settings.email.config.port": null,
                                 "settings.email.config.secure": null,
@@ -489,11 +459,85 @@ describe('ProjectRoute', () => {
                                     if (err) { console.error("err: ", err); }
                                     if (log) { console.log("update project email settings res.body: ", res.body) };
 
-                                    console.log("update project email settings res.body: ", res.body.settings)
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+
+                                    expect(res.body.settings.email.from).to.not.exist;
+                                    expect(res.body.settings.email.config.host).to.not.exist;
+                                    expect(res.body.settings.email.config.port).to.not.exist;
+                                    expect(res.body.settings.email.config.secure).to.not.exist;
+                                    expect(res.body.settings.email.config.user).to.not.exist;
+                                    expect(res.body.settings.email.config.pass).to.not.exist;
+
+                                    done();
+                                })
+                        })
+                })
+            })
+        })
+
+        it("updateProjectEmailSettingsEntireConfig", (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-project-create", savedUser._id).then((savedProject) => {
+
+                    let body = {
+                        name: "updated-project-name",
+                        "settings.email.notification.conversation.assigned": true,
+                        "settings.email.templates.assignedRequest": "test-assigned-request",
+                        "settings.email.templates.assignedEmailMessage": "test-assigned-email-message",
+                        "settings.email.from": "mail@test.com",
+                        "settings.email.config.host": "smtp.test.com",
+                        "settings.email.config.port": 587,
+                        "settings.email.config.secure": false,
+                        "settings.email.config.user": "test@test.com",
+                        "settings.email.config.pass": "test"
+                    }
+
+                    chai.request(server)
+                        .put('/projects/' + savedProject._id)
+                        .auth(email, pwd)
+                        .send(body)
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("update project email settings res.body: ", res.body) };
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("updated-project-name");
+                            expect(res.body.settings.email.notification.conversation.assigned).to.equal(true);
+                            expect(res.body.settings.email.templates.assignedRequest).to.equal("test-assigned-request");
+                            expect(res.body.settings.email.templates.assignedEmailMessage).to.equal("test-assigned-email-message");
+                            expect(res.body.settings.email.from).to.equal("mail@test.com");
+                            expect(res.body.settings.email.config.host).to.equal("smtp.test.com");
+                            expect(res.body.settings.email.config.port).to.equal(587);
+                            expect(res.body.settings.email.config.secure).to.equal(false);
+                            expect(res.body.settings.email.config.user).to.equal("test@test.com");
+                            expect(res.body.settings.email.config.pass).to.equal("test");
+
+                            let body = {
+                                "settings.email.from": null,
+                                "settings.email.config": null
+                            }
+
+                            chai.request(server)
+                                .put('/projects/' + savedProject._id)
+                                .auth(email, pwd)
+                                .send(body)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("update project email settings res.body: ", res.body) };
 
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
-                                    //expect(res.body.settings?.email).to.equal(undefined);
+
+                                    expect(res.body.settings.email.from).to.not.exist;
+                                    expect(res.body.settings.email.config).to.not.exist;
 
                                     done();
                                 })

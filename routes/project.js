@@ -286,246 +286,96 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
       winston.verbose("Project profile can't be modified by the current user " + req.user._id);
       return res.status(403).send({ success: false,  error: "You don't have the permission required to modify the project profile"});
     }
-
-    // check if super admin
-    // let token = req.headers.authorization
-    // token = token.split(" ")[1];
-
-    // let decoded = jwt.verify(token, configSecret);
-    // winston.debug("user decoded: ", decoded);
-    // console.log("user decoded: ", decoded);
-
-    // if (!process.env.ADMIN_EMAIL) {
-    //   winston.warn("Missing admin email parameter in environment");
-    //   return res.status(401).send({ success: false, error: "Missing admin email parameter"});
-    // }
-
-    // if (!decoded) {
-    //   winston.warn("Profile modification: permission denied.");
-    //   return res.status(403).send({ success: false, error: "You don't have the permission required to modify the project profile. Can't decode user."});
-    // }
-
-    // if (decoded.email !== process.env.ADMIN_EMAIL) {
-    //   winston.warn("Profile modification: permission denied.");
-    //   return res.status(403).send({ success: false, error: "You don't have the permission required to modify the project profile"});
-    // }
-
-    // console.log("You can modify the project profile");
-
-    // winston.info("Illegal field profile detected. Deny project profile update.");
-    // return res.status(403).send({ success: false,  error: "You cannot edit the project profile."});
   }
+
+  let fields = [
+    "name",
+    "activeOperatingHours",
+    "operatingHours",
+    "timeSlots",
+    "widget",
+    "versions",
+    "channels",
+    "ipFilterEnabled",
+    "ipFilter",
+    "ipFilterDenyEnabled",
+    "ipFilterDeny",
+    "bannedUsers",
+    "settings"
+  ]
   
-//like patch
-  if (req.body.name!=undefined) {
-    update.name = req.body.name;
-  }
-
-  if (req.body.activeOperatingHours!=undefined) {
-    update.activeOperatingHours = req.body.activeOperatingHours;
-  }
+  let settingsFields = [
+    "settings.chat_limit_on",
+    "settings.max_agent_assigned_chat",
+    "settings.reassignment_on",
+    "settings.reassignment_delay",
+    "settings.automatic_unavailable_status_on",
+    "settings.automatic_idle_chats",
+    "settings.current_agent_my_chats_only",
+    "settings.chatbots_attributes_hidden",
+    "settings.allow_send_emoji",
+    "settings.allowed_urls",
+    "settings.allowed_urls_list",
+    "settings.allowed_upload_extentions",
+  ]
   
-  if (req.body.operatingHours!=undefined) {
-    update.operatingHours = req.body.operatingHours;
-  }
-
-  if (req.body.timeSlots!=undefined) {
-    update.timeSlots = req.body.timeSlots;
-  }
+  let emailAutoSendTranscriptToRequesterFields = [
+    "settings.email.autoSendTranscriptToRequester"
+  ]
   
-  if (req.body.settings!=undefined) {
-    update.settings = req.body.settings;
-  }
+  let emailNotificationFields = [
+    "settings.email.notification.conversation.assigned",
+    "settings.email.notification.conversation.pooled"
+  ]
   
-  if (req.body["settings.email.autoSendTranscriptToRequester"]!=undefined) {
-    update["settings.email.autoSendTranscriptToRequester"] = req.body["settings.email.autoSendTranscriptToRequester"];
-  }
-
-  if (req.body["settings.email.notification.conversation.assigned"]!=undefined) {
-    update["settings.email.notification.conversation.assigned"] = req.body["settings.email.notification.conversation.assigned"];
-  }
-
-  if (req.body["settings.email.notification.conversation.pooled"]!=undefined) {
-    update["settings.email.notification.conversation.pooled"] = req.body["settings.email.notification.conversation.pooled"];
-  }
-
-  if (req.body["settings.email.templates.assignedRequest"]!=undefined) {
-    update["settings.email.templates.assignedRequest"] = req.body["settings.email.templates.assignedRequest"];
-  }
-  if (req.body["settings.email.templates.assignedEmailMessage"]!=undefined) {
-    update["settings.email.templates.assignedEmailMessage"] = req.body["settings.email.templates.assignedEmailMessage"];
-  }
-  if (req.body["settings.email.templates.pooledRequest"]!=undefined) {
-    update["settings.email.templates.pooledRequest"] = req.body["settings.email.templates.pooledRequest"];
-  }
-  if (req.body["settings.email.templates.pooledEmailMessage"]!=undefined) {
-    update["settings.email.templates.pooledEmailMessage"] = req.body["settings.email.templates.pooledEmailMessage"];
-  }
-  if (req.body["settings.email.templates.newMessage"]!=undefined) {
-    update["settings.email.templates.newMessage"] = req.body["settings.email.templates.newMessage"];
-  }
-  if (req.body["settings.email.templates.newMessageFollower"]!=undefined) {
-    update["settings.email.templates.newMessageFollower"] = req.body["settings.email.templates.newMessageFollower"];
-  }
-  if (req.body["settings.email.templates.ticket"]!=undefined) {
-    update["settings.email.templates.ticket"] = req.body["settings.email.templates.ticket"];
-  }
-  if (req.body["settings.email.templates.sendTranscript"]!=undefined) {
-    update["settings.email.templates.sendTranscript"] = req.body["settings.email.templates.sendTranscript"];
-  }
-  if (req.body["settings.email.templates.emailDirect"]!=undefined) {
-    update["settings.email.templates.emailDirect"] = req.body["settings.email.templates.emailDirect"];
-  }
-
-  // Check if all email config fields are being reset (set to null)
-  const emailFields = [
+  let emailTemplatesFields = [
+    "settings.email.templates.assignedRequest",
+    "settings.email.templates.assignedEmailMessage",
+    "settings.email.templates.pooledRequest",
+    "settings.email.templates.pooledEmailMessage",
+    "settings.email.templates.newMessage",
+    "settings.email.templates.newMessageFollower",
+    "settings.email.templates.ticket",
+    "settings.email.templates.sendTranscript",
+    "settings.email.templates.emailDirect"
+  ]
+  
+  let smtpEmailFields = [
     "settings.email.from",
+    "settings.email.config",
     "settings.email.config.host",
     "settings.email.config.port",
     "settings.email.config.secure",
     "settings.email.config.user",
     "settings.email.config.pass"
-  ];
+  ]
   
-  const allEmailFieldsPresent = emailFields.every(field => req.body[field] !== undefined);
-  const allEmailFieldsNull = emailFields.every(field => req.body[field] === null);
-  
-  if (allEmailFieldsPresent && allEmailFieldsNull) {
-    // Reset: delete the entire settings.email object
-    if (!update.$unset) {
-      update.$unset = {};
-    }
-    update.$unset["settings.email"] = "";
-  } else {
-    // Normal update: set individual fields
-    if (req.body["settings.email.from"]!=undefined) {
-      update["settings.email.from"] = req.body["settings.email.from"];
-    }
-    if (req.body["settings.email.config.host"]!=undefined) {
-      update["settings.email.config.host"] = req.body["settings.email.config.host"];
-    }
-    if (req.body["settings.email.config.port"]!=undefined) {
-      update["settings.email.config.port"] = req.body["settings.email.config.port"];
-    }
-    if (req.body["settings.email.config.secure"]!=undefined) {
-      update["settings.email.config.secure"] = req.body["settings.email.config.secure"];
-    }
-    if (req.body["settings.email.config.user"]!=undefined) {
-      update["settings.email.config.user"] = req.body["settings.email.config.user"];
-    }
-    if (req.body["settings.email.config.pass"]!=undefined) {
-      update["settings.email.config.pass"] = req.body["settings.email.config.pass"];
-    }
+  let fieldsUpdate = projectService.applyPatchHelper(req.body, fields);
+  let settingsUpdate = projectService.applyPatchHelper(req.body, settingsFields);
+  let emailAutoSendTranscriptToRequesterUpdate = projectService.applyPatchHelper(req.body, emailAutoSendTranscriptToRequesterFields);
+  let emailNotificationUpdate = projectService.applyPatchHelper(req.body, emailNotificationFields);
+  let emailTemplatesUpdate = projectService.applyPatchHelper(req.body, emailTemplatesFields);
+  let smtpEmailUpdate = projectService.applyPatchHelper(req.body, smtpEmailFields);
+
+  update.$set = {
+    ...fieldsUpdate.$set,
+    ...emailAutoSendTranscriptToRequesterUpdate.$set,
+    ...emailNotificationUpdate.$set,
+    ...emailTemplatesUpdate.$set,
+    ...smtpEmailUpdate.$set,
+    ...settingsUpdate.$set
   }
 
-
-  
-  /*
-
-  if (req.body.settings.email.templates.assignedRequest!=undefined) {
-    // if (req.body["settings.email.templates.assignedRequest.html"]!=undefined) {
-    console.log("assignedRequest");
-    update["settings.email.templates.assignedRequest"] = req.body.settings.email.templates.assignedRequest;
+  update.$unset = {
+    ...fieldsUpdate.$unset,
+    ...emailAutoSendTranscriptToRequesterUpdate.$unset,
+    ...emailNotificationUpdate.$unset,
+    ...emailTemplatesUpdate.$unset,
+    ...smtpEmailUpdate.$unset,
+    ...settingsUpdate.$unset
   }
-  if (req.body["settings.email.templates.assignedEmailMessage.html"]!=undefined) {
-    update["settings.email.templates.assignedEmailMessage.html"] = req.body["settings.email.templates.assignedEmailMessage.html"];
-  }
-  if (req.body.settings.email.templates.pooledRequest!=undefined) {
-    console.log("pooledRequest");
-    update["settings.email.templates.pooledRequest"] = req.body.settings.email.templates.pooledRequest;
-  }
-*/
-
-  if (req.body["settings.chat_limit_on"]!=undefined) {
-    update["settings.chat_limit_on"] = req.body["settings.chat_limit_on"];
-  }
-
-  if (req.body["settings.max_agent_assigned_chat"]!=undefined) {
-    update["settings.max_agent_assigned_chat"] = req.body["settings.max_agent_assigned_chat"];
-  }
-
-
-
-  if (req.body["settings.reassignment_on"]!=undefined) {
-    update["settings.reassignment_on"] = req.body["settings.reassignment_on"];
-  }
-
-  if (req.body["settings.reassignment_delay"]!=undefined) {
-    update["settings.reassignment_delay"] = req.body["settings.reassignment_delay"];
-  }
-
-
-  if (req.body["settings.automatic_unavailable_status_on"]!=undefined) {
-    update["settings.automatic_unavailable_status_on"] = req.body["settings.automatic_unavailable_status_on"];
-  }
-
-  if (req.body["settings.automatic_idle_chats"]!=undefined) {
-    update["settings.automatic_idle_chats"] = req.body["settings.automatic_idle_chats"];
-  }
-
-  if (req.body["settings.current_agent_my_chats_only"]!=undefined) {
-    update["settings.current_agent_my_chats_only"] = req.body["settings.current_agent_my_chats_only"];
-  }
-
-  if (req.body["settings.chatbots_attributes_hidden"]!=undefined) {
-    update["settings.chatbots_attributes_hidden"] = req.body["settings.chatbots_attributes_hidden"];
-  }
-
-  if (req.body["settings.allow_send_emoji"]!=undefined) {
-    update["settings.allow_send_emoji"] = req.body["settings.allow_send_emoji"];
-  }
-
-  if (req.body["settings.allowed_urls"]!=undefined) {
-    update["settings.allowed_urls"] = req.body["settings.allowed_urls"];
-  }
-
-  if (req.body["settings.allowed_urls_list"]!=undefined) {
-    update["settings.allowed_urls_list"] = req.body["settings.allowed_urls_list"];
-  }
-
-  if (req.body["settings.allowed_upload_extentions"]!=undefined) {
-    update["settings.allowed_upload_extentions"] = req.body["settings.allowed_upload_extentions"];
-  }
-  
-  if (req.body.widget!=undefined) {
-    update.widget = req.body.widget;
-  }
-
-  if (req.body.versions!=undefined) {
-    update.versions = req.body.versions;
-  }
-  
-  if (req.body.channels!=undefined) {
-    update.channels = req.body.channels; 
-  }
-
-  if (req.body.ipFilterEnabled!=undefined) {
-    update.ipFilterEnabled = req.body.ipFilterEnabled;
-  }
-
-  if (req.body.ipFilter!=undefined) {
-    update.ipFilter = req.body.ipFilter;
-  }
-
-  if (req.body.ipFilterDenyEnabled!=undefined) {
-    update.ipFilterDenyEnabled = req.body.ipFilterDenyEnabled;
-  }
-
-  if (req.body.ipFilterDeny!=undefined) {
-    update.ipFilterDeny = req.body.ipFilterDeny;
-  }
-
-  if (req.body.bannedUsers!=undefined) {
-    update.bannedUsers = req.body.bannedUsers;
-  }
-  
-  // if (req.body.defaultLanguage!=undefined) {
-  //   update.defaultLanguage = req.body.defaultLanguage; 
-  // }
-
   
   winston.debug('UPDATE PROJECT REQ BODY ', update);
-  // console.log("update",JSON.stringify(update));
 
   Project.findByIdAndUpdate(req.params.projectid, update, { new: true, upsert: true }, function (err, updatedProject) {
     if (err) {
@@ -602,47 +452,23 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
   }
 
 
-  // Check if all email config fields are being reset (set to null)
-  const emailFields = [
-    "settings.email.from",
-    "settings.email.config.host",
-    "settings.email.config.port",
-    "settings.email.config.secure",
-    "settings.email.config.user",
-    "settings.email.config.pass"
-  ];
-  
-  const allEmailFieldsPresent = emailFields.every(field => req.body[field] !== undefined);
-  console.log("allEmailFieldsPresent: ", allEmailFieldsPresent);
-  const allEmailFieldsNull = emailFields.every(field => req.body[field] === null);
-  console.log("allEmailFieldsNull: ", allEmailFieldsNull);
-  
-  if (allEmailFieldsPresent && allEmailFieldsNull) {
-    // Reset: delete the entire settings.email object
-    if (!update.$unset) {
-      update.$unset = {};
-    }
-    update.$unset["settings.email"] = "";
-  } else {
-    // Normal update: set individual fields
-    if (req.body["settings.email.from"]!=undefined) {
-      update["settings.email.from"] = req.body["settings.email.from"];
-    }
-    if (req.body["settings.email.config.host"]!=undefined) {
-      update["settings.email.config.host"] = req.body["settings.email.config.host"];
-    }
-    if (req.body["settings.email.config.port"]!=undefined) {
-      update["settings.email.config.port"] = req.body["settings.email.config.port"];
-    }
-    if (req.body["settings.email.config.secure"]!=undefined) {
-      update["settings.email.config.secure"] = req.body["settings.email.config.secure"];
-    }
-    if (req.body["settings.email.config.user"]!=undefined) {
-      update["settings.email.config.user"] = req.body["settings.email.config.user"];
-    }
-    if (req.body["settings.email.config.pass"]!=undefined) {
-      update["settings.email.config.pass"] = req.body["settings.email.config.pass"];
-    }
+  if (req.body["settings.email.from"]!=undefined) {
+    update["settings.email.from"] = req.body["settings.email.from"];
+  }
+  if (req.body["settings.email.config.host"]!=undefined) {
+    update["settings.email.config.host"] = req.body["settings.email.config.host"];
+  }
+  if (req.body["settings.email.config.port"]!=undefined) {
+    update["settings.email.config.port"] = req.body["settings.email.config.port"];
+  }
+  if (req.body["settings.email.config.secure"]!=undefined) {
+    update["settings.email.config.secure"] = req.body["settings.email.config.secure"];
+  }
+  if (req.body["settings.email.config.user"]!=undefined) {
+    update["settings.email.config.user"] = req.body["settings.email.config.user"];
+  }
+  if (req.body["settings.email.config.pass"]!=undefined) {
+    update["settings.email.config.pass"] = req.body["settings.email.config.pass"];
   }
 
 
