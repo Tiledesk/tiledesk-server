@@ -333,31 +333,56 @@ class EmailService {
       return winston.warn("EmailService send method. to field is not defined");
     }
 
-    // send mail with defined transport object
-    this.getTransport(mail.config).sendMail(mailOptions, (error, info) => {
-      if (error) {
-        if (mail.callback) {
+    // If callback is provided, use callback pattern (backward compatibility)
+    if (mail.callback) {
+      // send mail with defined transport object
+      this.getTransport(mail.config).sendMail(mailOptions, (error, info) => {
+        if (error) {
           mail.callback(error, { info: info });
+          return winston.error("Error sending email ", { error: error, mailConfig: mail.config, mailOptions: mailOptions });
         }
-        return winston.error("Error sending email ", { error: error, mailConfig: mail.config, mailOptions: mailOptions });
-      }
-      winston.verbose('Email sent:', { info: info });
-      winston.debug('Email sent:', { info: info, mailOptions: mailOptions });
+        winston.verbose('Email sent:', { info: info });
+        winston.debug('Email sent:', { info: info, mailOptions: mailOptions });
 
-      if (quoteEnabled && quoteEnabled === true) {
-        emailEvent.emit('email.send.quote', payload);
-        winston.verbose("email.send.quote event emitted");
-      }
+        if (quoteEnabled && quoteEnabled === true) {
+          emailEvent.emit('email.send.quote', payload);
+          winston.verbose("email.send.quote event emitted");
+        }
 
-      if (mail.callback) {
         mail.callback(error, { info: info });
-      }
 
-      // Preview only available when sending through an Ethereal account
-      // winston.debug('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+        // Preview only available when sending through an Ethereal account
+        // winston.debug('Preview URL: %s', nodemailer.getTestMessageUrl(info));
 
-      // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-      // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+        // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+        // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+      });
+      return;
+    }
+
+    // If no callback, return a Promise
+    return new Promise((resolve, reject) => {
+      this.getTransport(mail.config).sendMail(mailOptions, (error, info) => {
+        if (error) {
+          winston.error("Error sending email ", { error: error, mailConfig: mail.config, mailOptions: mailOptions });
+          return reject(error);
+        }
+        winston.verbose('Email sent:', { info: info });
+        winston.debug('Email sent:', { info: info, mailOptions: mailOptions });
+
+        if (quoteEnabled && quoteEnabled === true) {
+          emailEvent.emit('email.send.quote', payload);
+          winston.verbose("email.send.quote event emitted");
+        }
+
+        resolve({ info: info });
+
+        // Preview only available when sending through an Ethereal account
+        // winston.debug('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+
+        // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+        // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+      });
     });
   }
 
@@ -1540,7 +1565,7 @@ class EmailService {
 
     let email_enabled = true;
 
-    that.send({
+    return await that.send({
       from: from,
       to: to,
       replyTo: replyTo,

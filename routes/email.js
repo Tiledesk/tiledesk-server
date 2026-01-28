@@ -392,9 +392,13 @@ router.post('/internal/send',
   let quoteManager = req.app.get('quote_manager');
 
   //sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage, payload)
-  emailService.sendEmailDirect(newto, text, req.project, request_id, subject, undefined, undefined, undefined, replyto, quoteManager);
-  
-  res.json({"queued": true});
+  try {
+    const result = await emailService.sendEmailDirect(newto, text, req.project, request_id, subject, undefined, undefined, undefined, replyto, quoteManager);
+    res.json(result);
+  } catch (error) {
+    winston.error("Error sending email in /internal/send:", error);
+    res.status(500).json({ error: error.message || "Error sending email" });
+  }
     
 });
 

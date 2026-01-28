@@ -377,23 +377,45 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
     update["settings.email.templates.emailDirect"] = req.body["settings.email.templates.emailDirect"];
   }
 
-  if (req.body["settings.email.from"]!=undefined) {
-    update["settings.email.from"] = req.body["settings.email.from"];
-  }
-  if (req.body["settings.email.config.host"]!=undefined) {
-    update["settings.email.config.host"] = req.body["settings.email.config.host"];
-  }
-  if (req.body["settings.email.config.port"]!=undefined) {
-    update["settings.email.config.port"] = req.body["settings.email.config.port"];
-  }
-  if (req.body["settings.email.config.secure"]!=undefined) {
-    update["settings.email.config.secure"] = req.body["settings.email.config.secure"];
-  }
-  if (req.body["settings.email.config.user"]!=undefined) {
-    update["settings.email.config.user"] = req.body["settings.email.config.user"];
-  }
-  if (req.body["settings.email.config.pass"]!=undefined) {
-    update["settings.email.config.pass"] = req.body["settings.email.config.pass"];
+  // Check if all email config fields are being reset (set to null)
+  const emailFields = [
+    "settings.email.from",
+    "settings.email.config.host",
+    "settings.email.config.port",
+    "settings.email.config.secure",
+    "settings.email.config.user",
+    "settings.email.config.pass"
+  ];
+  
+  const allEmailFieldsPresent = emailFields.every(field => req.body[field] !== undefined);
+  const allEmailFieldsNull = emailFields.every(field => req.body[field] === null);
+  
+  if (allEmailFieldsPresent && allEmailFieldsNull) {
+    // Reset: delete the entire settings.email object
+    if (!update.$unset) {
+      update.$unset = {};
+    }
+    update.$unset["settings.email"] = "";
+  } else {
+    // Normal update: set individual fields
+    if (req.body["settings.email.from"]!=undefined) {
+      update["settings.email.from"] = req.body["settings.email.from"];
+    }
+    if (req.body["settings.email.config.host"]!=undefined) {
+      update["settings.email.config.host"] = req.body["settings.email.config.host"];
+    }
+    if (req.body["settings.email.config.port"]!=undefined) {
+      update["settings.email.config.port"] = req.body["settings.email.config.port"];
+    }
+    if (req.body["settings.email.config.secure"]!=undefined) {
+      update["settings.email.config.secure"] = req.body["settings.email.config.secure"];
+    }
+    if (req.body["settings.email.config.user"]!=undefined) {
+      update["settings.email.config.user"] = req.body["settings.email.config.user"];
+    }
+    if (req.body["settings.email.config.pass"]!=undefined) {
+      update["settings.email.config.pass"] = req.body["settings.email.config.pass"];
+    }
   }
 
 
@@ -580,23 +602,47 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
   }
 
 
-  if (req.body["settings.email.from"]!=undefined) {
-    update["settings.email.from"] = req.body["settings.email.from"];
-  }
-  if (req.body["settings.email.config.host"]!=undefined) {
-    update["settings.email.config.host"] = req.body["settings.email.config.host"];
-  }
-  if (req.body["settings.email.config.port"]!=undefined) {
-    update["settings.email.config.port"] = req.body["settings.email.config.port"];
-  }
-  if (req.body["settings.email.config.secure"]!=undefined) {
-    update["settings.email.config.secure"] = req.body["settings.email.config.secure"];
-  }
-  if (req.body["settings.email.config.user"]!=undefined) {
-    update["settings.email.config.user"] = req.body["settings.email.config.user"];
-  }
-  if (req.body["settings.email.config.pass"]!=undefined) {
-    update["settings.email.config.pass"] = req.body["settings.email.config.pass"];
+  // Check if all email config fields are being reset (set to null)
+  const emailFields = [
+    "settings.email.from",
+    "settings.email.config.host",
+    "settings.email.config.port",
+    "settings.email.config.secure",
+    "settings.email.config.user",
+    "settings.email.config.pass"
+  ];
+  
+  const allEmailFieldsPresent = emailFields.every(field => req.body[field] !== undefined);
+  console.log("allEmailFieldsPresent: ", allEmailFieldsPresent);
+  const allEmailFieldsNull = emailFields.every(field => req.body[field] === null);
+  console.log("allEmailFieldsNull: ", allEmailFieldsNull);
+  
+  if (allEmailFieldsPresent && allEmailFieldsNull) {
+    // Reset: delete the entire settings.email object
+    if (!update.$unset) {
+      update.$unset = {};
+    }
+    update.$unset["settings.email"] = "";
+  } else {
+    // Normal update: set individual fields
+    if (req.body["settings.email.from"]!=undefined) {
+      update["settings.email.from"] = req.body["settings.email.from"];
+    }
+    if (req.body["settings.email.config.host"]!=undefined) {
+      update["settings.email.config.host"] = req.body["settings.email.config.host"];
+    }
+    if (req.body["settings.email.config.port"]!=undefined) {
+      update["settings.email.config.port"] = req.body["settings.email.config.port"];
+    }
+    if (req.body["settings.email.config.secure"]!=undefined) {
+      update["settings.email.config.secure"] = req.body["settings.email.config.secure"];
+    }
+    if (req.body["settings.email.config.user"]!=undefined) {
+      update["settings.email.config.user"] = req.body["settings.email.config.user"];
+    }
+    if (req.body["settings.email.config.pass"]!=undefined) {
+      update["settings.email.config.pass"] = req.body["settings.email.config.pass"];
+    }
   }
 
 

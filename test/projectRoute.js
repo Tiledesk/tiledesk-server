@@ -48,7 +48,7 @@ chai.use(chaiHttp);
 
 describe('ProjectRoute', () => {
 
-    describe('/create', () => {
+    describe('Create', () => {
 
         it('getAllProjectsWithSuperAdminCredential', (done) => {
 
@@ -167,9 +167,6 @@ describe('ProjectRoute', () => {
                 })
             })
         }).timeout(10000)
-
-
-
 
         it('updateProjectTimeSlots', (done) => {
 
@@ -398,6 +395,114 @@ describe('ProjectRoute', () => {
         }).timeout(10000)
 
     });
+
+    describe('Update', () => {
+
+        it("updateProjectEmailSettings", (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-project-create", savedUser._id).then((savedProject) => {
+
+                    chai.request(server)
+                        .put('/projects/' + savedProject._id)
+                        .auth(email, pwd)
+                        .send({ settings: { email: { from: "test@test.com", config: { host: "test.com", port: 587, secure: false, user: "test@test.com", pass: "test" } } } })
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("update project email settings res.body: ", res.body) };
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.settings.email.from).to.equal("test@test.com");
+                            expect(res.body.settings.email.config.host).to.equal("test.com");
+                            expect(res.body.settings.email.config.port).to.equal(587);
+                            expect(res.body.settings.email.config.secure).to.equal(false);
+                            expect(res.body.settings.email.config.user).to.equal("test@test.com");
+                            expect(res.body.settings.email.config.pass).to.equal("test");
+
+                            chai.request(server)
+                                .put('/projects/' + savedProject._id)
+                                .auth(email, pwd)
+                                .send({ settings: { email: {}}})
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("update project email settings res.body: ", res.body) };
+
+                                    console.log("update project email settings res.body: ", res.body)
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    expect(res.body.settings?.email).to.equal(undefined);
+
+                                    done();
+                                })
+                        })
+                })
+            })
+        })
+
+        it("updateProjectEmailSettingsSingleFields", (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-project-create", savedUser._id).then((savedProject) => {
+
+                    chai.request(server)
+                        .put('/projects/' + savedProject._id)
+                        .auth(email, pwd)
+                        .send({ settings: { email: { from: "test@test.com", config: { host: "test.com", port: 587, secure: false, user: "test@test.com", pass: "test" } } } })
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("update project email settings res.body: ", res.body) };
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.settings.email.from).to.equal("test@test.com");
+                            expect(res.body.settings.email.config.host).to.equal("test.com");
+                            expect(res.body.settings.email.config.port).to.equal(587);
+                            expect(res.body.settings.email.config.secure).to.equal(false);
+                            expect(res.body.settings.email.config.user).to.equal("test@test.com");
+                            expect(res.body.settings.email.config.pass).to.equal("test");
+
+                            let body = {
+                                "settings.email.config.host": null,
+                                "settings.email.config.port": null,
+                                "settings.email.config.secure": null,
+                                "settings.email.config.user": null,
+                                "settings.email.config.pass": null
+                            }
+
+                            chai.request(server)
+                                .put('/projects/' + savedProject._id)
+                                .auth(email, pwd)
+                                .send(body)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("update project email settings res.body: ", res.body) };
+
+                                    console.log("update project email settings res.body: ", res.body.settings)
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    //expect(res.body.settings?.email).to.equal(undefined);
+
+                                    done();
+                                })
+                        })
+                })
+            })
+        })
+
+    })
 
 });
 
