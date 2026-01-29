@@ -106,7 +106,6 @@ var ProjectSettingsSchema = new Schema({
   email: {
     type: EmailSchema
   },
-  
   // Chat/Assignment settings
   chat_limit_on: {
     type: Boolean,
@@ -153,7 +152,7 @@ var ProjectSettingsSchema = new Schema({
   }
 }, {
   _id: false, // No _id for subdocuments
-  strict: false // Allow additional fields for backward compatibility
+  //strict: false // Allow additional fields for backward compatibility
 });
 
 module.exports = ProjectSettingsSchema;
