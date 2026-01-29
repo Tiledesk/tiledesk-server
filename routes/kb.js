@@ -1731,6 +1731,8 @@ router.post('/sitemap/import', async (req, res) => {
     return res.status(500).send({ success: false, error: err });
   }
 
+
+
   const options = {
     sitemap_origin_id: saved_content._id,
     sitemap_origin: saved_content.source,
@@ -1739,9 +1741,9 @@ router.post('/sitemap/import', async (req, res) => {
     refresh_rate: saved_content.refresh_rate
   }
   
-  let result;
   try {
-    result = await aiManager.addMultipleUrls(namespace, urls, options);
+    await aiManager.scheduleSitemap(namespace, saved_content, options);
+    let result = await aiManager.addMultipleUrls(namespace, urls, options);
     if (process.env.NODE_ENV === 'test') {
       result.result.push(saved_content);
       return res.status(200).send(result);
