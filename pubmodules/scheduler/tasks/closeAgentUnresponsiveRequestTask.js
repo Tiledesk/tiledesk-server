@@ -25,7 +25,7 @@ class CloseAgentUnresponsiveRequestTask {
     const limit = Number(process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_QUERY_LIMIT);
     this.queryLimit = !isNaN(limit) && limit > 0 ? Math.floor(limit) : 10;
     
-    const delay = Number(process.env.CLOSE_BOT_UNRESPONSIVE_REQUESTS_DELAY);
+    const delay = Number(process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_DELAY);
     this.delayBeforeClosing = !isNaN(delay) && delay >= 0 ? Math.floor(delay) : 1000;
     
     this.queryProject = process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_QUERY_FILTER_ONLY_PROJECT;

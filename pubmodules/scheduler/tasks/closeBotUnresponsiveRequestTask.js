@@ -62,7 +62,7 @@ class CloseBotUnresponsiveRequestTask {
       const randomDelay = Math.random() * 1000;
       winston.debug(`CloseBotUnresponsiveRequestTask random delay: ${randomDelay}ms`);
 
-      setTimeout(function () {
+      setTimeout(() => {
         winston.debug(
           `CloseBotUnresponsiveRequestTask scheduleUnresponsiveRequests job was supposed to run at ${fireDate}, ` +
           `but actually ran at ${new Date()}`
