@@ -79,6 +79,7 @@ class CloseAgentUnresponsiveRequestTask {
 
     winston.debug("CloseAgentUnresponsiveRequestTask query",query);
     
+    console.log("[CloseUnresponsive] Searching with query: ", query);
     Request.find(query)
       .sort({ updatedAt: 'asc' })
       .limit(this.queryLimit)
@@ -93,6 +94,8 @@ class CloseAgentUnresponsiveRequestTask {
           winston.verbose("CloseAgentUnresponsiveRequestTask no unresponsive requests found ");
           return;
         }
+
+        console.log("[CloseUnresponsive] Found ", requests.length, " unresponsive requests");
 
         winston.verbose("CloseAgentUnresponsiveRequestTask: found " + requests.length +  " unresponsive requests");
         winston.debug("CloseAgentUnresponsiveRequestTask: found unresponsive requests ", requests);
