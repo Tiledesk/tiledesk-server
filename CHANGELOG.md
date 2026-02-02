@@ -6,7 +6,7 @@
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
 # 2.14.12
-- Updated handling of unresponsive requests to close based on the updatedAt field instead of createdAt.
+- Updated handling of unresponsive requests to close based on the updatedAt field instead of createdAt
 
 # 2.14.10
 - Added support for a custom reranking_multiplier parameter in the /qa endpoint
