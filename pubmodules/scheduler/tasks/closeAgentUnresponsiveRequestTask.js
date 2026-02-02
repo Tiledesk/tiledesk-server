@@ -83,7 +83,7 @@ class CloseAgentUnresponsiveRequestTask {
     Request.find(query)
       .sort({ updatedAt: 'asc' })
       .limit(this.queryLimit)
-      //.hint({ status: 1, hasBot: 1, createdAt: 1 })
+      .hint({ status: 1, hasBot: 1, updatedAt: 1 })
       .exec((err, requests) => {
         if (err) {
             winston.error("CloseAgentUnresponsiveRequestTask error getting unresponsive requests ", err);
