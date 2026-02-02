@@ -1,120 +1,157 @@
-
 'use strict';
 
+const schedule = require('node-schedule');
+const winston = require('../../../config/winston');
+const Request = require("../../../models/request");
+const requestService = require("../../../services/requestService");
 
-var schedule = require('node-schedule');
-var winston = require('../../../config/winston');
-var Request = require("../../../models/request");
-var requestService = require("../../../services/requestService");
-
-
+/**
+ * Task scheduler for automatically closing agent unresponsive requests.
+ * Finds requests with agents that haven't been updated within a specified timeout
+ * and closes them automatically.
+ */
 class CloseAgentUnresponsiveRequestTask {
 
-constructor() {
-  this.enabled = process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_ENABLE || "false"; 
-  this.cronExp = process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_CRON_EXPRESSION || '*/30 * * * *'; //every 30 minutes
-  this.queryAfterTimeout = parseInt(process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_AFTER_TIMEOUT) || 5 * 24 * 60 * 60 * 1000; //five days ago // 86400000 a day
-  this.queryLimit = parseInt(process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_QUERY_LIMIT) || 10;
-  this.queryProject = process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_QUERY_FILTER_ONLY_PROJECT;
+  constructor() {
 
-  if (this.queryProject) {
-    winston.info("CloseAgentUnresponsiveRequestTask filter only by projects enabled: " + this.queryProject );
-  }
-  
-  // var stringQuery = process.env.CLOSE_UNRESPONSIVE_REQUESTS_QUERY;
-  // if (stringQuery) {
-  //   this.query = JSON.parse(stringQuery) || {hasBot:true, status: { $lt: 1000 }, createdAt:  { $lte :new Date(Date.now() - this.queryAfterTimeout ).toISOString()} };
-  // }else {
-  //   this.query = {hasBot:true, status: { $lt: 1000 }, createdAt:  { $lte :new Date(Date.now() - this.queryAfterTimeout ).toISOString()} }; 
-  // }
-  
-}
-
-run() {    
-    if (this.enabled == "true") {
-      winston.info("CloseAgentUnresponsiveRequestTask started" );
-      this.scheduleUnresponsiveRequests();
-    } else {
-      winston.info("CloseAgentUnresponsiveRequestTask disabled" );
-    }
-}
-
-scheduleUnresponsiveRequests() {
-  var that = this;
-  winston.info("CloseAgentUnresponsiveRequestTask task scheduleUnresponsiveRequests launched with closeAfter : " + this.queryAfterTimeout + " milliseconds, cron expression: " + this.cronExp + " and query limit: " +this.queryLimit);
-  // if (this.queryProject) {
-  //   winston.info("CloseAgentUnresponsiveRequestTask query altered: "+ JSON.stringify(this.query));
-  // }
-
- //https://crontab.guru/examples.html
- var s= schedule.scheduleJob(this.cronExp, function(fireDate){
-    winston.debug('CloseAgentUnresponsiveRequestTask ScheduleUnresponsiveRequests job was supposed to run at ' + fireDate + ', but actually ran at ' + new Date());
-    that.findUnresponsiveRequests(); 
-  });
-}
-
-
-findUnresponsiveRequests() {
-    
-
-  // db.getCollection('requests').find({"hasBot":true, "status": { "$lt": 1000 }, "createdAt":  { "$lte" :new ISODate("2020-11-28T20:15:31Z")} }).count()    
-    
-    //RETEST IT
-    var query = {hasBot:false, status: { $lt: 1000 }, createdAt:  { $lte :new Date(Date.now() - this.queryAfterTimeout ).toISOString()} };
+    this.enabled = process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_ENABLE || "false"; 
+    this.cronExp = process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_CRON_EXPRESSION || '*/30 * * * *'; //every 30 minutes
+    this.queryAfterTimeout = parseInt(process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_AFTER_TIMEOUT) || 5 * 24 * 60 * 60 * 1000; //five days ago // 86400000 a day
+    this.queryLimit = parseInt(process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_QUERY_LIMIT) || 10;
+    this.queryProject = process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_QUERY_FILTER_ONLY_PROJECT;
+    this.delayBeforeClosing = parseInt(process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_DELAY) || 1000;
 
     if (this.queryProject) {
-      query.id_project = this.queryProject;
+      winston.info("CloseAgentUnresponsiveRequestTask filter only by projects enabled: " + this.queryProject );
     }
-    winston.debug("CloseAgentUnresponsiveRequestTask query",query);
     
-    Request.find(query).limit(this.queryLimit).exec(function(err, requests) {
-      //it is limited to 1000 results but after same days it all ok
-      if (err) {
-          winston.error("CloseAgentUnresponsiveRequestTask error getting unresponsive requests ", err);
-          return 0;
+  }
+
+  /**
+   * Starts the scheduler if enabled.
+   */
+  run() {    
+      if (this.enabled === "true") {
+        winston.info("CloseAgentUnresponsiveRequestTask started" );
+        this.scheduleUnresponsiveRequests();
+      } else {
+        winston.info("CloseAgentUnresponsiveRequestTask disabled" );
       }
-      if (!requests || (requests && requests.length==0)) {
-          winston.verbose("CloseAgentUnresponsiveRequestTask no unresponsive requests found ");
-          return 0;
-      }
+  }
 
-      winston.verbose("CloseAgentUnresponsiveRequestTask: found " + requests.length +  " unresponsive requests");
-      winston.debug("CloseAgentUnresponsiveRequestTask: found unresponsive requests ", requests);
+  /**
+   * Schedules the recurring job to find and close unresponsive requests.
+   */
+  scheduleUnresponsiveRequests() {
+    winston.info(
+      `CloseAgentUnresponsiveRequestTask task scheduleUnresponsiveRequests launched with ` +
+      `closeAfter: ${this.queryAfterTimeout} milliseconds, ` +
+      `cron expression: ${this.cronExp} and query limit: ${this.queryLimit}`
+    );
 
-      requests.forEach(request => {
-        winston.debug("********unresponsive request ", request);
-
-        // closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
-        const closed_by = "_bot_unresponsive";
-        return requestService.closeRequestByRequestId(request.request_id, request.id_project, false, false, closed_by).then(function(updatedStatusRequest) {
-          winston.verbose("CloseAgentUnresponsiveRequestTask: Request closed with request_id: " + request.request_id);
-          // winston.info("Request closed",updatedStatusRequest);
-        }).catch(function(err) {
-          if (process.env.HIDE_CLOSE_REQUEST_ERRORS == true || process.env.HIDE_CLOSE_REQUEST_ERRORS == "true" ) {
-
-          } else {
-            winston.error("CloseAgentUnresponsiveRequestTask: Error closing the request with request_id: " + request.request_id, err);
-          }
-          
-        })
-     
-      });
-
-    
-
+    schedule.scheduleJob(this.cronExp, (fireDate) => {
+      winston.debug(`CloseAgentUnresponsiveRequestTask ScheduleUnresponsiveRequests job was supposed to run at ${fireDate}, but actually ran at ${new Date()}`);
+      this.findUnresponsiveRequests();
     });
   }
 
 
-  
+  /**
+   * Finds unresponsive agent requests and schedules their closure.
+   * Queries for requests with agents that haven't been updated within the timeout period.
+   */
+  findUnresponsiveRequests() {
+    const cutoffDate = new Date(Date.now() - this.queryAfterTimeout);
+    const query = {
+      hasBot: false,
+      status: { $lt: 1000 },
+      updatedAt: { $lte: cutoffDate }
+    };
 
+    if (this.queryProject) {
+      try {
+        query.id_project = JSON.parse(this.queryProject);
+      } catch (err) {
+        winston.error("CloseAgentUnresponsiveRequestTask error parsing queryProject filter", err);
+        return;
+      }
+    }
+
+    winston.debug("CloseAgentUnresponsiveRequestTask query",query);
+    
+    //console.log("[CloseUnresponsive] Searching with query: ", query);
+    Request.find(query)
+      .sort({ updatedAt: 'asc' })
+      .limit(this.queryLimit)
+      .hint({ status: 1, hasBot: 1, updatedAt: 1 })
+      .exec((err, requests) => {
+        if (err) {
+            winston.error("CloseAgentUnresponsiveRequestTask error getting unresponsive requests ", err);
+            return;
+        }
+        
+        if (!requests || requests.length === 0) {
+          winston.verbose("CloseAgentUnresponsiveRequestTask no unresponsive requests found ");
+          return;
+        }
+
+        //console.log("[CloseUnresponsive] Found ", requests.length, " unresponsive requests");
+
+        winston.verbose("CloseAgentUnresponsiveRequestTask: found " + requests.length +  " unresponsive requests");
+        winston.debug("CloseAgentUnresponsiveRequestTask: found unresponsive requests ", requests);
+
+        this.scheduleRequestClosures(requests);
+
+    });
+  }
+
+  /**
+   * Schedules the closure of multiple requests with staggered delays.
+   * @param {Array} requests - Array of request objects to close
+   */
+  scheduleRequestClosures(requests) {
+    requests.forEach((request, index) => {
+      // Stagger delays: 2 * delayBeforeClosing * (index + 1)
+      const delay = 2 * this.delayBeforeClosing * (index + 1);
+      winston.debug(`CloseAgentUnresponsiveRequestTask: scheduling closure with delay: ${delay}ms for request_id: ${request.request_id}`);
+
+      setTimeout(() => {
+        this.closeRequest(request);
+      }, delay);
+    });
+  }
+
+  /**
+   * Closes a single unresponsive request.
+   * @param {Object} request - The request object to close
+   */
+  closeRequest(request) {
+    winston.debug(`CloseAgentUnresponsiveRequestTask: processing unresponsive request: ${request.first_text}`);
+
+    const closedBy = "_bot_unresponsive";
+    const shouldSkipStatsUpdate = false;
+    const shouldNotify = false;
+
+    requestService.closeRequestByRequestId(
+      request.request_id,
+      request.id_project,
+      shouldSkipStatsUpdate,
+      shouldNotify,
+      closedBy
+    ).then(() => {
+      winston.info(`CloseAgentUnresponsiveRequestTask: Request closed with request_id: ${request.request_id}`);
+    }).catch((err) => {
+      const hideErrors = process.env.HIDE_CLOSE_REQUEST_ERRORS === true || process.env.HIDE_CLOSE_REQUEST_ERRORS === "true";
+      
+      if (!hideErrors) {
+        winston.error(`CloseAgentUnresponsiveRequestTask: Error closing the request with request_id: ${request.request_id}`, err);
+      }
+    });
+
+  }
    
 }
  
- 
- 
- 
-var closeAgentUnresponsiveRequestTask = new CloseAgentUnresponsiveRequestTask();
-
+const closeAgentUnresponsiveRequestTask = new CloseAgentUnresponsiveRequestTask();
 
 module.exports = closeAgentUnresponsiveRequestTask;
