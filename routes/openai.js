@@ -67,7 +67,7 @@ router.post('/', async (req, res) => {
         let multiplier = MODELS_MULTIPLIER[json.model];
         if (!multiplier) {
             multiplier = 1;
-            winston.info("No multiplier found for AI model")
+            winston.info("No multiplier found for AI model (openai) " + json.model)
         }
 
         aiService.completions(json, gptkey).then(async (response) => {

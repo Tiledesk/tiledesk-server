@@ -397,7 +397,7 @@ router.post('/qa', async (req, res) => {
       let multiplier = MODELS_MULTIPLIER[data.model];
       if (!multiplier) {
         multiplier = 1;
-        winston.info("No multiplier found for AI model")
+        winston.info("No multiplier found for AI model (qa) " + data.model);
       }
       obj.multiplier = multiplier;
       obj.tokens = answer.prompt_token_size;
