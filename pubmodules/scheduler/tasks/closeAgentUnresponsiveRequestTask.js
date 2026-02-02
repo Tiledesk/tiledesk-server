@@ -61,7 +61,7 @@ class CloseAgentUnresponsiveRequestTask {
    * Queries for requests with agents that haven't been updated within the timeout period.
    */
   findUnresponsiveRequests() {
-    const cutoffDate = new Date(Date.now() - this.queryAfterTimeout).toISOString();
+    const cutoffDate = new Date(Date.now() - this.queryAfterTimeout);
     const query = {
       hasBot: false,
       status: { $lt: 1000 },

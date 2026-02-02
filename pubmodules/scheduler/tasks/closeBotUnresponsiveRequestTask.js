@@ -53,7 +53,7 @@ class CloseBotUnresponsiveRequestTask {
       const randomDelay = Math.random() * 1000;
       winston.debug(`CloseBotUnresponsiveRequestTask random delay: ${randomDelay}ms`);
 
-      setTimeout(function () {
+      setTimeout(() => {
         winston.debug(
           `CloseBotUnresponsiveRequestTask scheduleUnresponsiveRequests job was supposed to run at ${fireDate}, ` +
           `but actually ran at ${new Date()}`
@@ -69,7 +69,7 @@ class CloseBotUnresponsiveRequestTask {
    * Queries for requests with bots that haven't been updated within the timeout period.
    */
   findUnresponsiveRequests() {
-    const cutoffDate = new Date(Date.now() - this.queryAfterTimeout).toISOString();
+    const cutoffDate = new Date(Date.now() - this.queryAfterTimeout);
     const query = { 
       hasBot: true, 
       status: { $lt: 1000 }, 
