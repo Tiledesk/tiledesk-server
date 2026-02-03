@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.14.14
+- Updated tybot-connector to 2.0.43
+
 # 2.14.13
 - Added sitemap scheduling in aiManager
 - Updated import route to use sitemap scheduling functionality
