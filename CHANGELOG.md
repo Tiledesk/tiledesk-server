@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.14.15
+- Bug fix google strategy passport
+
 # 2.14.14
 - Updated tybot-connector to 2.0.43
 
