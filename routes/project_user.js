@@ -244,6 +244,10 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
       update.status = req.body.status;
   }
 
+  if (req.body.trashed != undefined) {
+    update.trashed = req.body.trashed;
+  }
+
   if (req.body["settings.email.notification.conversation.assigned.toyou"]!=undefined) {
     update["settings.email.notification.conversation.assigned.toyou"] = req.body["settings.email.notification.conversation.assigned.toyou"];
   }
