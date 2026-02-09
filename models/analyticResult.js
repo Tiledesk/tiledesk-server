@@ -4,6 +4,8 @@ var Schema = mongoose.Schema;
 var winston = require('../config/winston');
 let config = require('../config/database');
 
+let config = require('../config/database');
+
 
 var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
 

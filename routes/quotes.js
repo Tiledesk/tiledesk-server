@@ -47,7 +47,7 @@ router.post('/incr/:type', async (req, res) => {
     let multiplier = MODELS_MULTIPLIER[data.model];
     if (!multiplier) {
         multiplier = 1;
-        winston.info("No multiplier found for AI model")
+        winston.info("No multiplier found for AI model (incr) " + data.model)
     }
     data.multiplier = multiplier;
     data.createdAt = new Date();

@@ -325,6 +325,10 @@ if (process.env.ENABLE_ACCESSLOG) {
 }
 
 app.use(passport.initialize());
+// If deployed behind a proxy/ingress (TLS terminated upstream), enable this
+// if (process.env.TRUST_PROXY === "true") {
+app.set('trust proxy', 1);
+// }
 
 // After you declare "app"
 if (process.env.DISABLE_SESSION_STRATEGY==true ||  process.env.DISABLE_SESSION_STRATEGY=="true" ) {
@@ -352,7 +356,6 @@ if (process.env.DISABLE_SESSION_STRATEGY==true ||  process.env.DISABLE_SESSION_S
         client: cacheClient,
         prefix: "sessions:",
       })
-
 
       app.use(
         session({

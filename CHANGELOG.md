@@ -5,6 +5,47 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.14.19
+- Updated whatsapp-connector to 1.0.19
+
+# 2.14.18
+- Bug fix already existing email when login from google 
+
+# 2.14.17
+- Bug fix google strategy passport
+
+# 2.14.14
+- Updated tybot-connector to 2.0.43
+
+# 2.14.13
+- Added sitemap scheduling in aiManager
+- Updated import route to use sitemap scheduling functionality
+
+# 2.14.12
+- Updated handling of unresponsive requests to close based on the updatedAt field instead of createdAt
+
+# 2.14.10
+- Added support for a custom reranking_multiplier parameter in the /qa endpoint
+- Improved DB performance by optimizing the query used to find conversations to be closed automatically
+
+# 2.14.9
+- Improved the requests search function and added the ability to specify a timezone when searching
+
+# 2.14.8
+- Added extraction of namespace_id from request body in scrape status route
+
+# 2.14.7
+- Added embedding configuration to namespace import route
+
+# 2.14.6
+- Fix namespace checking in export route and improve error handling
+
+# 2.14.5
+- Fixed bug: missing embeddings on single scrape
+
+# 2.14.4
+- Fixed bug: missing embeddings on content coming from auto-reindex scheduler
+
 # 2.14.3
 - Fixed bug: first message not sent from default chatbot. Refactored availableAgentsCount handling in requestService to ensure accurate snapshot updates during request creation.
 

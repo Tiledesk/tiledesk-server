@@ -221,8 +221,8 @@ class RequestService {
         request.assigned_at = assigned_at;
         request.waiting_time = undefined //reset waiting_time on reroute
 
-        console.log("request.snapshot for ", request.request_id ," exists: ", request.snapshot ? "yes" : "no\n", new Date());
-        console.log("request.snapshot.agents for ", request.request_id ," exists: ", request.snapshot?.agents ? "yes" : "no\n", new Date());
+        //console.log("request.snapshot for ", request.request_id ," exists: ", request.snapshot ? "yes" : "no\n", new Date());
+        //console.log("request.snapshot.agents for ", request.request_id ," exists: ", request.snapshot?.agents ? "yes" : "no\n", new Date());
         if (!request.snapshot) { //if used other methods than .create
           request.snapshot = {}
         }
@@ -252,7 +252,7 @@ class RequestService {
       winston.debug("departmentid:" + departmentid);
       winston.debug("id_project:" + id_project);
       winston.debug("nobot:" + nobot);
-      winston.info("main_flow_cache_3 route");
+      //winston.info("main_flow_cache_3 route");
 
       // Find request
       let query = Request.findOne({ request_id, id_project });
@@ -656,7 +656,7 @@ class RequestService {
     }
 
     winston.debug('newRequest.', newRequest);
-    winston.info("main_flow_cache_ requestService create");
+    //winston.info("main_flow_cache_ requestService create");
 
     // Save request
     try {
