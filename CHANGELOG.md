@@ -7,6 +7,7 @@
 
 # 2.14.19
 - Updated whatsapp-connector to 1.0.19
+- Added new endpoint for files uploading 
 
 # 2.14.18
 - Bug fix already existing email when login from google 
