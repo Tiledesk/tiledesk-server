@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.14.19
+- Updated whatsapp-connector to 1.0.19
+
 # 2.14.18
 - Bug fix already existing email when login from google 
 
