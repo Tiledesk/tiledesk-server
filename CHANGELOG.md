@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.14.22
+- Updated whatsapp-connector to 1.0.20
+- Added new endpoint for files uploading 
 
 # 2.14.21 - aborted
 - Updated whatsapp-connector to 1.0.20
