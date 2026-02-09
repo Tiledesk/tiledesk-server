@@ -105,7 +105,7 @@ router.post('/preview', async (req, res) => {
         }
         res.status(200).send(response.data)
     }).catch((err) => {
-        if (err.response?.data?.detail[0]) {
+        if (err.response?.data?.detail?.[0]) {
             res.status(400).send({ success: false, error: err.response.data.detail[0]?.msg, detail: err.response.data.detail });
         } else if (err.response?.data?.detail?.answer) {
             res.status(400).send({ success: false, error: err.response.data.detail.answer, detail: err.response.data.detail });
