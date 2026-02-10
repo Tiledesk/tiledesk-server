@@ -14,9 +14,24 @@ var labelService = require('../services/labelService');
 var projectService = require("../services/projectService");
 require('../services/mongoose-cache-fn')(mongoose);
 
+
+const { TdCache } = require('../utils/TdCache');
+let tdCache = new TdCache({
+    host: process.env.CACHE_REDIS_HOST,
+    port: process.env.CACHE_REDIS_PORT,
+    password: process.env.CACHE_REDIS_PASSWORD
+});
+
+tdCache.connect(function() {
+  console.log("ready redis test")
+});
+
+var cacheManager = require('../utils/cacheManager');
+cacheManager.setClient(tdCache);
+
 describe('labelService', function () {
 
-
+    // mocha test/labelService.js  --grep 'getWithoutClonedLabel'
   it('getWithoutClonedLabel', function (done) {
     var userid = "5badfe5d553d1844ad654072";
 

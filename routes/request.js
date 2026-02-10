@@ -33,6 +33,8 @@ const RoleConstants = require('../models/roleConstants');
 const eventService = require('../pubmodules/events/eventService');
 const { Scheduler } = require('../services/Scheduler');
 const faq_kb = require('../models/faq_kb');
+const datesUtil = require('../utils/datesUtil');
+const JobManager = require('@tiledesk/tiledesk-multi-worker');
 //const JobManager = require('../utils/jobs-worker-queue-manager-v2/JobManagerV2');
 
 // var messageService = require('../services/messageService');
@@ -438,13 +440,14 @@ router.put('/:requestid/participants', function (req, res) {
 
   //setParticipantsByRequestId(request_id, id_project, participants)
   return requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then(function (updatedRequest) {
-
     winston.debug("participant set", updatedRequest);
-
     return res.json(updatedRequest);
-  }).catch(function(err) {
-    winston.error("Error setting participants", err);
-    return res.status(500).send({ success: false, error: "Error setting participants" });
+
+  }).catch((err) => {
+    winston.error("Error setParticipantsByRequestId: ", err);
+    let error_code = err?.code || 500;
+    let error = err?.error || err || "General error";
+    return res.status(error_code).send({ success: false, error: error })
   });
 
 });
@@ -958,7 +961,7 @@ router.put('/:requestid/tag', async (req, res) => {
   winston.debug("(Request) /tag tags_list: ", tags_list)
 
   if (tags_list.length == 0) {
-    winston.warn("(Request) /tag no tag specified")
+    winston.verbose("(Request) /tag no tag specified")
     return res.status(400).send({ success: false, message: "No tag specified" })
   }
 
@@ -1079,8 +1082,8 @@ router.delete('/:requestid', function (req, res) {
 
   var projectuser = req.projectuser;
 
-
-  if (projectuser.role != "owner") {
+  // request_role_check
+  if (!projectuser.hasPermissionOrRole('request_delete', 'owner')){
     return res.status(403).send({ success: false, msg: 'Unauthorized.' });
   }
 
@@ -1135,8 +1138,8 @@ router.delete('/id/:id', function (req, res) {
 
   var projectuser = req.projectuser;
 
-
-  if (projectuser.role != "owner") {
+  // request_role_check
+  if (!projectuser.hasPermissionOrRole('request_delete', 'owner')){
     return res.status(403).send({ success: false, msg: 'Unauthorized.' });
   }
 
@@ -1178,6 +1181,7 @@ router.get('/', function (req, res, next) {
   var skip = 0;
   let statusArray = [];
   var projectuser = req.projectuser;
+  let filterRangeField = req.query.filterRangeField || 'createdAt';
 
   if (req.query.limit) {
     limit = parseInt(req.query.limit);
@@ -1197,15 +1201,23 @@ router.get('/', function (req, res, next) {
 
   if (req.user instanceof Subscription) {
     // All request 
-  } else if (projectuser && (projectuser.role == "owner" || projectuser.role == "admin")) {
+    winston.debug("Subscription All request ");
+  } else if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
     // All request 
-    // Per uni mostrare solo quelle proprie quindi solo participants
-    if (req.query.mine) {
-      query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
-    }
-  } else {
+    winston.debug("hasPermissionOrRole All request ");
+  } else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
+
     query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
+
+  } 
+  // else if (projectuser.hasPermissionOrRole('request_read_mine', ["????"])) {
+  //   query["participants"] = req.user.id;
+  // }
+  else {
+    query["participants"] = req.user.id;
+    // generate empty requests response
   }
+
 
   if (req.query.dept_id) {
     query.department = req.query.dept_id;
@@ -1278,6 +1290,10 @@ router.get('/', function (req, res, next) {
   //   query.request_id = req.query.request_id;
   // }
 
+  let timezone = req.query.timezone || 'Europe/Rome';
+  let queryDateRange = false;
+  let queryStartDate;
+  let queryEndDate;
   /**
    **! *** DATE RANGE  USECASE 1 ***
    *  in the tiledesk dashboard's HISTORY PAGE
@@ -1287,18 +1303,9 @@ router.get('/', function (req, res, next) {
    */
   //fixato. secondo me qui manca un parentesi tonda per gli or
   if (history_search === true && req.project && req.project.profile && ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false))) {
-
-    var startdate = moment().subtract(14, "days").format("YYYY-MM-DD");
-    var enddate = moment().format("YYYY-MM-DD");
-
-    winston.debug('»»» REQUEST ROUTE - startdate ', startdate);
-    winston.debug('»»» REQUEST ROUTE - enddate ', enddate);
-
-    var enddatePlusOneDay = moment(new Date()).add(1, 'days').toDate()
-    winston.debug('»»» REQUEST ROUTE - enddate + 1 days: ', enddatePlusOneDay);
-
-    query.createdAt = { $gte: new Date(Date.parse(startdate)).toISOString(), $lte: new Date(enddatePlusOneDay).toISOString() }
-    winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
+    queryDateRange = true;    
+    queryStartDate = moment().subtract(14, "days").format("YYYY/MM/DD");
+    queryEndDate = null;
   }
 
   /**
@@ -1306,45 +1313,26 @@ router.get('/', function (req, res, next) {
     *  in the tiledesk dashboard's HISTORY PAGE 
     *  WHEN THE USER SEARCH FOR DATE INTERVAL OF THE HISTORY OF REQUESTS
     */
-  if (req.query.start_date && req.query.end_date) {
-    winston.debug('REQUEST ROUTE - REQ QUERY start_date ', req.query.start_date);
-    winston.debug('REQUEST ROUTE - REQ QUERY end_date ', req.query.end_date);
 
-    /**
-     * USING TIMESTAMP  in MS    */
-    // var formattedStartDate = new Date(+req.query.start_date);
-    // var formattedEndDate = new Date(+req.query.end_date);
-    // query.createdAt = { $gte: formattedStartDate, $lte: formattedEndDate }
+  if (req.query.start_date || req.query.end_date) {
+    queryDateRange = true; 
+    queryStartDate = req.query.start_date;
+    queryEndDate = req.query.end_date;
+  }
+  else if (req.query.start_date_time || req.query.end_date_time) {
+    queryDateRange = true; 
+    queryStartDate = req.query.start_date_time;
+    queryEndDate = req.query.end_date_time;
+  }
 
-    /**
-     * USING MOMENT      */
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-    var endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-
-    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED START DATE ', startDate);
-    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE ', endDate);
-
-    // ADD ONE DAY TO THE END DAY
-    var date = new Date(endDate);
-    var newdate = new Date(date);
-    var endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
-    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE + 1 DAY ', endDate_plusOneDay);
-
-    query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString(), $lte: new Date(endDate_plusOneDay).toISOString() }
-    winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
-
-  } else if (req.query.start_date && !req.query.end_date) {
-    winston.debug('REQUEST ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)');
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-
-    var range = { $gte: new Date(Date.parse(startDate)).toISOString() };
-    if (req.query.filterRangeField) {
-      query[req.query.filterRangeField] = range;
-    } else {
-      query.createdAt = range;
+  if (queryDateRange) {
+    try {
+      let rangeQuery = datesUtil.createDateRangeQuery(queryStartDate, queryEndDate, timezone, filterRangeField);
+      Object.assign(query, rangeQuery);
+    } catch (error) {
+      winston.error('Error creating date range query: ', error);
+      return res.status(500).send({ success: false, error: error?.message });
     }
-
-    winston.debug('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
   }
 
   if (req.query.snap_department_routing) {
