@@ -28,31 +28,32 @@ class Listener {
 
         let gpt_key = process.env.GPTKEY;
 
-        let log = process.env.VOICE_TWILIO_LOG || 'error';
-        winston.debug("Voice log: " + log);
+        let elevenlabs_endpoint = process.env.ELEVENLABS_ENDPOINT || "https://api.elevenlabs.io";
+        winston.debug("ElevenLabs Endpoint: ", elevenlabs_endpoint);
 
-        try {
-            // startServer is async and returns a Promise (no callback)
-            await voice_twilio.startServer({
-                MONGODB_URI: process.env.MONGODB_URI,
-                //API_URL: apiUrl, // The main API URL
-                BASE_URL: apiUrl + "/tiledesk/modules/voice-twilio", // Base URL for the voice module
-                BASE_FILE_URL: apiUrl, // Base URL for file uploads
-                REDIS_HOST: host,
-                REDIS_PORT: port,
-                REDIS_PASSWORD: password,
-                BRAND_NAME: brand_name,
-                OPENAI_ENDPOINT: openai_endpoint,
-                GPT_KEY: gpt_key,
-                VOICE_TWILIO_LOG: log
-            });
-
-            winston.info("Tiledesk Twilio Voice Connector proxy server successfully started.");
-
-        } catch (err) {
-            winston.error("Unable to start Tiledesk Twilio Voice Connector. " + err);
-            throw err; // Re-throw if you want to handle the error upstream
-        }
+        let log = process.env.VOICE_TWILIO_LOG || false
+        winston.debug("Voice log: "+ log);
+        
+        voice_twilio.startApp({
+            MONGODB_URI: config.databaseUri,          
+            dbconnection: dbConnection,
+            BASE_URL: apiUrl + "/modules/voice-twilio",
+            BASE_FILE_URL: apiUrl,                     
+            REDIS_HOST: host,
+            REDIS_PORT: port,
+            REDIS_PASSWORD: password,
+            BRAND_NAME: brand_name,
+            OPENAI_ENDPOINT: openai_endpoint,
+            GPT_KEY: gpt_key,
+            ELEVENLABS_ENDPOINT: elevenlabs_endpoint,
+            log: log
+        }, (err) => {
+            if (!err) {
+                winston.info("Tiledesk Twilio Voice Connector proxy server succesfully started.");
+            } else {
+                winston.info("unable to start Tiledesk Twilio Voice Connector. " + err);
+            }    
+        })
     }
 }
 

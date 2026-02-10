@@ -73,8 +73,12 @@ winston.info('Authentication Google Signin enabled : ' + enableGoogleSignin);
 
 
 var enableOauth2Signin = false;
+var oauth2EmailDomain = null;
 if (process.env.OAUTH2_SIGNIN_ENABLED == "true" || process.env.OAUTH2_SIGNIN_ENABLED == true) {
     enableOauth2Signin = true;
+    if (process.env.OAUTH2_EMAIL_DOMAIN) {
+        oauth2EmailDomain = process.env.OAUTH2_EMAIL_DOMAIN
+    }
 }
 winston.info('Authentication Oauth2 Signin enabled : ' + enableOauth2Signin);
 
@@ -85,6 +89,14 @@ try {
 } catch (err) {
     winston.debug("jwthistory not present");
 }
+
+let JWT_HISTORY_ENABLED = false;
+if (process.env.JWT_HISTORY_ENABLED == true || process.env.JWT_HISTORY_ENABLED == "true") {
+    JWT_HISTORY_ENABLED = true;
+}
+winston.debug("JWT_HISTORY_ENABLED: " + JWT_HISTORY_ENABLED);
+
+
 
 module.exports = function (passport) {
 
@@ -163,7 +175,7 @@ module.exports = function (passport) {
 
                     qbot.exec(function (err, faq_kb) { //TODO add cache_bot_here
                         if (err) {
-                            winston.error("auth Faq_kb err: ", {error: err, decoded: decoded});
+                            winston.error("auth Faq_kb err: ", { error: err, decoded: decoded });
                             return done(null, null);
                         }
                         if (!faq_kb) {
@@ -175,18 +187,20 @@ module.exports = function (passport) {
                         // winston.debug("faq_kb.secret: "+ faq_kb.secret );
                         done(null, faq_kb.secret);
                     });
-                } else if (AudienceType == "projects") {
+                }
+
+                else if (AudienceType == "projects") {
                     if (!AudienceId) {
                         winston.error("AudienceId for projects is required: ", decoded);
                         return done(null, null);
                     }
 
                     winston.debug("project id: " + AudienceId);
-                    Project.findOne({_id: AudienceId, status: 100}).select('+jwtSecret')
+                    Project.findOne({ _id: AudienceId, status: 100 }).select('+jwtSecret')
                         //@DISABLED_CACHE .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+AudienceId+":select:+jwtSecret") //project_cache
                         .exec(function (err, project) {
                             if (err) {
-                                winston.error("auth Project err: ", {error: err, decoded: decoded});
+                                winston.error("auth Project err: ", { error: err, decoded: decoded });
                                 return done(null, null);
                             }
                             if (!project) {
@@ -198,7 +212,8 @@ module.exports = function (passport) {
                             done(null, project.jwtSecret);
                         });
 
-                } else if (AudienceType == "subscriptions") {
+                }
+                else if (AudienceType == "subscriptions") {
 
                     if (!AudienceId) {
                         winston.error("AudienceId for subscriptions is required: ", decoded);
@@ -208,7 +223,7 @@ module.exports = function (passport) {
                     winston.debug("Subscription id: " + AudienceId);
                     Subscription.findById(AudienceId).select('+secret').exec(function (err, subscription) {
                         if (err) {
-                            winston.error("auth Subscription err: ", {error: err, decoded: decoded});
+                            winston.error("auth Subscription err: ", { error: err, decoded: decoded });
                             return done(null, null);
                         }
                         if (!subscription) {
@@ -219,14 +234,19 @@ module.exports = function (passport) {
                         winston.debug("subscription.secret: " + subscription.secret);
                         done(null, subscription.secret);
                     });
-                } else if (decoded.aud == "https://tiledesk.com") {
+                }
+
+                else if (decoded.aud == "https://tiledesk.com") {
                     winston.debug("configSecret: " + maskedconfigSecret);
                     done(null, configSecret); //pub_jwt pp_jwt 
-                } else {
+                }
+
+                else {
                     winston.debug("configSecret: " + maskedconfigSecret);
                     done(null, configSecret); //pub_jwt pp_jwt
                 }
-            } else {
+            }
+            else {
                 winston.debug("configSecret: " + maskedconfigSecret);
                 done(null, configSecret); //pub_jwt pp_jwt
             }
@@ -272,9 +292,10 @@ module.exports = function (passport) {
             winston.debug("req.disablePassportEntityCheck enabled");
             return done(null, jwt_payload);
         }
+        winston.debug("jwthistory passport", jwthistory);
 
         //TODO check into DB if JWT is revoked 
-        if (jwthistory) {
+        if (jwthistory && JWT_HISTORY_ENABLED == true) {
             var jwtRevoked = await jwthistory.isJWTRevoked(jwt_payload.jti);
             winston.debug("passport jwt jwtRevoked: " + jwtRevoked);
             if (jwtRevoked) {
@@ -286,7 +307,7 @@ module.exports = function (passport) {
         if (subject == "bot") {
             winston.debug("Passport JWT bot");
 
-            let qbot = Faq_kb.findOne({_id: identifier}); //TODO add cache_bot_here
+            let qbot = Faq_kb.findOne({ _id: identifier }); //TODO add cache_bot_here
 
             if (cacheEnabler.faq_kb) {
                 let id_project = jwt_payload.id_project;
@@ -313,7 +334,7 @@ module.exports = function (passport) {
 
         } else if (subject == "subscription") {
 
-            Subscription.findOne({_id: identifier}, function (err, subscription) {
+            Subscription.findOne({ _id: identifier }, function (err, subscription) {
                 if (err) {
                     winston.error("Passport JWT subscription err", err);
                     return done(err, false);
@@ -353,7 +374,7 @@ module.exports = function (passport) {
 
                 return done(null, userM);
             } else {
-                var err = {msg: "No jwt_payload passed. Its required"};
+                var err = { msg: "No jwt_payload passed. Its required" };
                 winston.error("Passport JWT userexternal err", err);
                 return done(err, false);
             }
@@ -367,14 +388,14 @@ module.exports = function (passport) {
                 winston.debug("Passport JWT guest userM", userM);
                 return done(null, userM);
             } else {
-                var err = {msg: "No jwt_payload passed. Its required"};
+                var err = { msg: "No jwt_payload passed. Its required" };
                 winston.error("Passport JWT guest err", err);
                 return done(err, false);
             }
 
         } else {
             winston.debug("Passport JWT generic user");
-            let quser = User.findOne({_id: identifier, status: 100})   //TODO user_cache_here
+            let quser = User.findOne({ _id: identifier, status: 100 })   //TODO user_cache_here
             //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+identifier)
 
             if (cacheEnabler.user) {
@@ -453,10 +474,11 @@ module.exports = function (passport) {
         winston.info("Enabling Google Signin strategy with ClientId: " + googleClientId + " callbackURL: " + googleCallbackURL + " clientSecret: " + googleClientSecret);
 
         passport.use(new GoogleStrategy({
-                clientID: googleClientId,
-                clientSecret: googleClientSecret,
-                callbackURL: googleCallbackURL,
-            },
+            clientID: googleClientId,
+            clientSecret: googleClientSecret,
+            callbackURL: googleCallbackURL,  // 'https://www.example.com/oauth2/redirect/google'
+            // stateless: true ????
+        },
             async function (issuer, profile, cb) {
                 try {
                     winston.debug("issuer: " + issuer);
@@ -464,14 +486,14 @@ module.exports = function (passport) {
 
                     const rawEmail = profile?.emails?.[0]?.value;
                     if (!rawEmail) {
-                        winston.warn("Google profile has no email", {issuer: issuer, profileId: profile?.id});
-                        return cb(null, false, {message: "Missing email from Google profile."});
+                        winston.warn("Google profile has no email", { issuer: issuer, profileId: profile?.id });
+                        return cb(null, false, { message: "Missing email from Google profile." });
                     }
 
                     const email = rawEmail.toLowerCase().trim();
                     winston.debug("email: " + email);
 
-                    const query = {providerId: issuer, subject: profile.id};
+                    const query = { providerId: issuer, subject: profile.id };
                     winston.debug("query", query);
 
                     const cred = await Auth.findOne(query).exec();
@@ -479,20 +501,20 @@ module.exports = function (passport) {
 
                     if (cred) {
                         // Already linked: return the corresponding user
-                        const user = await User.findOne({email: email, status: 100})
+                        const user = await User.findOne({ email: email, status: 100 })
                             .select('email firstname lastname password emailverified id')
                             .exec();
 
                         if (!user) {
-                            winston.warn("Auth link exists but user not found/active", {email: email, query: query});
-                            return cb(null, false, {message: "User not found."});
+                            winston.warn("Auth link exists but user not found/active", { email: email, query: query });
+                            return cb(null, false, { message: "User not found." });
                         }
 
                         return cb(null, user);
                     }
 
                     // Not linked yet: try to reuse existing account by email
-                    let user = await User.findOne({email: email, status: 100})
+                    let user = await User.findOne({ email: email, status: 100 })
                         .select('email firstname lastname password emailverified id')
                         .exec();
 
@@ -504,7 +526,7 @@ module.exports = function (passport) {
                         } catch (err) {
                             // Race/duplicate: fall back to existing user
                             if (err && (err.code === 11000 || err.code === "E11000")) {
-                                user = await User.findOne({email: email, status: 100}).exec();
+                                user = await User.findOne({ email: email, status: 100 }).exec();
                             } else {
                                 winston.error("Error signup google", err);
                                 return cb(err);
@@ -513,14 +535,14 @@ module.exports = function (passport) {
                     }
 
                     if (!user) {
-                        return cb(null, false, {message: "User not found."});
+                        return cb(null, false, { message: "User not found." });
                     }
 
                     // Ensure Auth link is created (idempotent)
                     await Auth.findOneAndUpdate(
                         query,
-                        {$setOnInsert: {providerId: issuer, email: email, subject: profile.id}},
-                        {upsert: true, new: true}
+                        { $setOnInsert: { providerId: issuer, email: email, subject: profile.id } },
+                        { upsert: true, new: true }
                     ).exec();
 
                     return cb(null, user);
@@ -590,89 +612,117 @@ module.exports = function (passport) {
 
 
         passport.use(new OAuth2Strategy({
-                authorizationURL: process.env.OAUTH2_AUTH_URL,
-                tokenURL: process.env.OAUTH2_TOKEN_URL,
-                clientID: process.env.OAUTH2_CLIENT_ID,
-                clientSecret: process.env.OAUTH2_CLIENT_SECRET,
-                callbackURL: process.env.OAUTH2_CALLBACK_URL || "http://localhost:3000/auth/oauth2/callback",
-                scope: ['openid'],
-            },
+            authorizationURL: process.env.OAUTH2_AUTH_URL,
+            tokenURL: process.env.OAUTH2_TOKEN_URL,
+            clientID: process.env.OAUTH2_CLIENT_ID,
+            clientSecret: process.env.OAUTH2_CLIENT_SECRET,
+            callbackURL: process.env.OAUTH2_CALLBACK_URL || "http://localhost:3000/auth/oauth2/callback",
+            scope: ['openid'],
+        },
             function (accessToken, refreshToken, params, profile, cb) {
-                winston.debug("params", params);
+                winston.debug("(OAuth2Strategy) params", params);
 
 
                 const token = jwt.decode(accessToken); // user id lives in here
-                winston.debug("token", token);
+                winston.debug("(OAuth2Strategy) token", token);
 
                 const profileInfo = jwt.decode(params.access_token); // user email lives in here
-                winston.debug("profileInfo", profileInfo);
+                winston.debug("(OAuth2Strategy) profileInfo", profileInfo);
 
-                winston.debug("profile", profile);
+                winston.debug("(OAuth2Strategy) profile", profile);
 
-                winston.debug("accessToken", accessToken);
+                winston.debug("(OAuth2Strategy) accessToken", accessToken);
 
-                winston.debug("refreshToken", refreshToken);
+                winston.debug("(OAuth2Strategy) refreshToken", refreshToken);
 
                 var issuer = token.iss;
                 var email = profile.email;
+                var username = profile.username;
 
-                var query = {providerId: issuer, subject: profile.keycloakId};
-                winston.debug("query", query)
+                var query = { providerId: issuer, subject: profile.keycloakId };
+                winston.debug("(OAuth2Strategy) query", query)
 
                 Auth.findOne(query, function (err, cred) {
-                    winston.debug("cred", cred, err);
-                    if (err) {
-                        return cb(err);
-                    }
+                    winston.debug("(OAuth2Strategy) cred", cred, err);
+                    if (err) { return cb(err); }
                     if (!cred) {
-                        // The oauth account has not logged in to this app before.  Create a
-                        // new user record and link it to the oauth account.
-                        var password = uniqid()
-                        // signup ( email, password, firstname, lastname, emailverified) {
-                        userService.signup(email, password, profileInfo.name || profileInfo.preferred_username, "", true)
-                            .then(function (savedUser) {
 
-                                winston.debug("savedUser", savedUser)
+                        /*check user
+                        1. if user exists -> create auth and return user
+                        2. if user does not exist -> sign up + create new auth + return user
+                        */
+                        User.findOne({ email: { $regex: '^' + username + '@' + oauth2EmailDomain, $options: 'i' }, status: 100 }, 'email firstname lastname emailverified id', function (err, user) {
+                            if (err) { return cb(err); }
 
+                            winston.debug('(OAuth2Strategy) findOne - user found: ', user)
+                            //create new Auth for the already existing user
+                            if (user) {
+                                //user already exist
                                 var auth = new Auth({
                                     providerId: issuer,
-                                    email: email,
+                                    email: user.email,
                                     subject: profile.keycloakId,
                                 });
                                 auth.save(function (err, authSaved) {
-                                    if (err) {
-                                        return cb(err);
-                                    }
-                                    winston.debug("authSaved", authSaved);
+                                    if (err) { return cb(err); }
+                                    winston.debug("(OAuth2Strategy) authSaved", authSaved);
 
-                                    return cb(null, savedUser);
+                                    return cb(null, user);
                                 });
-                            }).catch(function (err) {
-                            winston.error("Error signup oauth ", err);
-                            return cb(err);
-                        });
-                    } else {
-                        // The Oauth account has previously logged in to the app.  Get the
-                        // user record linked to the Oauth account and log the user in.
-
-                        User.findOne({
-                            email: email, status: 100
-                        }, 'email firstname lastname emailverified id', function (err, user) {
-
-                            winston.debug("user", user, err);
-                            // winston.debug("usertoJSON()",user.toJSON());
-
-                            if (err) {
-                                winston.error("Error getting user", user, err);
-                                return cb(err);
                             }
 
                             if (!user) {
-                                winston.info("User not found", user, err);
-                                return cb(null, false);
-                            }
+                                //user not exist -> create one
 
-                            return cb(null, user);
+                                // The oauth account has not logged in to this app before.  Create a
+                                // new user record and link it to the oauth account.
+                                var password = uniqid()
+                                // signup ( email, password, firstname, lastname, emailverified) {
+                                userService.signup(email, password, profileInfo.name || profileInfo.preferred_username, "", true).then(function (savedUser) {
+
+                                    winston.debug("(OAuth2Strategy) userService signup -> savedUser", savedUser)
+
+                                    var auth = new Auth({
+                                        providerId: issuer,
+                                        email: email,
+                                        subject: profile.keycloakId,
+                                    });
+                                    auth.save(function (err, authSaved) {
+                                        if (err) {
+                                            return cb(err);
+                                        }
+                                        winston.debug("(OAuth2Strategy) authSaved", authSaved);
+
+                                        return cb(null, savedUser);
+                                    });
+                                }).catch(function (err) {
+                                    winston.error("(OAuth2Strategy) Error signup oauth ", err);
+                                    return cb(err);
+                                });
+                            } else {
+                                // The Oauth account has previously logged in to the app.  Get the
+                                // user record linked to the Oauth account and log the user in.
+
+                                User.findOne({
+                                    email: { $regex: '^' + username + '@' + oauth2EmailDomain, $options: 'i' }, status: 100
+                                }, 'email firstname lastname emailverified id', function (err, user) {
+
+                                    winston.debug("(OAuth2Strategy) user", user, err);
+                                    // winston.debug("usertoJSON()",user.toJSON());
+
+                                    if (err) {
+                                        winston.error("(OAuth2Strategy) Error getting user", user, err);
+                                        return cb(err);
+                                    }
+
+                                    if (!user) {
+                                        winston.info("(OAuth2Strategy) User not found", user, err);
+                                        return cb(null, false);
+                                    }
+
+                                    return cb(null, user);
+                                });
+                            }
                         });
                     }
                 });
@@ -681,99 +731,99 @@ module.exports = function (passport) {
     }
 
 
-// const KeycloakStrategy = require('@exlinc/keycloak-passport')
+    // const KeycloakStrategy = require('@exlinc/keycloak-passport')
 
 
-// // Register the strategy with passport
-// passport.use(
-//   "keycloak",
-//   new KeycloakStrategy(
-//     {
-//       host: process.env.KEYCLOAK_HOST,
-//       realm: process.env.KEYCLOAK_REALM,
-//       clientID: process.env.KEYCLOAK_CLIENT_ID,
-//       clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
-//       callbackURL: `${process.env.AUTH_KEYCLOAK_CALLBACK}`,
-//       authorizationURL : `${process.env.KEYCLOAK_HOST}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/auth`,
-//       tokenURL : `${process.env.KEYCLOAK_HOST}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/token`,
-//       userInfoURL : `${process.env.KEYCLOAK_HOST}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/userinfo`
-//       // authorizationURL: '123',
-//       // tokenURL : '123',
-//       // userInfoURL: '123'
-//     },
-//     (accessToken, refreshToken, profile, done) => {
+    // // Register the strategy with passport
+    // passport.use(
+    //   "keycloak",
+    //   new KeycloakStrategy(
+    //     {
+    //       host: process.env.KEYCLOAK_HOST,
+    //       realm: process.env.KEYCLOAK_REALM,
+    //       clientID: process.env.KEYCLOAK_CLIENT_ID,
+    //       clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
+    //       callbackURL: `${process.env.AUTH_KEYCLOAK_CALLBACK}`,
+    //       authorizationURL : `${process.env.KEYCLOAK_HOST}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/auth`,
+    //       tokenURL : `${process.env.KEYCLOAK_HOST}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/token`,
+    //       userInfoURL : `${process.env.KEYCLOAK_HOST}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/userinfo`
+    //       // authorizationURL: '123',
+    //       // tokenURL : '123',
+    //       // userInfoURL: '123'
+    //     },
+    //     (accessToken, refreshToken, profile, done) => {
 
 
-//       const token = jwt.decode(accessToken); // user id lives in here
-//       console.log("token", token);
+    //       const token = jwt.decode(accessToken); // user id lives in here
+    //       console.log("token", token);
 
-//       console.log("profile", profile);
+    //       console.log("profile", profile);
 
-//       console.log("accessToken", accessToken);
+    //       console.log("accessToken", accessToken);
 
-//       console.log("refreshToken", refreshToken);
+    //       console.log("refreshToken", refreshToken);
 
-//       var issuer = token.iss;
-//       var email = profile.email;
+    //       var issuer = token.iss;
+    //       var email = profile.email;
 
-//       var query = {providerId : issuer, subject: profile.keycloakId};
-//       winston.info("query", query)
+    //       var query = {providerId : issuer, subject: profile.keycloakId};
+    //       winston.info("query", query)
 
-//       Auth.findOne(query, function(err, cred){     
-//       winston.info("cred", cred, err);
-//         if (err) { return cb(err); }
-//         if (!cred) {
-//           // The oauth account has not logged in to this app before.  Create a
-//           // new user record and link it to the oauth account.
-//             var password = uniqid()
-//            // signup ( email, password, firstname, lastname, emailverified) {
-//             userService.signup(email, password,  profile.displayName, "", true)
-//             .then(function (savedUser) {
+    //       Auth.findOne(query, function(err, cred){     
+    //       winston.info("cred", cred, err);
+    //         if (err) { return cb(err); }
+    //         if (!cred) {
+    //           // The oauth account has not logged in to this app before.  Create a
+    //           // new user record and link it to the oauth account.
+    //             var password = uniqid()
+    //            // signup ( email, password, firstname, lastname, emailverified) {
+    //             userService.signup(email, password,  profile.displayName, "", true)
+    //             .then(function (savedUser) {
 
-//             winston.info("savedUser", savedUser)    
+    //             winston.info("savedUser", savedUser)    
 
-//             var auth = new Auth({
-//               providerId: issuer,
-//               email: email,
-//               subject: profile.keycloakId,
-//             });
-//             auth.save(function (err, authSaved) {    
-//               if (err) { return cb(err); }
-//               winston.info("authSaved", authSaved);
+    //             var auth = new Auth({
+    //               providerId: issuer,
+    //               email: email,
+    //               subject: profile.keycloakId,
+    //             });
+    //             auth.save(function (err, authSaved) {    
+    //               if (err) { return cb(err); }
+    //               winston.info("authSaved", authSaved);
 
-//               return cb(null, savedUser);
-//             });
-//           }).catch(function(err) {
-//               winston.error("Error signup oauth ", err);
-//               return cb(err);        
-//           });
-//         } else {
-//           // The Oauth account has previously logged in to the app.  Get the
-//           // user record linked to the Oauth account and log the user in.
+    //               return cb(null, savedUser);
+    //             });
+    //           }).catch(function(err) {
+    //               winston.error("Error signup oauth ", err);
+    //               return cb(err);        
+    //           });
+    //         } else {
+    //           // The Oauth account has previously logged in to the app.  Get the
+    //           // user record linked to the Oauth account and log the user in.
 
-//           User.findOne({
-//             email: email, status: 100
-//           }, 'email firstname lastname emailverified id', function (err, user) {
+    //           User.findOne({
+    //             email: email, status: 100
+    //           }, 'email firstname lastname emailverified id', function (err, user) {
 
-//             winston.info("user",user, err);
-//             winston.info("usertoJSON()",user.toJSON());
+    //             winston.info("user",user, err);
+    //             winston.info("usertoJSON()",user.toJSON());
 
-//             if (err) { 
-//               winston.error("Error getting user",user, err);
-//               return cb(err); 
-//             }
+    //             if (err) { 
+    //               winston.error("Error getting user",user, err);
+    //               return cb(err); 
+    //             }
 
-//             if (!user) { 
-//               winston.info("User not found",user, err);
-//               return cb(null, false); 
-//             }
+    //             if (!user) { 
+    //               winston.info("User not found",user, err);
+    //               return cb(null, false); 
+    //             }
 
-//             return done(null, user);
-//           });
-//         }
-//       });
-//     }
-//     ));
+    //             return done(null, user);
+    //           });
+    //         }
+    //       });
+    //     }
+    //     ));
 
 
     // var OidcStrategy = require('passport-openidconnect').Strategy;
@@ -784,8 +834,8 @@ module.exports = function (passport) {
     // passport.use(new AnonymousStrategy());
 
 
-// link utili
-// https://codeburst.io/how-to-implement-openid-authentication-with-openid-client-and-passport-in-node-js-43d020121e87?gi=4bb439e255a7
+    // link utili
+    // https://codeburst.io/how-to-implement-openid-authentication-with-openid-client-and-passport-in-node-js-43d020121e87?gi=4bb439e255a7
     // https://developer.wordpress.com/docs/oauth2/
 
 

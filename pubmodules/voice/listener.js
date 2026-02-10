@@ -46,7 +46,7 @@ class Listener {
         winston.debug("Voice relativeBaseUrl: "+ relativeBaseUrl);
 
         voice.startApp({
-            MONGODB_URI: config.databaseUri,          
+            MONGODB_URI: config.databaseUri,
             dbconnection: dbConnection,
             BASE_URL: baseUrl,
             RELATIVE_BASE_URL: relativeBaseUrl,
