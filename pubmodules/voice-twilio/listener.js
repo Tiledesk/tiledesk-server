@@ -1,8 +1,12 @@
-var winston = require("../../config/winston");
-const voice_twilio = require("@tiledesk/tiledesk-voice-twilio-connector");
+const voice_twilio = require('@tiledesk/tiledesk-voice-twilio-connector');
+let winston = require('../../config/winston');
+let configGlobal = require('../../config/global');
+const mongoose = require('mongoose');
 
-const apiUrl = process.env.API_URL;
+const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 winston.info("TwilioVoice apiUrl: " + apiUrl);
+
+const dbConnection = mongoose.connection;
 
 class Listener {
 
