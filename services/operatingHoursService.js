@@ -80,7 +80,7 @@ class OperatingHoursService {
           // PROJECT OPERATING HOURS 
           if (project.operatingHours) {
             var operatingHours = project.operatingHours
-            var operatingHoursPars = JSON.parse(operatingHours)
+            var operatingHoursPars = (typeof operatingHours === 'string') ? JSON.parse(operatingHours) : operatingHours
             // winston.debug('O -----> [ OHS ] -> OPERATING HOURS PARSED: ', operatingHoursPars);
 
             var prjcTimezoneName = operatingHoursPars.tzname;
