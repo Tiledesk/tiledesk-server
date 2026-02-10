@@ -10,6 +10,40 @@ const TEXT_MIME_TYPES = [
   'text/xml'
 ];
 
+/**
+ * Checks if two MIME types are equivalent, accepting common aliases
+ * Examples:
+ * - audio/wav === audio/wave === audio/vnd.wave
+ * - image/jpeg === image/jpg
+ */
+function areMimeTypesEquivalent(mimeType1, mimeType2) {
+  if (!mimeType1 || !mimeType2) return false;
+  if (mimeType1 === mimeType2) return true;
+  
+  // Normalize to lowercase for comparison
+  const m1 = mimeType1.toLowerCase();
+  const m2 = mimeType2.toLowerCase();
+  if (m1 === m2) return true;
+  
+  // Common MIME type aliases
+  const aliases = {
+    'audio/wav': ['audio/wave', 'audio/x-wav', 'audio/vnd.wave'],
+    'audio/wave': ['audio/wav', 'audio/x-wav', 'audio/vnd.wave'],
+    'audio/x-wav': ['audio/wav', 'audio/wave', 'audio/vnd.wave'],
+    'audio/vnd.wave': ['audio/wav', 'audio/wave', 'audio/x-wav'],
+    'image/jpeg': ['image/jpg'],
+    'image/jpg': ['image/jpeg'],
+    'application/x-zip-compressed': ['application/zip'],
+    'application/zip': ['application/x-zip-compressed'],
+  };
+  
+  // Check if m1 is an alias of m2 or vice versa
+  if (aliases[m1] && aliases[m1].includes(m2)) return true;
+  if (aliases[m2] && aliases[m2].includes(m1)) return true;
+  
+  return false;
+}
+
 async function verifyFileContent(buffer, mimetype) {
   if (!buffer) throw new Error("No file provided");
 
@@ -47,8 +81,8 @@ async function verifyFileContent(buffer, mimetype) {
       }
     }
 
-    // If FileType detected a type, it must match the declared mimetype
-    if (mimetype && fileType.mime !== mimetype) {
+    // If FileType detected a type, it must match the declared mimetype (or be equivalent)
+    if (mimetype && !areMimeTypesEquivalent(fileType.mime, mimetype)) {
         const err = new Error(`File content does not match mimetype. Detected: ${fileType.mime}, provided: ${mimetype}`);
         err.source = "FileContentVerification";
         throw err;
