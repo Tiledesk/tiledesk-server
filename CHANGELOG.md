@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.14.24
+- Improved extension management on file uploading to support .wav and .svg
+
 # 2.14.23
 - Updated whatsapp-connector to 1.0.22
 - Added new endpoint for files uploading 
