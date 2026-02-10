@@ -4,7 +4,10 @@ const fs = require('fs');
 // List of text-based MIME types that FileType cannot detect (they don't have binary signatures)
 const TEXT_MIME_TYPES = [
   'text/plain',
-  'text/csv'
+  'text/csv',
+  'image/svg+xml',
+  'application/xml',
+  'text/xml'
 ];
 
 async function verifyFileContent(buffer, mimetype) {
@@ -18,6 +21,16 @@ async function verifyFileContent(buffer, mimetype) {
       // For text-based MIME types, accept the declared mimetype since FileType can't detect them
       if (mimetype && TEXT_MIME_TYPES.includes(mimetype)) {
         // Optionally verify that the content is valid UTF-8 text
+        try {
+          buffer.toString('utf8');
+          return true;
+        } catch (e) {
+          const err = new Error(`File content is not valid text for mimetype: ${mimetype}`);
+          err.source = "FileContentVerification";
+          throw err;
+        }
+      } else if (mimetype && mimetype.startsWith('image/svg')) {
+        // Handle SVG files (can be image/svg+xml or variants)
         try {
           buffer.toString('utf8');
           return true;
