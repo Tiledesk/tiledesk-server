@@ -39,10 +39,17 @@ class Listener {
         let log = process.env.VOICE_LOG || false
         winston.debug("Voice log: "+ log);
 
+        const baseUrl = apiUrl + "/modules/voice";
+        winston.debug("Voice baseUrl: "+ baseUrl);
+
+        const relativeBaseUrl = process.env.API_ENDPOINT + "/modules/voice";
+        winston.debug("Voice relativeBaseUrl: "+ relativeBaseUrl);
+
         voice.startApp({
             MONGODB_URI: config.databaseUri,          
             dbconnection: dbConnection,
-            BASE_URL: apiUrl + "/modules/voice",                     
+            BASE_URL: baseUrl,
+            RELATIVE_BASE_URL: relativeBaseUrl,
             REDIS_HOST: host,
             REDIS_PORT: port,
             REDIS_PASSWORD: password,
