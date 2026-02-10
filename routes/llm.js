@@ -97,7 +97,7 @@ router.post('/preview', async (req, res) => {
             let multiplier = MODELS_MULTIPLIER[json.model];
             if (!multiplier) {
                 multiplier = 1;
-                winston.info("No multiplier found for AI model " + json.model)
+                winston.info("No multiplier found for AI model (llm) " + json.model)
             }
             obj.multiplier = multiplier;
             obj.tokens = response.data?.prompt_token_info?.total_tokens || 0;
@@ -105,7 +105,7 @@ router.post('/preview', async (req, res) => {
         }
         res.status(200).send(response.data)
     }).catch((err) => {
-        if (err.response?.data?.detail[0]) {
+        if (err.response?.data?.detail?.[0]) {
             res.status(400).send({ success: false, error: err.response.data.detail[0]?.msg, detail: err.response.data.detail });
         } else if (err.response?.data?.detail?.answer) {
             res.status(400).send({ success: false, error: err.response.data.detail.answer, detail: err.response.data.detail });

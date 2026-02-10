@@ -217,6 +217,7 @@ router.post('/scrape/single', async (req, res) => {
 
       json.engine = namespace.engine || default_engine;
       json.embedding = namespace.embedding || default_embedding;
+      json.embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
       if (namespace.hybrid === true) {
         json.hybrid = true;
@@ -246,6 +247,7 @@ router.post('/scrape/status', async (req, res) => {
   let project_id = req.projectid;
   // (EXAMPLE) body: { id, namespace }
   let data = req.body;
+  let namespace_id = data.namespace;
   winston.debug("/scrapeStatus req.body: ", req.body);
 
   let returnObject = false;
@@ -362,8 +364,19 @@ router.post('/qa', async (req, res) => {
     data.search_type = 'hybrid';
     
     if (data.reranking === true) {
-      data.reranking_multiplier = 3;
       data.reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2";
+      
+      if (!data.reranking_multiplier) {
+        data.reranking_multiplier = 3;
+      }
+
+      if ((data.top_k * data.reranking_multiplier) > 100) {
+        let calculatedRerankingMultiplier = Math.floor(100 / data.top_k);
+        if (calculatedRerankingMultiplier < 1) {
+          calculatedRerankingMultiplier = 1;
+        }
+        data.reranking_multiplier = calculatedRerankingMultiplier;
+      }
     }
   }
 
@@ -384,7 +397,7 @@ router.post('/qa', async (req, res) => {
       let multiplier = MODELS_MULTIPLIER[data.model];
       if (!multiplier) {
         multiplier = 1;
-        winston.info("No multiplier found for AI model")
+        winston.info("No multiplier found for AI model (qa) " + data.model);
       }
       obj.multiplier = multiplier;
       obj.tokens = answer.prompt_token_size;
@@ -810,10 +823,12 @@ router.get('/namespace/export/:id', async (req, res) => {
 
   let namespace;
   try {
-    namespace = await aiManager.checkNamespace(project_id, namespace_id);
+    namespace = await aiManager.checkNamespace(id_project, namespace_id);
   } catch (err) {
+    winston.error("Error checking namespace: ", err);
     let errorCode = err?.errorCode ?? 500;
-    return res.status(errorCode).send({ success: false, error: err.error });
+    let errorMessage = err?.error || "Error checking namespace";
+    return res.status(errorCode).send({ success: false, error: errorMessage });
   }
 
   let name = namespace.name;
@@ -1007,7 +1022,10 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   //          import operation the content's limit is respected
   let ns = namespaces.find(n => n.id === namespace_id);
   let engine = ns.engine || default_engine;
+  let embedding = ns.embedding || default_embedding;
+  embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
   let hybrid = ns.hybrid;
+
 
   if (process.env.NODE_ENV !== "test") {
     await aiService.deleteNamespace({
@@ -1041,7 +1059,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
 
   let resources = new_contents.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
   resources = resources.map(({ _id, scrape_options, ...rest }) => {
-    return { id: _id, parameters_scrape_type_4: scrape_options, engine: engine, ...rest}
+    return { id: _id, parameters_scrape_type_4: scrape_options, embedding: embedding, engine: engine, ...rest}
   });
   
   winston.verbose("resources to be sent to worker: ", resources);
@@ -1578,6 +1596,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
         let engine = namespace.engine || default_engine;
         let embedding = namespace.embedding || default_embedding;
+        embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
         let hybrid = namespace.hybrid;
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
@@ -1712,6 +1731,8 @@ router.post('/sitemap/import', async (req, res) => {
     return res.status(500).send({ success: false, error: err });
   }
 
+
+
   const options = {
     sitemap_origin_id: saved_content._id,
     sitemap_origin: saved_content.source,
@@ -1720,9 +1741,9 @@ router.post('/sitemap/import', async (req, res) => {
     refresh_rate: saved_content.refresh_rate
   }
   
-  let result;
   try {
-    result = await aiManager.addMultipleUrls(namespace, urls, options);
+    await aiManager.scheduleSitemap(namespace, saved_content, options);
+    let result = await aiManager.addMultipleUrls(namespace, urls, options);
     if (process.env.NODE_ENV === 'test') {
       result.result.push(saved_content);
       return res.status(200).send(result);

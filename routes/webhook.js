@@ -9,6 +9,7 @@ const webhookService = require('../services/webhookService');
 const errorCodes = require('../errorCodes');
 const aiManager = require('../services/aiManager');
 var ObjectId = require('mongoose').Types.ObjectId;
+const default_embedding = require('../config/kb/embedding');
 
 const port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/";;
@@ -186,6 +187,11 @@ router.post('/kb/reindex', async (req, res) => {
     }
   
     json.engine = namespace.engine || (namespace.hybrid ? default_engine_hybrid : default_engine);
+    json.hybrid = namespace.hybrid;
+    
+    let embedding = namespace.embedding || default_embedding;
+    embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+    json.embedding = embedding;
 
     let resources = [];
     resources.push(json);
