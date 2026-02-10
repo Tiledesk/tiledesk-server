@@ -73,10 +73,12 @@ class RulesTrigger {
             // console.log("************* request.support_group.created: "+new Date().toISOString());
 
             // requestEvent.on('request.create', function(request) {
+            console.log('[WELCOME_MSG_FLOW] rulesTrigger: received request.support_group.created', { request_id: request.request_id, id_project: request.id_project, first_text: request.first_text });
             var requestJson = request.toJSON();
             operatingHoursService.projectIsOpenNow(request.id_project, function (isOpen, err) {       
               requestJson.isOpen = isOpen;
               winston.debug('requestJson: ', requestJson);
+              console.log('[WELCOME_MSG_FLOW] rulesTrigger: executing triggers for request.create', { request_id: requestJson.request_id, isOpen });
               that.exec(requestJson, 'request.create', success, error);
             });
           });
@@ -113,6 +115,9 @@ class RulesTrigger {
 
           eventEvent.on('event.emit', function(event) {
             winston.debug('eventEvent event.emit', event);
+            if (event.name === 'new_conversation') {
+              console.log('[WELCOME_MSG_FLOW] rulesTrigger: received event.emit for new_conversation', { id_project: event.id_project, request_id: event.attributes?.request_id });
+            }
             that.exec(event, 'event.emit', success,error);
           });
 
@@ -152,6 +157,10 @@ class RulesTrigger {
 
           var text = action.parameters.text;
           winston.debug('runAction action text: ' + text);
+          
+          if (text && (text.includes('LABEL_FIRST_MSG') || text.includes('${LABEL_FIRST_MSG}'))) {
+            console.log('[WELCOME_MSG_FLOW] rulesTrigger.message.send: Sending welcome message with LABEL_FIRST_MSG', { recipient, id_project, text, sender, fullname });
+          }
 
           var attributes = {templateProcessor: true};
 
@@ -476,6 +485,8 @@ class RulesTrigger {
             var id_project = eventTrigger.event.id_project;
             winston.debug('runAction action id_project: ' + id_project);
 
+            winston.info('triggerEventEmitter.on(request.department.route)');
+
             // route(request_id, departmentid, id_project, nobot) {
             requestService.route(request_id, departmentid, id_project).catch((err) => {
               winston.error("Error runAction route: ", err);
@@ -514,7 +525,11 @@ class RulesTrigger {
               var id_project = eventTrigger.event.id_project;
               winston.debug('runAction action id_project: ' + id_project);
   
+              winston.info('triggerEventEmitter.on(request.department.route.self)');
+
+
               // reroute(request_id, id_project, nobot) {
+              console.log("requestService.reroute from rulesTrigger request.department.route.self")
               requestService.reroute(request_id, id_project).catch((err) => {
                 winston.error("Error runAction on reroute", err);
               });                           
@@ -731,12 +746,15 @@ class RulesTrigger {
               }
               winston.debug('runAction action startText: ' + startText);
 
+              winston.info('triggerEventEmitter.on(request.department.bot.launch)');
 
-              // reroute(request_id, id_project, nobot) {
-              requestService.reroute(request_id, id_project).then(function(request) {
+              // reroute(request_id, id_project, nobot, no_populate)
+              const t1 = Date.now();
+              console.log("requestService.reroute from rulesTrigger request.department.bot.launch")
+              requestService.reroute(request_id, id_project, false, true).then(function(request) {
 
                 winston.verbose('request.department.bot.launch action reroute request_id: ' + request_id);
-
+                console.log("[Performance] trigger invite bot reroute time: " + (Date.now() - t1));
                 // rendi dinamico /start
                 messageService.send(
                   'system', 
@@ -908,6 +926,7 @@ class RulesTrigger {
 
      triggerEventEmitter.on('request.create', function(eventTrigger) {
 
+      console.log("triggerEventEmitter request.create eventTrigger: ", JSON.stringify(eventTrigger));
       try {
 
           winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
@@ -1156,6 +1175,7 @@ class RulesTrigger {
                           //   language, userAgent, status, id_user, attributes, undefined, preflight).then(function (savedRequest) {
 
 
+                      console.log("send message with first text: ", text);
                     var new_request = {
                       request_id: request_id, project_user_id: project_user_id, lead_id: createdLead._id, id_project: id_project,
                       first_text: text, participants: participants, departmentid: departmentid, sourcePage: sourcePage,
@@ -1164,9 +1184,9 @@ class RulesTrigger {
                       lead: createdLead, requester: puser
                     };
       
-                    let t1 = Date.now();
+                    //let t1 = Date.now();
                     return requestService.create(new_request).then(function (savedRequest) {                   
-                      console.log("[Performance] (rulesTrigger) requestService.create time: " + (Date.now() - t1));
+                      //console.log("[Performance] (rulesTrigger) requestService.create time: " + (Date.now() - t1));
                       // performance console log
                       // console.log("************* request created trigger: "+new Date().toISOString());
 
@@ -1176,10 +1196,11 @@ class RulesTrigger {
                         
                         var senderFullname = fullname || 'Guest'; // guest_here
 
+                        console.log("send message with first text: ", text);
                         // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
-                        let t2 = Date.now();
+                        //let t2 = Date.now();
                         return messageService.create( id_user, senderFullname , savedRequest.request_id, text, id_project, id_user,  MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes, type, eventTrigger.event.metadata, language).then(function(savedMessage) {
-                          console.log("[Performance] (rulesTrigger) messageService.create time: " + (Date.now() - t2));
+                          //console.log("[Performance] (rulesTrigger) messageService.create time: " + (Date.now() - t2));
                           return savedMessage;
                         });
                       }).catch(function (err) {
@@ -1250,10 +1271,16 @@ class RulesTrigger {
                 }
                 if (!triggers || triggers.length==0) {
                   winston.debug('No trigger found');
+                  if (eventKey === 'request.create') {
+                    console.log('[WELCOME_MSG_FLOW] rulesTrigger.exec: No triggers found for request.create', { id_project: event.id_project, request_id: event.request_id });
+                  }
                   return 0;
                 }
 
                 winston.debug('active triggers found', triggers);
+                if (eventKey === 'request.create') {
+                  console.log('[WELCOME_MSG_FLOW] rulesTrigger.exec: Found triggers for request.create', { id_project: event.id_project, request_id: event.request_id, triggersCount: triggers.length, triggerCodes: triggers.map(t => t.code) });
+                }
 
 
                 // var engineExists = that.engines.hasOwnProperty(event.id_project);
@@ -1282,6 +1309,10 @@ class RulesTrigger {
 
                 triggers.forEach(function(trigger) { 
                   winston.debug('trigger', trigger.toObject());
+                  
+                  if (eventKey === 'event.emit' && trigger.code === 's_new_conversation_01') {
+                    console.log('[WELCOME_MSG_FLOW] rulesTrigger.exec: Found s_new_conversation_01 trigger', { triggerId: trigger._id, enabled: trigger.enabled, actions: trigger.actions });
+                  }
 
                   var rule = {
                     conditions: {
@@ -1346,6 +1377,19 @@ class RulesTrigger {
                     facts = event;
                 }
                 winston.verbose("facts", facts);
+                
+                if (eventKey === 'request.create') {
+                  console.log('[WELCOME_MSG_FLOW] rulesTrigger.exec: Facts for trigger evaluation', { 
+                    request_id: facts.request_id,
+                    first_text: facts.first_text,
+                    status: facts.status,
+                    isOpen: facts.isOpen,
+                    departmentHasBot: facts.department?.hasBot,
+                    snapshotAvailableAgentsCount: facts.snapshot?.availableAgentsCount,
+                    hasSnapshot: !!facts.snapshot,
+                    hasDepartment: !!facts.department
+                  });
+                }
 
                 engine.addFact("json", facts)                                       
 
@@ -1354,7 +1398,14 @@ class RulesTrigger {
                 engine.on('success', function(eventSuccess, almanac, ruleResult) {
                   // info: runAction eventTrigger.eventSuccess: {"type":"request.create","params":{"id":"5e4a771a248688f8ea55e47a","actionParameters":{"fullName":"fullName","text":"hi"}}}
                   winston.debug("success eventSuccess", eventSuccess); 
-                  winston.debug("success ruleResult", ruleResult); 
+                  winston.debug("success ruleResult", ruleResult);
+                  
+                  if (eventKey === 'event.emit') {
+                    var matchedTrigger = triggers.find(t => t.id === eventSuccess.type);
+                    if (matchedTrigger && matchedTrigger.code === 's_new_conversation_01') {
+                      console.log('[WELCOME_MSG_FLOW] rulesTrigger.exec: s_new_conversation_01 trigger conditions matched, will execute actions', { triggerId: matchedTrigger._id, actions: matchedTrigger.actions });
+                    }
+                  } 
 
                   var triggerEvent = {event: event, eventKey:eventKey , triggers: triggers, ruleResult:requestEvent,eventSuccess:eventSuccess, engine:engine };
 
@@ -1390,8 +1441,20 @@ class RulesTrigger {
 
                   winston.debug("pickedTrigger", pickedTrigger); 
                   triggerEvent.trigger = pickedTrigger;
-
-
+                  
+                  if (eventKey === 'request.create' && pickedTrigger) {
+                    console.log('[WELCOME_MSG_FLOW] rulesTrigger.exec: Trigger matched and will execute actions', { 
+                      triggerCode: pickedTrigger.code, 
+                      triggerName: pickedTrigger.name, 
+                      actionsCount: pickedTrigger.actions?.length, 
+                      actions: pickedTrigger.actions?.map(a => ({ key: a.key, text: a.parameters?.text })) 
+                    });
+                  } else if (eventKey === 'request.create' && !pickedTrigger) {
+                    console.log('[WELCOME_MSG_FLOW] rulesTrigger.exec: No trigger matched for request.create', { 
+                      eventSuccessType: eventSuccess.type,
+                      triggersIds: triggers.map(t => t.id)
+                    });
+                  }
 
                   // shiiiit https://stackoverflow.com/questions/37977602/settimeout-not-working-inside-foreach
 
@@ -1439,6 +1502,17 @@ class RulesTrigger {
 
                 engine.on('failure', function(eventFailure, almanac, ruleResult) {
                   winston.debug("failure eventFailure", eventFailure); 
+                  
+                  if (eventKey === 'request.create') {
+                    var failedTrigger = triggers.find(t => t.id === eventFailure.type);
+                    if (failedTrigger && (failedTrigger.code === 's_online_welcome_01' || failedTrigger.code === 's_offline_welcome_01' || failedTrigger.code === 's_invite_bot_01')) {
+                      console.log('[WELCOME_MSG_FLOW] rulesTrigger.exec: Trigger conditions did NOT match', { 
+                        triggerCode: failedTrigger.code, 
+                        triggerName: failedTrigger.name,
+                        conditions: failedTrigger.conditions?.all 
+                      });
+                    }
+                  }
 
                   var triggerEvent = {event: event, eventKey:eventKey , triggers: triggers, ruleResult:requestEvent,engine:engine };
                   winston.debug("failure triggerEvent", triggerEvent); 
