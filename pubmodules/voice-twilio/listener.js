@@ -35,6 +35,12 @@ class Listener {
         let elevenlabs_endpoint = process.env.ELEVENLABS_ENDPOINT || "https://api.elevenlabs.io";
         winston.debug("ElevenLabs Endpoint: ", elevenlabs_endpoint);
 
+        const baseUrl = apiUrl + "/modules/voice-twilio";
+        winston.debug("Voice baseUrl: "+ baseUrl);
+
+        const relativeBaseUrl = process.env.API_ENDPOINT + "/modules/voice-twilio";
+        winston.debug("Voice relativeBaseUrl: "+ relativeBaseUrl);
+
         let log = process.env.VOICE_TWILIO_LOG || 'error'
         winston.debug("Voice log: "+ log);
         
@@ -43,7 +49,8 @@ class Listener {
             await voice_twilio.init({
                 MONGODB_URI: config.databaseUri,          
                 dbconnection: dbConnection,
-                BASE_URL: apiUrl + "/modules/voice-twilio",
+                BASE_URL: baseUrl,
+                RELATIVE_BASE_URL: relativeBaseUrl,
                 BASE_FILE_URL: apiUrl,                     
                 REDIS_HOST: host,
                 REDIS_PORT: port,
