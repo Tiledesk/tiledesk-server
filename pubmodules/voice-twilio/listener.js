@@ -40,7 +40,7 @@ class Listener {
         
         try {
             // startServer is async and returns a Promise (no callback)
-            await voice_twilio.startServer({
+            await voice_twilio.init({
                 MONGODB_URI: config.databaseUri,          
                 dbconnection: dbConnection,
                 BASE_URL: apiUrl + "/modules/voice-twilio",
