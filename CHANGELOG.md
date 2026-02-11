@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+
+# 2.14.25
+- Deprecate user file upload routes in files.js and images.js
+
 # 2.14.24
 - Improved extension management on file uploading to support .wav and .svg
 
