@@ -139,6 +139,7 @@ var cacheUtil = require("./utils/cacheUtil");
 var orgUtil = require("./utils/orgUtil");
 var images = require('./routes/images');
 var files = require('./routes/files');
+let filesp = require('./routes/filesp');
 var campaigns = require('./routes/campaigns');
 var logs = require('./routes/logs');
 var requestUtilRoot = require('./routes/requestUtilRoot');
@@ -325,6 +326,10 @@ if (process.env.ENABLE_ACCESSLOG) {
 }
 
 app.use(passport.initialize());
+// If deployed behind a proxy/ingress (TLS terminated upstream), enable this
+// if (process.env.TRUST_PROXY === "true") {
+app.set('trust proxy', 1);
+// }
 
 // After you declare "app"
 if (process.env.DISABLE_SESSION_STRATEGY==true ||  process.env.DISABLE_SESSION_STRATEGY=="true" ) {
@@ -352,7 +357,6 @@ if (process.env.DISABLE_SESSION_STRATEGY==true ||  process.env.DISABLE_SESSION_S
         client: cacheClient,
         prefix: "sessions:",
       })
-
 
       app.use(
         session({
@@ -644,6 +648,7 @@ app.use('/:projectid/webhooks', [passport.authenticate(['basic', 'jwt'], { sessi
 app.use('/:projectid/copilot', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], copilot);
 app.use('/:projectid/roles', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], roles);
 
+app.use('/:projectid/files', filesp);
 
 if (pubModulesManager) {
   pubModulesManager.useUnderProjects(app);

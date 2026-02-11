@@ -5,6 +5,52 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+
+# 2.14.25
+- Deprecate user file upload routes in files.js and images.js
+
+# 2.14.24
+- Improved extension management on file uploading to support .wav and .svg
+
+# 2.14.23
+- Updated whatsapp-connector to 1.0.22
+- Added new endpoint for files uploading 
+
+# 2.14.22 - aborted
+- Updated whatsapp-connector to 1.0.20
+- Added new endpoint for files uploading 
+
+# 2.14.21 - aborted
+- Updated whatsapp-connector to 1.0.20
+- Added new endpoint for files uploading 
+
+# 2.14.20 - aborted
+- Updated whatsapp-connector to 1.0.19
+- Added new endpoint for files uploading 
+
+# 2.14.18
+- Bug fix already existing email when login from google 
+
+# 2.14.17
+- Bug fix google strategy passport
+
+# 2.14.14
+- Updated tybot-connector to 2.0.43
+
+# 2.14.13
+- Added sitemap scheduling in aiManager
+- Updated import route to use sitemap scheduling functionality
+
+# 2.14.12
+- Updated handling of unresponsive requests to close based on the updatedAt field instead of createdAt
+
+# 2.14.10
+- Added support for a custom reranking_multiplier parameter in the /qa endpoint
+- Improved DB performance by optimizing the query used to find conversations to be closed automatically
+
+# 2.14.9
+- Improved the requests search function and added the ability to specify a timezone when searching
+
 # 2.14.8
 - Added extraction of namespace_id from request body in scrape status route
 

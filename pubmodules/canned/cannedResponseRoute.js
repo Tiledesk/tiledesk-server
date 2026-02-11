@@ -224,7 +224,7 @@ router.delete('/:cannedResponseid/physical', async function (req, res) {
 router.get('/:cannedResponseid', function (req, res) {
   winston.debug(req.body);
   let user_id = req.user.id;
-  console.log("[Canned] user_id: ", user_id);
+  winston.verbose("CannedResponseRoute: user_id: " + user_id);
 
   CannedResponse.findById(req.params.cannedResponseid, function (err, cannedResponse) {
     if (err) {

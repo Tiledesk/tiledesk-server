@@ -369,8 +369,19 @@ router.post('/qa', async (req, res) => {
     data.search_type = 'hybrid';
     
     if (data.reranking === true) {
-      data.reranking_multiplier = 3;
       data.reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2";
+      
+      if (!data.reranking_multiplier) {
+        data.reranking_multiplier = 3;
+      }
+
+      if ((data.top_k * data.reranking_multiplier) > 100) {
+        let calculatedRerankingMultiplier = Math.floor(100 / data.top_k);
+        if (calculatedRerankingMultiplier < 1) {
+          calculatedRerankingMultiplier = 1;
+        }
+        data.reranking_multiplier = calculatedRerankingMultiplier;
+      }
     }
   }
 
@@ -391,7 +402,7 @@ router.post('/qa', async (req, res) => {
       let multiplier = MODELS_MULTIPLIER[data.model];
       if (!multiplier) {
         multiplier = 1;
-        winston.info("No multiplier found for AI model")
+        winston.info("No multiplier found for AI model (qa) " + data.model);
       }
       obj.multiplier = multiplier;
       obj.tokens = answer.prompt_token_size;
@@ -1725,6 +1736,8 @@ router.post('/sitemap/import', async (req, res) => {
     return res.status(500).send({ success: false, error: err });
   }
 
+
+
   const options = {
     sitemap_origin_id: saved_content._id,
     sitemap_origin: saved_content.source,
@@ -1733,9 +1746,9 @@ router.post('/sitemap/import', async (req, res) => {
     refresh_rate: saved_content.refresh_rate
   }
   
-  let result;
   try {
-    result = await aiManager.addMultipleUrls(namespace, urls, options);
+    await aiManager.scheduleSitemap(namespace, saved_content, options);
+    let result = await aiManager.addMultipleUrls(namespace, urls, options);
     if (process.env.NODE_ENV === 'test') {
       result.result.push(saved_content);
       return res.status(200).send(result);

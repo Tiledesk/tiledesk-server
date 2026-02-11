@@ -205,7 +205,7 @@ class AiService {
       base_url = kb_endpoint_qa_gpu;
     }
     winston.debug("[OPENAI SERVICE] kb endpoint: " + base_url);
-    console.log("aa1")
+
     return new Promise((resolve, reject) => {
 
       axios({
@@ -216,10 +216,8 @@ class AiService {
         data: data,
         method: 'POST'
       }).then((resbody) => {
-        console.log("aa2")
         resolve(resbody);
       }).catch((err) => {
-        console.log("aa3")
         reject(err);
       })
 

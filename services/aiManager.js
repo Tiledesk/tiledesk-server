@@ -115,6 +115,32 @@ class AiManager {
     })
   }
 
+  async scheduleSitemap(namespace, sitemap_content, options) {
+    return new Promise((resolve, reject) => {
+
+      let kb = {
+        id: sitemap_content._id,
+        source: sitemap_content.source,
+        type: 'sitemap',
+        content: "",
+        namespace: namespace.id,
+        refresh_rate: options.refresh_rate,
+        engine: namespace.engine,
+        embedding: namespace.embedding,
+        hybrid: namespace.hybrid,
+      }
+
+      if (process.env.NODE_ENV === 'test') {
+        resolve(kb);
+        return;
+      }
+
+      this.scheduleScrape([kb], namespace.hybrid);
+      resolve(kb);
+
+    })
+  }
+
   async checkNamespace(id_project, namespace_id) {
     return new Promise( async (resolve, reject) => {
 
