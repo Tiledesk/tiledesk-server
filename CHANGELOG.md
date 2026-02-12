@@ -8,6 +8,7 @@
 
 # 2.14.26
 - Added endpoints to connect with a MCP Tools and get tools list.
+- Updated tybot-connectort to 2.0.44
 
 # 2.14.25
 - Deprecate user file upload routes in files.js and images.js
