@@ -1,0 +1,8 @@
+<html>
+  <body>
+    <h1>Not a real PNG</h1>
+    <script>
+      console.log('HTML disguised as PNG');
+    </script>
+  </body>
+</html>
