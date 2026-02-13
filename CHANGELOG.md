@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.15.0
+- Updated whatsapp-connector to 1.0.23
+
 # 2.14.28
 - Add audio MIME type equivalences for MPEG, MP3, and Opus formats
 
