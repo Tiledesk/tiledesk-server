@@ -45,7 +45,7 @@ function logInvalidToken(req, err) {
   const cacheKey = `${ip}_${req.url}`;
   const lastLog = invalidTokenCache.get(cacheKey);
 
-  if (!lastLog || now - lastLog > 60000) {
+  if (!lastLog || now - lastLog > 3600000) {
     invalidTokenCache.set(cacheKey, now);
     console.warn('[⚠️ INVALID WS TOKEN]', {
       ip,
