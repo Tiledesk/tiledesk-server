@@ -394,7 +394,6 @@ class PubModulesManager {
         }
 
         if (process.env.VOICE_ENGHOUSE_TOKEN === process.env.VOICE_ENGHOUSE_SECRET) {
-
             try {
                 this.voiceEnghouse = require('./voice-enghouse');
                 winston.info("this.voiceEnghouse: " + this.voiceEnghouse);

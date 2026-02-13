@@ -1,4 +1,4 @@
-const voice_twilio = require('@tiledesk/tiledesk-voice-twilio-connector');
+const voice_vxml_enghouse = require('@tiledesk/tiledesk-vxml-enghouse-connector');
 let winston = require('../../config/winston');
 let configGlobal = require('../../config/global');
 const mongoose = require('mongoose');
@@ -40,7 +40,7 @@ class Listener {
         let log = process.env.VOICE_TWILIO_LOG || false
         winston.debug("Voice log: "+ log);
         
-        voice_twilio.init({
+        voice_vxml_enghouse.init({
             MONGODB_URI: config.databaseUri,          
             dbconnection: dbConnection,
             BASE_URL: baseUrl,
