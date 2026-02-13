@@ -5,6 +5,8 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.14.27
+- Add audio MIME type equivalences for MPEG, MP3, and Opus formats
 
 # 2.14.26
 - Added endpoints to connect with a MCP Tools and get tools list.
