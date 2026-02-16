@@ -344,9 +344,47 @@ router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { ses
 
         // Event 'project_user.delete' not working - Check it and improve it to manage disable project user
         return res.status(200).send(project_user);
-      }
-    );
+      });
   }
+});
+
+// Restore a soft-deleted (trashed) project user. Fails if not found or not trashed.
+router.put('/:project_userid/restore', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+  const pu_id = req.params.project_userid;
+
+  Project_user.findOne({ _id: pu_id, id_project: req.projectid }, function (err, project_user) {
+    if (err) {
+      winston.error("Error finding project_user for restore", err);
+      return res.status(500).send({ success: false, msg: 'Error restoring Project User with id ' + pu_id });
+    }
+    if (!project_user) {
+      winston.warn("Project user not found for restore with id " + pu_id);
+      return res.status(404).send({ success: false, error: 'Project user not found with id ' + pu_id });
+    }
+    if (project_user.trashed !== true) {
+      winston.warn("Project user is not trashed, cannot restore id " + pu_id);
+      return res.status(400).send({ success: false, error: 'Project user is not trashed, cannot restore' });
+    }
+
+    Project_user.findByIdAndUpdate(pu_id, { trashed: false, status: 'active' }, { new: true }, function (err, updatedProject_user) {
+      if (err) {
+        winston.error("Error restoring project_user", err);
+        return res.status(500).send({ success: false, msg: 'Error restoring Project User with id ' + pu_id });
+      }
+
+      winston.debug("Restored project_user", updatedProject_user);
+      updatedProject_user.populate({ path: 'id_user', select: { 'firstname': 1, 'lastname': 1 } }, function (err, updatedProject_userPopulated) {
+        if (err) {
+          winston.error("Error populating restored project_user", err);
+        } else {
+          var pu = updatedProject_userPopulated.toJSON();
+          pu.isBusy = ProjectUserUtil.isBusy(updatedProject_user, req.project && req.project.settings && req.project.settings.max_agent_assigned_chat);
+          authEvent.emit('project_user.update', { updatedProject_userPopulated: pu, req: req });
+        }
+      });
+      return res.status(200).send(updatedProject_user);
+    });
+  });
 });
 
 router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res) {
@@ -482,7 +520,10 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   }
   winston.debug("role", role);
 
-  var query = { id_project: req.projectid, role: { $in : role }, trashed: { $ne: true } };
+  var query = { id_project: req.projectid, role: { $in : role } };
+  if (!req.query.trashed || req.query.trashed === 'false' || req.query.trashed === false) {
+    query.trashed = { $ne: true };
+  }
 
   if (req.query.presencestatus) {
     query["presence.status"] = req.query.presencestatus;
