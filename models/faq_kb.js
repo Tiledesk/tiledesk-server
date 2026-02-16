@@ -226,6 +226,8 @@ Faq_kbSchema.pre('findOneAndUpdate', async function (next) {
 
 Faq_kbSchema.post('findOneAndUpdate', async function (doc) {
   if (doc && doc.trashed === true) {
+    // Lazy require to avoid circular dependency
+    const botEvent = require('../event/botEvent');
     botEvent.emit('faqbot.update.virtual.delete', doc)
   }
 })
@@ -274,8 +276,3 @@ function generateSlug(name) {
 }
 
 module.exports = faq_kb
-
-
-
-// Import botEvent after model declaration to avoid circular dependency issues
-const botEvent = require('../event/botEvent');
