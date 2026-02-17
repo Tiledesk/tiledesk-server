@@ -111,6 +111,10 @@ class PubModulesManager {
             app.use('/modules/voice', this.voiceRoute);
             winston.info("PubModulesManager voiceRoute controller loaded");
         }
+        if (this.voiceEnghouseRoute) {
+            app.use('/modules/voice-enghouse', this.voiceEnghouseRoute);
+            winston.info("PubModulesManager voiceEnghouseRoute controller loaded");
+        }
         if (this.voiceTwilioRoute) {
             app.use('/modules/voice-twilio', this.voiceTwilioRoute);
             winston.info("PubModulesManager voiceTwilioRoute controller loaded");
