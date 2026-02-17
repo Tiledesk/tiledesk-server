@@ -21,7 +21,7 @@ jobs:
   
      - name: Generate Docker metadata
        id: meta
-       uses: docker/metadata-action@v3
+       uses: docker/metadata-action@v5
        with:
         images: tiledesk/tiledesk-server-worker
         tags: |
@@ -29,7 +29,7 @@ jobs:
           type=semver,pattern={{version}}
   
      - name: Build and push
-       uses: docker/build-push-action@v4
+       uses: docker/build-push-action@v6
        with:
         context: .
         file: ./Dockerfile-jobs
