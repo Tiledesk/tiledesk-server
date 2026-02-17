@@ -12,13 +12,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2	     
-      name: Check out the repo
-    - uses: docker/build-push-action@v4
-      with:	    
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        build_args: NPM_TOKEN=${{ secrets.NPM_TOKEN }}
-        dockerfile: Dockerfile-en
-        repository: tiledeskrepo/tiledesk-server-enterprise
-        tags: latest
+    - name: Check out the repo
+      uses: actions/checkout@v4
+    
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and push
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./Dockerfile-en
+        push: true
+        build-args: |
+          NPM_TOKEN=${{ secrets.NPM_TOKEN }}
+        tags: tiledeskrepo/tiledesk-server-enterprise
+
