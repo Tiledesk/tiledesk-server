@@ -5,6 +5,15 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.15.1
+- Updated whatsapp-connector to 1.0.24
+
+# 2.15.0
+- Updated whatsapp-connector to 1.0.23
+- Fix logout with Google Signin method
+
+# 2.14.28
+- Add audio MIME type equivalences for MPEG, MP3, and Opus formats
 
 # 2.14.26
 - Added endpoints to connect with a MCP Tools and get tools list.

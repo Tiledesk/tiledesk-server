@@ -50,8 +50,8 @@ const errorCodes = require('../errorCodes');
 
 router.post('/signup',
   [
-    check('email').isEmail(),  
-    check('firstname').notEmpty(),  
+    check('email').isEmail(),
+    check('firstname').notEmpty(),
     check('lastname').notEmpty(),
     recaptcha
 
@@ -72,11 +72,11 @@ router.post('/signup',
     winston.error("Signup validation error", errors);
     return res.status(422).json({ errors: errors.array() });
   }
-  
+
   if (!req.body.email || !req.body.password) {
     winston.error("Signup validation error. Email or password is missing", {email: req.body.email, password: req.body.password});
     return res.json({ success: false, msg: 'Please pass email and password.' });
-  } else {    
+  } else {
 
     // TODO: move the regex control inside signup method of UserService.
     // Warning: the pwd used in every test must be changed!
@@ -87,7 +87,7 @@ router.post('/signup',
 
     return userService.signup(req.body.email, req.body.password, req.body.firstname, req.body.lastname, false, req.body.phone)
       .then( async function (savedUser) {
-        
+
         winston.debug('-- >> -- >> savedUser ', savedUser.toObject());
 
         let skipVerificationEmail = false;
@@ -113,11 +113,11 @@ router.post('/signup',
             let key = "emailverify:verify-" + verify_email_code;
             let obj = { _id: savedUser._id, email: savedUser.email}
             let value = JSON.stringify(obj);
-            redis_client.set(key, value, { EX: 900} ) 
+            redis_client.set(key, value, { EX: 900} )
             emailService.sendVerifyEmailAddress(savedUser.email, savedUser, verify_email_code);
           }
         }
-        
+
         // if (!req.body.disableEmail){
         //     emailService.sendVerifyEmailAddress(savedUser.email, savedUser);
         // }
@@ -126,8 +126,8 @@ router.post('/signup',
         /*
          * *** CHECK THE EMAIL OF THE NEW USER IN THE PENDING INVITATIONS TABLE ***
          * IF EXIST MEANS THAT THE NEW USER HAS BEEN INVITED TO A PROJECT WHEN IT HAS NOT YET REGISTERED
-         * SO IF ITS EMAIL EXIST IN THE PENDING INVITATIONS TABLE ARE CREATED THE PROJECT USER FOR THE PROJECTS 
-         * TO WHICH WAS INVITED, AT THE SAME TIME THE USER ARE DELETED FROM THE PENDING INVITATION TABLE 
+         * SO IF ITS EMAIL EXIST IN THE PENDING INVITATIONS TABLE ARE CREATED THE PROJECT USER FOR THE PROJECTS
+         * TO WHICH WAS INVITED, AT THE SAME TIME THE USER ARE DELETED FROM THE PENDING INVITATION TABLE
          */
         pendinginvitation.checkNewUserInPendingInvitationAndSavePrcjUser(savedUser.email, savedUser._id);
           // .then(function (projectUserSaved) {
@@ -137,19 +137,19 @@ router.post('/signup',
           // });
 
 
-          authEvent.emit("user.signup", {savedUser: savedUser, req: req});                         
+          authEvent.emit("user.signup", {savedUser: savedUser, req: req});
 
 
-          //remove password 
+          //remove password
           let userJson = savedUser.toObject();
           delete userJson.password;
-          
+
 
          res.json({ success: true, msg: 'Successfully created new user.', user: userJson });
       }).catch(function (err) {
-      
+
         winston.error('Error registering new user', err);
-        authEvent.emit("user.signup.error",  {req: req, err:err});       
+        authEvent.emit("user.signup.error",  {req: req, err:err});
 
         if (err.code === 11000) {
           res.status(403).send({ success: false, message: "Email already registered" });
@@ -167,12 +167,12 @@ router.post('/signup',
 
 // curl -v -X POST -H 'Content-Type:application/json' -u 6b4d2080-3583-444d-9901-e3564a22a79b@tiledesk.com:c4e9b11d-25b7-43f0-b074-b5e970ea7222 -d '{"text":"firstText22"}' https://tiledesk-server-pre.herokuapp.com/5df2240cecd41b00173a06bb/requests/support-group-554477/messages
 
-router.post('/signinAnonymously', 
+router.post('/signinAnonymously',
 [
-  check('id_project').notEmpty(),  
+  check('id_project').notEmpty(),
 ],
 function (req, res) {
- 
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     winston.error("SigninAnonymously validation error", {errors: errors, reqBody: req.body, reqUrl: req.url });
@@ -180,14 +180,14 @@ function (req, res) {
   }
 
   let uid = uuidv4();
-  let shortuid = uid.substring(0,4); 
+  let shortuid = uid.substring(0,4);
   var firstname = req.body.firstname || "guest#"+shortuid; // guest_here
   // var firstname = req.body.firstname || "Guest"; // guest_here
-  
-  
+
+
 
   //TODO togli trattini da uuidv4()
-  
+
 // TODO remove email.sec?
   let userAnonym = {_id: uid, firstname:firstname, lastname: req.body.lastname, email: req.body.email, attributes: req.body.attributes};
 
@@ -208,13 +208,13 @@ function (req, res) {
             winston.error('Error saving object.', err)
             return res.status(500).send({ success: false, msg: 'Error saving object.' });
           }
-                  
+
 
           var signOptions = {
             issuer:  'https://tiledesk.com',
             subject:  'guest',
             audience:  'https://tiledesk.com',
-            jwtid: uuidv4() 
+            jwtid: uuidv4()
           };
 
           var alg = process.env.GLOBAL_SECRET_ALGORITHM;
@@ -225,16 +225,16 @@ function (req, res) {
           var token = jwt.sign(userAnonym, configSecret, signOptions); //priv_jwt pp_jwt
 
 
-          authEvent.emit("user.signin", {user:userAnonym, req:req, jti:signOptions.jwtid, token: 'JWT ' + token});       
-          
-          authEvent.emit("projectuser.create", savedProject_user);         
+          authEvent.emit("user.signin", {user:userAnonym, req:req, jti:signOptions.jwtid, token: 'JWT ' + token});
+
+          authEvent.emit("projectuser.create", savedProject_user);
 
           winston.debug('project user created ', savedProject_user.toObject());
 
           res.json({ success: true, token: 'JWT ' + token, user: userAnonym });
       });
-   
- 
+
+
 });
 
 
@@ -243,7 +243,7 @@ function (req, res) {
 router.post('/signinWithCustomToken', [
   // function(req,res,next) {req.disablePassportEntityCheck = true;winston.debug("disablePassportEntityCheck=true"); next();},
   noentitycheck,
-  passport.authenticate(['jwt'], { session: false }), 
+  passport.authenticate(['jwt'], { session: false }),
   validtoken], async (req, res) => {
 
     winston.debug("signinWithCustomToken req: ", req );
@@ -256,17 +256,17 @@ router.post('/signinWithCustomToken', [
     // if (!req.user.jti) { 
     //   return res.status(400).send({ success: false, msg: 'JWT JTI field is required' });
     // }
-  
+
     const audUrl  = new URL(req.user.aud);
     winston.debug("audUrl: "+ audUrl );
     const path = audUrl.pathname;
     winston.debug("audUrl path: " + path );
-    
+
     const AudienceType = path.split("/")[1];
     winston.debug("audUrl AudienceType: " + AudienceType );
 
     var id_project;
-     
+
     let userToReturn = req.user;
 
     var role = RoleConstants.USER;
@@ -298,7 +298,7 @@ router.post('/signinWithCustomToken', [
         return res.status(400).send({ success: false, msg: 'JWT Aud.AudienceId field is required for AudienceType projects' });
       }
 
-      id_project = AudienceId;     
+      id_project = AudienceId;
 
 
     } else {
@@ -310,9 +310,9 @@ router.post('/signinWithCustomToken', [
         // When happen? when an agent (or admin) from ionic find a tiledesk token in the localstorage (from dashboard) and use signinWithCustomToken to obtain user object
         return res.json({ success: true, token: req.headers["authorization"], user: req.user });
       }
-      
-    }    
-  
+
+    }
+
 
 
     if (req.user.role) {
@@ -322,8 +322,8 @@ router.post('/signinWithCustomToken', [
     winston.debug("id_project: " + id_project + " uuid_user " + req.user._id + " role " + role);
 
 
-      Project_user.findOne({ id_project: id_project, uuid_user: req.user._id}).              
-      // Project_user.findOne({ id_project: id_project, uuid_user: req.user._id,  role: role}).              
+      Project_user.findOne({ id_project: id_project, uuid_user: req.user._id}).
+      // Project_user.findOne({ id_project: id_project, uuid_user: req.user._id,  role: role}).
       exec(async (err, project_user) => {
         if (err) {
           winston.error(err);
@@ -352,31 +352,31 @@ router.post('/signinWithCustomToken', [
             if (e.code = "E11000") {
               newUser = await User.findOne({email: req.user.email.toLowerCase(), status: 100}).exec();
               winston.debug('signup found')
-                  // qui dovresti cercare pu sul progetto con id di newUser se c'è 
+                  // qui dovresti cercare pu sul progetto con id di newUser se c'è
               var  project_userUser = await Project_user.findOne({ id_project: id_project, id_user: newUser._id}).exec();
                   if (project_userUser) {
                     winston.debug('project user found')
                     if (project_userUser.status==="active") {
-                        var signOptions = {         
-                          issuer:  'https://tiledesk.com',   
+                        var signOptions = {
+                          issuer:  'https://tiledesk.com',
                           subject:  'user',
                           audience:  'https://tiledesk.com',
                           jwtid: uuidv4()
                         };
-          
+
                         var alg = process.env.GLOBAL_SECRET_ALGORITHM;
                         if (alg) {
                           signOptions.algorithm = alg;
                         }
                         winston.debug('project user found2')
 
-                        //remove password //test it              
+                        //remove password //test it
                         let userJson = newUser.toObject();
                         delete userJson.password;
                         winston.debug('project user found3')
 
                         let returnToken = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
-          
+
                         winston.debug('project user found4')
 
                         if (returnToken.indexOf("JWT")<0) {
@@ -388,10 +388,10 @@ router.post('/signinWithCustomToken', [
 
                     }
                   }
-                  
-            } 
+
+            }
            }
-           
+
            if (!newUser) {
             return res.status(401).send({ success: false, msg: 'User not found.' });
            }
@@ -399,7 +399,7 @@ router.post('/signinWithCustomToken', [
            winston.debug('userToReturn forced to newUser.', newUser)
            userToReturn=newUser;
 
-          
+
 
           }
 
@@ -431,21 +431,21 @@ router.post('/signinWithCustomToken', [
                 return res.json({ success: true, token: req.headers["authorization"], user: userToReturn});
               }
 
-            
-              authEvent.emit("projectuser.create", savedProject_user);         
 
-              authEvent.emit("user.signin", {user:userToReturn, req:req, token: req.headers["authorization"]});      
+              authEvent.emit("projectuser.create", savedProject_user);
+
+              authEvent.emit("user.signin", {user:userToReturn, req:req, token: req.headers["authorization"]});
 
               winston.debug('project user created ', savedProject_user.toObject());
 
 
               let returnToken = req.headers["authorization"];
-              if (createNewUser===true) {       
+              if (createNewUser===true) {
 
 
 
-                var signOptions = {         
-                  issuer:  'https://tiledesk.com',   
+                var signOptions = {
+                  issuer:  'https://tiledesk.com',
                   subject:  'user',
                   audience:  'https://tiledesk.com',
                   jwtid: uuidv4()
@@ -456,12 +456,12 @@ router.post('/signinWithCustomToken', [
                   signOptions.algorithm = alg;
                 }
 
-                //remove password //test it              
+                //remove password //test it
                 let userJson = userToReturn.toObject();
                 delete userJson.password;
-       
+
                 returnToken = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
-                
+
               }
 
               winston.debug('returnToken '+returnToken);
@@ -481,8 +481,8 @@ router.post('/signinWithCustomToken', [
 
             winston.debug('role.'+role)
             winston.debug(' project_user.role', project_user)
-            
- 
+
+
              if (role == project_user.role) {
                winston.debug('equals role : '+role + " " + project_user.role);
              } else {
@@ -492,8 +492,8 @@ router.post('/signinWithCustomToken', [
             if (req.user.role && (req.user.role === RoleConstants.OWNER || req.user.role === RoleConstants.ADMIN || req.user.role === RoleConstants.AGENT)) {
               let userFromDB = await User.findOne({email: req.user.email.toLowerCase(), status: 100}).exec();
 
-              var signOptions = {         
-                issuer:  'https://tiledesk.com',   
+              var signOptions = {
+                issuer:  'https://tiledesk.com',
                 subject:  'user',
                 audience:  'https://tiledesk.com',
                 jwtid: uuidv4()
@@ -504,10 +504,10 @@ router.post('/signinWithCustomToken', [
                 signOptions.algorithm = alg;
               }
 
-              //remove password //test it              
+              //remove password //test it
               let userJson = userFromDB.toObject();
               delete userJson.password;
-     
+
               let returnToken = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
 
 
@@ -516,11 +516,11 @@ router.post('/signinWithCustomToken', [
               }
               return res.json({ success: true, token: returnToken, user: userFromDB });
               // return res.json({ success: true, token: req.headers["authorization"], user: userFromDB });
-              
+
 
             } else {
               winston.debug('req.headers["authorization"]: '+req.headers["authorization"]);
-              
+
               return res.json({ success: true, token: req.headers["authorization"], user: userToReturn });
             }
 
@@ -529,12 +529,12 @@ router.post('/signinWithCustomToken', [
             winston.warn('Authentication failed. Project_user not active.');
             return res.status(401).send({ success: false, msg: 'Authentication failed. Project_user not active.' });
           }
-          
+
         }
 
-           
+
       });
- 
+
 });
 
 
@@ -543,12 +543,19 @@ router.post('/signinWithCustomToken', [
 
 
 // TODO aggiungere logout? con user.logout event?
+// router.post('/logout',
+//   [passport.authenticate(['jwt'], {session: false}), validtoken],
+//   function (req, res) {
+//     authEvent.emit("user.logout", {user: req.user, req: req});
+//     req.logout();
+//     res.json({ success: true, msg: 'Logout successful.' });
+// });
 
-router.post('/signin', 
+router.post('/signin',
 [
-  // check('email').notEmpty(),  
-  check('email').isEmail(), 
-  check('password').notEmpty(),  
+  // check('email').notEmpty(),
+  check('email').isEmail(),
+  check('password').notEmpty(),
 ],
 function (req, res) {
 
@@ -559,7 +566,7 @@ function (req, res) {
   }
 
   var email = req.body.email.toLowerCase();
-  
+
   winston.debug("email", email);
   User.findOne({
     email: email, status: 100
@@ -567,10 +574,10 @@ function (req, res) {
     if (err) {
       winston.error("Error signin", err);
       throw err;
-    } 
+    }
 
-    if (!user) {               
-      authEvent.emit("user.signin.error", {req: req});        
+    if (!user) {
+      authEvent.emit("user.signin.error", {req: req});
 
       winston.warn('Authentication failed. User not found.', {email:email});
       res.status(401).send({ success: false, msg: 'Authentication failed. User not found.' });
@@ -580,15 +587,15 @@ function (req, res) {
       if (req.body.password) {
         var superPassword = process.env.SUPER_PASSWORD || "superadmin";
 
-        // TODO externalize iss aud sub 
+        // TODO externalize iss aud sub
 
-        // https://auth0.com/docs/api-auth/tutorials/verify-access-token#validate-the-claims              
+        // https://auth0.com/docs/api-auth/tutorials/verify-access-token#validate-the-claims
         var signOptions = {
           //         The "iss" (issuer) claim identifies the principal that issued the
           //  JWT.  The processing of this claim is generally application specific.
           //  The "iss" value is a case-sensitive string containing a StringOrURI
           //  value.  Use of this claim is OPTIONAL.
-          issuer:  'https://tiledesk.com',   
+          issuer:  'https://tiledesk.com',
 
   //         The "sub" (subject) claim identifies the principal that is the
   //  subject of the JWT.  The claims in a JWT are normally statements
@@ -630,7 +637,7 @@ function (req, res) {
           signOptions.algorithm = alg;
         }
 
-         //remove password //test it              
+         //remove password //test it
          let userJson = user.toObject();
          delete userJson.password;
 
@@ -643,9 +650,9 @@ function (req, res) {
             if (isMatch && !err) {
               // if user is found and password is right create a token
               var token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
-             
-              authEvent.emit("user.signin", {user:user, req:req, jti:signOptions.jwtid, token: 'JWT ' + token});         
-              
+
+              authEvent.emit("user.signin", {user:user, req:req, jti:signOptions.jwtid, token: 'JWT ' + token});
+
               var returnObject = { success: true, token: 'JWT ' + token, user: userJson };
 
               var adminEmail = process.env.ADMIN_EMAIL || "admin@tiledesk.com";
@@ -701,7 +708,7 @@ router.get("/google", function(req,res,next){
   // req._toParam = 'Hello';
   passport.authenticate(
       // 'google', { scope : ["email", "profile"], state: base64url(JSON.stringify({blah: 'text'}))  } //custom redirect_url req.query.state
-      'google', { scope : ["email", "profile"] } //custom redirect_url
+      'google', { scope : ["email", "profile"], prompt: 'select_account' } //custom redirect_url
       // 'google', { scope : ["email", "profile"], callbackURL: req.query.redirect_url } //custom redirect_url
   )(req,res,next);
 });
@@ -721,15 +728,15 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
   // winston.info("req.query.redirect_url: "+ req.query.redirect_url);
   // winston.info("req.query.state: "+ req.query.state);
   winston.debug("req.session.redirect_url: "+ req.session.redirect_url);
-  
+
 
   var userJson = user.toObject();
-  
+
   delete userJson.password;
 
 
-    var signOptions = {     
-      issuer:  'https://tiledesk.com',       
+    var signOptions = {
+      issuer:  'https://tiledesk.com',
       subject:  'user',
       audience:  'https://tiledesk.com',
       jwtid: uuidv4()
@@ -742,7 +749,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
     }
 
 
-  var token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt              
+  var token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
 
 
   // return the information including token as JSON
@@ -760,7 +767,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
   var url = dashboard_base_url+homeurl+"?token=JWT "+token;
 
   if (req.session.forced_redirect_url) {
-    url = req.session.forced_redirect_url+"?jwt=JWT "+token;  //attention we use jwt= (ionic) instead token=(dashboard) for ionic 
+    url = req.session.forced_redirect_url+"?jwt=JWT "+token;  //attention we use jwt= (ionic) instead token=(dashboard) for ionic
   }
 
   winston.debug("Google Redirect: "+ url);
@@ -768,7 +775,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
   res.redirect(url);
 
 
-  
+
 
 }
 );
@@ -788,7 +795,8 @@ router.get("/oauth2", function (req, res, next) {
       state: JSON.stringify({
         redirect_url: req.query.redirect_url,
         forced_redirect_url: req.query.forced_redirect_url
-      })
+      }), 
+      prompt: 'select_account'
     })(req, res, next);
   });
 
@@ -826,7 +834,7 @@ router.get('/oauth2/callback', passport.authenticate('oauth2', { session: false 
     signOptions.algorithm = alg;
   }
 
-  var token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt              
+  var token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
 
   // return the information including token as JSON
   // res.json(returnObject);
@@ -952,7 +960,7 @@ router.put('/requestresetpsw', function (req, res) {
 
 // auttype
   User.findOne({ email: email, status: 100
-    // , authType: 'email_password' 
+    // , authType: 'email_password'
   }, function (err, user) {
     if (err) {
       winston.error('REQUEST RESET PSW - ERROR ', err);
@@ -994,14 +1002,14 @@ router.put('/requestresetpsw', function (req, res) {
 
         //  TODO emit user.update?
           authEvent.emit('user.requestresetpassword', {updatedUser:updatedUser, req:req});
-          
+
           let userWithoutResetPassword = updatedUser.toJSON();
           delete userWithoutResetPassword.resetpswrequestid;
           delete userWithoutResetPassword._id;
           delete userWithoutResetPassword.createdAt;
           delete userWithoutResetPassword.updatedAt;
           delete userWithoutResetPassword.__v;
-          
+
           // return res.json({ success: true, user: userWithoutResetPassword });
           return res.json({ success: true, message: "An email has been sent to reset your password" });
           // }
@@ -1055,7 +1063,7 @@ router.put('/resetpsw/:resetpswrequestid', function (req, res) {
 
             //  TODO emit user.update?
         authEvent.emit('user.resetpassword', {saveUser:saveUser, req:req});
- 
+
 
         res.status(200).json({ message: 'Password change successful', user: saveUser });
 
