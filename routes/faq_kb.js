@@ -294,6 +294,8 @@ router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) 
 
     botEvent.emit('faqbot.update', updatedOriginalChabot);
 
+    botEvent.emit('faqbot.publish.activity', { req, id_faq_kb, forkedChatBotId, release_note, id_project: current_project_id });
+
     return res.status(200).send({ message: "Chatbot published successfully", bot_id: forkedChatBotId });
 
   } catch (e) {
@@ -458,8 +460,9 @@ router.delete('/:faq_kbid', roleChecker.hasRole('admin'), function (req, res) {
     }
     /**
      * WARNING: faq_kb is the operation result, not the faq_kb object. The event subscriber will not receive the object as expected.
-     */
-    botEvent.emit('faqbot.delete', faq_kb);
+    */
+   botEvent.emit('faqbot.delete', faq_kb);
+   botEvent.emit('faqbot.delete.activity', { req, faq_kb, chatbot_id, id_project });
     res.status(200).send({ success: true, message: "Chatbot with id " + req.params.faq_kbid + " deleted successfully" })
   });
 });

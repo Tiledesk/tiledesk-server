@@ -1,5 +1,7 @@
 const authEvent = require('../../event/authEvent');
 const requestEvent = require('../../event/requestEvent');
+const botEvent = require('../../event/botEvent');
+const kbEvent = require('../../event/kbEvent');
 var Activity = require('./models/activity');
 var winston = require('../../config/winston');
 
@@ -408,8 +410,101 @@ class ActivityArchiver {
           });                           
         });
 
+        // Chatbot activities (routes/faq_kb.js)
+        botEvent.on('faqbot.delete.activity', function (event) {
+          setImmediate(() => {
+            if (!event.req?.user) return;
+            var actorId = event.req.user.id || event.req.user._id;
+            var faq_kb = event.faq_kb;
+            var activity = new Activity({
+              actor: { type: 'user', id: actorId, name: event.req.user.fullName },
+              verb: 'CHATBOT_DELETE',
+              actionObj: {},
+              target: { type: 'chatbot', id: event.chatbot_id, object: faq_kb?.toObject ? faq_kb.toObject() : faq_kb },
+              id_project: event.id_project
+            });
+            that.save(activity);
+          });
+        });
 
-        
+        botEvent.on('faqbot.publish.activity', function (event) {
+          setImmediate(() => {
+            if (!event.req?.user) return;
+            var actorId = event.req.user.id || event.req.user._id;
+            var activity = new Activity({
+              actor: { type: 'user', id: actorId, name: event.req.user.fullName },
+              verb: 'CHATBOT_PUBLISH',
+              actionObj: { root_id: event.id_faq_kb, bot_id: event.forkedChatBotId, release_note: event.release_note },
+              target: { type: 'chatbot', id: event.id_faq_kb, object: { bot_id: event.forkedChatBotId } },
+              id_project: event.id_project
+            });
+            that.save(activity);
+          });
+        });
+
+        // KB activities (routes/kb.js)
+        kbEvent.on('kb.namespace.create', function (event) {
+          setImmediate(() => {
+            if (!event.req?.user) return;
+            var actorId = event.req.user.id || event.req.user._id;
+            var savedNamespace = event.savedNamespace;
+            var activity = new Activity({
+              actor: { type: 'user', id: actorId, name: event.req.user.fullName },
+              verb: 'KB_NAMESPACE_CREATE',
+              actionObj: { name: event.body?.name },
+              target: { type: 'kb_namespace', id: String(event.namespace_id), object: savedNamespace?.toObject ? savedNamespace.toObject() : savedNamespace },
+              id_project: event.project_id
+            });
+            that.save(activity);
+          });
+        });
+
+        kbEvent.on('kb.namespace.delete', function (event) {
+          setImmediate(() => {
+            if (!event.req?.user) return;
+            var actorId = event.req.user.id || event.req.user._id;
+            var namespace = event.namespace;
+            var activity = new Activity({
+              actor: { type: 'user', id: actorId, name: event.req.user.fullName },
+              verb: 'KB_NAMESPACE_DELETE',
+              actionObj: { namespace: event.namespace_id, deletedContentsCount: event.deletedCount },
+              target: { type: 'kb_namespace', id: event.namespace_id, object: namespace?.toObject ? namespace.toObject() : {} },
+              id_project: event.project_id
+            });
+            that.save(activity);
+          });
+        });
+
+        kbEvent.on('kb.contents.delete', function (event) {
+          setImmediate(() => {
+            if (!event.req?.user) return;
+            var actorId = event.req.user.id || event.req.user._id;
+            var activity = new Activity({
+              actor: { type: 'user', id: actorId, name: event.req.user.fullName },
+              verb: 'KB_CONTENTS_DELETE',
+              actionObj: { namespace: event.namespace_id, deletedCount: event.deletedCount },
+              target: { type: 'kb_namespace', id: event.namespace_id, object: { namespace: event.namespace_id } },
+              id_project: event.project_id
+            });
+            that.save(activity);
+          });
+        });
+
+        kbEvent.on('kb.content.delete', function (event) {
+          setImmediate(() => {
+            if (!event.req?.user) return;
+            var actorId = event.req.user.id || event.req.user._id;
+            var kb = event.kb;
+            var activity = new Activity({
+              actor: { type: 'user', id: actorId, name: event.req.user.fullName },
+              verb: 'KB_CONTENT_DELETE',
+              actionObj: { namespace: event.namespace_id },
+              target: { type: 'kb_content', id: event.kb_id, object: kb?.toObject ? kb.toObject() : { _id: event.kb_id, namespace: event.namespace_id } },
+              id_project: event.project_id
+            });
+            that.save(activity);
+          });
+        });
 
         winston.info('ActivityArchiver listening');
 
