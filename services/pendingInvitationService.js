@@ -4,6 +4,7 @@ var emailService = require("../services/emailService");
 var Project_user = require("../models/project_user");
 var mongoose = require('mongoose');
 var winston = require('../config/winston');
+var RoleConstants = require("../models/roleConstants");
 
 class Pending_Invitation {
 
@@ -91,6 +92,7 @@ class Pending_Invitation {
             id_project: invite.id_project,
             id_user: newUserId,
             role: invite.role,
+            roleType : RoleConstants.TYPE_AGENTS,   
             user_available: true,
             createdBy: invite.createdBy,
             updatedBy: invite.createdBy
