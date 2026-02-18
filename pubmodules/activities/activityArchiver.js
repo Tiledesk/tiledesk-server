@@ -412,6 +412,7 @@ class ActivityArchiver {
 
         // Chatbot activities (routes/faq_kb.js)
         botEvent.on('faqbot.delete.activity', function (event) {
+          console.log("faqbot.delete.activity event catched: ", event);
           setImmediate(() => {
             if (!event.req?.user) return;
             var actorId = event.req.user.id || event.req.user._id;
@@ -428,6 +429,7 @@ class ActivityArchiver {
         });
 
         botEvent.on('faqbot.publish.activity', function (event) {
+          console.log("faqbot.publish.activity event catched: ", event);
           setImmediate(() => {
             if (!event.req?.user) return;
             var actorId = event.req.user.id || event.req.user._id;
@@ -515,6 +517,7 @@ class ActivityArchiver {
             if (err) {
                 winston.error('Error saving activity ', {activity: activity.toObject(), err:err});
             }else {
+                console.log("Activity saved: ", savedActivity.toObject());
                 winston.debug('Activity saved', savedActivity.toObject());
             }
         });
