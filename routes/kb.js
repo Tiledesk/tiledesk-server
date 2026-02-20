@@ -81,6 +81,13 @@ const default_engine = require('../config/kb/engine');
 const default_engine_hybrid = require('../config/kb/engine.hybrid');
 const default_embedding = require('../config/kb/embedding');
 
+function normalizeEmbedding(embedding) {
+  const normalizedEmbedding = (embedding && typeof embedding.toObject === 'function')
+    ? embedding.toObject()
+    : (embedding || default_embedding);
+  return { ...normalizedEmbedding };
+}
+
 let contexts = {
   "gpt-3.5-turbo":        process.env.GPT_3_5_CONTEXT       || "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### and the chat history to answer the question.\nIf you don't know the answer, just say: \"I don't know<NOANS>\"\n\n####{context}####",
   "gpt-4":                process.env.GPT_4_CONTEXT         || "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### and the chat history to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf and only if none of the retrieved context is useful for your task, add this word to the end <NOANS>\n\n####{context}####",
@@ -222,7 +229,7 @@ router.post('/scrape/single', async (req, res) => {
       }
 
       json.engine = namespace.engine || default_engine;
-      json.embedding = namespace.embedding || default_embedding;
+      json.embedding = normalizeEmbedding(namespace.embedding);
       json.embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
       if (namespace.hybrid === true) {
@@ -363,7 +370,7 @@ router.post('/qa', async (req, res) => {
   }
 
   data.engine = namespace.engine || default_engine;
-  data.embedding = namespace.embedding || default_embedding;
+  data.embedding = normalizeEmbedding(namespace.embedding);
   data.embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
   if (namespace.hybrid === true) {
@@ -1029,7 +1036,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   //          import operation the content's limit is respected
   let ns = namespaces.find(n => n.id === namespace_id);
   let engine = ns.engine || default_engine;
-  let embedding = ns.embedding || default_embedding;
+  let embedding = normalizeEmbedding(ns.embedding);
   embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
   let hybrid = ns.hybrid;
 
@@ -1441,10 +1448,8 @@ router.post('/', async (req, res) => {
       
       const saved_kb = raw_content.value;
       const webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
-      const embedding = {
-        ...(namespace.embedding || default_embedding),
-        api_key: process.env.EMBEDDING_API_KEY || process.env.GPTKEY
-      }
+      const embedding = normalizeEmbedding(namespace.embedding);
+      embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
       const json = {
         id: saved_kb._id,
@@ -1609,7 +1614,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
       aiManager.saveBulk(operations, kbs, project_id, namespace_id).then((result) => {
 
         let engine = namespace.engine || default_engine;
-        let embedding = namespace.embedding || default_embedding;
+        let embedding = normalizeEmbedding(namespace.embedding);
         embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
         let hybrid = namespace.hybrid;
 
