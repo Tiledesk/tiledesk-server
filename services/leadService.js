@@ -55,7 +55,7 @@ class LeadService {
 
 
 
-  createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes, phone, status) {
+  createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes, status, phone) {
     var that = this;
     return new Promise(function (resolve, reject) {
 
@@ -75,10 +75,10 @@ class LeadService {
         // .exec(function(err, lead)  {
           if (err) {
             winston.error("Error createIfNotExistsWithLeadId", err);
-            return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes, phone, status));
+            return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes, status, phone));
           }
           if (!lead) {
-            return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes, phone, status));
+            return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes, status, phone));
           }
 
           winston.debug("lead.email: " + lead.email); 
@@ -123,7 +123,7 @@ class LeadService {
     });
   }
 
-  updateWitId(lead_id, fullname, email, id_project, phone, status) {
+  updateWitId(lead_id, fullname, email, id_project, status, phone) {
     winston.debug("updateWitId lead_id: "+ lead_id);
     winston.debug("fullname: "+ fullname);
     winston.debug("email: "+ email);
@@ -160,7 +160,7 @@ class LeadService {
     });
   }
 
-  createWitId(lead_id, fullname, email, id_project, createdBy, attributes, phone, status ) {
+  createWitId(lead_id, fullname, email, id_project, createdBy, attributes, status, phone ) {
 
     if (!createdBy) {
       createdBy = "system";
