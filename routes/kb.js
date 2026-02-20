@@ -1468,6 +1468,7 @@ router.post('/', async (req, res) => {
       }
 
       winston.debug("json: ", json);
+      console.log("json: ", json);
 
       if (process.env.NODE_ENV === 'test') {
         return res.status(200).send({ success: true, message: "Schedule scrape skipped in test environment", data: raw_content, schedule_json: json });
