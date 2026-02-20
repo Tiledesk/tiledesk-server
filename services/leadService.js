@@ -55,7 +55,7 @@ class LeadService {
 
 
 
-  createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes, status, phone) {
+  createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes, phone, status) {
     var that = this;
     return new Promise(function (resolve, reject) {
 
@@ -75,10 +75,10 @@ class LeadService {
         // .exec(function(err, lead)  {
           if (err) {
             winston.error("Error createIfNotExistsWithLeadId", err);
-            return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes, status, phone));
+            return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes, phone, status));
           }
           if (!lead) {
-            return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes, status, phone));
+            return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes, phone, status));
           }
 
           winston.debug("lead.email: " + lead.email); 
@@ -89,7 +89,7 @@ class LeadService {
             return resolve(lead);
           } else {
             winston.debug("lead already exists createIfNotExistsWithLeadId but with different email");
-            return resolve(that.updateWitId(lead_id, fullname, email, id_project, status, phone));
+            return resolve(that.updateWitId(lead_id, fullname, email, id_project, phone,status));
           }
           
       
@@ -123,7 +123,7 @@ class LeadService {
     });
   }
 
-  updateWitId(lead_id, fullname, email, id_project, status, phone) {
+  updateWitId(lead_id, fullname, email, id_project, phone, status) {
     winston.debug("updateWitId lead_id: "+ lead_id);
     winston.debug("fullname: "+ fullname);
     winston.debug("email: "+ email);
@@ -137,7 +137,7 @@ class LeadService {
     update.fullname = fullname;
     update.email = email;
     update.phone = phone;
-    
+
     if (status) {
       update.status = status;
     }
@@ -160,7 +160,7 @@ class LeadService {
     });
   }
 
-  createWitId(lead_id, fullname, email, id_project, createdBy, attributes, status, phone) {
+  createWitId(lead_id, fullname, email, id_project, createdBy, attributes, phone, status ) {
 
     if (!createdBy) {
       createdBy = "system";
