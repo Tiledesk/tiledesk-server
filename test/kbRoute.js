@@ -615,7 +615,8 @@ describe('KbRoute', () => {
                                 type: "text",
                                 source: "example_text1",
                                 content: "Example text",
-                                namespace: namespace_id
+                                namespace: namespace_id,
+                                tags: ["test", "example"]
                             }
 
                             chai.request(server)
@@ -631,6 +632,7 @@ describe('KbRoute', () => {
                                     res.body.should.be.a('object');
 
                                     let realResponse = res.body.data;
+                                    console.log("realResponse: ", realResponse);
                                     expect(realResponse.value.id_project).to.equal(namespace_id)
                                     expect(realResponse.value.name).to.equal("example_text1")
                                     expect(realResponse.value.type).to.equal("text")
@@ -638,7 +640,10 @@ describe('KbRoute', () => {
                                     expect(realResponse.value.status).to.equal(-1)
                                     expect(typeof realResponse.value.scrape_type === "undefined").to.be.true;
                                     expect(typeof realResponse.value.scrape_options === "undefined").to.be.true;
-
+                                    expect(realResponse.value.tags.length).to.equal(2);
+                                    expect(realResponse.value.tags[0]).to.equal("test");
+                                    expect(realResponse.value.tags[1]).to.equal("example");
+                                    
                                     done();
                                 })
                         })
