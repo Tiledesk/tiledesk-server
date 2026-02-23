@@ -155,7 +155,7 @@ async (req, res)  => {
               // prende fullname e email da quello loggato
               console.log("req.user", req.user);
               // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes) {
-              return leadService.createIfNotExistsWithLeadId(sender || req.user._id, fullname, email, req.projectid, null, req.body.attributes || req.user.attributes, null, req.user.phone)
+              return leadService.createIfNotExistsWithLeadId(sender || req.user._id, fullname, email, req.projectid, null, req.body.attributes || req.user.attributes, undefined, req.user.phone)
               .then(function(createdLead) {
 
                 console.log("createdLead", createdLead);

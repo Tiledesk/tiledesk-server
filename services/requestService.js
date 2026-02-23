@@ -488,7 +488,8 @@ class RequestService {
       notes,
       priority,
       auto_close,
-      followers
+      followers,
+      contact
     } = request;
 
     let departmentid = request.departmentid || 'default';
@@ -650,6 +651,7 @@ class RequestService {
       priority,
       auto_close,
       followers,
+      contact,
       createdAt,
       snapshot
     })
