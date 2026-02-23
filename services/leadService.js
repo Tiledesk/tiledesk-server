@@ -6,6 +6,7 @@ const leadEvent = require('../event/leadEvent');
 var winston = require('../config/winston');
 var cacheUtil = require('../utils/cacheUtil');
 var cacheEnabler = require("../services/cacheEnabler");
+var phoneUtil = require('../utils/phoneUtil');
 
 
 class LeadService {
@@ -124,8 +125,9 @@ class LeadService {
 
     update.fullname = fullname;
     update.email = email;
-    update.phone = phone;
-    
+    if (phone !== undefined) {
+      update.phone = phoneUtil.normalizePhone(phone);
+    }
     if (status) {
       update.status = status;
     }
@@ -164,7 +166,7 @@ class LeadService {
               lead_id: lead_id,
               fullname: fullname,
               email: email,
-              phone: phone,
+              phone: phoneUtil.normalizePhone(phone),
               attributes: attributes,
               status: status,
               id_project: id_project,

@@ -1221,6 +1221,14 @@ router.get('/', function (req, res, next) {
     query.$text = { "$search": req.query.full_text };
   }
 
+  if (req.query.phone) {
+    // Match by digit sequence so e.g. "3456677888" finds "+393456677888"
+    var phoneDigits = req.query.phone.replace(/\D/g, '');
+    if (phoneDigits.length > 0) {
+      query["contact.phone"] = new RegExp(phoneDigits);
+    }
+  }
+
   var history_search = false;
 
   // Multiple status management
