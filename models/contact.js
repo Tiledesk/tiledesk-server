@@ -22,5 +22,4 @@ const ContactSchema = new Schema({
   timestamps: true
 });
 
-const Contact = mongoose.model('Contact', ContactSchema);
-module.exports = Contact;
+module.exports = ContactSchema;
