@@ -508,6 +508,10 @@ RequestSchema.index({ id_project: 1, preflight: 1, smartAssignment: 1, "snapshot
 
 RequestSchema.index({ status: 1, hasBot: 1, updatedAt: 1 }) // For closing unresponsive requests
 
+// Contact search by phone / email
+RequestSchema.index({ id_project: 1, 'contact.phone': 1 });
+RequestSchema.index({ id_project: 1, 'contact.email': 1 });
+
 // ERROR DURING DEPLOY OF 2.10.27
 //RequestSchema.index({ id_project: 1, participants: 1, "snapshot.agents.id_user": 1, createdAt: -1, status: 1 })
 
