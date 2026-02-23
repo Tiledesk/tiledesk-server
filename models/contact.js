@@ -19,8 +19,8 @@ const ContactSchema = new Schema({
     trim: true
   }
 }, {
-  timestamps: true
+  timestamps: false,
+  _id: false
 });
 
-const Contact = mongoose.model('Contact', ContactSchema);
-module.exports = Contact;
+module.exports = ContactSchema;
