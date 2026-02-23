@@ -156,8 +156,12 @@ async (req, res)  => {
         
             var new_request = {                                     
               request_id: req.params.request_id, 
-              project_user_id: project_user._id, 
+              project_user_id: project_user._id,
               lead_id: createdLead._id, 
+              contact: {
+                phone: createdLead.phone,
+                email: createdLead.email
+              },
               id_project:req.projectid,
               first_text: req.body.text, 
               departmentid: req.body.departmentid, 

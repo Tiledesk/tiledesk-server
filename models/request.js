@@ -14,7 +14,7 @@ var NoteSchema = require("../models/note").schema;
 var TagSchema = require("../models/tag");
 var LocationSchema = require("../models/location");
 var RequestSnapshotSchema = require("../models/requestSnapshot");
-
+var ContactSchema = require("../models/contact");
 var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 winston.info("Request defaultFullTextLanguage: "+ defaultFullTextLanguage);
 
@@ -304,8 +304,8 @@ var RequestSchema = new Schema({
     type: Boolean,
     required: false,
     index: true
-  }
-
+  },
+  contact: ContactSchema,
 }, {
   timestamps: true,
   toObject: { virtuals: true }, //IMPORTANT FOR trigger used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
