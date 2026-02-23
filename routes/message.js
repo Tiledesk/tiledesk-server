@@ -153,12 +153,14 @@ async (req, res)  => {
               }
 
               // prende fullname e email da quello loggato
-
+              console.log("req.user", req.user);
               // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes) {
               return leadService.createIfNotExistsWithLeadId(sender || req.user._id, fullname, email, req.projectid, null, req.body.attributes || req.user.attributes, null, req.user.phone)
               .then(function(createdLead) {
 
-               
+                console.log("createdLead", createdLead);
+                console.log("createdLead", createdLead.phone);
+                console.log("createdLead", createdLead.email);
             
                 var new_request = {                                     
                   request_id: req.params.request_id, 
@@ -195,6 +197,7 @@ async (req, res)  => {
                   if (!savedRequest) {
                     return res.status(403).send({ success: false, message: "Requests quota exceeded"})
                   }
+                  console.log("savedRequest", savedRequest.toJSON());
                   winston.debug("returning savedRequest to", savedRequest.toJSON());
 
                   // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, 
