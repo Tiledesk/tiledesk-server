@@ -485,7 +485,8 @@ class RequestService {
       notes,
       priority,
       auto_close,
-      followers
+      followers,
+      contact
     } = request;
 
     let departmentid = request.departmentid || 'default';
@@ -502,7 +503,7 @@ class RequestService {
         request_id, project_user_id, lead_id, id_project,
         first_text, departmentid, sourcePage, language, userAgent, status,
         createdBy, attributes, subject, preflight, channel, location,
-        participants,tags,notes,priority,auto_close,followers
+        participants,tags,notes,priority,auto_close,followers,contact
       }
     };
 
@@ -648,7 +649,8 @@ class RequestService {
       auto_close,
       followers,
       createdAt,
-      snapshot
+      snapshot,
+      contact,
     })
 
     if (isTestConversation) {
