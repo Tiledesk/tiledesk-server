@@ -45,7 +45,7 @@ router.post('/',
 // ],
 async (req, res)  => {
 
-  winston.debug('req.body post message', req.body);
+  winston.info('req.body post message', req.body);
   winston.debug('req.params: ', req.params);
   winston.debug('req.params.request_id: ' + req.params.request_id);
 
@@ -54,6 +54,9 @@ async (req, res)  => {
   //   return res.status(422).json({ errors: errors.array() });
   // }
 
+
+
+  
   // TODO se sei agent non puoi cambiare sender
   // verificare validazione invio immagine senza caption 
   var project_user = req.projectuser;
@@ -64,257 +67,291 @@ async (req, res)  => {
   let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
   winston.debug('messageStatus: ' + messageStatus);
 
-  let q = Request.findOne({request_id: req.params.request_id, id_project: req.projectid}); 
-  if (cacheEnabler.request) {
-    q.cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+req.params.request_id+":simple") //request_cache
-    winston.debug('request cache enabled');
-  }
-  // cacherequest       // requestcachefarequi nocachepopulatereqired
-  return q.exec(async(err, request) => {
-    // .populate('lead')
-    // .populate('department')
-    // .populate('participatingBots')
-    // .populate('participatingAgents')  
-    // .populate({path:'requester',populate:{path:'id_user'}})
-    
-    if (err) {
-      winston.log({
-          level: 'error',
-          message: 'Error getting the request: '+ JSON.stringify(err) + " " + JSON.stringify(req.body) ,
-          label: req.projectid
-        });
-      // winston.error('Error getting the request.', err);
-      return res.status(500).send({success: false, msg: 'Error getting the request.', err:err});
-    }
+  winston.info('router.post create message');
 
-    if (!request) { //the request doen't exists create it
-
-          winston.debug("request not exists", request);                                     
-
-          if (project_user) {
-            winston.debug("project_user", project_user);                                     
-          }
-          
-          
-            // sponz: 4/01/23 disable it
-            if (!req.body.text &&  (!req.body.type || req.body.type=="text") ) {
-              return res.status(422).json({ errors: ["text field is required"] });
-            } 
-
-          if (sender) {
-
-            var isObjectId = mongoose.Types.ObjectId.isValid(sender);
-            winston.debug("isObjectId:"+ isObjectId);
+      let q = Request.findOne({request_id: req.params.request_id, id_project: req.projectid}); 
+      if (cacheEnabler.request) {
+        q.cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+req.params.request_id+":basic") //request_cache
+        winston.debug('request cache enabled');
+      }
+      // cacherequest       // requestcachefarequi nocachepopulatereqired
+      return q.exec(async(err, request) => {
+        // .populate('lead')
+        // .populate('department')
+        // .populate('participatingBots')
+        // .populate('participatingAgents')  
+        // .populate({path:'requester',populate:{path:'id_user'}})
         
-              var queryProjectUser = {id_project:req.projectid, status: "active" };
-        
-            if (isObjectId) {
-              queryProjectUser.id_user = sender;
-            } else {
-              queryProjectUser.uuid_user = sender;
-            }
-        
-            winston.debug("queryProjectUser", queryProjectUser);
-            
-            project_user = await Project_user.findOne(queryProjectUser).populate({path:'id_user', select:{'firstname':1, 'lastname':1, 'email':1}})
-            winston.debug("project_user", project_user);
-        
-            if (!project_user) {
-              return res.status(403).send({success: false, msg: 'Unauthorized. Project_user not found with user id  : '+ sender });
-            }
 
-            if ( project_user.id_user) {
-              fullname = project_user.id_user.fullName;
-              winston.debug("pu fullname: "+ fullname);
-              email = project_user.id_user.email;
-              winston.debug("pu email: "+ email);
-            } else if (project_user.uuid_user) {
-              var lead = await Lead.findOne({lead_id: project_user.uuid_user, id_project: req.projectid});
-              winston.debug("lead: ",lead);
-              if (lead) {
-                fullname = lead.fullname;
-                winston.debug("lead fullname: "+ fullname);
-                email = lead.email;
-                winston.debug("lead email: "+ email);
-              }else {
-                winston.warn("lead not found: " + JSON.stringify({lead_id: project_user.uuid_user, id_project: req.projectid}));
+        if (err) {
+          winston.log({
+              level: 'error',
+              message: 'Error getting the request: '+ JSON.stringify(err) + " " + JSON.stringify(req.body) ,
+              label: req.projectid
+            });
+          // winston.error('Error getting the request.', err);
+          return res.status(500).send({success: false, msg: 'Error getting the request.', err:err});
+        }
+
+        if (!request) { //the request doen't exists create it
+
+              winston.debug("request not exists", request);                                     
+
+              if (project_user) {
+                winston.debug("project_user", project_user);                                     
               }
               
-            } else {
-              winston.warn("pu fullname and email empty");
-            }
+              
+                // sponz: 4/01/23 disable it
+                if (!req.body.text &&  (!req.body.type || req.body.type=="text") ) {
+                  return res.status(422).json({ errors: ["text field is required"] });
+                } 
+
+              if (sender) {
+
+                var isObjectId = mongoose.Types.ObjectId.isValid(sender);
+                winston.debug("isObjectId:"+ isObjectId);
             
-          }
-
-          // prende fullname e email da quello loggato
-
-          // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes) {
-          return leadService.createIfNotExistsWithLeadId(sender || req.user._id, fullname, email, req.projectid, null, req.body.attributes || req.user.attributes, undefined, req.user.phone)
-          .then(function(createdLead) {
-
+                 var queryProjectUser = {id_project:req.projectid, status: "active" };
             
-        
-            var new_request = {                                     
-              request_id: req.params.request_id, 
-              project_user_id: project_user._id,
-              lead_id: createdLead._id, 
-              contact: {
-                phone: createdLead.phone,
-                email: createdLead.email
-              },
-              id_project:req.projectid,
-              first_text: req.body.text, 
-              departmentid: req.body.departmentid, 
-              sourcePage:req.body.sourcePage, 
-              language: req.body.language, 
-              userAgent:req.body.userAgent, 
-              status:req.body.request_status, 
-              createdBy: req.user._id,
-              attributes: req.body.attributes, 
-              subject: req.body.subject, 
-              preflight:req.body.preflight, 
-              channel: req.body.channel, 
-              location: req.body.location,
-              participants: req.body.participants,
-              lead: createdLead, 
-              requester: project_user,
-              priority: req.body.priority,
-              followers: req.body.followers,
-              proactive: true
-            };
+                if (isObjectId) {
+                  queryProjectUser.id_user = sender;
+                } else {
+                  queryProjectUser.uuid_user = sender;
+                }
+            
+                winston.debug("queryProjectUser", queryProjectUser);
+                
+                project_user = await Project_user.findOne(queryProjectUser).populate({path:'id_user', select:{'firstname':1, 'lastname':1, 'email':1}})
+                winston.debug("project_user", project_user);
+            
+                if (!project_user) {
+                  return res.status(403).send({success: false, msg: 'Unauthorized. Project_user not found with user id  : '+ sender });
+                }
 
-            return requestService.create(new_request).then(function (savedRequest) {
-
-
-              if (!savedRequest) {
-                return res.status(403).send({ success: false, message: "Requests quota exceeded"})
+                if ( project_user.id_user) {
+                  fullname = project_user.id_user.fullName;
+                  winston.debug("pu fullname: "+ fullname);
+                  email = project_user.id_user.email;
+                  winston.debug("pu email: "+ email);
+                } else if (project_user.uuid_user) {
+                  var lead = await Lead.findOne({lead_id: project_user.uuid_user, id_project: req.projectid});
+                  winston.debug("lead: ",lead);
+                  if (lead) {
+                    fullname = lead.fullname;
+                    winston.debug("lead fullname: "+ fullname);
+                    email = lead.email;
+                    winston.debug("lead email: "+ email);
+                  }else {
+                    winston.warn("lead not found: " + JSON.stringify({lead_id: project_user.uuid_user, id_project: req.projectid}));
+                  }
+                  
+                } else {
+                  winston.warn("pu fullname and email empty");
+                }
+                
               }
-              winston.debug("returning savedRequest to", savedRequest.toJSON());
 
-              // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, 
-              //  createdBy, attributes, subject, preflight, channel, location) {
+              // prende fullname e email da quello loggato
+              console.log("req.user", req.user);
+              // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes) {
+              return leadService.createIfNotExistsWithLeadId(sender || req.user._id, fullname, email, req.projectid, null, req.body.attributes || req.user.attributes, undefined, req.user.phone)
+              .then(function(createdLead) {
 
-              // return requestService.createWithIdAndRequester(req.params.request_id, req.projectuser._id, createdLead._id, req.projectid, 
-              //   req.body.text, req.body.departmentid, req.body.sourcePage, 
-              //   req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject, undefined, req.body.channel, req.body.location ).then(function (savedRequest) {
+                console.log("createdLead", createdLead);
+                console.log("createdLead", createdLead.phone);
+                console.log("createdLead", createdLead.email);
+            
+                var new_request = {                                     
+                  request_id: req.params.request_id, 
+                  project_user_id: project_user._id, 
+                  lead_id: createdLead._id,
+                  contact: {
+                    phone: createdLead.phone,
+                    email: createdLead.email
+                  },
+                  id_project:req.projectid,
+                  first_text: req.body.text, 
+                  departmentid: req.body.departmentid, 
+                  sourcePage:req.body.sourcePage, 
+                  language: req.body.language, 
+                  userAgent:req.body.userAgent, 
+                  status:req.body.request_status, 
+                  createdBy: req.user._id,
+                  attributes: req.body.attributes, 
+                  subject: req.body.subject, 
+                  preflight:req.body.preflight, 
+                  channel: req.body.channel, 
+                  location: req.body.location,
+                  participants: req.body.participants,
+                  lead: createdLead, 
+                  requester: project_user,
+                  priority: req.body.priority,
+                  followers: req.body.followers,
+                  proactive: true
+                };
+  
+                return requestService.create(new_request).then(function (savedRequest) {
+
+
+                  if (!savedRequest) {
+                    return res.status(403).send({ success: false, message: "Requests quota exceeded"})
+                  }
+                  console.log("savedRequest", savedRequest.toJSON());
+                  winston.debug("returning savedRequest to", savedRequest.toJSON());
+
+                  // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, 
+                  //  createdBy, attributes, subject, preflight, channel, location) {
+
+                  // return requestService.createWithIdAndRequester(req.params.request_id, req.projectuser._id, createdLead._id, req.projectid, 
+                  //   req.body.text, req.body.departmentid, req.body.sourcePage, 
+                  //   req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject, undefined, req.body.channel, req.body.location ).then(function (savedRequest) {
 
 
 
 
-              // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type, channel) {
+                  // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type, channel) {
+                  return messageService.create(sender || req.user._id, fullname, req.params.request_id, req.body.text,
+                    req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata, req.body.language, undefined, req.body.channel).then(function (savedMessage) {
+
+                      // return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
+
+                      let message = savedMessage.toJSON();
+
+                      winston.debug("returning message to", message);
+
+                      winston.debug("returning savedRequest2210 to", savedRequest.toJSON());
+
+
+                      savedRequest //bug
+                        // Request.findById(savedRequest.id)
+                        .populate('lead')
+                        .populate('department')
+                        .populate('participatingBots')
+                        .populate('participatingAgents')
+                        // .populate('followers')  
+                        .populate({ path: 'requester', populate: { path: 'id_user' } })
+                        // .exec(function (err, savedRequestPopulated){    
+                        .execPopulate(function (err, savedRequestPopulated) {   //bug with  execPopulate request.attributes are invalid (NOT real data). but this bug is related to chat21 listener changes by reference. i think populate suffer from this problem bacause it it the same obect passed by reference 
+
+                          if (err) {
+                            return winston.error("Error gettting savedRequestPopulated for send Message", err);
+                          }
+
+                          winston.debug("returning savedRequest221 to", savedRequest.toJSON());
+
+
+                          winston.debug("savedRequestPopulated", savedRequestPopulated.toJSON());
+
+                          winston.debug("returning savedRequest22 to", savedRequest.toJSON());
+
+
+                          message.request = savedRequestPopulated;
+                          winston.debug("returning2 message to", message);
+
+
+                          return res.json(message);
+                        });
+                    });
+                }).catch(function (err) {    //pubblica questo
+                  winston.error('Error creating request: ' + JSON.stringify(err));
+                  return res.status(500).send({ success: false, msg: 'Error creating request', err: err });
+                });
+
+              });
+                            
+
+
+        } else {
+
+      
+
+          winston.debug("request  exists", request.toObject());
+          if (request.channel?.name === 'form' || request.channel?.name === 'email') {
+            if (!sender && request.participantsAgents?.[0] !== req.user.id) {
+              return res.status(403).send({ success: false, message: "Error creating message", err: "You don't belong the conversation" });
+            }
+          }
+         
+               // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type, channel) {                 
               return messageService.create(sender || req.user._id, fullname, req.params.request_id, req.body.text,
-                req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata, req.body.language, undefined, req.body.channel).then(function (savedMessage) {
+                request.id_project, null, messageStatus, req.body.attributes, req.body.type, req.body.metadata, req.body.language, undefined, req.body.channel).then(function(savedMessage){
 
-                  // return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
+                  // TOOD update also request attributes and sourcePage
+                  // return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
+                    // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
+                    if (sender && sender !== 'system') {
+                      Request.findOneAndUpdate({request_id: request.request_id, id_project: request.id_project}, { "attributes.last_message": savedMessage}).catch((err) => {
+                        winston.error("Create message - saving last message in request error: ", err);
+                      })
+                    }
 
-                  let message = savedMessage.toJSON();
+                     
+                    if (request.participants && request.participants.indexOf(sender) > -1) { //update waiitng time if write an  agent (member of participants)
+                      winston.debug("updateWaitingTimeByRequestId");
+                      return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project, true).then(function(upRequest) {
+                          let message = savedMessage.toJSON();
+                          message.request = upRequest;
 
-                  winston.debug("returning message to", message);
 
-                  winston.debug("returning savedRequest2210 to", savedRequest.toJSON());
+                          return res.json(message);
+                      });
+                    }else {
+                      let message = savedMessage.toJSON();
+
+                      winston.debug("getting request for response");
+                      winston.info('router.post 2 create message');
+                      let q =
+                      Request.findOne({request_id:  request.request_id, id_project: request.id_project})
+                      // request
+                      .populate('lead')
+                      .populate('department')
+                      .populate('participatingBots')
+                      .populate('participatingAgents')  
+                      // .populate('followers')  
+                      .populate({path:'requester',populate:{path:'id_user'}});
 
 
-                  savedRequest //bug
-                    // Request.findById(savedRequest.id)
-                    .populate('lead')
-                    .populate('department')
-                    .populate('participatingBots')
-                    .populate('participatingAgents')
-                    // .populate('followers')  
-                    .populate({ path: 'requester', populate: { path: 'id_user' } })
-                    // .exec(function (err, savedRequestPopulated){    
-                    .execPopulate(function (err, savedRequestPopulated) {   //bug with  execPopulate request.attributes are invalid (NOT real data). but this bug is related to chat21 listener changes by reference. i think populate suffer from this problem bacause it it the same obect passed by reference 
-
-                      if (err) {
-                        return winston.error("Error gettting savedRequestPopulated for send Message", err);
+                      if (cacheEnabler.request) {
+                        q.cache(cacheUtil.defaultTTL, request.id_project+":requests:request_id:"+request.request_id)
+                        winston.debug('request cache enabled for messages');
                       }
 
-                      winston.debug("returning savedRequest221 to", savedRequest.toJSON());
+                      q.exec(function (err, requestPopulated){    
+                        // q.execPopulate(function (err, requestPopulated){    
 
-
-                      winston.debug("savedRequestPopulated", savedRequestPopulated.toJSON());
-
-                      winston.debug("returning savedRequest22 to", savedRequest.toJSON());
-
-
-                      message.request = savedRequestPopulated;
-                      winston.debug("returning2 message to", message);
-
-
-                      return res.json(message);
-                    });
-                });
-            }).catch(function (err) {    //pubblica questo
-              winston.error('Error creating request: ' + JSON.stringify(err));
-              return res.status(500).send({ success: false, msg: 'Error creating request', err: err });
-            });
-
-          });
+                        if (err) {
+                          return winston.error("Error gettting savedRequestPopulated for send Message", err);
+                        }   
                         
+                        message.request = requestPopulated;
+
+                        return res.json(message);
+
+                      });                     
+                    }
+                  // });
+                }).catch(function(err){
+                  winston.log({
+                    level: 'error',
+                    message: 'Error creating message endpoint: '+ JSON.stringify(err) + " " + JSON.stringify(req.body) ,
+                    label: req.projectid
+                  });
+                  winston.error("Error creating message", err);
+                  return res.status(500).send({success: false, msg: 'Error creating message', err:err });
+                });
 
 
-    } else {
 
-      winston.debug("request  exists", request.toObject());
-      if (request.channel?.name === 'form') {
-        if (!sender && request.participantsAgents?.[0] !== req.user.id) {
-          return res.status(403).send({ success: false, message: "Error creating message", err: "You don't belong the conversation" });
         }
-      }
       
-      return messageService.create(sender || req.user._id, fullname, req.params.request_id, req.body.text,
-        request.id_project, null, messageStatus, req.body.attributes, req.body.type, req.body.metadata, 
-        req.body.language, undefined, req.body.channel).then(function(savedMessage){
 
-          // TOOD update also request attributes and sourcePage
-          // return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
-          // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
-              
-          if (request.participants && request.participants.indexOf(sender) > -1) { //update waiitng time if write an  agent (member of participants)
-            winston.debug("updateWaitingTimeByRequestId");
-            return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project, true).then(function(upRequest) {
-                let message = savedMessage.toJSON();
-                message.request = upRequest;
-                return res.json(message);
-            });
 
-          } else {
+      });
 
-            let message = savedMessage.toJSON();
-            winston.debug("getting request for response");
 
-            let q = Request.findOne({request_id:  request.request_id, id_project: request.id_project})
-              .populate('lead')
-              .populate('department')
-              .populate('participatingBots')
-              .populate('participatingAgents')  
-              .populate({path:'requester',populate:{path:'id_user'}});
 
-            if (cacheEnabler.request) {
-              q.cache(cacheUtil.defaultTTL, request.id_project+":requests:request_id:"+request.request_id)
-              winston.debug('request cache enabled for messages');
-            }
 
-            q.exec(function (err, requestPopulated) {    
- 
-              if (err) {
-                return winston.error("Error gettting savedRequestPopulated for send Message", err);
-              }   
-              message.request = requestPopulated;
-              return res.json(message);
-            });                     
-          }
-        }).catch(function(err) {
-          winston.log({
-            level: 'error',
-            message: 'Error creating message endpoint: '+ JSON.stringify(err) + " " + JSON.stringify(req.body) ,
-            label: req.projectid
-          });
-          winston.error("Error creating message", err);
-          return res.status(500).send({success: false, msg: 'Error creating message', err:err });
-        });
-    }
-  });
 });
 
 
