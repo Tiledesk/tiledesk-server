@@ -76,7 +76,18 @@ class TdCache {
       });
     }
 
-
+    /**
+     * Set key only if it does not exist, with TTL (seconds). Returns true if key was set, false if key already existed.
+     * Uses Redis SET key value EX ttl NX to avoid email/notification flooding.
+     */
+    async setNX(key, value, ttlSeconds) {
+      return new Promise((resolve, reject) => {
+        this.client.set(key, value, 'EX', ttlSeconds, 'NX', (err, reply) => {
+          if (err) return reject(err);
+          resolve(reply === 'OK');
+        });
+      });
+    }
 
 
 
