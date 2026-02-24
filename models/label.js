@@ -32,7 +32,7 @@ var LabelEntrySchema = new Schema({
     required: true,
     default: false,
     index: true
-  },
+  }
 });
 
 var LabelSchema = new Schema({

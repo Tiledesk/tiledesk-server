@@ -23,7 +23,20 @@ else
 fi
 
 git pull
-npm version patch
+
+# Determine version bump type (default: patch)
+VERSION_TYPE="${1:-patch}"
+
+# Validate version type
+if [[ "$VERSION_TYPE" != "patch" && "$VERSION_TYPE" != "minor" && "$VERSION_TYPE" != "major" ]]; then
+  echo "❌ Invalid version type: $VERSION_TYPE"
+  echo "Usage: ./deploynew.sh [patch|minor|major]"
+  echo "Default: patch (if no argument provided)"
+  exit 1
+fi
+
+echo "📦 Bumping version: $VERSION_TYPE"
+npm version $VERSION_TYPE
 version=`node -e 'console.log(require("./package.json").version)'`
 echo "version $version"
 

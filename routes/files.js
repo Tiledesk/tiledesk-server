@@ -5,6 +5,7 @@ require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 var winston = require('../config/winston');
 var pathlib = require('path');
+var mongoose = require('mongoose');
 
 
 var router = express.Router();
@@ -29,26 +30,28 @@ if (MAX_UPLOAD_FILE_SIZE) {
 } else {
   winston.info("Max upload file size is infinity");
 }
-const upload = multer({ storage: fileService.getStorage("files"),limits: uploadlimits});
+
+let files_allowed = process.env.UPLOAD_FILES_ALLOW_LIST || "text/plain,application/octet-stream,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,audio/mpeg,application/json,application/pdf";
+winston.info("Files upload allowed list " + files_allowed);
+
+// const fileFilter = (req, file, cb) => {
+//   winston.debug("fileFilter " + files_allowed);
+//   const ext = file.originalname.toLowerCase().endsWith('.html') || file.originalname.toLowerCase().endsWith('.htm');
+
+// DEPRECATED FROM VERSION 2.14.24
+// router.post('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], upload.single('file'), (req, res, next) => {
+
+//   winston.verbose("files/users")
+//   return res.status(201).json({
+//     message: 'File uploded successfully',
+//     filename: req.file.filename
+//   });
+
+// });
 
 /*
-curl -u andrea.leo@f21.it:123456 \
-  -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/README.md" \
-  http://localhost:3000/files/users/
 
-  */
 
-router.post('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], upload.single('file'), (req, res, next) => {
-
-  winston.verbose("files/users")
-  return res.status(201).json({
-    message: 'File uploded successfully',
-    filename: req.file.filename
-  });
-
-});
-
-/*
 curl \
   -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/README.md" \
   http://localhost:3000/files/public/
@@ -57,13 +60,14 @@ curl \
 
   */
 
-router.post('/public', upload.single('file'), (req, res, next) => {
-  winston.debug("files/public")
-      return res.status(201).json({
-          message: 'File uploded successfully',
-          filename: req.file.filename
-      });    
-});
+// DEPRECATED FROM VERSION 2.14.24
+// router.post('/public', upload.single('file'), (req, res, next) => {
+//   winston.debug("files/public")
+//       return res.status(201).json({
+//           message: 'File uploded successfully',
+//           filename: req.file.filename
+//       });    
+// });
 
 
 
