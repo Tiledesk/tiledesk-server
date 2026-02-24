@@ -10,25 +10,21 @@ const dbConnection = mongoose.connection;
 
 class Listener {
 
-    listen(config) {
-
+    async listen(config) {
         winston.info("TwilioVoice Listener listen");
-        if (config.databaseUri) {
-            winston.debug("TwilioVoice config databaseUri: " +  config.databaseUri);
-        }
 
         var port = process.env.CACHE_REDIS_PORT || 6379;
-        winston.debug("Redis port: "+ port);
+        winston.debug("Redis port: " + port);
 
-        var host = process.env.CACHE_REDIS_HOST || "127.0.0.1"
-        winston.debug("Redis host: "+ host);
+        var host = process.env.CACHE_REDIS_HOST || "127.0.0.1";
+        winston.debug("Redis host: " + host);
 
         var password = process.env.CACHE_REDIS_PASSWORD;
-        winston.debug("Redis password: "+ password);
+        winston.debug("Redis password: " + password);
 
         let brand_name = null;
         if (process.env.BRAND_NAME) {
-            brand_name = process.env.BRAND_NAME
+            brand_name = process.env.BRAND_NAME;
         }
 
         let openai_endpoint = process.env.OPENAI_ENDPOINT;
@@ -36,28 +32,43 @@ class Listener {
 
         let gpt_key = process.env.GPTKEY;
 
-        let log = process.env.VOICE_TWILIO_LOG || false
+        let elevenlabs_endpoint = process.env.ELEVENLABS_ENDPOINT || "https://api.elevenlabs.io";
+        winston.debug("ElevenLabs Endpoint: ", elevenlabs_endpoint);
+
+        const baseUrl = apiUrl + "/modules/voice-twilio";
+        winston.debug("Voice baseUrl: "+ baseUrl);
+
+        const relativeBaseUrl = process.env.API_ENDPOINT + "/modules/voice-twilio";
+        winston.debug("Voice relativeBaseUrl: "+ relativeBaseUrl);
+
+        let log = process.env.VOICE_TWILIO_LOG || 'error'
         winston.debug("Voice log: "+ log);
         
-        voice_twilio.startApp({
-            MONGODB_URI: config.databaseUri,          
-            dbconnection: dbConnection,
-            BASE_URL: apiUrl + "/modules/voice-twilio",
-            BASE_FILE_URL: apiUrl,                     
-            REDIS_HOST: host,
-            REDIS_PORT: port,
-            REDIS_PASSWORD: password,
-            BRAND_NAME: brand_name,
-            OPENAI_ENDPOINT: openai_endpoint,
-            GPT_KEY: gpt_key,
-            log: log
-        }, (err) => {
-            if (!err) {
-                winston.info("Tiledesk Twilio Voice Connector proxy server succesfully started.");
-            } else {
-                winston.info("unable to start Tiledesk Twilio Voice Connector. " + err);
-            }    
-        })
+        try {
+            // startServer is async and returns a Promise (no callback)
+            await voice_twilio.init({
+                MONGODB_URI: config.databaseUri,          
+                dbconnection: dbConnection,
+                BASE_URL: baseUrl,
+                RELATIVE_BASE_URL: relativeBaseUrl,
+                BASE_FILE_URL: apiUrl,                     
+                REDIS_HOST: host,
+                REDIS_PORT: port,
+                REDIS_PASSWORD: password,
+                BRAND_NAME: brand_name,
+                OPENAI_ENDPOINT: openai_endpoint,
+                GPT_KEY: gpt_key,
+                ELEVENLABS_ENDPOINT: elevenlabs_endpoint,
+                VOICE_TWILIO_LOG: log
+            })
+
+            winston.info("Tiledesk Twilio Voice Connector proxy server successfully started.");
+
+        } catch (err) {
+            winston.error("Unable to start Tiledesk Twilio Voice Connector. " + err);
+            throw err; // Re-throw if you want to handle the error upstream
+        }
+        
     }
 }
 

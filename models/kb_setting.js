@@ -175,6 +175,11 @@ var KBSchema = new Schema({
   last_error: {
     type: Object,
     required: false
+  },
+  tags: {
+    type: Array,
+    default: undefined,
+    required: false
   }
 }, {
   timestamps: true
