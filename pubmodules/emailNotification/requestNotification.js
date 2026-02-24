@@ -428,6 +428,7 @@ async notifyFollowers(savedRequest, project, message) {
 
   // Cannot read property '_id' of undefined at RequestNotification.notifyFollowers (/usr/src/app/pubmodules/emailNotification/requestNotification.js:358:62) at /usr/src/app
   // forse meglio .id
+  winston.info("main_flow_cache_request notification request find");
   
   var reqWithFollowers = await Request.findById(savedRequest._id).populate('followers').exec();  // cache_attention
   winston.debug("reqWithFollowers");
@@ -564,7 +565,8 @@ sendToAgentEmailChannelEmail(projectid, message) {
 
 
 
-                    
+                    winston.info("main_flow_cache_request notification request find 2");
+
                     var snapshotAgents = await Request.findById(savedRequest.id).select({"snapshot":1}).exec();
 
                     winston.debug('snapshotAgents',snapshotAgents);                              
@@ -812,6 +814,8 @@ sendUserEmail(projectid, message) {
          
           if (!project_user.presence || (project_user.presence && project_user.presence.status === "offline")) {
 
+            winston.info("main_flow_cache_2 lead 2");
+            
              //send email to lead
             return Lead.findOne({lead_id: recipient}, function(err, lead){
               winston.debug("lead", lead);     //TODO  lead  is already present in request.lead
@@ -946,6 +950,8 @@ sendAgentEmail(projectid, savedRequest) {
                     //return winston.warn("RequestNotification snapshotAgents.snapshot.agents is null :(. You are closing an old request?", savedRequest);
 
                   // agents già c'è in quanto viene creato con departmentService.getOperator nella request.create ma nn c'è per request.participants.update
+                    winston.info("main_flow_cache_request notification request find 3");
+
                       snapshotAgents = await Request.findById(savedRequest.id).select({"snapshot":1}).exec();
                       winston.debug('load snapshotAgents with Request.findById ');                              
                   }

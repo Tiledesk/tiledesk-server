@@ -67,10 +67,11 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                             winston.debug("setting first_text to frame");
                         }
 
-
+                        const t1 = Date.now();
                         requestService.changeFirstTextAndPreflightByRequestId(message.request.request_id, message.request.id_project, first_text, false).then(function (reqChanged) {
                         //TESTA QUESTO
-
+                        console.log("[Performance] changeFirstTextAndPreflightByRequestId time: " + (Date.now() - t1));
+                        
                                 winston.debug("message.request.status: "+message.request.status);
                                 
                                 winston.debug("message.request.hasBot: "+message.request.hasBot);
@@ -78,7 +79,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                                 if (message.request.status === 50 &&  message.request.hasBot === false) { 
                                     // if (message.request.status === 50 &&  message.request.department.id_bot == undefined) { 
                                     //apply only if the status is temp and no bot is available. with agent you must reroute to assign temp request to an agent 
-                                    winston.debug("rerouting");
+                                    winston.info("rerouting");
                                     // reroute(request_id, id_project, nobot)
                                     
                                     requestService.reroute(message.request.request_id, message.request.id_project, false ).then(function() {
