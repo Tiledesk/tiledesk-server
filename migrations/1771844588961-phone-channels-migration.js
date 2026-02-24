@@ -2,7 +2,7 @@ var winston = require('../config/winston');
 const Request = require('../models/request');
 const phoneUtil = require('../utils/phoneUtil');
 
-const VOICE_CHANNEL_NAMES = ['voice-twilio', 'voice-vxml', 'voice-vxml-enghouse'];
+const VOICE_CHANNEL_NAMES = ['voice_twilio', 'voice-twilio', 'voice-vxml', 'voice-vxml-enghouse'];
 const BATCH_SIZE = 100;
 
 async function updateManyWithNormalizedPhone(filter, getPhoneFromDoc) {
