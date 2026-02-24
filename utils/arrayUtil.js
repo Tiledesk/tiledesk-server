@@ -14,3 +14,37 @@ function arraysEqual(a, b) {
     }
     return true;
   }
+
+/**
+ * Parse a field as an array of strings.
+ * Returns the array if valid, otherwise undefined.
+ */
+function parseStringArrayField(field) {
+  if (!field) return undefined;
+
+  let arr;
+
+  if (typeof field === 'string') {
+    try {
+      arr = JSON.parse(field); // prova a parsare come JSON
+    } catch {
+      return undefined; // se malformato, skippa
+    }
+  } else if (Array.isArray(field)) {
+    arr = field;
+  } else {
+    return undefined; // non stringa né array
+  }
+
+  // controlla che tutti gli elementi siano stringhe
+  if (Array.isArray(arr) && arr.every(e => typeof e === 'string')) {
+    return arr;
+  }
+
+  return undefined; // non è un array di stringhe
+}
+
+module.exports = {
+  arraysEqual,
+  parseStringArrayField
+};

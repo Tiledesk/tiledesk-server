@@ -59,9 +59,21 @@ class LeadService {
   createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes, status, phone) {
     var that = this;
     return new Promise(function (resolve, reject) {
-      return Lead.findOne({lead_id: lead_id, id_project: id_project})
+
+      winston.info("main_flow_cache_2 leadService createIfNotExistsWithLeadId");
+
+      var q = Lead.findOne({lead_id: lead_id, id_project: id_project});
+
+      if (cacheEnabler.lead) {
+        var cacheKey =  id_project+":leads:lead_id:"+lead_id;
+        winston.info("cacheKey: "+cacheKey);
+        q.cache(cacheUtil.defaultTTL, cacheKey);
+        winston.debug("cacheEnabler.lead enabled");
+      }
+      return q.exec(function (err, lead) {
+
         //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, id_project+":leads:lead_id:"+lead_id) //lead_cache
-        .exec(function(err, lead)  {
+        // .exec(function(err, lead)  {
           if (err) {
             winston.error("Error createIfNotExistsWithLeadId", err);
             return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes, status, phone));

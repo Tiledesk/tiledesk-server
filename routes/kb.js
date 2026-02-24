@@ -13,6 +13,7 @@ const faq = require('../models/faq');
 const faq_kb = require('../models/faq_kb');
 
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
+const { parseStringArrayField } = require('../utils/arrayUtil');
 const { kbTypes } = require('../models/kbConstants');
 const Sitemapper = require('sitemapper');
 
@@ -25,6 +26,11 @@ const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-tra
 const JOB_TOPIC_EXCHANGE_HYBRID = process.env.JOB_TOPIC_EXCHANGE_TRAIN_HYBRID || 'tiledesk-trainer-hybrid';
 const KB_WEBHOOK_TOKEN = process.env.KB_WEBHOOK_TOKEN || 'kbcustomtoken';
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
+
+let rerankingOff = false;
+if (process.env.RERANKING_OFF && (process.env.RERANKING_OFF === "true" || process.env.RERANKING_OFF === true)) {
+  rerankingOff = true;
+}
 
 
 let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
@@ -79,6 +85,13 @@ let default_preview_settings = {
 const default_engine = require('../config/kb/engine');
 const default_engine_hybrid = require('../config/kb/engine.hybrid');
 const default_embedding = require('../config/kb/embedding');
+
+function normalizeEmbedding(embedding) {
+  const normalizedEmbedding = (embedding && typeof embedding.toObject === 'function')
+    ? embedding.toObject()
+    : (embedding || default_embedding);
+  return { ...normalizedEmbedding };
+}
 
 let contexts = {
   "gpt-3.5-turbo":        process.env.GPT_3_5_CONTEXT       || "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### and the chat history to answer the question.\nIf you don't know the answer, just say: \"I don't know<NOANS>\"\n\n####{context}####",
@@ -170,7 +183,8 @@ router.post('/scrape/single', async (req, res) => {
         sitemap_origin: sitemapKb.source,
         scrape_type: sitemapKb.scrape_type,
         scrape_options: sitemapKb.scrape_options,
-        refresh_rate: sitemapKb.refresh_rate
+        refresh_rate: sitemapKb.refresh_rate,
+        tags: sitemapKb.tags
       }
       aiManager.addMultipleUrls(namespace, addedUrls, options).catch((err) => {
         winston.error("(webhook) error adding multiple urls contents: ", err);
@@ -215,8 +229,12 @@ router.post('/scrape/single', async (req, res) => {
         }
       }
 
+      if (kb.tags) {
+        json.tags = kb.tags;
+      }
+
       json.engine = namespace.engine || default_engine;
-      json.embedding = namespace.embedding || default_embedding;
+      json.embedding = normalizeEmbedding(namespace.embedding);
       json.embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
       if (namespace.hybrid === true) {
@@ -357,7 +375,7 @@ router.post('/qa', async (req, res) => {
   }
 
   data.engine = namespace.engine || default_engine;
-  data.embedding = namespace.embedding || default_embedding;
+  data.embedding = normalizeEmbedding(namespace.embedding);
   data.embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
   if (namespace.hybrid === true) {
@@ -390,6 +408,7 @@ router.post('/qa', async (req, res) => {
   }
 
   aiService.askNamespace(data).then((resp) => {
+
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
 
@@ -989,7 +1008,8 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
       type: e.type,
       content: e.content,
       namespace: namespace_id,
-      status: -1
+      status: -1,
+      ...(e.tags && { tags: e.tags })
     }
 
     const optionalFields = ['scrape_type', 'scrape_options', 'refresh_rate'];
@@ -1022,7 +1042,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   //          import operation the content's limit is respected
   let ns = namespaces.find(n => n.id === namespace_id);
   let engine = ns.engine || default_engine;
-  let embedding = ns.embedding || default_embedding;
+  let embedding = normalizeEmbedding(ns.embedding);
   embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
   let hybrid = ns.hybrid;
 
@@ -1044,10 +1064,13 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
 
   winston.verbose("Content deletetion response: ", deleteResponse);
 
-  await KB.insertMany(addingContents).catch((err) => {
+  try {
+    let addedContents = await KB.insertMany(addingContents);
+    winston.debug("addedContents: ", addedContents);
+  } catch (err) {
     winston.error("Error adding contents with insertMany: ", err);
     return res.status(500).send({ success: true, error: "Error importing contents" });
-  })
+  }
 
   let new_contents;
   try {
@@ -1362,59 +1385,63 @@ router.get('/:kb_id', async (req, res) => {
 
 router.post('/', async (req, res) => {
 
-  let project_id = req.projectid;
-  let body = req.body;
-  let namespace_id = body.namespace;
+  const id_project = req.projectid;
+  const project = req.project
 
-  if (!body.namespace) {
+  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags } = req.body;
+  const namespace_id = req.body?.namespace;
+  
+  if (!namespace_id) {
     return res.status(400).send({ success: false, error: "parameter 'namespace' is not defined" });
   }
 
   let namespace;
   try {
-    namespace = await aiManager.checkNamespace(project_id, namespace_id);
+    namespace = await aiManager.checkNamespace(id_project, namespace_id);
   } catch (err) {
     let errorCode = err?.errorCode ?? 500;
     return res.status(errorCode).send({ success: false, error: err.error });
   }
   
-  let quoteManager = req.app.get('quote_manager');
+  const quoteManager = req.app.get('quote_manager');
   try {
-    await aiManager.checkQuotaAvailability(quoteManager, req.project, 1)
+    await aiManager.checkQuotaAvailability(quoteManager, project, 1)
   } catch(err) {
     let errorCode = err?.errorCode ?? 500;
     return res.status(errorCode).send({ success: false, error: err.error, plan_limit: err.plan_limit })
   }
 
   let new_kb = {
-    id_project: project_id,
-    name: body.name,
-    type: body.type,
-    source: body.source,
-    content: body.content,
-    namespace: body.namespace,
+    id_project,
+    name,
+    type,
+    source,
+    content,
+    namespace: namespace_id,
     status: -1
   }
-  if (!new_kb.namespace) {
-    new_kb.namespace = project_id;
-  }
-  if (new_kb.type === 'txt') {
+
+  if (type === 'txt') {
     new_kb.scrape_type = 1;
   }
-  if (new_kb.type === 'url') {
-    new_kb.refresh_rate = body.refresh_rate;
-    if (!body.scrape_type || body.scrape_type === 2) {
+  if (type === 'url') {
+    new_kb.refresh_rate = refresh_rate || 'never';
+    if (!scrape_type || scrape_type === 2) {
       new_kb.scrape_type = 2;
       new_kb.scrape_options = aiManager.setDefaultScrapeOptions();
     } else {
-      new_kb.scrape_type = body.scrape_type;
-      new_kb.scrape_options = body.scrape_options;
+      new_kb.scrape_type = scrape_type;
+      new_kb.scrape_options = scrape_options;
     }
+  }
+
+  if (tags && Array.isArray(tags) && tags.every(tag => typeof tag === "string")) {
+    new_kb.tags = tags;
   }
 
   winston.debug("adding kb: ", new_kb);
 
-  KB.findOneAndUpdate({ id_project: project_id, type: 'url', source: new_kb.source }, new_kb, { upsert: true, new: true, rawResult: true }, async (err, raw_content) => {
+  KB.findOneAndUpdate({ id_project, type, source }, new_kb, { upsert: true, new: true, rawResult: true }, async (err, raw_content) => {
     if (err) {
       winston.error("findOneAndUpdate with upsert error: ", err);
       res.status(500).send({ success: false, error: err });
@@ -1425,44 +1452,34 @@ router.post('/', async (req, res) => {
       delete raw_content.$clusterTime;
       delete raw_content.operationTime;
       
-      let saved_kb = raw_content.value;
-      let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
+      const saved_kb = raw_content.value;
+      const webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
+      const embedding = normalizeEmbedding(namespace.embedding);
+      embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
-      let json = {
+      const json = {
         id: saved_kb._id,
         type: saved_kb.type,
         source: saved_kb.source,
-        content: "",
+        content: saved_kb.content || "",
         namespace: saved_kb.namespace,
-        webhook: webhook
+        webhook: webhook,
+        hybrid: namespace.hybrid,
+        engine: namespace.engine || default_engine,
+        embedding: embedding,
+        ...(saved_kb.scrape_type && { scrape_type: saved_kb.scrape_type }),
+        ...(saved_kb.scrape_options && { parameters_scrape_type_4: saved_kb.scrape_options }),
+        ...(saved_kb.tags && { tags: saved_kb.tags }),
       }
+
       winston.debug("json: ", json);
+      console.log("json: ", json);
 
-      if (saved_kb.content) {
-        json.content = saved_kb.content;
-      }
-      if (saved_kb.scrape_type) {
-        json.scrape_type = saved_kb.scrape_type;
-      }
-      if (saved_kb.scrape_options) {
-        json.parameters_scrape_type_4 = saved_kb.scrape_options;
-      }
-      json.engine = namespace.engine || default_engine;
-      json.hybrid = namespace.hybrid;
-      
-      let embedding = namespace.embedding || default_embedding;
-      embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
-      json.embedding = embedding;
-
-      let resources = [];
-
-      resources.push(json);
-      
       if (process.env.NODE_ENV === 'test') {
         return res.status(200).send({ success: true, message: "Schedule scrape skipped in test environment", data: raw_content, schedule_json: json });
       }
         
-      aiManager.scheduleScrape(resources, namespace.hybrid);
+      aiManager.scheduleScrape([json], namespace.hybrid);
       return res.status(200).send(raw_content);
 
     }
@@ -1480,30 +1497,37 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     list = req.body.list;
   }
 
-  let project_id = req.projectid;
-  let refresh_rate = req.body.refresh_rate;
-  let scrape_type = req.body.scrape_type ?? 2;
-  let scrape_options = req.body.scrape_options;
-  if (scrape_type === 2 && scrape_options == null) {
-    scrape_options = aiManager.setDefaultScrapeOptions();
+  const id_project = req.projectid;
+  const project = req.project;
+  let { refresh_rate = 'never', scrape_type = 2, scrape_options } = req.body;
+  let tags = parseStringArrayField(req.body.tags);
+
+
+  if (scrape_type === 2 && !scrape_options) {
+    try {
+      scrape_options = aiManager.setDefaultScrapeOptions();
+    } catch (err) {
+      winston.error("Error setting default scrape options: ", err);
+      return res.status(500).send({ success: false, error: err.error });
+    }
   }
 
-  let namespace_id = req.query.namespace;
+  const namespace_id = req.query.namespace;
   if (!namespace_id) {
     return res.status(400).send({ success: false, error: "queryParam 'namespace' is not defined" })
   }
-
   let namespace;
   try {
-    namespace = await aiManager.checkNamespace(project_id, namespace_id);
+    namespace = await aiManager.checkNamespace(id_project, namespace_id);
   } catch (err) {
+    winston.error("Error checking namespace: ", err);
     let errorCode = err?.errorCode ?? 500;
     return res.status(errorCode).send({ success: false, error: err.error });
   }
 
-  let quoteManager = req.app.get('quote_manager');
+  const quoteManager = req.app.get('quote_manager');
   try {
-    await aiManager.checkQuotaAvailability(quoteManager, req.project, list.length)
+    await aiManager.checkQuotaAvailability(quoteManager, project, list.length)
   } catch(err) {
     let errorCode = err?.errorCode ?? 500;
     return res.status(errorCode).send({ success: false, error: err.error, plan_limit: err.plan_limit })
@@ -1515,14 +1539,14 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
   }
 
   const options = {
-    scrape_type: scrape_type,
-    scrape_options: scrape_options,
-    refresh_rate: refresh_rate
+    scrape_type,
+    scrape_options,
+    refresh_rate,
+    ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
   }
 
-  let result;
   try {
-    result = await aiManager.addMultipleUrls(namespace, list, options);
+    const result = await aiManager.addMultipleUrls(namespace, list, options);
     return res.status(200).send(result);
   } catch (err) {
     winston.error("addMultipleUrls error: ", err)
@@ -1539,8 +1563,9 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
   let csv = req.file.buffer.toString('utf8');
   winston.debug("csv: ", csv);
 
-  let delimiter = req.body.delimiter || ";";
-  winston.debug("delimiter: ", delimiter);
+  const { delimiter = ';' } = req.body;
+  let tags = parseStringArrayField(req.body.tags);
+
 
   let namespace;
   try {
@@ -1567,14 +1592,15 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
         type: 'faq',
         content: question + "\n" + answer,
         namespace: namespace_id,
-        status: -1
+        status: -1,
+        ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
       })
     })
     .on("end", async () => {
       winston.debug("kbs after CSV parsing: ", kbs);
 
+      const quoteManager = req.app.get('quote_manager');
       try {
-        let quoteManager = req.app.get('quote_manager');
         await aiManager.checkQuotaAvailability(quoteManager, req.project, kbs.length)
       } catch(err) {
         let errorCode = err?.errorCode ?? 500;
@@ -1595,7 +1621,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
       aiManager.saveBulk(operations, kbs, project_id, namespace_id).then((result) => {
 
         let engine = namespace.engine || default_engine;
-        let embedding = namespace.embedding || default_embedding;
+        let embedding = normalizeEmbedding(namespace.embedding);
         embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
         let hybrid = namespace.hybrid;
 
@@ -1648,11 +1674,15 @@ router.post('/sitemap', async (req, res) => {
 
 router.post('/sitemap/import', async (req, res) => {
 
-  let project_id = req.projectid;
-  let namespace_id = req.query.namespace;
-  let content = req.body;
+  const id_project = req.projectid;
+  const namespace_id = req.query.namespace;
 
-  if (content.type !== "sitemap") {
+  let { type, source, refresh_rate = 'never', scrape_type = 2, scrape_options, tags } = req.body;
+  if (scrape_type === 2 && !scrape_options) {
+    scrape_options = aiManager.setDefaultScrapeOptions();
+  }
+
+  if (type !== "sitemap") {
     return res.status(403).send({success: false, error: "Endpoint available for sitemap type only." });
   }
 
@@ -1662,13 +1692,12 @@ router.post('/sitemap/import', async (req, res) => {
   
   let namespace;
   try {
-    namespace = await aiManager.checkNamespace(project_id, namespace_id);
+    namespace = await aiManager.checkNamespace(id_project, namespace_id);
   } catch (err) {
     let errorCode = err?.errorCode ?? 500;
     return res.status(errorCode).send({ success: false, error: err.error });
   }
 
-  let sitemap_url = req.body.source;
 
   // let quoteManager = req.app.get('quote_manager');
   // let limits = await quoteManager.getPlanLimits(req.project);
@@ -1679,7 +1708,7 @@ router.post('/sitemap/import', async (req, res) => {
   // winston.verbose("Kbs count: " + kbs_count);
 
   const sitemap = new Sitemapper({
-    url: sitemap_url,
+    url: source,
     timeout: 15000,
     debug: false
   });
@@ -1704,41 +1733,34 @@ router.post('/sitemap/import', async (req, res) => {
   //   return res.status(403).send({ success: false, error: "Cannot exceed the number of resources in the current plan", plan_limit: kbs_limit })
   // }
 
-  let refresh_rate = req.body.refresh_rate;
-  let scrape_type = req.body.scrape_type ?? 2;
-  let scrape_options = req.body.scrape_options;
-  if (scrape_type === 2 && scrape_options == null) {
-    scrape_options = aiManager.setDefaultScrapeOptions();
-  }
-
   let sitemap_content = {
-    id_project: project_id,
-    name: sitemap_url,
-    source: sitemap_url,
+    id_project,
+    name: source,
+    source: source,
     type: 'sitemap',
     content: "",
     namespace: namespace_id,
-    scrape_type: scrape_type,
-    scrape_options: scrape_options,
-    refresh_rate: refresh_rate
+    scrape_type,
+    scrape_options,
+    refresh_rate,
+    ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
   }
 
   let saved_content;
   try {
-    saved_content = await KB.findOneAndUpdate({ id_project: project_id, type: 'sitemap', source: sitemap_url, namespace: namespace_id }, sitemap_content, { upsert: true, new: true }).lean().exec();
+    saved_content = await KB.findOneAndUpdate({ id_project, type: 'sitemap', source, namespace: namespace_id }, sitemap_content, { upsert: true, new: true }).lean().exec();
   } catch (err) {
     winston.error("Error saving content: ", err);
     return res.status(500).send({ success: false, error: err });
   }
 
-
-
   const options = {
     sitemap_origin_id: saved_content._id,
     sitemap_origin: saved_content.source,
-    scrape_type: saved_content.scrape_type,
-    scrape_options: saved_content.scrape_options,
-    refresh_rate: saved_content.refresh_rate
+    scrape_type,
+    scrape_options,
+    refresh_rate,
+    ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
   }
   
   try {
