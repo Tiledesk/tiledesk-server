@@ -887,12 +887,14 @@ sendUserEmail(projectid, message) {
 }
 
 sendAgentEmail(projectid, savedRequest) {
+  console.log("sendAgentEmail");
     // send email
     try {
    
   //  console.log("sendAgentEmail")
     if (savedRequest.preflight === true) {   //only for channel email and form preflight is false otherwise request.participants.update is used i think?
-      winston.debug("preflight request sendAgentEmail disabled")
+      console.log("preflight request sendAgentEmail disabled");
+      winston.debug("preflight request sendAgentEmail disabled");
       return 0;
     }
 
@@ -912,7 +914,7 @@ sendAgentEmail(projectid, savedRequest) {
           }
 
           winston.debug("savedRequest: " + JSON.stringify(savedRequest));
-
+          console.log("savedRequest status: " + savedRequest.status);
               // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
                  if (savedRequest.status==RequestConstants.UNASSIGNED) { //POOLED
 
