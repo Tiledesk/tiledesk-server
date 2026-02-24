@@ -927,9 +927,12 @@ sendAgentEmail(projectid, savedRequest) {
 
                   // Throttle: send pooled email only once per request within TTL (avoids flooding when smart assignment keeps retrying)
                   const requestId = (savedRequest._id || savedRequest.id).toString();
+                  console.log("[RequestNotification] requestId: ", requestId);
                   const pooledEmailKey = 'pooled_request_email:' + requestId;
+                  console.log("[RequestNotification] pooledEmailKey: ", pooledEmailKey);
                   try {
                     const shouldSend = await getPooledEmailCache().setNX(pooledEmailKey, '1', POOLED_EMAIL_THROTTLE_TTL);
+                    console.log("[RequestNotification] shouldSend: ", shouldSend);
                     if (!shouldSend) {
                       return winston.debug("RequestNotification pooled email already sent for request " + requestId + " (Redis throttle, TTL " + POOLED_EMAIL_THROTTLE_TTL + "s)");
                     }
@@ -937,6 +940,7 @@ sendAgentEmail(projectid, savedRequest) {
                     winston.warn("RequestNotification Redis setNX for pooled email throttle failed, skipping send", { error: redisErr, requestId });
                     return;
                   }
+                  console.log("Sending email");
 
                  
                   var snapshotAgents = savedRequest; //riassegno varibile cosi nn cambio righe successive
