@@ -187,6 +187,7 @@ listen() {
      if (requestEvent.queueEnabled) {
       requestParticipantsUpdateKey = 'request.participants.update.queue';
      }
+     console.log("*** request.participants.update");
      winston.debug('RequestNotification requestParticipantsUpdateKey: ' + requestParticipantsUpdateKey);
 
      requestEvent.on(requestParticipantsUpdateKey, function(data) {
@@ -196,7 +197,7 @@ listen() {
       var request = data.request;
       
       setImmediate(() => {
-   
+          console.log("*** calling sendAgentEmail");
          that.sendAgentEmail(request.id_project, request);
       });
      });
