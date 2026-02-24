@@ -753,6 +753,10 @@ router.post('/:requestid/notes', async function (req, res) {
   note.text = req.body.text;
   note.createdBy = req.user.id;
 
+  if (!note.text || note.text.trim() === '') {
+    return res.status(400).send({ success: false, error: "Field 'text' is required. Received value: " + note.text });
+  }
+
   let project_user = req.projectuser;
 
   if (project_user.role === RoleConstants.AGENT) {
