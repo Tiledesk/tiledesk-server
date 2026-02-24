@@ -26,6 +26,9 @@ class Listener {
         let openai_endpoint = process.env.OPENAI_ENDPOINT;
         winston.debug("OpenAI Endpoint: ", openai_endpoint);
 
+        let elevenlabs_endpoint = process.env.ELEVENLABS_ENDPOINT || "https://api.elevenlabs.io";
+        winston.debug("ElevenLabs Endpoint: ", elevenlabs_endpoint);
+
         let gpt_key = process.env.GPTKEY;
 
         let log = process.env.VOICE_TWILIO_LOG || 'error';

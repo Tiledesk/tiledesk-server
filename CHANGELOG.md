@@ -5,6 +5,26 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.15.2
+- Updated GitHub actions
+
+# 2.15.1
+- Updated whatsapp-connector to 1.0.24
+
+# 2.15.0
+- Updated whatsapp-connector to 1.0.23
+- Fix logout with Google Signin method
+
+# 2.14.28
+- Add audio MIME type equivalences for MPEG, MP3, and Opus formats
+
+# 2.14.26
+- Added endpoints to connect with a MCP Tools and get tools list.
+- Updated tybot-connectort to 2.0.44
+
+# 2.14.25
+- Deprecate user file upload routes in files.js and images.js
+
 # 2.14.24
 - Improved extension management on file uploading to support .wav and .svg
 

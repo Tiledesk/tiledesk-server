@@ -14,6 +14,7 @@ var winston = require('../../config/winston');
 var RoleConstants = require("../../models/roleConstants");
 var ChannelConstants = require("../../models/channelConstants");
 var cacheUtil = require('../../utils/cacheUtil');
+const { TdCache } = require('../../utils/TdCache');
 
 const messageEvent = require('../../event/messageEvent');
 var mongoose = require('mongoose');
@@ -40,6 +41,23 @@ if (pKey) {
 let apiUrl = process.env.API_URL || configGlobal.apiUrl;
 winston.debug('********* RequestNotification apiUrl: ' + apiUrl);
 
+/** Redis cache for throttling pooled-request email. Injected by app (shared TdCache) or lazy-created fallback. */
+let _pooledEmailTdCache = null;
+function getPooledEmailCache() {
+  if (_pooledEmailTdCache) return _pooledEmailTdCache;
+  const fallback = new TdCache({
+    host: process.env.CACHE_REDIS_HOST,
+    port: process.env.CACHE_REDIS_PORT,
+    password: process.env.CACHE_REDIS_PASSWORD
+  });
+  fallback.connect();
+  _pooledEmailTdCache = fallback;
+  return _pooledEmailTdCache;
+}
+
+/** TTL in seconds: do not send pooled email again for the same request within this window (avoids flooding when smart assignment retries) */
+const POOLED_EMAIL_THROTTLE_TTL = Number(process.env.POOLED_EMAIL_THROTTLE_TTL) || cacheUtil.defaultTTL;
+
 class RequestNotification {
 
   constructor() {
@@ -48,7 +66,18 @@ class RequestNotification {
         this.enabled = false;
     }
     winston.debug("RequestNotification this.enabled: "+ this.enabled);
-}
+  }
+
+  /**
+   * Reuse app's TdCache instance instead of opening a new Redis connection (optional, called by PubModulesManager).
+   * @param {TdCache} tdCache - shared Redis cache from app.get('redis_client')
+   */
+  setTdCache(tdCache) {
+    if (tdCache && typeof tdCache.setNX === 'function') {
+      _pooledEmailTdCache = tdCache;
+      winston.debug("RequestNotification using shared TdCache for pooled email throttle");
+    }
+  }
 
 listen() {
 
@@ -399,6 +428,7 @@ async notifyFollowers(savedRequest, project, message) {
 
   // Cannot read property '_id' of undefined at RequestNotification.notifyFollowers (/usr/src/app/pubmodules/emailNotification/requestNotification.js:358:62) at /usr/src/app
   // forse meglio .id
+  winston.info("main_flow_cache_request notification request find");
   
   var reqWithFollowers = await Request.findById(savedRequest._id).populate('followers').exec();  // cache_attention
   winston.debug("reqWithFollowers");
@@ -535,7 +565,8 @@ sendToAgentEmailChannelEmail(projectid, message) {
 
 
 
-                    
+                    winston.info("main_flow_cache_request notification request find 2");
+
                     var snapshotAgents = await Request.findById(savedRequest.id).select({"snapshot":1}).exec();
 
                     winston.debug('snapshotAgents',snapshotAgents);                              
@@ -783,6 +814,8 @@ sendUserEmail(projectid, message) {
          
           if (!project_user.presence || (project_user.presence && project_user.presence.status === "offline")) {
 
+            winston.info("main_flow_cache_2 lead 2");
+            
              //send email to lead
             return Lead.findOne({lead_id: recipient}, function(err, lead){
               winston.debug("lead", lead);     //TODO  lead  is already present in request.lead
@@ -892,6 +925,18 @@ sendAgentEmail(projectid, savedRequest) {
                     return winston.warn("RequestNotification savedRequest.snapshot is null :(. You are closing an old request?");
                   }
 
+                  // Throttle: send pooled email only once per request within TTL (avoids flooding when smart assignment keeps retrying)
+                  const requestId = (savedRequest._id || savedRequest.id).toString();
+                  const pooledEmailKey = 'pooled_request_email:' + requestId;
+                  try {
+                    const shouldSend = await getPooledEmailCache().setNX(pooledEmailKey, '1', POOLED_EMAIL_THROTTLE_TTL);
+                    if (!shouldSend) {
+                      return winston.debug("RequestNotification pooled email already sent for request " + requestId + " (Redis throttle, TTL " + POOLED_EMAIL_THROTTLE_TTL + "s)");
+                    }
+                  } catch (redisErr) {
+                    winston.warn("RequestNotification Redis setNX for pooled email throttle failed, skipping send", { error: redisErr, requestId });
+                    return;
+                  }
 
                  
                   var snapshotAgents = savedRequest; //riassegno varibile cosi nn cambio righe successive
@@ -905,6 +950,8 @@ sendAgentEmail(projectid, savedRequest) {
                     //return winston.warn("RequestNotification snapshotAgents.snapshot.agents is null :(. You are closing an old request?", savedRequest);
 
                   // agents già c'è in quanto viene creato con departmentService.getOperator nella request.create ma nn c'è per request.participants.update
+                    winston.info("main_flow_cache_request notification request find 3");
+
                       snapshotAgents = await Request.findById(savedRequest.id).select({"snapshot":1}).exec();
                       winston.debug('load snapshotAgents with Request.findById ');                              
                   }
