@@ -21,7 +21,7 @@ RUN if [ "$NPM_TOKEN" ]; \
 # where available (npm@5+)
 COPY package*.json ./
 
-RUN npm install --production
+RUN npm install --production && npm cache clean --force;
 
 RUN rm -f .npmrc
 
