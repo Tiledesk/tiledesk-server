@@ -357,7 +357,10 @@ if (process.env.DISABLE_SESSION_STRATEGY==true ||  process.env.DISABLE_SESSION_S
 
       let cacheClient = undefined;
       if (pubModulesManager.cache) {
-        cacheClient = pubModulesManager.cache._cache._cache;  //_cache._cache to jump directly to redis modules without cacheoose wrapper (don't support await)
+        //cacheClient = pubModulesManager.cache._cache._cache;  //_cache._cache to jump directly to redis modules without cacheoose wrapper (don't support await)
+        // Use the raw Redis client from cacheman-redis engine (connect-redis needs get/set/del/expire).
+        // Path: cachegoose._cache = Cache → _cache = Cacheman → _engine = RedisStore → .client = redis client.
+        cacheClient = pubModulesManager.cache._cache._engine.client;
       }
       // winston.info("Express Session cacheClient",cacheClient);
 
