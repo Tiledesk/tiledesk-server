@@ -2,8 +2,16 @@ var winston = require('../config/winston');
 const Request = require('../models/request');
 const phoneUtil = require('../utils/phoneUtil');
 
-const VOICE_CHANNEL_NAMES = ['voice_twilio', 'voice-twilio', 'voice-vxml', 'voice-vxml-enghouse'];
+const VOICE_TWILIO_CHANNEL_NAMES = ['voice_twilio', 'voice-twilio'];
+const VOICE_VXML_CHANNEL_NAMES = ['voice-vxml', 'voice-vxml-enghouse'];
 const BATCH_SIZE = 100;
+
+function getPhoneFromVoiceTwilioCreatedBy(createdBy) {
+  if (!createdBy || typeof createdBy !== 'string') return null;
+  if (createdBy.startsWith('voice-twilio-')) return createdBy.replace(/^voice-twilio-/, '');
+  if (createdBy.startsWith('voice_twilio-')) return createdBy.replace(/^voice_twilio-/, '');
+  return null;
+}
 
 async function updateManyWithNormalizedPhone(filter, getPhoneFromDoc) {
   let matched = 0;
@@ -38,14 +46,26 @@ async function updateManyWithNormalizedPhone(filter, getPhoneFromDoc) {
 
 async function up() {
   try {
-    // Voice channels
+    // Voice Twilio (voice-twilio / voice_twilio: phone from createdBy as "voice-twilio-{phone}" or "voice_twilio-{phone}")
     const voiceFilter = {
-      'channel.name': { $in: VOICE_CHANNEL_NAMES },
+      'channel.name': { $in: VOICE_TWILIO_CHANNEL_NAMES },
+      createdBy: { $regex: /^(voice-twilio-|voice_twilio-)/ }
+    };
+    const voiceResult = await updateManyWithNormalizedPhone(voiceFilter, (doc) =>
+      getPhoneFromVoiceTwilioCreatedBy(doc.createdBy)
+    );
+    winston.info(
+      `[phone-channels-migration] Voice Twilio: matched ${voiceResult.matched}, modified ${voiceResult.modified}`
+    );
+
+    // Voice VXML (voice-vxml / voice-vxml-enghouse: phone from attributes.caller_phone)
+    const voiceVxmlFilter = {
+      'channel.name': { $in: VOICE_VXML_CHANNEL_NAMES },
       'attributes.caller_phone': { $exists: true, $nin: [null, ''] }
     };
-    const voiceResult = await updateManyWithNormalizedPhone(voiceFilter, (doc) => doc.attributes?.caller_phone);
+    const voiceVxmlResult = await updateManyWithNormalizedPhone(voiceVxmlFilter, (doc) => doc.attributes?.caller_phone);
     winston.info(
-      `[phone-channels-migration] Voice channels: matched ${voiceResult.matched}, modified ${voiceResult.modified}`
+      `[phone-channels-migration] Voice VXML: matched ${voiceVxmlResult.matched}, modified ${voiceVxmlResult.modified}`
     );
 
     // WhatsApp
