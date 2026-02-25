@@ -1,5 +1,7 @@
 'use strict';
 
+var path = require('path');
+var fs = require('fs');
 var winston = require('../config/winston');
 var config = require('../config/database');
 var migrateMongoose = require('migrate-mongoose');
@@ -29,12 +31,13 @@ class SchamaMigrationService {
       var 
       //  migrationsDir = '/path/to/migrations/',
       // templatePath,
+      migrationsPath = path.resolve(process.cwd(), 'migrations'),
       dbUrl = process.env.DATABASE_URI || process.env.MONGODB_URI || config.database,
       collectionName = 'schemaMigrations',
       autosync = true;
       
       let migrator = new migrateMongoose({
-          // migrationsPath:  migrationsDir, // Path to migrations directory
+          migrationsPath: migrationsPath,
           // templatePath: templatePath, // The template to use when creating migrations needs up and down functions exposed
           dbConnectionUri: dbUrl, // mongo url
           collectionName:  collectionName, // collection name to use for migrations (defaults to 'migrations')
@@ -44,13 +47,18 @@ class SchamaMigrationService {
       var list = await migrator.list();
       winston.debug("SchemaMigration script list", list);
 
-      list.forEach(async(script)=> { 
+      for (const script of list) {
         winston.debug("script", script);
+        const migrationFilePath = path.join(migrationsPath, script.filename);
+        if (!fs.existsSync(migrationFilePath)) {
+          winston.warn("SchemaMigration skipping migration (file not present): " + script.filename + " — remove the record from DB collection 'schemaMigrations' if not needed.");
+          continue;
+        }
         var runScript = await migrator.run('up', script.name);
         if (runScript && !this.isEmptyObject(runScript)) {
           winston.info("SchemaMigration script " + script.name + " executed.");
         }
-      }); 
+      } 
     // // Create a new migration
     // migrator.create(migrationName).then(()=> {
     //   console.log(`Migration created. Run `+ `mongoose-migrate up ${migrationName}`.cyan + ` to apply the migration.`);
