@@ -110,7 +110,13 @@ class Listener {
               var query = {id_project: operatorsResult.id_project, status: {$lt:1000}};      
               // asyncForEach(operatorsResult.available_agents, async (aa) => {
               for (const aa of operatorsResult.available_agents) {
-                query.participants = aa.id_user._id.toString();// attento qui
+                let user_id;
+                if (aa.id_user._id) {
+                  user_id = aa.id_user._id.toString();// attento qui
+                } else {
+                  user_id = aa.id_user;// attento qui
+                }
+                query.participants = user_id;
                 winston.debug("department operators query:" , query);
 
 

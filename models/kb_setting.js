@@ -1,7 +1,11 @@
 let mongoose = require('mongoose');
 let Schema = mongoose.Schema;
 let winston = require('../config/winston');
-let expireAfterSeconds = process.env.UNANSWERED_QUESTION_EXPIRATION_TIME || 7 * 24 * 60 * 60; // 7 days
+
+const expireAfterSeconds = (() => {
+  const n = Number(process.env.UNANSWERED_QUESTION_EXPIRATION_TIME);
+  return !isNaN(n) && n >= 0 ? n : 7 * 24 * 60 * 60; // default 7 days
+})();
 
 const EngineSchema = new Schema({
   name: {
@@ -200,7 +204,7 @@ const UnansweredQuestionSchema = new Schema({
 });
 
 // Add TTL index to automatically delete documents after 30 days
-UnansweredQuestionSchema.index({ created_at: 1 }, { expireAfterSeconds: expireAfterSeconds }); // 30 days
+UnansweredQuestionSchema.index({ createdAt: 1 }, { expireAfterSeconds: expireAfterSeconds });
 
 // DEPRECATED !! - Start
 const KBSettingSchema = new Schema({
