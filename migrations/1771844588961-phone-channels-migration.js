@@ -51,46 +51,43 @@ async function up() {
       'channel.name': { $in: VOICE_TWILIO_CHANNEL_NAMES },
       createdBy: { $regex: /^(voice-twilio-|voice_twilio-)/ }
     };
+    winston.info(`[phone-channels-migration] Voice Twilio Starting...`);
     const voiceResult = await updateManyWithNormalizedPhone(voiceFilter, (doc) =>
       getPhoneFromVoiceTwilioCreatedBy(doc.createdBy)
     );
-    winston.info(
-      `[phone-channels-migration] Voice Twilio: matched ${voiceResult.matched}, modified ${voiceResult.modified}`
-    );
+    winston.info(`[phone-channels-migration] Voice Twilio: matched ${voiceResult.matched}, modified ${voiceResult.modified}`);
 
     // Voice VXML (voice-vxml / voice-vxml-enghouse: phone from attributes.caller_phone)
     const voiceVxmlFilter = {
       'channel.name': { $in: VOICE_VXML_CHANNEL_NAMES },
       'attributes.caller_phone': { $exists: true, $nin: [null, ''] }
     };
+    winston.info(`[phone-channels-migration] Voice VXML Starting...`);
     const voiceVxmlResult = await updateManyWithNormalizedPhone(voiceVxmlFilter, (doc) => doc.attributes?.caller_phone);
-    winston.info(
-      `[phone-channels-migration] Voice VXML: matched ${voiceVxmlResult.matched}, modified ${voiceVxmlResult.modified}`
-    );
+    winston.info(`[phone-channels-migration] Voice VXML: matched ${voiceVxmlResult.matched}, modified ${voiceVxmlResult.modified}`);
 
     // WhatsApp
     const wabFilter = {
       'channel.name': 'whatsapp',
       createdBy: { $regex: /^wab-/ }
     };
+    winston.info(`[phone-channels-migration] WhatsApp Starting...`);
     const wabResult = await updateManyWithNormalizedPhone(wabFilter, (doc) =>
       doc.createdBy && doc.createdBy.startsWith('wab-') ? doc.createdBy.replace(/^wab-/, '') : null
     );
-    winston.info(
-      `[phone-channels-migration] WhatsApp: matched ${wabResult.matched}, modified ${wabResult.modified}`
-    );
+    winston.info(`[phone-channels-migration] WhatsApp: matched ${wabResult.matched}, modified ${wabResult.modified}`);
 
     // SMS-Twilio
     const smsFilter = {
       'channel.name': 'sms-twilio',
       createdBy: { $regex: /^sms-twilio-/ }
     };
+    winston.info(`[phone-channels-migration] SMS-Twilio Starting...`);
     const smsResult = await updateManyWithNormalizedPhone(smsFilter, (doc) =>
       doc.createdBy && doc.createdBy.startsWith('sms-twilio-') ? doc.createdBy.replace(/^sms-twilio-/, '') : null
     );
-    winston.info(
-      `[phone-channels-migration] SMS-Twilio: matched ${smsResult.matched}, modified ${smsResult.modified}`
-    );
+    winston.info(`[phone-channels-migration] SMS-Twilio: matched ${smsResult.matched}, modified ${smsResult.modified}`);
+
   } catch (err) {
     winston.error('[phone-channels-migration] Error:', err);
     throw err;
