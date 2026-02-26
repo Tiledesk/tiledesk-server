@@ -56,7 +56,7 @@ function getPooledEmailCache() {
 }
 
 /** TTL in seconds: do not send pooled email again for the same request within this window (avoids flooding when smart assignment retries) */
-const POOLED_EMAIL_THROTTLE_TTL = Number(process.env.POOLED_EMAIL_THROTTLE_TTL) || cacheUtil.defaultTTL;
+const POOLED_EMAIL_THROTTLE_TTL = Number(process.env.POOLED_EMAIL_THROTTLE_TTL) || 259200;
 
 class RequestNotification {
 
