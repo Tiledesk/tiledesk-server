@@ -6,6 +6,7 @@ const leadEvent = require('../event/leadEvent');
 var winston = require('../config/winston');
 var cacheUtil = require('../utils/cacheUtil');
 var cacheEnabler = require("../services/cacheEnabler");
+var phoneUtil = require('../utils/phoneUtil');
 
 
 class LeadService {
@@ -55,7 +56,7 @@ class LeadService {
 
 
 
-  createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes, status) {
+  createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes, status, phone) {
     var that = this;
     return new Promise(function (resolve, reject) {
       return Lead.findOne({lead_id: lead_id, id_project: id_project})
@@ -63,10 +64,10 @@ class LeadService {
         .exec(function(err, lead)  {
           if (err) {
             winston.error("Error createIfNotExistsWithLeadId", err);
-            return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes, status));
+            return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes, status, phone));
           }
           if (!lead) {
-            return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes, status));
+            return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes, status, phone));
           }
 
           winston.debug("lead.email: " + lead.email); 
@@ -77,7 +78,7 @@ class LeadService {
             return resolve(lead);
           } else {
             winston.debug("lead already exists createIfNotExistsWithLeadId but with different email");
-            return resolve(that.updateWitId(lead_id, fullname, email, id_project, status));
+            return resolve(that.updateWitId(lead_id, fullname, email, id_project, status, phone));
           }
           
       
@@ -111,7 +112,7 @@ class LeadService {
     });
   }
 
-  updateWitId(lead_id, fullname, email, id_project, status) {
+  updateWitId(lead_id, fullname, email, id_project, status, phone) {
     winston.debug("updateWitId lead_id: "+ lead_id);
     winston.debug("fullname: "+ fullname);
     winston.debug("email: "+ email);
@@ -124,7 +125,9 @@ class LeadService {
 
     update.fullname = fullname;
     update.email = email;
-    
+    if (phone !== undefined) {
+      update.phone = phoneUtil.normalizePhone(phone);
+    }
     if (status) {
       update.status = status;
     }
@@ -147,7 +150,7 @@ class LeadService {
     });
   }
 
-  createWitId(lead_id, fullname, email, id_project, createdBy, attributes, status) {
+  createWitId(lead_id, fullname, email, id_project, createdBy, attributes, status, phone) {
 
     if (!createdBy) {
       createdBy = "system";
@@ -163,6 +166,7 @@ class LeadService {
               lead_id: lead_id,
               fullname: fullname,
               email: email,
+              phone: phoneUtil.normalizePhone(phone),
               attributes: attributes,
               status: status,
               id_project: id_project,

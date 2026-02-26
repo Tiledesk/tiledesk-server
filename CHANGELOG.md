@@ -5,6 +5,40 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.15.5
+- Fixed email flooding when smart assignment is active and there are no operators available
+
+# 2.15.4
+- Updated endpoint to get project users adding the query parameter "trashed" in order to obtain also the trashed users.
+- Added endpoint /restore to restore a deleted project user
+
+# 2.15.3
+- Updated whatsapp-connector to 1.0.25
+- Updated sms-connector to 0.1.13
+- Bug fix: join a conversation with a note without text.
+- Added phone number filter when searching for conversations in history
+- Added migration script to add the contact field in request object improving the search by phone number
+
+# 2.15.2
+- Updated GitHub actions
+
+# 2.15.1
+- Updated whatsapp-connector to 1.0.24
+
+# 2.15.0
+- Updated whatsapp-connector to 1.0.23
+- Fix logout with Google Signin method
+
+# 2.14.28
+- Add audio MIME type equivalences for MPEG, MP3, and Opus formats
+
+# 2.14.26
+- Added endpoints to connect with a MCP Tools and get tools list.
+- Updated tybot-connectort to 2.0.44
+
+# 2.14.25
+- Deprecate user file upload routes in files.js and images.js
+
 # 2.14.24
 - Improved extension management on file uploading to support .wav and .svg
 

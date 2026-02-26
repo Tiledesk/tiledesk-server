@@ -175,6 +175,7 @@ class PubModulesManager {
         winston.debug("PubModulesManager init");
 
         this.jobsManager = config.jobsManager;
+        this.tdCache = config.tdCache;
 
         try {
             this.appRules = require('./rules/appRules');
@@ -631,6 +632,9 @@ class PubModulesManager {
         // job_here
         if (this.emailNotification) {
             try {
+                if (this.tdCache) {
+                    this.emailNotification.requestNotification.setTdCache(this.tdCache);
+                }
                 // this.emailNotification.requestNotification.listen();
                 this.jobsManager.listenEmailNotification(this.emailNotification);
                 winston.info("PubModulesManager emailNotification started.");   

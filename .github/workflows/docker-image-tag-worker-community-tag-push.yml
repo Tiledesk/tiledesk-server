@@ -1,4 +1,4 @@
-name: Publish Docker Community image tags
+name: Publish Docker Community Worker image tags
 
 on:
   push:
@@ -11,12 +11,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
      - name: Check out the repo
-       uses: actions/checkout@v2
-     - name: Push to Docker Hub
-       uses: docker/build-push-action@v1
+       uses: actions/checkout@v4
+
+     - name: Login to Docker Hub
+       uses: docker/login-action@v3
        with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-        dockerfile: Dockerfile-jobs
-        repository: tiledesk/tiledesk-server-worker
-        tag_with_ref: true
+  
+     - name: Generate Docker metadata
+       id: meta
+       uses: docker/metadata-action@v5
+       with:
+        images: tiledesk/tiledesk-server-worker
+        tags: |
+          type=ref,event=branch
+          type=semver,pattern={{version}}
+  
+     - name: Build and push
+       uses: docker/build-push-action@v6
+       with:
+        context: .
+        file: ./Dockerfile-jobs
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
