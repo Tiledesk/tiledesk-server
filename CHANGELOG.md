@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.15.5
+- Fixed email flooding when smart assignment is active and there are no operators available
+
 # 2.15.4
 - Updated endpoint to get project users adding the query parameter "trashed" in order to obtain also the trashed users.
 - Added endpoint /restore to restore a deleted project user
