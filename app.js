@@ -357,7 +357,7 @@ if (process.env.DISABLE_SESSION_STRATEGY==true ||  process.env.DISABLE_SESSION_S
       // redisClient.connect().catch(console.error)
 
       let cacheClient = undefined;
-      if (pubModulesManager.cache) {
+      if (pubModulesManager.cache && pubModulesManager.cache._cache && pubModulesManager.cache._cache._cache) {
         cacheClient = pubModulesManager.cache._cache._cache;  //_cache._cache to jump directly to redis modules without cacheoose wrapper (don't support await)
       }
 
