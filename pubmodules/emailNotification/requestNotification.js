@@ -187,6 +187,7 @@ listen() {
      if (requestEvent.queueEnabled) {
       requestParticipantsUpdateKey = 'request.participants.update.queue';
      }
+     console.log("*** request.participants.update");
      winston.debug('RequestNotification requestParticipantsUpdateKey: ' + requestParticipantsUpdateKey);
 
      requestEvent.on(requestParticipantsUpdateKey, function(data) {
@@ -196,7 +197,7 @@ listen() {
       var request = data.request;
       
       setImmediate(() => {
-   
+          console.log("*** calling sendAgentEmail");
          that.sendAgentEmail(request.id_project, request);
       });
      });
@@ -428,6 +429,7 @@ async notifyFollowers(savedRequest, project, message) {
 
   // Cannot read property '_id' of undefined at RequestNotification.notifyFollowers (/usr/src/app/pubmodules/emailNotification/requestNotification.js:358:62) at /usr/src/app
   // forse meglio .id
+  winston.info("main_flow_cache_request notification request find");
   
   var reqWithFollowers = await Request.findById(savedRequest._id).populate('followers').exec();  // cache_attention
   winston.debug("reqWithFollowers");
@@ -564,7 +566,8 @@ sendToAgentEmailChannelEmail(projectid, message) {
 
 
 
-                    
+                    winston.info("main_flow_cache_request notification request find 2");
+
                     var snapshotAgents = await Request.findById(savedRequest.id).select({"snapshot":1}).exec();
 
                     winston.debug('snapshotAgents',snapshotAgents);                              
@@ -812,6 +815,8 @@ sendUserEmail(projectid, message) {
          
           if (!project_user.presence || (project_user.presence && project_user.presence.status === "offline")) {
 
+            winston.info("main_flow_cache_2 lead 2");
+            
              //send email to lead
             return Lead.findOne({lead_id: recipient}, function(err, lead){
               winston.debug("lead", lead);     //TODO  lead  is already present in request.lead
@@ -883,12 +888,14 @@ sendUserEmail(projectid, message) {
 }
 
 sendAgentEmail(projectid, savedRequest) {
+  console.log("sendAgentEmail");
     // send email
     try {
    
   //  console.log("sendAgentEmail")
     if (savedRequest.preflight === true) {   //only for channel email and form preflight is false otherwise request.participants.update is used i think?
-      winston.debug("preflight request sendAgentEmail disabled")
+      console.log("preflight request sendAgentEmail disabled");
+      winston.debug("preflight request sendAgentEmail disabled");
       return 0;
     }
 
@@ -908,7 +915,7 @@ sendAgentEmail(projectid, savedRequest) {
           }
 
           winston.debug("savedRequest: " + JSON.stringify(savedRequest));
-
+          console.log("savedRequest status: " + savedRequest.status);
               // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
                  if (savedRequest.status==RequestConstants.UNASSIGNED) { //POOLED
 
@@ -923,9 +930,12 @@ sendAgentEmail(projectid, savedRequest) {
 
                   // Throttle: send pooled email only once per request within TTL (avoids flooding when smart assignment keeps retrying)
                   const requestId = (savedRequest._id || savedRequest.id).toString();
+                  console.log("[RequestNotification] requestId: ", requestId);
                   const pooledEmailKey = 'pooled_request_email:' + requestId;
+                  console.log("[RequestNotification] pooledEmailKey: ", pooledEmailKey);
                   try {
                     const shouldSend = await getPooledEmailCache().setNX(pooledEmailKey, '1', POOLED_EMAIL_THROTTLE_TTL);
+                    console.log("[RequestNotification] shouldSend: ", shouldSend);
                     if (!shouldSend) {
                       return winston.debug("RequestNotification pooled email already sent for request " + requestId + " (Redis throttle, TTL " + POOLED_EMAIL_THROTTLE_TTL + "s)");
                     }
@@ -933,6 +943,7 @@ sendAgentEmail(projectid, savedRequest) {
                     winston.warn("RequestNotification Redis setNX for pooled email throttle failed, skipping send", { error: redisErr, requestId });
                     return;
                   }
+                  console.log("Sending email");
 
                  
                   var snapshotAgents = savedRequest; //riassegno varibile cosi nn cambio righe successive
@@ -946,6 +957,8 @@ sendAgentEmail(projectid, savedRequest) {
                     //return winston.warn("RequestNotification snapshotAgents.snapshot.agents is null :(. You are closing an old request?", savedRequest);
 
                   // agents già c'è in quanto viene creato con departmentService.getOperator nella request.create ma nn c'è per request.participants.update
+                    winston.info("main_flow_cache_request notification request find 3");
+
                       snapshotAgents = await Request.findById(savedRequest.id).select({"snapshot":1}).exec();
                       winston.debug('load snapshotAgents with Request.findById ');                              
                   }
