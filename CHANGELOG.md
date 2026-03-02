@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.15.6
+- Updated voice-twilio-connector to 0.3.2
+- Updated vxml-connector to 0.1.91
+
 # 2.15.5
 - Fixed email flooding when smart assignment is active and there are no operators available
 
