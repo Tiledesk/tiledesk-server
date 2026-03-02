@@ -66,11 +66,12 @@ class AiManager {
           content: "",
           namespace: namespace.id,
           status: -1,
-          sitemap_origin_id: options.sitemap_origin_id,
-          sitemap_origin: options.sitemap_origin,
           scrape_type: options.scrape_type,
           scrape_options: options.scrape_options,
-          refresh_rate: options.refresh_rate
+          refresh_rate: options.refresh_rate,
+          ...(options.sitemap_origin_id && { sitemap_origin_id: options.sitemap_origin_id }),
+          ...(options.sitemap_origin && { sitemap_origin: options.sitemap_origin }),
+          ...(options.tags && { tags: options.tags }),
         }
         return kb;
       })

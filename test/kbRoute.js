@@ -47,6 +47,66 @@ mongoose.connect(config.databasetest);
 chai.use(chaiHttp);
 
 describe('KbRoute', () => {
+    
+    describe('/qa', () => {
+        
+        it('ask-kb', (done) => {
+
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("get namespaces res.body: ", res.body); }
+
+                            res.should.have.status(200);
+                            expect(res.body.length).to.equal(1);
+                            expect(res.body[0].engine.index_name).to.equal('test-index')
+
+                            let namespace_id = res.body[0].id;
+
+                            let data = {
+                                question: "sample question?",
+                                namespace: namespace_id,
+                                llm: "openai",
+                                model: "gpt-4o",
+                                temperature: 0.7,
+                                max_tokens: 128,
+                                top_k: 4,
+                                chunks_only: false,
+                                system_context: "",
+                                advancedPrompt: false,
+                                citations: true
+                            }
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb/qa')
+                                .auth(email, pwd)
+                                .send(data)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("ask kb res.body: ", res.body); }
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    
+                                    done();
+                                })
+                        })
+                });
+            });
+
+        })
+    })
 
     describe('Namespaces', () => {
 
@@ -273,7 +333,7 @@ describe('KbRoute', () => {
                             chai.request(server)
                                 .post('/' + savedProject._id + '/kb/namespace/import/' + namespace_id)
                                 .auth(email, pwd)
-                                .set('Content-Type', 'text/plain')
+                                //.set('Content-Type', 'text/plain')
                                 .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './fixtures/exported_namespace.json')), 'exported_namespace.json')
                                 .end((err, res) => {
 
@@ -285,7 +345,28 @@ describe('KbRoute', () => {
                                     expect(res.body.success).to.equal(true);
                                     expect(res.body.message).to.equal("Contents imported successfully");
 
-                                    done();
+                                    chai.request(server)
+                                        .get('/' + savedProject._id + '/kb/?namespace=' + namespace_id)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("get namespace res.body: ", res.body); }
+                                            
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('object');
+                                            expect(res.body.count).to.equal(3);
+                                            expect(res.body.kbs.length).to.equal(3);
+
+                                            let content_with_tags = res.body.kbs.find(kb => kb.source === 'Example content');
+                                            expect(content_with_tags.tags.length).to.equal(2);
+                                            expect(content_with_tags.tags[0]).to.equal('tag1');
+                                            expect(content_with_tags.tags[1]).to.equal('tag2');
+                                            
+                                            let content_without_tags = res.body.kbs.find(kb => kb.source !== 'Example content');
+                                            expect(content_without_tags.tags).to.equal(undefined);
+                                            
+                                            done();
+                                        })
 
                                 })
 
@@ -514,7 +595,8 @@ describe('KbRoute', () => {
                                 type: "url",
                                 source: "https://www.exampleurl5.com",
                                 content: "",
-                                namespace: namespace_id
+                                namespace: namespace_id,
+                                tags: ["test", "example"]
                             }
 
                             chai.request(server)
@@ -539,6 +621,9 @@ describe('KbRoute', () => {
                                     expect(realResponse.value.type).to.equal("url")
                                     expect(realResponse.value.source).to.equal("https://www.exampleurl5.com")
                                     expect(realResponse.value.status).to.equal(-1)
+                                    expect(realResponse.value.tags.length).to.equal(2);
+                                    expect(realResponse.value.tags[0]).to.equal("test");
+                                    expect(realResponse.value.tags[1]).to.equal("example");
                                     should.not.exist(realResponse.engine)
                                     should.not.exist(realResponse.value.engine)
                                     should.not.exist(realResponse.embedding)
@@ -549,6 +634,9 @@ describe('KbRoute', () => {
                                     expect(scheduleJson.type).to.equal("url")
                                     expect(scheduleJson.source).to.equal("https://www.exampleurl5.com")
                                     expect(scheduleJson.hybrid).to.equal(false);
+                                    expect(scheduleJson.tags.length).to.equal(2);
+                                    expect(scheduleJson.tags[0]).to.equal("test");
+                                    expect(scheduleJson.tags[1]).to.equal("example");
                                     should.exist(scheduleJson.engine)
                                     should.exist(scheduleJson.embedding)
 
@@ -916,14 +1004,15 @@ describe('KbRoute', () => {
                             chai.request(server)
                                 .post('/' + savedProject._id + '/kb/csv?namespace=' + namespace_id)
                                 .auth(email, pwd)
-                                .set('Content-Type', 'text/csv')
-                                .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './fixtures/example-kb-faqs.csv')), 'example-kb-faqs.csv')
+                                //.set('Content-Type', 'text/csv')
                                 .field('delimiter', ';')
+                                .field('tags', JSON.stringify(['tag1', 'tag2']))
+                                .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './fixtures/example-kb-faqs.csv')), 'example-kb-faqs.csv')
                                 .end((err, res) => {
 
                                     if (err) { console.error("err: ", err); }
                                     if (log) { console.log("res.body: ", res.body) }
-
+                                    console.log("res.body: ", res.body)
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
                                     expect(res.body.success).to.equal(true);
@@ -931,6 +1020,7 @@ describe('KbRoute', () => {
 
                                     let realResponse = res.body.data;
                                     realResponse.should.be.a('array');
+                                    console.log("realResponse: ", realResponse[0]);
                                     expect(realResponse.length).to.equal(2);
                                     expect(realResponse[0].namespace).to.equal(namespace_id);
                                     expect(realResponse[0].type).to.equal('faq');
@@ -983,7 +1073,7 @@ describe('KbRoute', () => {
                     chai.request(server)
                         .post('/' + savedProject._id + '/kb/multi?namespace=123456')
                         .auth(email, pwd)
-                        .set('Content-Type', 'text/plain')
+                        //.set('Content-Type', 'text/plain')
                         .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './fixtures/kbUrlsList.txt')), 'kbUrlsList.txt')
                         .end((err, res) => {
 
@@ -1030,7 +1120,7 @@ describe('KbRoute', () => {
                             chai.request(server)
                                 .post('/' + savedProject._id + '/kb/multi?namespace=fakenamespaceid')
                                 .auth(email, pwd)
-                                .set('Content-Type', 'text/plain')
+                                //.set('Content-Type', 'text/plain')
                                 .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './fixtures/kbUrlsList.txt')), 'kbUrlsList.txt')
                                 .end((err, res) => {
 
@@ -1077,8 +1167,14 @@ describe('KbRoute', () => {
                             chai.request(server)
                                 .post('/' + savedProject._id + '/kb/multi?namespace=' + namespace_id)
                                 .auth(email, pwd)
-                                .set('Content-Type', 'text/plain')
-                                .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './fixtures/kbUrlsList.txt')), 'kbUrlsList.txt')
+                                .field('refresh_rate', 'never')
+                                .field('scrape_type', '2')
+                                .field('tags', JSON.stringify(['tag1', 'tag2']))
+                                .attach(
+                                    'uploadFile',
+                                    fs.readFileSync(path.resolve(__dirname, './fixtures/kbUrlsList.txt')),
+                                    'kbUrlsList.txt'
+                                )
                                 .end((err, res) => {
 
                                     if (err) { console.error("err: ", err); }
@@ -1090,15 +1186,24 @@ describe('KbRoute', () => {
                                     expect(realResponse.length).to.equal(4);
                                     expect(realResponse[0].namespace).to.equal(namespace_id);
                                     expect(realResponse[0].source).to.equal('https://gethelp.tiledesk.com/articles/article1');
+                                    expect(realResponse[0].tags.length).to.equal(2);
+                                    expect(realResponse[0].tags[0]).to.equal('tag1');
+                                    expect(realResponse[0].tags[1]).to.equal('tag2');
                                     should.not.exist(realResponse[0].engine);
                                     should.not.exist(realResponse[0].embedding);
                                     expect(realResponse[1].namespace).to.equal(namespace_id);
                                     expect(realResponse[1].source).to.equal('https://gethelp.tiledesk.com/articles/article2');
+                                    expect(realResponse[1].tags.length).to.equal(2);
+                                    expect(realResponse[1].tags[0]).to.equal('tag1');
+                                    expect(realResponse[1].tags[1]).to.equal('tag2');
 
                                     let scheduleJson = res.body.schedule_json;
                                     expect(scheduleJson.length).to.equal(4);
                                     expect(scheduleJson[0].namespace).to.equal(namespace_id);
                                     expect(scheduleJson[0].source).to.equal('https://gethelp.tiledesk.com/articles/article1');
+                                    expect(scheduleJson[0].tags.length).to.equal(2);
+                                    expect(scheduleJson[0].tags[0]).to.equal('tag1');
+                                    expect(scheduleJson[0].tags[1]).to.equal('tag2');
                                     should.exist(scheduleJson[0].engine);
                                     should.exist(scheduleJson[0].embedding);
                                     expect(scheduleJson[0].engine.index_name).to.equal(namespace.engine.index_name);
@@ -1107,6 +1212,9 @@ describe('KbRoute', () => {
 
                                     expect(scheduleJson[1].namespace).to.equal(namespace_id);
                                     expect(scheduleJson[1].source).to.equal('https://gethelp.tiledesk.com/articles/article2');
+                                    expect(scheduleJson[1].tags.length).to.equal(2);
+                                    expect(scheduleJson[1].tags[0]).to.equal('tag1');
+                                    expect(scheduleJson[1].tags[1]).to.equal('tag2');
 
                                     done();
 
@@ -1961,5 +2069,7 @@ describe('KbRoute', () => {
             });
         });
     });
+
+    
 
 });
