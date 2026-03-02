@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.16.7
+- Updated whatsapp-connector to 1.0.26
+
 # 2.15.6
 - Updated voice-twilio-connector to 0.3.2
 - Updated vxml-connector to 0.1.91
