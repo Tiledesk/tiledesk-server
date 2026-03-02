@@ -229,7 +229,7 @@ router.delete(
 
     try {
       await scheduler.deleteJob(req.params.id);
-      return res.status(204).send();
+      return res.status(200).json({ success: true, message: "Job successfully deleted" });
     } catch (err) {
       if (err.status === 404) {
         return res.status(404).json({ success: false, error: 'Job not found' });
