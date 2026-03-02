@@ -348,9 +348,11 @@ if (process.env.DISABLE_SESSION_STRATEGY==true ||  process.env.DISABLE_SESSION_S
       // redisClient.connect().catch(console.error)
 
       let cacheClient = undefined;
-      if (pubModulesManager.cache) {
+      if (pubModulesManager.cache && pubModulesManager.cache._cache && pubModulesManager.cache._cache._cache) {
         cacheClient = pubModulesManager.cache._cache._cache;  //_cache._cache to jump directly to redis modules without cacheoose wrapper (don't support await)
       }
+
+      if (cacheClient) {
       // winston.info("Express Session cacheClient",cacheClient);
 
 
@@ -373,7 +375,11 @@ if (process.env.DISABLE_SESSION_STRATEGY==true ||  process.env.DISABLE_SESSION_S
         })
       )
       winston.info("Express Session with Redis enabled with Secret: " + sessionSecret);
-
+      } else {
+        winston.warn("ENABLE_REDIS_SESSION is true but Redis cache is not available (pubmodules cache not initialized). Using default in-memory session store.");
+        app.use(session({ secret: sessionSecret}));
+        winston.info("Express Session enabled with Secret: " + sessionSecret);
+      }
 
   } else {
     app.use(session({ secret: sessionSecret}));
