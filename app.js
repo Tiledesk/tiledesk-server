@@ -151,6 +151,7 @@ var webhook = require('./routes/webhook');
 var webhooks = require('./routes/webhooks');
 var copilot = require('./routes/copilot');
 var mcp = require('./routes/mcp');
+var scheduler = require('./routes/scheduledJobs');
 
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
@@ -647,6 +648,7 @@ app.use('/:projectid/kb', [passport.authenticate(['basic', 'jwt'], { session: fa
 app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], logs);
 
 app.use('/:projectid/webhooks', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], webhooks);
+app.use('/:projectid/scheduler', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], scheduler);
 app.use('/:projectid/copilot', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], copilot);
 
 app.use('/:projectid/files', filesp);
