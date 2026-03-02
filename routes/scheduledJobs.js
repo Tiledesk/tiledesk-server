@@ -55,7 +55,7 @@ function getSchedulerOrFail(res) {
     return getSchedulerClient();
   } catch (e) {
     winston.warn('Scheduled jobs: scheduler service not configured', e.message);
-    res.status(503).json({ success: false, error: 'Scheduler service not available. Set SCHEDULER_SERVICE_URL.' });
+    res.status(503).json({ success: false, error: 'Scheduler service not available.' });
     return null;
   }
 }
