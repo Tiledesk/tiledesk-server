@@ -491,6 +491,10 @@ class ActivityArchiver {
         });
 
         kbEvent.on('kb.content.delete', function (event) {
+
+          console.log("kb.content.delete user: ", event.req?.user);
+          console.log("kb.content.delete kb: ", event.kb);
+
           setImmediate(() => {
             if (!event.req?.user) return;
             var actorId = event.req.user.id || event.req.user._id;
@@ -502,6 +506,7 @@ class ActivityArchiver {
               target: { type: 'kb_content', id: event.kb_id, object: kb?.toObject ? kb.toObject() : { _id: event.kb_id, namespace: event.namespace_id } },
               id_project: event.project_id
             });
+            console.log("kb.content.delete activity: ", activity);
             that.save(activity);
           });
         });
