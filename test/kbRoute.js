@@ -918,6 +918,66 @@ describe('KbRoute', () => {
             })
         }).timeout(20000)
 
+        it('add-single-faq-success', (done) => {
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body: ", res.body) }
+
+                            res.should.have.status(200);
+                            expect(res.body.length).to.equal(1);
+
+                            let namespace_id = res.body[0].id;
+
+                            let content = {
+                                name: "Sample question",
+                                source: "Sample question",
+                                content: "Sample question\nSample answer",
+                                type: "faq",
+                                tags: ["tag1", "tag2"],
+                                namespace: namespace_id
+                            }
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb')
+                                .auth(email, pwd)
+                                .send(content)
+                                .end((err, res) => {
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body: ", res.body) }
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+
+                                    let realResponse = res.body.data;
+                                    expect(realResponse.value.namespace).to.equal(namespace_id);
+                                    expect(realResponse.value.type).to.equal("faq");
+                                    expect(realResponse.value.source).to.equal("Sample question");
+                                    expect(realResponse.value.content).to.equal("Sample question\nSample answer");
+                                    expect(realResponse.value.tags.length).to.equal(2);
+                                    expect(realResponse.value.tags[0]).to.equal("tag1");
+                                    expect(realResponse.value.tags[1]).to.equal("tag2");
+
+                                    done();
+
+
+                                });
+
+                        });
+
+
+                    })
+                });
+        })
+
         it('add-multiple-faqs-with-csv', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
