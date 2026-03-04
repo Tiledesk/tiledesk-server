@@ -3,6 +3,7 @@ const EventEmitter = require('events');
 class KbEvent extends EventEmitter {
     constructor() {
         super();
+        this.queueEnabled = false;
     }
 }
 

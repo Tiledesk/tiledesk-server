@@ -411,7 +411,11 @@ class ActivityArchiver {
         });
 
         // Chatbot activities (routes/faq_kb.js)
-        botEvent.on('faqbot.delete.activity', function (event) {
+        var faqbotDeleteActivityKey = 'faqbot.delete.activity';
+        if (botEvent.queueEnabled) {
+          faqbotDeleteActivityKey = 'faqbot.delete.activity.queue';
+        }
+        botEvent.on(faqbotDeleteActivityKey, function (event) {
           setImmediate(() => {
             if (!event.req?.user) return;
             var actorId = event.req.user.id || event.req.user._id;
@@ -427,7 +431,11 @@ class ActivityArchiver {
           });
         });
 
-        botEvent.on('faqbot.publish.activity', function (event) {
+        var faqbotPublishActivityKey = 'faqbot.publish.activity';
+        if (botEvent.queueEnabled) {
+          faqbotPublishActivityKey = 'faqbot.publish.activity.queue';
+        }
+        botEvent.on(faqbotPublishActivityKey, function (event) {
           setImmediate(() => {
             if (!event.req?.user) return;
             var actorId = event.req.user.id || event.req.user._id;
@@ -443,7 +451,11 @@ class ActivityArchiver {
         });
 
         // KB activities (routes/kb.js)
-        kbEvent.on('kb.namespace.create', function (event) {
+        var kbNamespaceCreateKey = 'kb.namespace.create';
+        if (kbEvent.queueEnabled) {
+          kbNamespaceCreateKey = 'kb.namespace.create.queue';
+        }
+        kbEvent.on(kbNamespaceCreateKey, function (event) {
           setImmediate(() => {
             if (!event.req?.user) return;
             var actorId = event.req.user.id || event.req.user._id;
@@ -459,7 +471,11 @@ class ActivityArchiver {
           });
         });
 
-        kbEvent.on('kb.namespace.delete', function (event) {
+        var kbNamespaceDeleteKey = 'kb.namespace.delete';
+        if (kbEvent.queueEnabled) {
+          kbNamespaceDeleteKey = 'kb.namespace.delete.queue';
+        }
+        kbEvent.on(kbNamespaceDeleteKey, function (event) {
           setImmediate(() => {
             if (!event.req?.user) return;
             var actorId = event.req.user.id || event.req.user._id;
@@ -475,7 +491,11 @@ class ActivityArchiver {
           });
         });
 
-        kbEvent.on('kb.contents.delete', function (event) {
+        var kbContentsDeleteKey = 'kb.contents.delete';
+        if (kbEvent.queueEnabled) {
+          kbContentsDeleteKey = 'kb.contents.delete.queue';
+        }
+        kbEvent.on(kbContentsDeleteKey, function (event) {
           setImmediate(() => {
             if (!event.req?.user) return;
             var actorId = event.req.user.id || event.req.user._id;
@@ -490,7 +510,11 @@ class ActivityArchiver {
           });
         });
 
-        kbEvent.on('kb.content.delete', function (event) {
+        var kbContentDeleteKey = 'kb.content.delete';
+        if (kbEvent.queueEnabled) {
+          kbContentDeleteKey = 'kb.content.delete.queue';
+        }
+        kbEvent.on(kbContentDeleteKey, function (event) {
           setImmediate(() => {
             if (!event.req?.user) return;
             var actorId = event.req.user.id || event.req.user._id;
