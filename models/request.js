@@ -14,7 +14,7 @@ var NoteSchema = require("../models/note").schema;
 var TagSchema = require("../models/tag");
 var LocationSchema = require("../models/location");
 var RequestSnapshotSchema = require("../models/requestSnapshot");
-
+var ContactSchema = require("../models/contact");
 var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 winston.info("Request defaultFullTextLanguage: "+ defaultFullTextLanguage);
 
@@ -304,8 +304,8 @@ var RequestSchema = new Schema({
     type: Boolean,
     required: false,
     index: true
-  }
-
+  },
+  contact: ContactSchema,
 }, {
   timestamps: true,
   toObject: { virtuals: true }, //IMPORTANT FOR trigger used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
@@ -507,6 +507,10 @@ RequestSchema.index({ id_project: 1, createdAt: -1, status: 1 })
 RequestSchema.index({ id_project: 1, preflight: 1, smartAssignment: 1, "snapshot.department.routing": 1, createdAt: 1, status: 1 })
 
 RequestSchema.index({ status: 1, hasBot: 1, updatedAt: 1 }) // For closing unresponsive requests
+
+// Contact search by phone / email
+RequestSchema.index({ id_project: 1, 'contact.phone': 1 });
+RequestSchema.index({ id_project: 1, 'contact.email': 1 });
 
 // ERROR DURING DEPLOY OF 2.10.27
 //RequestSchema.index({ id_project: 1, participants: 1, "snapshot.agents.id_user": 1, createdAt: -1, status: 1 })
