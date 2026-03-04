@@ -6,7 +6,7 @@
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
 # 2.15.2
-- Updated GitHub actions
+- Updated GitHub actionsm
 
 # 2.15.1
 - Updated whatsapp-connector to 1.0.24
