@@ -6,6 +6,7 @@ const leadEvent = require('../../event/leadEvent');
 
 const botEvent = require('../../event/botEvent');
 const authEvent = require('../../event/authEvent');
+const kbEvent = require('../../event/kbEvent');
 // https://elements.heroku.com/addons/cloudamqp
 // https://gist.github.com/carlhoerberg/006b01ac17a0a94859ba#file-reconnect-js
 // http://www.rabbitmq.com/tutorials/tutorial-one-javascript.html
@@ -209,6 +210,24 @@ function startWorker() {
           winston.info("Data queue", oka)
         });
 
+        ch.bindQueue(_ok.queue, exchange, "kb_namespace_create", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: kb_namespace_create");
+        });
+        ch.bindQueue(_ok.queue, exchange, "kb_namespace_delete", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: kb_namespace_delete");
+        });
+        ch.bindQueue(_ok.queue, exchange, "kb_contents_delete", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: kb_contents_delete");
+        });
+        ch.bindQueue(_ok.queue, exchange, "kb_content_delete", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: kb_content_delete");
+        });
+        ch.bindQueue(_ok.queue, exchange, "faqbot_delete_activity", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: faqbot_delete_activity");
+        });
+        ch.bindQueue(_ok.queue, exchange, "faqbot_publish_activity", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: faqbot_publish_activity");
+        });
 
         ch.consume(queueName, processMsg, { noAck: false });
         winston.info("Worker is started");
@@ -326,7 +345,30 @@ function work(msg, cb) {
     requestEvent.emit('request.snapshot.update.queue',  JSON.parse(message_string));
   }
 
-
+  if (topic === 'kb_namespace_create') {
+    winston.debug("reconnect here topic:" + topic);
+    kbEvent.emit('kb.namespace.create.queue', JSON.parse(message_string));
+  }
+  if (topic === 'kb_namespace_delete') {
+    winston.debug("reconnect here topic:" + topic);
+    kbEvent.emit('kb.namespace.delete.queue', JSON.parse(message_string));
+  }
+  if (topic === 'kb_contents_delete') {
+    winston.debug("reconnect here topic:" + topic);
+    kbEvent.emit('kb.contents.delete.queue', JSON.parse(message_string));
+  }
+  if (topic === 'kb_content_delete') {
+    winston.debug("reconnect here topic:" + topic);
+    kbEvent.emit('kb.content.delete.queue', JSON.parse(message_string));
+  }
+  if (topic === 'faqbot_delete_activity') {
+    winston.debug("reconnect here topic:" + topic);
+    botEvent.emit('faqbot.delete.activity.queue', JSON.parse(message_string));
+  }
+  if (topic === 'faqbot_publish_activity') {
+    winston.debug("reconnect here topic:" + topic);
+    botEvent.emit('faqbot.publish.activity.queue', JSON.parse(message_string));
+  }
 
   cb(true);
 //   WebSocket.cb(true);
@@ -451,6 +493,48 @@ function listen() {
       });
     });
 
+    botEvent.on('faqbot.delete.activity', function(event) {
+      setImmediate(() => {
+        var payload = { req: event.req ? { user: event.req.user } : undefined, faq_kb: event.faq_kb?.toObject ? event.faq_kb.toObject() : event.faq_kb, chatbot_id: event.chatbot_id, id_project: event.id_project };
+        publish(exchange, "faqbot_delete_activity", Buffer.from(JSON.stringify(payload)));
+      });
+    });
+
+    botEvent.on('faqbot.publish.activity', function(event) {
+      setImmediate(() => {
+        var payload = { req: event.req ? { user: event.req.user } : undefined, id_faq_kb: event.id_faq_kb, forkedChatBotId: event.forkedChatBotId, release_note: event.release_note, id_project: event.id_project };
+        publish(exchange, "faqbot_publish_activity", Buffer.from(JSON.stringify(payload)));
+      });
+    });
+
+    kbEvent.on('kb.namespace.create', function(event) {
+      setImmediate(() => {
+        var payload = { req: event.req ? { user: event.req.user } : undefined, savedNamespace: event.savedNamespace?.toObject ? event.savedNamespace.toObject() : event.savedNamespace, body: event.body, namespace_id: event.namespace_id, project_id: event.project_id };
+        publish(exchange, "kb_namespace_create", Buffer.from(JSON.stringify(payload)));
+      });
+    });
+
+    kbEvent.on('kb.namespace.delete', function(event) {
+      setImmediate(() => {
+        var payload = { req: event.req ? { user: event.req.user } : undefined, namespace_id: event.namespace_id, project_id: event.project_id, namespace: event.namespace?.toObject ? event.namespace.toObject() : event.namespace, deletedCount: event.deletedCount };
+        publish(exchange, "kb_namespace_delete", Buffer.from(JSON.stringify(payload)));
+      });
+    });
+
+    kbEvent.on('kb.contents.delete', function(event) {
+      setImmediate(() => {
+        var payload = { req: event.req ? { user: event.req.user } : undefined, namespace_id: event.namespace_id, project_id: event.project_id, deletedCount: event.deletedCount };
+        publish(exchange, "kb_contents_delete", Buffer.from(JSON.stringify(payload)));
+      });
+    });
+
+    kbEvent.on('kb.content.delete', function(event) {
+      setImmediate(() => {
+        var payload = { req: event.req ? { user: event.req.user } : undefined, kb_id: event.kb_id, namespace_id: event.namespace_id, project_id: event.project_id, kb: event.kb?.toObject ? event.kb.toObject() : event.kb };
+        publish(exchange, "kb_content_delete", Buffer.from(JSON.stringify(payload)));
+      });
+    });
+
 
     leadEvent.on('lead.create', function(lead) {
       setImmediate(() => {
@@ -489,6 +573,7 @@ if (process.env.QUEUE_ENABLED === "true") {
     authEvent.queueEnabled = true;
     botEvent.queueEnabled = true;
     leadEvent.queueEnabled = true;
+    kbEvent.queueEnabled = true;
     listen();
     start();
     winston.info("Queue enabled. endpoint: " + url );
