@@ -526,6 +526,7 @@ class ActivityArchiver {
               target: { type: 'kb_content', id: event.kb_id, object: kb?.toObject ? kb.toObject() : { _id: event.kb_id, namespace: event.namespace_id } },
               id_project: event.project_id
             });
+            console.log("kb.content.delete activity: ", activity);
             that.save(activity);
           });
         });
