@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.15.8
+- Updated tybot-connector to 2.0.45
+- Added support for tags management in knowledge base routes
+
 # 2.15.7
 - Updated whatsapp-connector to 1.0.26
 
