@@ -1805,9 +1805,11 @@ router.put('/:kb_id', async (req, res) => {
   }
 
   try {
-    let delete_response = await aiService.updateIndex(data);
+    let delete_response = await aiService.deleteIndex(data);
 
     if (delete_response.data.success === true) {
+      console.log("Content deleted successfully: ", delete_response.data);
+      console.log("continue the flow");
       // continue the flow
     } else {
       winston.error("Unable to update content due to an error: ", delete_response.data.error);
