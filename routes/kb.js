@@ -1809,6 +1809,7 @@ router.put('/:kb_id', async (req, res) => {
 
     if (delete_response.data.success === true) {
       console.log("Content deleted successfully: ", delete_response.data);
+      await KB.findOneAndDelete({ id_project, namespace: namespace_id, source }).lean().exec();
       console.log("continue the flow");
       // continue the flow
     } else {
