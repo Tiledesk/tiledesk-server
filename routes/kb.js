@@ -1850,7 +1850,7 @@ router.put('/:kb_id', async (req, res) => {
 
   let updated_content;
   try {
-    updated_content = await KB.findOneAndUpdate({ id_project, namespace: namespace_id, _id: kb_id }, new_content, { upsert: true, new: true }).lean().exec();
+    updated_content = await KB.findOneAndUpdate({ id_project, namespace: namespace_id, source }, new_content, { upsert: true, new: true }).lean().exec();
   } catch (err) {
     winston.error("Error updating content: ", err);
     return res.status(500).send({ success: false, error: err });
