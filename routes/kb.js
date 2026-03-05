@@ -1860,24 +1860,24 @@ router.put('/:kb_id', async (req, res) => {
   embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
   const json = {
-    id: saved_kb._id,
-    type: saved_kb.type,
-    source: saved_kb.source,
-    content: saved_kb.content || "",
-    namespace: saved_kb.namespace,
+    id: updated_content._id,
+    type: updated_content.type,
+    source: updated_content.source,
+    content: updated_content.content || "",
+    namespace: updated_content.namespace,
     webhook: webhook,
     hybrid: namespace.hybrid,
     engine: namespace.engine || default_engine,
     embedding: embedding,
-    ...(saved_kb.scrape_type && { scrape_type: saved_kb.scrape_type }),
-    ...(saved_kb.scrape_options && { parameters_scrape_type_4: saved_kb.scrape_options }),
-    ...(saved_kb.tags && { tags: saved_kb.tags }),
+    ...(updated_content.scrape_type && { scrape_type: updated_content.scrape_type }),
+    ...(updated_content.scrape_options && { parameters_scrape_type_4: updated_content.scrape_options }),
+    ...(updated_content.tags && { tags: updated_content.tags }),
   }
 
   winston.debug("json: ", json);
 
   if (process.env.NODE_ENV === 'test') {
-    return res.status(200).send({ success: true, message: "Schedule scrape skipped in test environment", data: raw_content, schedule_json: json });
+    return res.status(200).send({ success: true, message: "Schedule scrape skipped in test environment", data: updated_content, schedule_json: json });
   }
     
   aiManager.scheduleScrape([json], namespace.hybrid);
