@@ -318,6 +318,13 @@ router.patch('/:requestid', function (req, res) {
         return res.status(404).send({ success: false, msg: 'Request not found' });
       }
 
+      if (update.workingStatus !== undefined) {
+        requestEvent.emit('request.workingStatus.update', { request });
+        // if (requestEvent.queueEnabled) {
+        //   requestEvent.emit('request.workingStatus.update.queue', { request });
+        // }
+      }
+
       requestEvent.emit("request.update", request);
       requestEvent.emit("request.update.comment", { comment: "PATCH", request: request }); //Deprecated
       requestEvent.emit("request.updated", { comment: "PATCH", request: request, patch: update });
