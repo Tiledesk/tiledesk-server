@@ -1773,37 +1773,148 @@ router.post('/sitemap/import', async (req, res) => {
 
 router.put('/:kb_id', async (req, res) => {
 
-  let kb_id = req.params.kb_id;
-  winston.verbose("update kb_id " + kb_id);
+  const id_project = req.projectid;
+  const project = req.project;
+  
+  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags } = req.body;
+  const namespace_id = req.body.namespace;
 
-  let update = {};
-
-  if (req.body.name != undefined) {
-    update.name = req.body.name;
+  if (!namespace_id) {
+    return res.status(400).send({ success: false, error: "Missing 'namespace' body parameter" })
   }
 
-  if (req.body.status != undefined) {
-    update.status = req.body.status;
+  let namespace;
+  try {
+    namespace = await aiManager.checkNamespace(id_project, namespace_id);
+  } catch (err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
   }
 
-  winston.debug("kb update: ", update);
+  let kb = await KB.findOne({ id_project, namespace: namespace_id, _id: kb_id }).lean().exec();
 
-  KB.findByIdAndUpdate(kb_id, update, { new: true }, (err, savedKb) => {
+  if (!kb) {
+    return res.status(404).send({ success: false, error: "Content not found. Unable to update a non-existing content" })
+  }
 
-    if (err) {
-      winston.error("KB findByIdAndUpdate error: ", err);
-      return res.status(500).send({ success: false, error: err });
+  let data = {
+    id: kb._id,
+    namespace: namespace_id,
+    engine: namespace.engine || default_engine
+  }
+
+  try {
+    let delete_response = await aiService.updateIndex(data);
+
+    if (delete_response.data.success === true) {
+      // continue the flow
+    } else {
+      winston.error("Unable to update content due to an error: ", delete_response.data.error);
+      return res.status(500).send({ success: false, error: delete_response.data.error });
     }
 
-    if (!savedKb) {
-      winston.debug("Try to updating a non-existing kb");
-      return res.status(400).send({ success: false, message: "Content not found" })
-    }
+  } catch (err) {
+    winston.error("Error updating content: ", err);
+    return res.status(500).send({ success: false, error: err });
+  }
 
-    res.status(200).send(savedKb)
-  })
+  let new_content = {
+    id_project,
+    name,
+    type,
+    source,
+    content,
+    namespace: namespace_id,
+    status: -1,
+  }
+
+  if (new_content.type === 'url') {
+    new_content.refresh_rate = refresh_rate || 'never';
+    if (!scrape_type || scrape_type === 2) {
+      new_content.scrape_type = 2;
+      new_content.scrape_options = aiManager.setDefaultScrapeOptions();
+    } else {
+      new_content.scrape_type = scrape_type;
+      new_content.scrape_options = scrape_options;
+    }
+  }
+
+  if (tags && Array.isArray(tags) && tags.every(tag => typeof tag === "string")) {
+    new_content.tags = tags;
+  }
+
+  winston.debug("Update content. New content: ", new_content);
+
+  let updated_content;
+  try {
+    updated_content = await KB.findOneAndUpdate({ id_project, namespace: namespace_id, _id: kb_id }, new_content, { upsert: true, new: true }).lean().exec();
+  } catch (err) {
+    winston.error("Error updating content: ", err);
+    return res.status(500).send({ success: false, error: err });
+  }
+
+  const embedding = normalizeEmbedding(namespace.embedding);
+  embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+
+  const json = {
+    id: saved_kb._id,
+    type: saved_kb.type,
+    source: saved_kb.source,
+    content: saved_kb.content || "",
+    namespace: saved_kb.namespace,
+    webhook: webhook,
+    hybrid: namespace.hybrid,
+    engine: namespace.engine || default_engine,
+    embedding: embedding,
+    ...(saved_kb.scrape_type && { scrape_type: saved_kb.scrape_type }),
+    ...(saved_kb.scrape_options && { parameters_scrape_type_4: saved_kb.scrape_options }),
+    ...(saved_kb.tags && { tags: saved_kb.tags }),
+  }
+
+  winston.debug("json: ", json);
+
+  if (process.env.NODE_ENV === 'test') {
+    return res.status(200).send({ success: true, message: "Schedule scrape skipped in test environment", data: raw_content, schedule_json: json });
+  }
+    
+  aiManager.scheduleScrape([json], namespace.hybrid);
+  return res.status(200).send(updated_content);
 
 })
+
+// router.put('/:kb_id', async (req, res) => {
+
+//   let kb_id = req.params.kb_id;
+//   winston.verbose("update kb_id " + kb_id);
+
+//   let update = {};
+
+//   if (req.body.name != undefined) {
+//     update.name = req.body.name;
+//   }
+
+//   if (req.body.status != undefined) {
+//     update.status = req.body.status;
+//   }
+
+//   winston.debug("kb update: ", update);
+
+//   KB.findByIdAndUpdate(kb_id, update, { new: true }, (err, savedKb) => {
+
+//     if (err) {
+//       winston.error("KB findByIdAndUpdate error: ", err);
+//       return res.status(500).send({ success: false, error: err });
+//     }
+
+//     if (!savedKb) {
+//       winston.debug("Try to updating a non-existing kb");
+//       return res.status(400).send({ success: false, message: "Content not found" })
+//     }
+
+//     res.status(200).send(savedKb)
+//   })
+
+// })
 
 router.delete('/:kb_id', async (req, res) => {
 
