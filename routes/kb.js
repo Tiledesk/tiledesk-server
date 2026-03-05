@@ -1858,6 +1858,7 @@ router.put('/:kb_id', async (req, res) => {
 
   const embedding = normalizeEmbedding(namespace.embedding);
   embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+  let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
 
   const json = {
     id: updated_content._id,
