@@ -1775,6 +1775,7 @@ router.put('/:kb_id', async (req, res) => {
 
   const id_project = req.projectid;
   const project = req.project;
+  const kb_id = req.params.kb_id;
   
   const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags } = req.body;
   const namespace_id = req.body.namespace;
