@@ -83,7 +83,8 @@ class BotEvent extends EventEmitter {
                 }
 
             }
-
+            // winston.info("main_flow_cache_3 botevent find faqkb"); it is cached
+            
             // qui potresti leggere anche +secret ed evitare prossima query in botNotification
             // let qbot = Faq_kb.findById(botId);  //TODO add cache_bot_here
             let qbot = Faq_kb.findById(botId).select('+secret')
