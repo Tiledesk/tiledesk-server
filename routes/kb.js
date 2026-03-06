@@ -394,13 +394,48 @@ router.post('/qa', async (req, res) => {
     }
   }
 
-  data.stream = false;
+  data.stream = data.stream === true;
   data.debug = true;
   delete data.advancedPrompt;
   winston.verbose("ask data: ", data);
 
   if (process.env.NODE_ENV === 'test') {
     return res.status(200).send({ success: true, message: "Question skipped in test environment", data: data });
+  }
+
+  if (data.stream === true) {
+    // Streaming: proxy the stream from the KB service to the client
+    aiService.askNamespace(data).then((resp) => {
+      const status = resp.status || 200;
+      res.status(status);
+      if (resp.headers['content-type']) {
+        res.setHeader('Content-Type', resp.headers['content-type']);
+      }
+      if (resp.headers['transfer-encoding']) {
+        res.setHeader('Transfer-Encoding', resp.headers['transfer-encoding']);
+      }
+      resp.data.pipe(res);
+      resp.data.on('error', (err) => {
+        winston.error("qa stream err: ", err);
+        if (!res.headersSent) {
+          res.status(500).send({ success: false, error: err.message });
+        } else {
+          res.end();
+        }
+      });
+    }).catch((err) => {
+      winston.error("qa err: ", err);
+      winston.error("qa err.response: ", err.response);
+      if (err.response && err.response.status) {
+        const status = err.response.status;
+        const errorBody = err.response.data;
+        const errorMessage = (errorBody && typeof errorBody.pipe !== 'function' && errorBody.detail) ? errorBody.detail : err.response.statusText;
+        res.status(status).send({ success: false, statusText: err.response.statusText, error: errorMessage });
+      } else {
+        res.status(500).send({ success: false, error: err.message || err });
+      }
+    });
+    return;
   }
 
   aiService.askNamespace(data).then((resp) => {
