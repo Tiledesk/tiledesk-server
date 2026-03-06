@@ -320,9 +320,6 @@ router.patch('/:requestid', function (req, res) {
 
       if (update.workingStatus !== undefined) {
         requestEvent.emit('request.workingStatus.update', { request });
-        // if (requestEvent.queueEnabled) {
-        //   requestEvent.emit('request.workingStatus.update.queue', { request });
-        // }
       }
 
       requestEvent.emit("request.update", request);
@@ -1383,6 +1380,10 @@ router.get('/', function (req, res, next) {
     }
   }
 
+  if (req.query.workingStatus?.ne) {
+    query.workingStatus = { $ne: req.query.workingStatus.ne };
+  }
+
   if (req.query.priority) {
     query.priority = req.query.priority;
   }
@@ -1430,6 +1431,23 @@ router.get('/', function (req, res, next) {
 
   if (req.query.draft && (req.query.draft === 'false' || req.query.draft === false)) {
     query.draft = { $in: [false, null] }
+  }
+
+  let inWStatus = req.query.workingStatus?.in?.split(',').map(s => s.trim()).filter(Boolean);
+  let ninWStatus = req.query.workingStatus?.nin?.split(',').map(s => s.trim()).filter(Boolean);
+
+  if (ninWStatus && ninWStatus.length > 0) {
+    if (ninWStatus.length === 1) {
+      query.workingStatus = { $ne: ninWStatus[0] };
+    } else {
+      query.workingStatus = { $nin: ninWStatus };
+    }
+  } else if (inWStatus && inWStatus.length > 0) {
+    if (inWStatus.length === 1) {
+      query.workingStatus = inWStatus[0];
+    } else {
+      query.workingStatus = { $in: inWStatus };
+    }
   }
 
   var projection = undefined;
