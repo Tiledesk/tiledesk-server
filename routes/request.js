@@ -1421,6 +1421,10 @@ router.get('/', function (req, res, next) {
     query["attributes.fully_abandoned"] = true
   }
 
+  if (req.query.rated && (req.query.rated === true || req.query.rated === 'true')) {
+    query.rating = { $exists: true }
+  }
+
   if (req.query.draft && (req.query.draft === 'false' || req.query.draft === false)) {
     query.draft = { $in: [false, null] }
   }
