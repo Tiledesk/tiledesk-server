@@ -206,16 +206,22 @@ class AiService {
     }
     winston.debug("[OPENAI SERVICE] kb endpoint: " + base_url);
 
+    const config = {
+      url: base_url + "/qa",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: data,
+      method: 'POST'
+    };
+
+    if (data.stream === true) {
+      config.responseType = 'stream';
+    }
+
     return new Promise((resolve, reject) => {
 
-      axios({
-        url: base_url + "/qa",
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        data: data,
-        method: 'POST'
-      }).then((resbody) => {
+      axios(config).then((resbody) => {
         resolve(resbody);
       }).catch((err) => {
         reject(err);
