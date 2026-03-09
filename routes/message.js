@@ -279,7 +279,7 @@ async (req, res)  => {
                   // return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
                     // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
                     if (sender && sender !== 'system') {
-                      Request.findOneAndUpdate({request_id: request.request_id, id_project: request.id_project}, { "attributes.last_message": savedMessage}).catch((err) => {
+                      Request.findOneAndUpdate({request_id: request.request_id, id_project: request.id_project}, { $set: { "attributes.last_message": savedMessage }}).catch((err) => {
                         winston.error("Create message - saving last message in request error: ", err);
                       })
                     }
