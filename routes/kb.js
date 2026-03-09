@@ -403,36 +403,94 @@ router.post('/qa', async (req, res) => {
   }
 
   if (data.stream === true) {
-    // Streaming: proxy the stream from the KB service to the client
-    aiService.askNamespace(data).then((resp) => {
-      const status = resp.status || 200;
-      res.status(status);
-      if (resp.headers['content-type']) {
-        res.setHeader('Content-Type', resp.headers['content-type']);
+    // Streaming SSE: use askStream and forward only content as JSON SSE events
+    res.status(200);
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    const sendError = (message) => {
+      try {
+        res.write('data: ' + JSON.stringify({ error: message }) + '\n\n');
+      } catch (_) {}
+      res.end();
+    };
+
+    function extractContent(obj) {
+      if (obj.content != null) return obj.content;
+      if (obj.choices && obj.choices[0]) {
+        const c = obj.choices[0];
+        if (c.delta && c.delta.content != null) return c.delta.content;
+        if (c.message && c.message.content != null) return c.message.content;
       }
-      if (resp.headers['transfer-encoding']) {
-        res.setHeader('Transfer-Encoding', resp.headers['transfer-encoding']);
-      }
-      resp.data.pipe(res);
-      resp.data.on('error', (err) => {
-        winston.error("qa stream err: ", err);
-        if (!res.headersSent) {
-          res.status(500).send({ success: false, error: err.message });
-        } else {
-          res.end();
+      return null;
+    }
+
+    aiService.askStream(data).then((resp) => {
+      const stream = resp.data;
+      let buffer = '';
+
+      stream.on('data', (chunk) => {
+        buffer += chunk.toString();
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data: ')) continue;
+          const payload = trimmed.slice(6);
+          if (payload === '[DONE]') continue;
+
+          try {
+            const obj = JSON.parse(payload);
+            const content = extractContent(obj);
+            if (content != null && content !== '') {
+              res.write('data: ' + JSON.stringify({ content }) + '\n\n');
+            }
+          } catch (_) {
+            // ignore parse errors for non-JSON lines
+          }
+        }
+      });
+
+      stream.on('end', () => {
+        if (buffer.trim().startsWith('data: ')) {
+          const payload = buffer.trim().slice(6);
+          if (payload !== '[DONE]') {
+            try {
+              const obj = JSON.parse(payload);
+              const content = extractContent(obj);
+              if (content != null && content !== '') {
+                res.write('data: ' + JSON.stringify({ content }) + '\n\n');
+              }
+            } catch (_) {}
+          }
+        }
+        res.write('data: [DONE]\n\n');
+        res.end();
+      });
+
+      stream.on('error', (err) => {
+        winston.error('qa stream err: ', err);
+        sendError(err.message || 'Stream error');
+      });
+
+      res.on('close', () => {
+        if (!res.writableEnded) {
+          stream.destroy();
         }
       });
     }).catch((err) => {
-      winston.error("qa err: ", err);
-      winston.error("qa err.response: ", err.response);
-      if (err.response && err.response.status) {
-        const status = err.response.status;
-        const errorBody = err.response.data;
-        const errorMessage = (errorBody && typeof errorBody.pipe !== 'function' && errorBody.detail) ? errorBody.detail : err.response.statusText;
-        res.status(status).send({ success: false, statusText: err.response.statusText, error: errorMessage });
-      } else {
-        res.status(500).send({ success: false, error: err.message || err });
+      winston.error('qa err: ', err);
+      winston.error('qa err.response: ', err.response);
+      const message = (err.response && err.response.data && typeof err.response.data.pipe !== 'function' && err.response.data.detail)
+        ? err.response.data.detail
+        : (err.response && err.response.statusText) || err.message || String(err);
+      if (!res.headersSent) {
+        res.status(err.response && err.response.status ? err.response.status : 500);
       }
+      sendError(message);
     });
     return;
   }
