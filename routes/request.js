@@ -34,6 +34,7 @@ const eventService = require('../pubmodules/events/eventService');
 const { Scheduler } = require('../services/Scheduler');
 const faq_kb = require('../models/faq_kb');
 const datesUtil = require('../utils/datesUtil');
+const JobManager = require('@tiledesk/tiledesk-multi-worker');
 //const JobManager = require('../utils/jobs-worker-queue-manager-v2/JobManagerV2');
 
 // var messageService = require('../services/messageService');
@@ -318,6 +319,10 @@ router.patch('/:requestid', function (req, res) {
         return res.status(404).send({ success: false, msg: 'Request not found' });
       }
 
+      if (update.workingStatus !== undefined) {
+        requestEvent.emit('request.workingStatus.update', { request });
+      }
+
       requestEvent.emit("request.update", request);
       requestEvent.emit("request.update.comment", { comment: "PATCH", request: request }); //Deprecated
       requestEvent.emit("request.updated", { comment: "PATCH", request: request, patch: update });
@@ -439,13 +444,14 @@ router.put('/:requestid/participants', function (req, res) {
 
   //setParticipantsByRequestId(request_id, id_project, participants)
   return requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then(function (updatedRequest) {
-
     winston.debug("participant set", updatedRequest);
-
     return res.json(updatedRequest);
-  }).catch(function(err) {
-    winston.error("Error setting participants", err);
-    return res.status(500).send({ success: false, error: "Error setting participants" });
+
+  }).catch((err) => {
+    winston.error("Error setParticipantsByRequestId: ", err);
+    let error_code = err?.code || 500;
+    let error = err?.error || err || "General error";
+    return res.status(error_code).send({ success: false, error: error })
   });
 
 });
@@ -963,7 +969,7 @@ router.put('/:requestid/tag', async (req, res) => {
   winston.debug("(Request) /tag tags_list: ", tags_list)
 
   if (tags_list.length == 0) {
-    winston.warn("(Request) /tag no tag specified")
+    winston.verbose("(Request) /tag no tag specified")
     return res.status(400).send({ success: false, message: "No tag specified" })
   }
 
@@ -1084,8 +1090,8 @@ router.delete('/:requestid', function (req, res) {
 
   var projectuser = req.projectuser;
 
-
-  if (projectuser.role != "owner") {
+  // request_role_check
+  if (!projectuser.hasPermissionOrRole('request_delete', 'owner')){
     return res.status(403).send({ success: false, msg: 'Unauthorized.' });
   }
 
@@ -1140,8 +1146,8 @@ router.delete('/id/:id', function (req, res) {
 
   var projectuser = req.projectuser;
 
-
-  if (projectuser.role != "owner") {
+  // request_role_check
+  if (!projectuser.hasPermissionOrRole('request_delete', 'owner')){
     return res.status(403).send({ success: false, msg: 'Unauthorized.' });
   }
 
@@ -1203,15 +1209,23 @@ router.get('/', function (req, res, next) {
 
   if (req.user instanceof Subscription) {
     // All request 
-  } else if (projectuser && (projectuser.role == "owner" || projectuser.role == "admin")) {
+    winston.debug("Subscription All request ");
+  } else if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
     // All request 
-    // Per uni mostrare solo quelle proprie quindi solo participants
-    if (req.query.mine) {
-      query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
-    }
-  } else {
+    winston.debug("hasPermissionOrRole All request ");
+  } else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
+
     query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
+
+  } 
+  // else if (projectuser.hasPermissionOrRole('request_read_mine', ["????"])) {
+  //   query["participants"] = req.user.id;
+  // }
+  else {
+    query["participants"] = req.user.id;
+    // generate empty requests response
   }
+
 
   if (req.query.dept_id) {
     query.department = req.query.dept_id;
@@ -1376,6 +1390,10 @@ router.get('/', function (req, res, next) {
     }
   }
 
+  if (req.query.workingStatus?.ne) {
+    query.workingStatus = { $ne: req.query.workingStatus.ne };
+  }
+
   if (req.query.priority) {
     query.priority = req.query.priority;
   }
@@ -1427,6 +1445,23 @@ router.get('/', function (req, res, next) {
 
   if (req.query.draft && (req.query.draft === 'false' || req.query.draft === false)) {
     query.draft = { $in: [false, null] }
+  }
+
+  let inWStatus = req.query.workingStatus?.in?.split(',').map(s => s.trim()).filter(Boolean);
+  let ninWStatus = req.query.workingStatus?.nin?.split(',').map(s => s.trim()).filter(Boolean);
+
+  if (ninWStatus && ninWStatus.length > 0) {
+    if (ninWStatus.length === 1) {
+      query.workingStatus = { $ne: ninWStatus[0] };
+    } else {
+      query.workingStatus = { $nin: ninWStatus };
+    }
+  } else if (inWStatus && inWStatus.length > 0) {
+    if (inWStatus.length === 1) {
+      query.workingStatus = inWStatus[0];
+    } else {
+      query.workingStatus = { $in: inWStatus };
+    }
   }
 
   var projection = undefined;

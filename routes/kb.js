@@ -20,6 +20,7 @@ const Sitemapper = require('sitemapper');
 const aiService = require('../services/aiService');
 const aiManager = require('../services/aiManager');
 const integrationService = require('../services/integrationService');
+const kbEvent = require('../event/kbEvent');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
@@ -393,13 +394,106 @@ router.post('/qa', async (req, res) => {
     }
   }
 
-  data.stream = false;
+  data.stream = data.stream === true;
   data.debug = true;
   delete data.advancedPrompt;
   winston.verbose("ask data: ", data);
 
   if (process.env.NODE_ENV === 'test') {
     return res.status(200).send({ success: true, message: "Question skipped in test environment", data: data });
+  }
+
+  if (data.stream === true) {
+    // Streaming SSE: use askStream and forward only content as JSON SSE events
+    res.status(200);
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    const sendError = (message) => {
+      try {
+        res.write('data: ' + JSON.stringify({ error: message }) + '\n\n');
+      } catch (_) {}
+      res.end();
+    };
+
+    function extractContent(obj) {
+      if (obj.content != null) return obj.content;
+      if (obj.choices && obj.choices[0]) {
+        const c = obj.choices[0];
+        if (c.delta && c.delta.content != null) return c.delta.content;
+        if (c.message && c.message.content != null) return c.message.content;
+      }
+      return null;
+    }
+
+    aiService.askStream(data).then((resp) => {
+      const stream = resp.data;
+      let buffer = '';
+
+      stream.on('data', (chunk) => {
+        buffer += chunk.toString();
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data: ')) continue;
+          const payload = trimmed.slice(6);
+          if (payload === '[DONE]') continue;
+
+          try {
+            const obj = JSON.parse(payload);
+            const content = extractContent(obj);
+            if (content != null && content !== '') {
+              res.write('data: ' + JSON.stringify({ content }) + '\n\n');
+            }
+          } catch (_) {
+            // ignore parse errors for non-JSON lines
+          }
+        }
+      });
+
+      stream.on('end', () => {
+        if (buffer.trim().startsWith('data: ')) {
+          const payload = buffer.trim().slice(6);
+          if (payload !== '[DONE]') {
+            try {
+              const obj = JSON.parse(payload);
+              const content = extractContent(obj);
+              if (content != null && content !== '') {
+                res.write('data: ' + JSON.stringify({ content }) + '\n\n');
+              }
+            } catch (_) {}
+          }
+        }
+        res.write('data: [DONE]\n\n');
+        res.end();
+      });
+
+      stream.on('error', (err) => {
+        winston.error('qa stream err: ', err);
+        sendError(err.message || 'Stream error');
+      });
+
+      res.on('close', () => {
+        if (!res.writableEnded) {
+          stream.destroy();
+        }
+      });
+    }).catch((err) => {
+      winston.error('qa err: ', err);
+      winston.error('qa err.response: ', err.response);
+      const message = (err.response && err.response.data && typeof err.response.data.pipe !== 'function' && err.response.data.detail)
+        ? err.response.data.detail
+        : (err.response && err.response.statusText) || err.message || String(err);
+      if (!res.headersSent) {
+        res.status(err.response && err.response.status ? err.response.status : 500);
+      }
+      sendError(message);
+    });
+    return;
   }
 
   aiService.askNamespace(data).then((resp) => {
@@ -628,6 +722,7 @@ router.delete('/deleteall', async (req, res) => {
 
   let project_id = req.projectid;
   let data = req.body;
+  let namespace_id = data.namespace;
   winston.debug('/delete all data: ', data);
 
   let namespace;
@@ -644,6 +739,7 @@ router.delete('/deleteall', async (req, res) => {
 
   aiService.deleteNamespace(data).then((resp) => {
     winston.debug("delete namespace resp: ", resp.data);
+    kbEvent.emit('kb.contents.delete', { req, namespace_id, project_id });
     res.status(200).send(resp.data);
   }).catch((err) => {
     winston.error("delete namespace err: ", err);
@@ -926,6 +1022,8 @@ router.post('/namespace', async (req, res) => {
       return res.status(500).send({ success: false, error: err });
     }
 
+    kbEvent.emit('kb.namespace.create', { req, savedNamespace, body, namespace_id, project_id });
+
     let namespaceObj = savedNamespace.toObject();
     delete namespaceObj._id;
     delete namespaceObj.__v;
@@ -1174,6 +1272,8 @@ router.delete('/namespace/:id', async (req, res) => {
       })
       winston.debug("delete all contents response: ", deleteResponse);
 
+      kbEvent.emit('kb.contents.delete', { req, namespace_id, project_id, deletedCount: deleteResponse?.deletedCount });
+
       return res.status(200).send({ success: true, message: "All contents deleted successfully" })
 
     }).catch((err) => {
@@ -1213,6 +1313,8 @@ router.delete('/namespace/:id', async (req, res) => {
         return res.status(500).send({ success: false, error: err });
       })
       winston.debug("delete namespace response: ", deleteNamespaceResponse);
+
+      kbEvent.emit('kb.namespace.delete', { req, namespace_id, project_id, namespace, deletedCount: deleteResponse?.deletedCount });
 
       return res.status(200).send({ success: true, message: "Namespace deleted succesfully" })
 
@@ -1594,6 +1696,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
       const quoteManager = req.app.get('quote_manager');
       try {
+        let quoteManager = req.app.get('quote_manager');
         await aiManager.checkQuotaAvailability(quoteManager, req.project, kbs.length)
       } catch(err) {
         let errorCode = err?.errorCode ?? 500;
@@ -1773,37 +1876,153 @@ router.post('/sitemap/import', async (req, res) => {
 
 router.put('/:kb_id', async (req, res) => {
 
-  let kb_id = req.params.kb_id;
-  winston.verbose("update kb_id " + kb_id);
+  const id_project = req.projectid;
+  const project = req.project;
+  const kb_id = req.params.kb_id;
+  
+  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags } = req.body;
+  const namespace_id = req.body.namespace;
 
-  let update = {};
-
-  if (req.body.name != undefined) {
-    update.name = req.body.name;
+  if (!namespace_id) {
+    return res.status(400).send({ success: false, error: "Missing 'namespace' body parameter" })
   }
 
-  if (req.body.status != undefined) {
-    update.status = req.body.status;
+  let namespace;
+  try {
+    namespace = await aiManager.checkNamespace(id_project, namespace_id);
+  } catch (err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
   }
 
-  winston.debug("kb update: ", update);
+  let kb = await KB.findOne({ id_project, namespace: namespace_id, _id: kb_id }).lean().exec();
 
-  KB.findByIdAndUpdate(kb_id, update, { new: true }, (err, savedKb) => {
+  if (!kb) {
+    return res.status(404).send({ success: false, error: "Content not found. Unable to update a non-existing content" })
+  }
 
-    if (err) {
-      winston.error("KB findByIdAndUpdate error: ", err);
-      return res.status(500).send({ success: false, error: err });
+  let data = {
+    id: kb._id,
+    namespace: namespace_id,
+    engine: namespace.engine || default_engine
+  }
+
+  try {
+    let delete_response = await aiService.deleteIndex(data);
+
+    if (delete_response.data.success === true) {
+      console.log("Content deleted successfully: ", delete_response.data);
+      await KB.findOneAndDelete({ id_project, namespace: namespace_id, source }).lean().exec();
+      console.log("continue the flow");
+      // continue the flow
+    } else {
+      winston.error("Unable to update content due to an error: ", delete_response.data.error);
+      return res.status(500).send({ success: false, error: delete_response.data.error });
     }
 
-    if (!savedKb) {
-      winston.debug("Try to updating a non-existing kb");
-      return res.status(400).send({ success: false, message: "Content not found" })
-    }
+  } catch (err) {
+    winston.error("Error updating content: ", err);
+    return res.status(500).send({ success: false, error: err });
+  }
 
-    res.status(200).send(savedKb)
-  })
+  let new_content = {
+    id_project,
+    name,
+    type,
+    source,
+    content,
+    namespace: namespace_id,
+    status: -1,
+  }
+
+  if (new_content.type === 'url') {
+    new_content.refresh_rate = refresh_rate || 'never';
+    if (!scrape_type || scrape_type === 2) {
+      new_content.scrape_type = 2;
+      new_content.scrape_options = aiManager.setDefaultScrapeOptions();
+    } else {
+      new_content.scrape_type = scrape_type;
+      new_content.scrape_options = scrape_options;
+    }
+  }
+
+  if (tags && Array.isArray(tags) && tags.every(tag => typeof tag === "string")) {
+    new_content.tags = tags;
+  }
+
+  winston.debug("Update content. New content: ", new_content);
+
+  let updated_content;
+  try {
+    updated_content = await KB.findOneAndUpdate({ id_project, namespace: namespace_id, source }, new_content, { upsert: true, new: true }).lean().exec();
+  } catch (err) {
+    winston.error("Error updating content: ", err);
+    return res.status(500).send({ success: false, error: err });
+  }
+
+  const embedding = normalizeEmbedding(namespace.embedding);
+  embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+  let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
+
+  const json = {
+    id: updated_content._id,
+    type: updated_content.type,
+    source: updated_content.source,
+    content: updated_content.content || "",
+    namespace: updated_content.namespace,
+    webhook: webhook,
+    hybrid: namespace.hybrid,
+    engine: namespace.engine || default_engine,
+    embedding: embedding,
+    ...(updated_content.scrape_type && { scrape_type: updated_content.scrape_type }),
+    ...(updated_content.scrape_options && { parameters_scrape_type_4: updated_content.scrape_options }),
+    ...(updated_content.tags && { tags: updated_content.tags }),
+  }
+
+  winston.debug("json: ", json);
+
+  if (process.env.NODE_ENV === 'test') {
+    return res.status(200).send({ success: true, message: "Schedule scrape skipped in test environment", data: updated_content, schedule_json: json });
+  }
+    
+  aiManager.scheduleScrape([json], namespace.hybrid);
+  return res.status(200).send(updated_content);
 
 })
+
+// router.put('/:kb_id', async (req, res) => {
+
+//   let kb_id = req.params.kb_id;
+//   winston.verbose("update kb_id " + kb_id);
+
+//   let update = {};
+
+//   if (req.body.name != undefined) {
+//     update.name = req.body.name;
+//   }
+
+//   if (req.body.status != undefined) {
+//     update.status = req.body.status;
+//   }
+
+//   winston.debug("kb update: ", update);
+
+//   KB.findByIdAndUpdate(kb_id, update, { new: true }, (err, savedKb) => {
+
+//     if (err) {
+//       winston.error("KB findByIdAndUpdate error: ", err);
+//       return res.status(500).send({ success: false, error: err });
+//     }
+
+//     if (!savedKb) {
+//       winston.debug("Try to updating a non-existing kb");
+//       return res.status(400).send({ success: false, message: "Content not found" })
+//     }
+
+//     res.status(200).send(savedKb)
+//   })
+
+// })
 
 router.delete('/:kb_id', async (req, res) => {
 
@@ -1843,6 +2062,16 @@ router.delete('/:kb_id', async (req, res) => {
   data.engine = namespace.engine || default_engine;
   winston.verbose("/:delete_id data: ", data);
 
+  const emitKbContentDelete = (deletedKb) => {
+    console.log("emitKbContentDelete calling event");
+    kbEvent.emit('kb.content.delete', { req, kb_id, namespace_id, project_id, kb: deletedKb || kb });
+  };
+
+  if (process.env.NODE_ENV === 'test') {
+    emitKbContentDelete(kb);
+    return res.status(200).send({ success: true, message: "Content deleted successfully" });
+  }
+
   aiService.deleteIndex(data).then((resp) => {
     winston.debug("delete resp: ", resp.data);
     if (resp.data.success === true) {
@@ -1852,6 +2081,7 @@ router.delete('/:kb_id', async (req, res) => {
           winston.error("Delete kb error: ", err);
           return res.status(500).send({ success: false, error: err });
         }
+        emitKbContentDelete(deletedKb);
         res.status(200).send(deletedKb);
       })
 
@@ -1867,6 +2097,7 @@ router.delete('/:kb_id', async (req, res) => {
           winston.verbose("Unable to delete the content in indexing status")
           return res.status(500).send({ success: false, error: "Unable to delete the content in indexing status" })
         } else {
+          emitKbContentDelete(deletedKb);
           res.status(200).send(deletedKb);
         }
       })
