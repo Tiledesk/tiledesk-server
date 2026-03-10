@@ -67,7 +67,6 @@ class LeadService {
             return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes, status, phone));
           }
           if (!lead) {
-            console.log("(leadService) createWithId");
             return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes, status, phone));
           }
 
@@ -75,11 +74,9 @@ class LeadService {
           winston.debug("email: " + email); 
           
           if (lead.email == email) {
-            console.log("(leadService) lead already exists");
             winston.debug("lead already exists createIfNotExistsWithLeadId with the same email");
             return resolve(lead);
           } else {
-            console.log("(leadService) updateWitId");
             winston.debug("lead already exists createIfNotExistsWithLeadId but with different email");
             return resolve(that.updateWitId(lead_id, fullname, email, id_project, status, phone));
           }
@@ -130,7 +127,6 @@ class LeadService {
     update.email = email;
     if (phone !== undefined) {
       update.phone = phoneUtil.normalizePhone(phone);
-      console.log("(leadService) update.phone", update.phone);
     }
     if (status) {
       update.status = status;
@@ -144,7 +140,6 @@ class LeadService {
           return reject(err);
         }
 
-        console.log("(leadService) updatedLead", updatedLead.phone);
         leadEvent.emit('lead.update', updatedLead);
         leadEvent.emit('lead.email.update', updatedLead);
         leadEvent.emit('lead.fullname.update', updatedLead);
@@ -167,7 +162,6 @@ class LeadService {
     return new Promise(function (resolve, reject) {
 
             let phone_normalized = phoneUtil.normalizePhone(phone);
-            console.log("(leadService) phone_normalized", phone_normalized);
             var newLead = new Lead({
               lead_id: lead_id,
               fullname: fullname,
@@ -185,7 +179,6 @@ class LeadService {
                 winston.error('Error saving the lead '+ JSON.stringify(newLead), err)
                 return reject(err);
               }       
-              console.log("(leadService) lead created phone", savedLead.phone);     
               winston.verbose('Lead created ', newLead.toJSON());
 
               leadEvent.emit('lead.create', newLead);
