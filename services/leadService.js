@@ -72,14 +72,22 @@ class LeadService {
 
           winston.debug("lead.email: " + lead.email); 
           winston.debug("email: " + email); 
-          
-          if (lead.email == email) {
-            winston.debug("lead already exists createIfNotExistsWithLeadId with the same email");
-            return resolve(lead);
-          } else {
-            winston.debug("lead already exists createIfNotExistsWithLeadId but with different email");
+
+          if (lead.email !== email || lead.phone !== phone) {
+            winston.debug("lead already exists createIfNotExistsWithLeadId but with different email or phone");
             return resolve(that.updateWitId(lead_id, fullname, email, id_project, status, phone));
+          } else {
+            winston.debug("lead already exists createIfNotExistsWithLeadId with the same email and phone");
+            return resolve(lead);
           }
+          
+          // if (lead.email == email) {
+          //   winston.debug("lead already exists createIfNotExistsWithLeadId with the same email");
+          //   return resolve(lead);
+          // } else {
+          //   winston.debug("lead already exists createIfNotExistsWithLeadId but with different email");
+          //   return resolve(that.updateWitId(lead_id, fullname, email, id_project, status, phone));
+          // }
           
       
       });
