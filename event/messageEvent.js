@@ -196,6 +196,7 @@ messageEvent.on('message.create.from.requester', function (messageJson) {
       if (updatedRequest) {
         winston.debug("Request workingStatus set to open (was pending)", { request_id, id_project });
         requestEvent.emit('request.workingStatus.update', { request: updatedRequest });
+        requestEvent.emit('request.update', updatedRequest);
       }
     }
   );
