@@ -366,36 +366,53 @@ class AiManager {
 
   async removeMultipleContents(namespace, kbs) {
   
-    return new Promise( async (resolve, reject) => {
+    const deleteOne = async (kb) => {
+      const data = {
+        id: kb._id,
+        namespace: kb.namespace,
+        engine: namespace.engine || default_engine
+      };
+      const resp = await aiService.deleteIndex(data);
+      winston.debug("delete content response: ", resp);
+      if (resp.data.success === true) {
+        await KB.findByIdAndDelete(kb._id).exec();
+      } else {
+        await KB.findOneAndDelete({ _id: kb._id, status: { $in: [-1, 400] } }).exec();
+      }
+    };
+
+    await Promise.all(kbs.map((kb) => deleteOne(kb)));
+    
+    // return new Promise( async (resolve, reject) => {
       
-      kbs.forEach((kb) => {
-        let data = {
-          id: kb._id,
-          namespace: kb.namespace,
-          engine: namespace.engine || default_engine
-        }
+    //   kbs.forEach((kb) => {
+    //     let data = {
+    //       id: kb._id,
+    //       namespace: kb.namespace,
+    //       engine: namespace.engine || default_engine
+    //     }
   
-        aiService.deleteIndex(data).then((resp) => {
-          winston.debug("delete content response: ", resp);
-          if (resp.data.success === true) {
-            KB.findByIdAndDelete(kb._id, (err, deletedKb) => {
-              if (err) {
-                winston.error("Delete kb error: ", err);
-                reject(err);
-              }
-            })
-          } else {
-            KB.findOneAndDelete({ _id: kb._id, status: { $in: [-1, 400 ]}}, (err, deletedKb) => {
-              if (err) {
-                winston.error("Delete kb error: ", err);
-                reject(err);
-              }
-            })
-          }
-        })
-      })
-      resolve(true);
-    })
+    //     aiService.deleteIndex(data).then((resp) => {
+    //       winston.debug("delete content response: ", resp);
+    //       if (resp.data.success === true) {
+    //         KB.findByIdAndDelete(kb._id, (err, deletedKb) => {
+    //           if (err) {
+    //             winston.error("Delete kb error: ", err);
+    //             reject(err);
+    //           }
+    //         })
+    //       } else {
+    //         KB.findOneAndDelete({ _id: kb._id, status: { $in: [-1, 400 ]}}, (err, deletedKb) => {
+    //           if (err) {
+    //             winston.error("Delete kb error: ", err);
+    //             reject(err);
+    //           }
+    //         })
+    //       }
+    //     })
+    //   })
+    //   resolve(true);
+    // })
   }
 
   async saveBulk(operations, kbs, project_id, namespace) {
