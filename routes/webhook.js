@@ -74,15 +74,7 @@ router.post('/kb/reindex', async (req, res) => {
     return res.status(500).send({ success: false, error: "Error getting content with id " + content_id });
   })
 
-  const namespace_id = kb.namespace;
-  let namespace;
-  try {
-    namespace = await aiManager.checkNamespace(kb.id_project, namespace_id);
-  } catch (err) {
-    let errorCode = err?.errorCode ?? 500;
-    return res.status(errorCode).send({ success: false, error: err.error });
-  }
-
+  
   if (!kb) {
     winston.warn("(webhook) Kb content not found with id " + content_id + ". Deleting scheduler...");
 
@@ -100,7 +92,20 @@ router.post('/kb/reindex', async (req, res) => {
       return;
     }, 10000);
     
-  } else if (kb.type === 'sitemap') {
+    return;
+  } 
+
+  const namespace_id = kb.namespace;
+  let namespace;
+  try {
+    namespace = await aiManager.checkNamespace(kb.id_project, namespace_id);
+  } catch (err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
+  }
+  
+  
+  if (kb.type === 'sitemap') {
 
     const urls = await aiManager.fetchSitemap(kb.source).catch((err) => {
       winston.error("(webhook) Error fetching sitemap: ", err);

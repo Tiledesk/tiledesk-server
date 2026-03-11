@@ -175,6 +175,11 @@ function startWorker() {
           winston.info("Data queue", oka)
         });
 
+        ch.bindQueue(_ok.queue, exchange, "request_workingStatus_update", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: request_workingStatus_update");
+          winston.info("Data queue", oka)
+        });
+
         ch.bindQueue(_ok.queue, exchange, "message_create", {}, function(err3, oka) {
               winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: message_create");
               winston.info("Data queue", oka)
@@ -284,6 +289,11 @@ function work(msg, cb) {
     winston.debug("reconnect here topic:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
     requestEvent.emit('request.close.extended.queue',  JSON.parse(message_string));
+  }     
+
+  if (topic === 'request_workingStatus_update') {
+    winston.debug("reconnect here topic:" + topic); 
+    requestEvent.emit('request.workingStatus.update.queue',  JSON.parse(message_string));
   }     
 
   if (topic === 'message_create') {
@@ -407,6 +417,12 @@ function listen() {
     requestEvent.on('request.close.extended', function(request) {
       setImmediate(() => {
         publish(exchange, "request_close_extended", Buffer.from(JSON.stringify(request)));
+      });
+    });
+
+    requestEvent.on('request.workingStatus.update', function(request) {
+      setImmediate(() => {
+        publish(exchange, "request_workingStatus_update", Buffer.from(JSON.stringify(request)));
       });
     });
 

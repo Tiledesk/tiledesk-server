@@ -65,7 +65,8 @@ class CloseAgentUnresponsiveRequestTask {
     const query = {
       hasBot: false,
       status: { $lt: 1000 },
-      updatedAt: { $lte: cutoffDate }
+      updatedAt: { $lte: cutoffDate },
+      workingStatus: { $ne: 'pending' }
     };
 
     if (this.queryProject) {

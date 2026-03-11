@@ -111,6 +111,14 @@ class SubscriptionNotifierQueued {
         winston.debug('SubscriptionNotifier project_user.update sent');     
       });
     });
+
+
+    authEvent.on("project_user.update.agent",  function(event) {  
+      setImmediate(() => {
+        subscriptionNotifier.subscribe('project_user.update.agent', event.updatedProject_userPopulated);     
+        winston.debug('SubscriptionNotifier project_user.update.agent sent');     
+      });
+    });
     
     winston.info('SubscriptionNotifierQueued started');
   }
