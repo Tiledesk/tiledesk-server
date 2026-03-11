@@ -1804,37 +1804,35 @@ router.put('/:kb_id', async (req, res) => {
     engine: namespace.engine || default_engine
   }
 
-  if (kb.type === 'sitemap') {
-    let new_sitemap = {
-      id_project,
-      name,
-      source,
-      type: 'sitemap',
-      content: "",
-      namespace: namespace_id,
-      status: -1,
-      scrape_type,
-      scrape_options,
-      refresh_rate,
-      ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
-    }
+  // if (kb.type === 'sitemap') {
+  //   let new_sitemap = {
+  //     id_project,
+  //     name,
+  //     source,
+  //     type: 'sitemap',
+  //     content: "",
+  //     namespace: namespace_id,
+  //     status: -1,
+  //     scrape_type,
+  //     scrape_options,
+  //     refresh_rate,
+  //     ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
+  //   }
 
-    try {
-      let result = await aiManager.updateSitemap(id_project, namespace, kb, new_sitemap);
-      return res.status(200).send(result);
-    } catch (err) {
-      winston.error("Error updating sitemap: ", err);
-      return res.status(500).send({ success: false, error: err });
-    }
-  }
+  //   try {
+  //     let result = await aiManager.updateSitemap(id_project, namespace, kb, new_sitemap);
+  //     return res.status(200).send(result);
+  //   } catch (err) {
+  //     winston.error("Error updating sitemap: ", err);
+  //     return res.status(500).send({ success: false, error: err });
+  //   }
+  // }
 
   try {
     let delete_response = await aiService.deleteIndex(data);
 
     if (delete_response.data.success === true) {
-      console.log("Content deleted successfully: ", delete_response.data);
       await KB.findOneAndDelete({ id_project, namespace: namespace_id, source }).lean().exec();
-      console.log("continue the flow");
       // continue the flow
     } else {
       winston.error("Unable to update content due to an error: ", delete_response.data.error);
@@ -1865,6 +1863,11 @@ router.put('/:kb_id', async (req, res) => {
       new_content.scrape_type = scrape_type;
       new_content.scrape_options = scrape_options;
     }
+  }
+
+  if (kb.sitemap_origin_id) {
+    new_content.sitemap_origin_id = kb.sitemap_origin_id;
+    new_content.sitemap_origin = kb.sitemap_origin;
   }
 
   if (tags && Array.isArray(tags) && tags.every(tag => typeof tag === "string")) {
