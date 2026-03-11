@@ -1780,7 +1780,7 @@ router.get('/tags/:type', async (req, res) => {
     date: { $gte: startDate, $lte: endDate }
   }
 
-  console.log("analytics tags query: ", query)
+  winston.debug("analytics tags query: ", query)
 
   let result = await Analytics.find(query).catch((err) => {
     winston.error("Error finding Analytics: ", err);
@@ -1821,7 +1821,6 @@ router.get('/tags/:type', async (req, res) => {
   
   // Assembly final result
   let data = { dates, series };
-  console.log(data);
 
   return res.status(200).send(data);
   
