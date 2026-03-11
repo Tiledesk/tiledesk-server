@@ -5,6 +5,7 @@ const { Scheduler } = require("./Scheduler");
 const { default: Sitemapper } = require('sitemapper');
 const winston = require('../config/winston');
 const configGlobal = require('../config/global');
+const _ = require('lodash');
 const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 
 // Constants
@@ -142,20 +143,90 @@ class AiManager {
     })
   }
 
+  async updateSitemap(id_project, namespace, old_sitemap, new_sitemap) {
+
+    let fieldsToCheck = ['scrape_type', 'scrape_options', 'refresh_rate', 'tags'];
+    let { stop } = this.shouldStop(old_sitemap, new_sitemap, fieldsToCheck);
+
+    let updated_sitemap;
+    try {
+      updated_sitemap = await KB.findOneAndUpdate({ id_project, namespace: namespace.id, _id: old_sitemap._id }, new_sitemap, { new: true });
+    } catch (err) {
+      winston.error("Error updating sitemap: ", err);
+      throw err;
+    }
+
+    if (stop) {
+      return;
+    }
+
+    // Find all url contents with sitemap_origin_id
+    let urlContents = await KB.find({ id_project, namespace: namespace.id, sitemap_origin_id: old_sitemap._id }).lean().exec();
+    if (urlContents.length === 0) {
+      winston.error("No url contents found with sitemap_origin_id: ", old_sitemap._id);
+      throw new Error("No url contents found with sitemap_origin_id: " + old_sitemap._id);
+    }
+
+    // Remove all url contents found with sitemap_origin_id
+    try {
+      await this.removeMultipleContents(namespace, urlContents);
+    } catch (err) {
+      winston.error("Error removing multiple contents: ", err);
+      throw err;
+    }
+
+    // Recreate all url contents with sitemap_origin_id
+    let result;
+    try {
+      result = await this.addMultipleUrls(namespace, urlContents.map(urlContent => urlContent.source), {
+        sitemap_origin_id: updated_sitemap._id,
+        sitemap_origin: updated_sitemap.source,
+        scrape_type: updated_sitemap.scrape_type,
+        scrape_options: updated_sitemap.scrape_options,
+        refresh_rate: updated_sitemap.refresh_rate,
+        tags: updated_sitemap.tags,
+      });
+    } catch (err) {
+      winston.error("Error recreating multiple contents: ", err);
+      throw err;
+    }
+
+    return result;
+
+  }
+
+  
+
+  shouldStop(oldObj, newObj, fieldsToCheck) {
+    for (const field of fieldsToCheck) {
+      const oldValue = _.get(oldObj, field);
+      const newValue = _.get(newObj, field);
+  
+      if (!_.isEqual(oldValue, newValue)) {
+        return { stop: false };
+      }
+    }
+  
+    return { stop: true };
+  }
+
   async checkNamespace(id_project, namespace_id) {
     return new Promise( async (resolve, reject) => {
 
       let namespace = await Namespace.findOne({ id: namespace_id }).catch((err) => {
         winston.error("Error getting namespace ", err);
         reject(err);
+        return;
       })
       if (!namespace) {
         winston.warn("Namespace not found with id " + namespace_id);
         reject({ errorCode: 404, error: "Namespace not found with id " + namespace_id });
+        return;
       }
       if (namespace.id_project !== id_project) {
         winston.warn("Namespace not belonging to project " + id_project);
         reject({ errorCode: 403,  error: "Namespace not belonging to project " + id_project });
+        return;
       }
 
       resolve(namespace);
@@ -212,11 +283,13 @@ class AiManager {
   
       if (kbs_count >= kbs_limit) {
         reject({ errorCode: 403, error: "Maximum number of resources reached for the current plan", plan_limit: kbs_limit });
+        return;
       }
 
       let total_count = kbs_count + ncontents;
       if (total_count > kbs_limit) {
         reject({ errorCode: 403, error: "Cannot exceed the number of resources in the current plan", plan_limit: kbs_limit });
+        return;
       }
 
       resolve(true);
@@ -234,10 +307,12 @@ class AiManager {
 
       const data = await sitemap.fetch().catch((err) => {
         reject(err);
+        return;
       })
 
       if (data.errors && data.errors.length > 0) {
         reject(data.errors[0]);
+        return;
       }
 
       const urls = Array.isArray(data.sites) ? data.sites : [];
@@ -281,6 +356,7 @@ class AiManager {
       let integration = await Integrations.findOne({ id_project: project_id, name: 'openai' }).catch((err) => {
         winston.error("Unable to find openai integration for the current project " + project_id);
         resolve(null);
+        return;
       })
       if (integration && integration.value && integration.value.apikey) {
         resolve(integration.value.apikey);

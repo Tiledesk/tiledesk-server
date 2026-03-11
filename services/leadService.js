@@ -72,14 +72,22 @@ class LeadService {
 
           winston.debug("lead.email: " + lead.email); 
           winston.debug("email: " + email); 
-          
-          if (lead.email == email) {
-            winston.debug("lead already exists createIfNotExistsWithLeadId with the same email");
-            return resolve(lead);
-          } else {
-            winston.debug("lead already exists createIfNotExistsWithLeadId but with different email");
+
+          if (lead.email !== email || lead.phone !== phone) {
+            winston.debug("lead already exists createIfNotExistsWithLeadId but with different email or phone");
             return resolve(that.updateWitId(lead_id, fullname, email, id_project, status, phone));
+          } else {
+            winston.debug("lead already exists createIfNotExistsWithLeadId with the same email and phone");
+            return resolve(lead);
           }
+          
+          // if (lead.email == email) {
+          //   winston.debug("lead already exists createIfNotExistsWithLeadId with the same email");
+          //   return resolve(lead);
+          // } else {
+          //   winston.debug("lead already exists createIfNotExistsWithLeadId but with different email");
+          //   return resolve(that.updateWitId(lead_id, fullname, email, id_project, status, phone));
+          // }
           
       
       });
@@ -140,7 +148,6 @@ class LeadService {
           return reject(err);
         }
 
-      
         leadEvent.emit('lead.update', updatedLead);
         leadEvent.emit('lead.email.update', updatedLead);
         leadEvent.emit('lead.fullname.update', updatedLead);
@@ -162,11 +169,12 @@ class LeadService {
 
     return new Promise(function (resolve, reject) {
 
+            let phone_normalized = phoneUtil.normalizePhone(phone);
             var newLead = new Lead({
               lead_id: lead_id,
               fullname: fullname,
               email: email,
-              phone: phoneUtil.normalizePhone(phone),
+              phone: phone_normalized,
               attributes: attributes,
               status: status,
               id_project: id_project,
@@ -178,7 +186,7 @@ class LeadService {
               if (err) {
                 winston.error('Error saving the lead '+ JSON.stringify(newLead), err)
                 return reject(err);
-              }            
+              }       
               winston.verbose('Lead created ', newLead.toJSON());
 
               leadEvent.emit('lead.create', newLead);
