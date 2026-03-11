@@ -1930,6 +1930,7 @@ router.put('/:kb_id', async (req, res) => {
       return res.status(500).send({ success: false, error: err });
     }
   }
+  console.log("continue the flow");
 
   try {
     let delete_response = await aiService.deleteIndex(data);

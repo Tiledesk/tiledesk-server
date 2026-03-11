@@ -106,7 +106,8 @@ class AiManager {
           resolve({ result, schedule_json: resources });
           return;
         }
-  
+        
+        console.log(`scheduling scrape for ${resources.length} resources`);
         this.scheduleScrape(resources, hybrid);
         resolve(result);
 
@@ -155,7 +156,7 @@ class AiManager {
       winston.error("Error updating sitemap: ", err);
       throw err;
     }
-
+    console.log("sitemap updated");
     if (stop) {
       return;
     }
@@ -167,6 +168,8 @@ class AiManager {
       throw new Error("No url contents found with sitemap_origin_id: " + old_sitemap._id);
     }
 
+    console.log(`found ${urlContents.length} url contents with sitemap_origin_id: ${old_sitemap._id}`);
+
     // Remove all url contents found with sitemap_origin_id
     try {
       await this.removeMultipleContents(namespace, urlContents);
@@ -174,6 +177,8 @@ class AiManager {
       winston.error("Error removing multiple contents: ", err);
       throw err;
     }
+
+    console.log(`removed contents`);
 
     // Recreate all url contents with sitemap_origin_id
     let result;
@@ -186,6 +191,7 @@ class AiManager {
         refresh_rate: updated_sitemap.refresh_rate,
         tags: updated_sitemap.tags,
       });
+      console.log(`recreated contents result: `, result);
     } catch (err) {
       winston.error("Error recreating multiple contents: ", err);
       throw err;
