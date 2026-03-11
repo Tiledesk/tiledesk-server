@@ -5,6 +5,7 @@ require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 var winston = require('../config/winston');
 var pathlib = require('path');
+var mongoose = require('mongoose');
 
 var router = express.Router();
 
@@ -25,13 +26,20 @@ const fileService = new FileGridFsService("images");
 
 
 
+let images_allowed = process.env.UPLOAD_IMAGES_ALLOW_LIST || "image/jpeg,image/png,image/gif,image/vnd.microsoft.icon,image/webp";
+winston.info("Images upload allowed list "+ images_allowed);
+
+
+
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype == 'image/jpeg' || file.mimetype == 'image/png' 
-      || file.mimetype == 'image/gif'|| file.mimetype == 'image/vnd.microsoft.icon'
-      || file.mimetype == 'image/webp') {
+    winston.debug("fileFilter "+ images_allowed);
+  if (images_allowed==="*" || (images_allowed && images_allowed.length>0 && images_allowed.split(",").indexOf(file.mimetype)>-1) ) {
+     winston.debug("file.mimetype allowed: "+ file.mimetype);
       cb(null, true);
   } else {
-      cb(null, false);
+      winston.debug("file.mimetype not allowed. " + file.mimetype);
+      // cb(null, false);
+      cb(new multer.MulterError('fileFilter not allowed'))
   }
 }
 
@@ -54,7 +62,7 @@ if (MAX_UPLOAD_FILE_SIZE) {
 // }
 
 
-const upload = multer({ storage: fileService.getStorage("images"), fileFilter: fileFilter, limits: uploadlimits });
+const upload = multer({ storage: fileService.getStorage("images"), fileFilter: fileFilter, limits: uploadlimits }).single('file');
 
 /*
 curl -u andrea.leo@f21.it:123456 \
@@ -392,6 +400,10 @@ the image binary file
 
 Example:
 
+
+curl -v -X POST -H 'Content-Type: multipart/form-data' -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test.jpg" http://localhost:3000/images/public/
+
+
 ```text
 curl -v -X POST -H 'Content-Type: multipart/form-data' -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test.jpg" https://api.tiledesk.com/v2/images/public
 ```
@@ -415,6 +427,15 @@ curl -v -X POST -H 'Content-Type: multipart/form-data' -F "file=@/Users/andreale
 
 //      var thumFilename = destinationFolder+'thumbnails_200_200-' + req.file.originalname;          
 
+      //file_retention
+    // mongoose.connection.db.collection('images.chunks').updateMany({"files_id": req.file.id},{ "$set": { "uploadDate": req.file.uploadDate } }, function (err, updates) {
+    //   if (err) {
+    //     winston.error("Error updating files.chunks");
+    //   }
+    //     winston.debug("files.chunks updated", updates);
+  
+    // });
+
 
 //      fileService.getFileDataAsBuffer(req.file.filename).then(function(buffer) {
 
@@ -423,6 +444,8 @@ curl -v -X POST -H 'Content-Type: multipart/form-data' -F "file=@/Users/andreale
 //             fileService.createFile ( thumFilename, resizeImage, undefined, undefined);
 //         });
 
+            //  let thumFile = await fileService.find(thumFilename);
+            //   winston.debug("thumFile", thumFile);    
 
 //         return res.status(201).json({
 //             message: 'Image uploded successfully',
