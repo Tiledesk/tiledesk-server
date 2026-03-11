@@ -5,6 +5,7 @@ var Message = require("../models/message");
 var Faq_kb = require("../models/faq_kb");
 var MessageConstants = require("../models/messageConstants");
 var message2Event = require("../event/message2Event");
+var requestEvent = require("../event/requestEvent");
 
 var cacheUtil = require('../utils/cacheUtil');
 var cacheEnabler = require("../services/cacheEnabler");
@@ -177,6 +178,28 @@ function populateMessageWithRequest(message, eventPrefix) {
 
 messageEvent.on('message.create.simple', populateMessageCreate);
 messageEvent.on('message.update.simple', populateMessageUpdate);
+
+// When the user (lead/requester) sends a message, reopen the conversation if it was pending
+messageEvent.on('message.create.from.requester', function (messageJson) {
+  if (!messageJson.request || messageJson.request.workingStatus !== 'pending') return;
+  var request_id = messageJson.request.request_id;
+  var id_project = messageJson.request.id_project;
+  Request.findOneAndUpdate(
+    { request_id: request_id, id_project: id_project },
+    { $set: { workingStatus: 'open' } },
+    { new: true },
+    function (err, updatedRequest) {
+      if (err) {
+        winston.error("Error updating request workingStatus from pending to open", err);
+        return;
+      }
+      if (updatedRequest) {
+        winston.debug("Request workingStatus set to open (was pending)", { request_id, id_project });
+        requestEvent.emit('request.workingStatus.update', { request: updatedRequest });
+      }
+    }
+  );
+});
 
 
 
