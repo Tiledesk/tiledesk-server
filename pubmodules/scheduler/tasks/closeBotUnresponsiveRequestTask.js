@@ -73,7 +73,8 @@ class CloseBotUnresponsiveRequestTask {
     const query = { 
       hasBot: true, 
       status: { $lt: 1000 }, 
-      updatedAt: { $lte: cutoffDate } 
+      updatedAt: { $lte: cutoffDate },
+      workingStatus: { $ne: 'pending' }
     };
 
     if (this.queryProject) {
