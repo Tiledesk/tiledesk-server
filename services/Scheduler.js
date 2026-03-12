@@ -29,6 +29,20 @@ class Scheduler {
         });
     }
 
+    /**
+     * Pubblica un job di delete sulla coda (routing key: delete).
+     * @param {Object} payload - { id, ... } (id risorsa/contenuto; il body inviato sarà { payload }).
+     */
+    deleteSchedule(payload, callback) {
+        winston.debug("(deleteScheduler) payload: ", payload);
+        this.jobManager.publishDelete(payload, (err, ok) => {
+            let response_data = { success: !err, message: err ? "Delete job not sent" : "Scheduled" };
+            if (callback) {
+                callback(err, response_data);
+            }
+        });
+    }
+
     tagSchedule(data, callback) {
 
         winston.debug("(tagScheduler) data: ", data);

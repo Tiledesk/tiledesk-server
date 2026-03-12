@@ -1,4 +1,5 @@
 var QueueManager = require("./queueManagerClassV2");
+const { ROUTING_KEY_INDEX, ROUTING_KEY_DELETE } = require("./trainJobConstants");
 
 class JobManager {
     constructor(queueUrl, options) {
@@ -39,7 +40,7 @@ class JobManager {
                     for (var i = 0; i<that.sendingJobs.length; i++) {
                         if (that.debug) {console.log("[JobWorker] Queue that.sendingJobs[i]",that.sendingJobs[i]);}
                         // that.queueManager.send(that.sendingJobs[i].toString(), "functions");
-                        that.queueManager.sendJson(that.sendingJobs[i], "functions");
+                    that.queueManager.sendJson(that.sendingJobs[i], ROUTING_KEY_INDEX);
                         // that.sendingJobs[i]();
                     }
                     //that.sendingJob = [];
@@ -91,7 +92,7 @@ class JobManager {
         if (this.queuePublisherConnected == true) {
 
             if (this.debug) {console.log("[JobWorker] JobManager  this.queuePublisherConnected == true");}
-            this.queueManager.sendJson(packet, "functions", (err, ok) => {
+            this.queueManager.sendJson(packet, ROUTING_KEY_INDEX, (err, ok) => {
                 if (err) {
                     console.error("sendJson error: ", err);
                 } else {
@@ -113,6 +114,28 @@ class JobManager {
     }
 
 
+    /**
+     * Pubblica un job di delete sulla coda (routing key: delete).
+     * Body: { payload: { id, ... } }. Il consumer chiama l'API /delete.
+     */
+    publishDelete(payload, callback) {
+        const packet = { payload: payload };
+        if (this.queuePublisherConnected === true) {
+            if (this.debug) { console.log("[JobWorker] JobManager publishDelete"); }
+            this.queueManager.sendJson(packet, ROUTING_KEY_DELETE, (err, ok) => {
+                if (err) {
+                    console.error("sendJson (delete) error: ", err);
+                } else if (this.debug) {
+                    console.log("sendJson (delete) ok");
+                }
+                if (callback) callback(err, ok);
+            });
+        } else {
+            const err = new Error("Publisher not connected");
+            if (callback) callback(err, null);
+        }
+    }
+
     //Deprecated
     schedule(fn, payload) {
         
@@ -120,7 +143,7 @@ class JobManager {
         // if (this.debug) {console.log("JobManager this.queueConnected",this.queueStarted);
         if (this.queuePublisherConnected == true) {
             if (this.debug) {console.log("[JobWorker] JobManager  this.queuePublisherConnected == true");}
-            this.queueManager.send(func, "functions");
+            this.queueManager.send(func, ROUTING_KEY_INDEX);
 
             // this.queueManager.on(fn);
         } else {
@@ -153,3 +176,5 @@ class JobManager {
 
 
 module.exports = JobManager;
+module.exports.ROUTING_KEY_INDEX = ROUTING_KEY_INDEX;
+module.exports.ROUTING_KEY_DELETE = ROUTING_KEY_DELETE;

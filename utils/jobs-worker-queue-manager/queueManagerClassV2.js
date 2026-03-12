@@ -184,6 +184,9 @@ startWorker(callback) {
           if (that.debug) {console.log("[JobWorker] Queue bind: "+_ok.queue+ " err: "+err3+ " key: " + "functions" );}
           // if (this.debug) {console.log("Data queue", oka)
         });    
+        ch.bindQueue(_ok.queue, that.exchange, "delete", {}, function(err3, oka) {
+          if (that.debug) {console.log("[JobWorker] Queue bind: "+_ok.queue+ " err: "+err3+ " key: " + "delete" );}
+        });
 
         if (that.debug) {console.log("[JobWorker] AMQP that.topic", that.topic);}
         ch.consume(that.topic, that.processMsg2, { noAck: true });

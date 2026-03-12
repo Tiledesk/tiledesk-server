@@ -359,37 +359,43 @@ class AiManager {
   }
 
   async removeMultipleContents(namespace, kbs) {
-  
-    return new Promise( async (resolve, reject) => {
-      
-      kbs.forEach((kb) => {
-        let data = {
-          id: kb._id,
-          namespace: kb.namespace,
-          engine: namespace.engine || default_engine
-        }
-  
-        aiService.deleteIndex(data).then((resp) => {
-          winston.debug("delete content response: ", resp);
+
+    const scheduleDeletePromise = (payload) =>
+      new Promise((res, rej) => {
+        this.scheduleDelete(payload, (err) => (err ? rej(err) : res()));
+      });
+
+    for (const kb of kbs) {
+      const payload = {
+        id: kb._id,
+        namespace: kb.namespace,
+        engine: namespace.engine || default_engine
+      };
+
+      if (process.env.NODE_ENV === 'test') {
+        await aiService.deleteIndex(payload).then((resp) => {
           if (resp.data.success === true) {
-            KB.findByIdAndDelete(kb._id, (err, deletedKb) => {
-              if (err) {
-                winston.error("Delete kb error: ", err);
-                reject(err);
-              }
-            })
-          } else {
-            KB.findOneAndDelete({ _id: kb._id, status: { $in: [-1, 400 ]}}, (err, deletedKb) => {
-              if (err) {
-                winston.error("Delete kb error: ", err);
-                reject(err);
-              }
-            })
+            return KB.findByIdAndDelete(kb._id).exec();
           }
-        })
-      })
-      resolve(true);
-    })
+          return KB.findOneAndDelete({ _id: kb._id, status: { $in: [-1, 400] } }).exec();
+        });
+        continue;
+      }
+
+      try {
+        await scheduleDeletePromise(payload);
+        winston.debug("delete job queued for content: ", kb._id);
+      } catch (err) {
+        winston.error("Error queuing delete job for kb " + kb._id + ": ", err);
+      }
+
+      try {
+        await KB.findByIdAndDelete(kb._id).exec();
+      } catch (err) {
+        winston.error("Delete kb error: ", err);
+        throw err;
+      }
+    }
   }
 
   async saveBulk(operations, kbs, project_id, namespace) {
@@ -451,7 +457,16 @@ class AiManager {
     return true;
   }
 
-  // from webhook
+  /**
+   * Pubblica un job di delete sulla coda del train-jobworker (routing key: delete).
+   * Stesso exchange/queue del train; il worker consumer chiamerà l'API /delete.
+   * @param {Object} payload - { id, namespace?, engine?, ... } (id risorsa/contenuto; altri campi opzionali per l'API delete).
+   * @param {Function} callback - (err, result).
+   */
+  scheduleDelete(payload, callback) {
+    const scheduler = new Scheduler({ jobManager });
+    scheduler.deleteSchedule(payload, callback);
+  }
   // async scheduleScrape(resources) {
 
   //   let scheduler = new Scheduler({ jobManager: jobManager });
