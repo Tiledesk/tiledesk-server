@@ -5,6 +5,11 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.16.0
+- Added possibility to update Knowledge Base content
+- Added rated only filter in Conversations History
+- Improved pending requests management
+
 # 2.15.8
 - Updated tybot-connector to 2.0.45
 - Added support for tags management in knowledge base routes
