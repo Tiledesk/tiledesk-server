@@ -50,7 +50,7 @@ class Listener {
       return winston.warn("Chatbot is not a project_user. Skip update.")
     }
 
-    return Request.countDocuments({ id_project: id_project, participantsAgents: id_user, status: { $lt: 1000 }, draft: { $in: [null, false] } }, (err, requestsCount) => {
+    return Request.countDocuments({ id_project: id_project, participantsAgents: id_user, status: { $lt: 1000 }, draft: { $in: [null, false] }, workingStatus: { $ne: 'pending' } }, (err, requestsCount) => {
       winston.verbose("requestsCount for id_user: ", id_user, "and project: ", id_project, "-->", requestsCount);
       if (err) {
         return winston.error(err);
@@ -236,8 +236,27 @@ class Listener {
           });
         });
 
-     
-       
+        var requestWorkingStatusUpdateKey = 'request.workingStatus.update';
+        if (requestEvent.queueEnabled) {
+          requestWorkingStatusUpdateKey = 'request.workingStatus.update.queue';
+        }
+        winston.debug('Route queue requestWorkingStatusUpdateKey: ' + requestWorkingStatusUpdateKey);
+
+        requestEvent.on(requestWorkingStatusUpdateKey, async (data) => {
+          winston.debug('Route queue WorkingStatus Update');
+
+          var request = data.request;
+          var participantIds = (request.participantsAgents && request.participantsAgents.length)
+            ? request.participantsAgents
+            : (request.participatingAgents || []).map(u => u._id || u.id);
+          setImmediate(() => {
+            participantIds.forEach(id_user => {
+              if (id_user && !String(id_user).startsWith('bot_')) {
+                this.updateProjectUser(id_user, request.id_project, 0);
+              }
+            });
+          });
+        });
     }
 
 }
