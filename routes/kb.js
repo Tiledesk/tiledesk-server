@@ -2017,7 +2017,7 @@ router.put('/:kb_id', async (req, res) => {
 
 })
 
-router.put('/:advanced', async (req, res) => {
+router.put('/:kb_id/advanced', async (req, res) => {
 
   const id_project = req.projectid;
   const project = req.project;
