@@ -1804,29 +1804,29 @@ router.put('/:kb_id', async (req, res) => {
     engine: namespace.engine || default_engine
   }
 
-  // if (kb.type === 'sitemap') {
-  //   let new_sitemap = {
-  //     id_project,
-  //     name,
-  //     source,
-  //     type: 'sitemap',
-  //     content: "",
-  //     namespace: namespace_id,
-  //     status: -1,
-  //     scrape_type,
-  //     scrape_options,
-  //     refresh_rate,
-  //     ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
-  //   }
+  if (kb.type === 'sitemap') {
+    let new_sitemap = {
+      id_project,
+      name,
+      source,
+      type: 'sitemap',
+      content: "",
+      namespace: namespace_id,
+      status: -1,
+      scrape_type,
+      scrape_options,
+      refresh_rate,
+      ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
+    }
 
-  //   try {
-  //     let result = await aiManager.updateSitemap(id_project, namespace, kb, new_sitemap);
-  //     return res.status(200).send(result);
-  //   } catch (err) {
-  //     winston.error("Error updating sitemap: ", err);
-  //     return res.status(500).send({ success: false, error: err });
-  //   }
-  // }
+    try {
+      let result = await aiManager.updateSitemap(id_project, namespace, kb, new_sitemap);
+      return res.status(200).send(result);
+    } catch (err) {
+      winston.error("Error updating sitemap: ", err);
+      return res.status(500).send({ success: false, error: err });
+    }
+  }
 
   try {
     let delete_response = await aiService.deleteIndex(data);

@@ -58,24 +58,7 @@ class AiManager {
   async addMultipleUrls(namespace, urls, options) {
     return new Promise(async (resolve, reject) => {
 
-      let kbs = urls.map((url) => {
-        let kb = {
-          id_project: namespace.id_project,
-          name: url,
-          source: url,
-          type: 'url',
-          content: "",
-          namespace: namespace.id,
-          status: -1,
-          scrape_type: options.scrape_type,
-          scrape_options: options.scrape_options,
-          refresh_rate: options.refresh_rate,
-          ...(options.sitemap_origin_id && { sitemap_origin_id: options.sitemap_origin_id }),
-          ...(options.sitemap_origin && { sitemap_origin: options.sitemap_origin }),
-          ...(options.tags && { tags: options.tags }),
-        }
-        return kb;
-      })
+      let kbs = this.createContentList(namespace, urls, options);
 
       let operations = kbs.map(doc => {
         return {
@@ -88,16 +71,16 @@ class AiManager {
         }
       })
 
-      this.saveBulk(operations, kbs, namespace.id_project, namespace.id).then( async (result) => {
+      this.saveBulk(operations, kbs, namespace.id_project, namespace.id).then(async (result) => {
         let hybrid = namespace.hybrid;
         let engine = namespace.engine || default_engine;
         let embedding = namespace.embedding || default_embedding;
         embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
         let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
 
-        let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
+        let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs);
         resources = resources.map(({ _id, scrape_options, ...rest }) => {
-          return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, embedding: embedding, engine: engine, hybrid: hybrid, ...rest}
+          return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, embedding: embedding, engine: engine, hybrid: hybrid, ...rest };
         });
 
         winston.verbose("resources to be sent to worker: ", resources);
@@ -106,16 +89,79 @@ class AiManager {
           resolve({ result, schedule_json: resources });
           return;
         }
-  
+
         this.scheduleScrape(resources, hybrid);
         resolve(result);
-
       }).catch((err) => {
         winston.error("Error save contents in bulk: ", err);
         reject(err);
-      })
-    })
+      });
+    });
   }
+
+  /**
+   * Solo per updateSitemap: insertMany (sempre nuovi documenti) + scheduleUpdate
+   * con coppie deleting (vecchio _id) / adding (payload worker per il nuovo KB).
+   */
+  async insertSitemapUrlContentsAndScheduleUpdate(namespace, urls, options, oldBySource) {
+    const kbs = this.createContentList(namespace, urls, options);
+    const engine = namespace.engine || default_engine;
+    const hybrid = namespace.hybrid;
+    const embedding = namespace.embedding || default_embedding;
+    embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+    const webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
+
+    const inserted = await KB.insertMany(kbs);
+    const documents = inserted.map((d) => d.toObject ? d.toObject() : d);
+
+    let resources = documents.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs);
+    resources = resources.map(({ _id, scrape_options, ...rest }) => {
+      return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, embedding: embedding, engine: engine, hybrid: hybrid, ...rest };
+    });
+
+    const updatePairs = resources
+      .map((adding) => ({
+        deleting: {
+          id: oldBySource[adding.source],
+          namespace: namespace.id,
+          engine
+        },
+        adding
+      }))
+      .filter((p) => p.deleting.id);
+
+    winston.verbose("insertSitemapUrlContentsAndScheduleUpdate — resources: ", resources);
+
+    if (process.env.NODE_ENV === 'test') {
+      return { result: documents, schedule_update_json: updatePairs };
+    }
+
+    this.scheduleUpdate(updatePairs, hybrid);
+    return { result: documents, updatePairs };
+  }
+
+  createContentList(namespace, urls, options) {
+    let kbs = urls.map((url) => {
+      let kb = {
+        id_project: namespace.id_project,
+        name: url,
+        source: url,
+        type: 'url',
+        content: "",
+        namespace: namespace.id,
+        status: -1,
+        scrape_type: options.scrape_type,
+        scrape_options: options.scrape_options,
+        refresh_rate: options.refresh_rate,
+        ...(options.sitemap_origin_id && { sitemap_origin_id: options.sitemap_origin_id }),
+        ...(options.sitemap_origin && { sitemap_origin: options.sitemap_origin }),
+        ...(options.tags && { tags: options.tags }),
+      }
+      return kb;
+    })
+    return kbs;
+  }
+
 
   async scheduleSitemap(namespace, sitemap_content, options) {
     return new Promise((resolve, reject) => {
@@ -143,6 +189,52 @@ class AiManager {
     })
   }
 
+  // async updateSitemap2(id_project, namespace, old_sitemap, new_sitemap) {
+    
+  //   let fieldsToCheck = ['scrape_type', 'scrape_options', 'refresh_rate', 'tags'];
+  //   let { stop } = this.shouldStop(old_sitemap, new_sitemap, fieldsToCheck);
+
+  //   let updated_sitemap;
+  //   try {
+  //     updated_sitemap = await KB.findOneAndUpdate({ id_project, namespace: namespace.id, _id: old_sitemap._id }, new_sitemap, { new: true });
+  //   } catch (err) {
+  //     winston.error("Error updating sitemap: ", err);
+  //     throw err;
+  //   }
+
+  //   if (stop) {
+  //     return;
+  //   }
+
+  //   // Find all url contents with sitemap_origin_id
+  //   let urlContents = await KB.find({ id_project, namespace: namespace.id, sitemap_origin_id: old_sitemap._id }).lean().exec();
+  //   if (urlContents.length === 0) {
+  //     winston.error("No url contents found with sitemap_origin_id: ", old_sitemap._id);
+  //     throw new Error("No url contents found with sitemap_origin_id: " + old_sitemap._id);
+  //   }
+
+  //   await KB.updateMany({ id_project, namespace: namespace.id, sitemap_origin_id: old_sitemap._id }, { $set: { status: 500 } });
+
+  //   [
+  //     {
+  //       deleting: {
+  //         id: urlContents[0]._id,
+  //         namespace: namespace.id,
+  //         engine: namespace.engine || default_engine,
+  //       },
+  //       updating: {
+
+  //       }
+  //     },
+  //     {}
+  //   ]
+
+    
+
+    
+
+  // }
+
   async updateSitemap(id_project, namespace, old_sitemap, new_sitemap) {
 
     let fieldsToCheck = ['scrape_type', 'scrape_options', 'refresh_rate', 'tags'];
@@ -157,42 +249,76 @@ class AiManager {
     }
 
     if (stop) {
-      return;
+      return updated_sitemap;
     }
 
-    // Find all url contents with sitemap_origin_id
-    let urlContents = await KB.find({ id_project, namespace: namespace.id, sitemap_origin_id: old_sitemap._id }).lean().exec();
+    // Tutti i documenti URL figli del vecchio sitemap
+    let urlContents = await KB.find({
+      id_project,
+      namespace: namespace.id,
+      sitemap_origin_id: old_sitemap._id,
+      type: 'url'
+    }).lean().exec();
+
     if (urlContents.length === 0) {
-      winston.error("No url contents found with sitemap_origin_id: ", old_sitemap._id);
-      throw new Error("No url contents found with sitemap_origin_id: " + old_sitemap._id);
+      winston.warn("No url contents found with sitemap_origin_id: ", old_sitemap._id);
+      return updated_sitemap;
     }
 
-    // Remove all url contents found with sitemap_origin_id
-    try {
-      await this.removeMultipleContents(namespace, urlContents);
-    } catch (err) {
-      winston.error("Error removing multiple contents: ", err);
-      throw err;
-    }
+    // 1) Segna come in aggiornamento (500) tutte le URL del sitemap
+    await KB.updateMany(
+      { id_project, namespace: namespace.id, sitemap_origin_id: old_sitemap._id, type: 'url' },
+      { $set: { status: 500 } }
+    );
 
-    // Recreate all url contents with sitemap_origin_id
-    let result;
+    // Snapshot vecchi _id per worker (delete index) — ordine per source stabile
+    const oldBySource = {};
+    urlContents.forEach((doc) => { oldBySource[doc.source] = doc._id; });
+
+    // 2) Rimuovi i vecchi documenti DB (l’indice verrà gestito da scheduleUpdate → deleting)
+    await KB.deleteMany({
+      id_project,
+      namespace: namespace.id,
+      sitemap_origin_id: old_sitemap._id,
+      type: 'url'
+    });
+
+    const urls = urlContents.map((u) => u.source);
+
+    // 3) Nuovi documenti (insertMany) + scheduleUpdate
+    let created;
     try {
-      result = await this.addMultipleUrls(namespace, urlContents.map(urlContent => urlContent.source), {
-        sitemap_origin_id: updated_sitemap._id,
-        sitemap_origin: updated_sitemap.source,
-        scrape_type: updated_sitemap.scrape_type,
-        scrape_options: updated_sitemap.scrape_options,
-        refresh_rate: updated_sitemap.refresh_rate,
-        tags: updated_sitemap.tags,
-      });
+      created = await this.insertSitemapUrlContentsAndScheduleUpdate(
+        namespace,
+        urls,
+        {
+          sitemap_origin_id: updated_sitemap._id,
+          sitemap_origin: updated_sitemap.source,
+          scrape_type: updated_sitemap.scrape_type,
+          scrape_options: updated_sitemap.scrape_options,
+          refresh_rate: updated_sitemap.refresh_rate,
+          tags: updated_sitemap.tags
+        },
+        oldBySource
+      );
     } catch (err) {
       winston.error("Error recreating multiple contents: ", err);
       throw err;
     }
 
-    return result;
+    if (process.env.NODE_ENV === 'test') {
+      return {
+        updated_sitemap,
+        result: created.result,
+        schedule_update_json: created.schedule_update_json
+      };
+    }
 
+    return {
+      updated_sitemap,
+      result: created.result,
+      updatePairs: created.updatePairs
+    };
   }
 
   
@@ -447,6 +573,49 @@ class AiManager {
         await this.updateStatus(r.id, error_code);
       });
     })
+
+    return true;
+  }
+
+  /**
+   * Per ogni elemento pubblica un job "sostituzione": rimuove l’indice del documento vecchio
+   * e indicizza il nuovo (stesso formato risorsa di scheduleScrape in `adding`).
+   *
+   * @param {Array<{ deleting: { id, namespace, engine }, adding: object }>} pairs
+   */
+  async scheduleUpdate(pairs, hybrid) {
+    if (!pairs || pairs.length === 0) {
+      return true;
+    }
+
+    let scheduler;
+    if (hybrid) {
+      scheduler = new Scheduler({ jobManager: jobManagerHybrid });
+    } else {
+      scheduler = new Scheduler({ jobManager: jobManager });
+    }
+
+    if (!scheduler) {
+      winston.error("scheduleUpdate JobManager is not defined");
+      return false;
+    }
+
+    pairs.forEach((pair) => {
+      winston.debug("Schedule update job: ", pair);
+      scheduler.updateSchedule(pair, async (err, result) => {
+        let error_code = 100;
+        if (err) {
+          winston.error("scheduleUpdate scheduling error: ", err);
+          error_code = 400;
+        } else {
+          winston.verbose("scheduleUpdate scheduling result: ", result);
+        }
+        const newId = pair.adding && pair.adding.id;
+        if (newId) {
+          await this.updateStatus(newId, error_code);
+        }
+      });
+    });
 
     return true;
   }
