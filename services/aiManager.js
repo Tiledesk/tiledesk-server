@@ -143,6 +143,77 @@ class AiManager {
     })
   }
 
+  /**
+   * Aggiorna il documento KB e, se serve re-indicizzare, accoda un solo job "update":
+   * il worker elimina dall'indice (delete) poi indicizza il nuovo stato (train).
+   */
+  async updateContent(id_project, namespace, old_content, new_content) {
+    const fieldsToCheck = ['content', 'scrape_type', 'scrape_options', 'refresh_rate', 'tags', 'name', 'source', 'type'];
+    const { stop } = this.shouldStop(old_content, new_content, fieldsToCheck);
+
+    let updated_content;
+    try {
+      updated_content = await KB.findOneAndUpdate(
+        { id_project, namespace: namespace.id, _id: old_content._id },
+        new_content,
+        { new: true }
+      ).lean().exec();
+    } catch (err) {
+      winston.error("Error updating content: ", err);
+      throw err;
+    }
+
+    if (!updated_content) {
+      throw new Error("Content not found after update");
+    }
+
+    if (stop) {
+      return updated_content;
+    }
+
+    const hybrid = namespace.hybrid;
+    const engine = namespace.engine || default_engine;
+    let embedding = namespace.embedding || default_embedding;
+    if (embedding && typeof embedding.toObject === 'function') {
+      embedding = embedding.toObject();
+    }
+    embedding = { ...embedding };
+    embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+    const webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
+
+    const deletePayload = {
+      id: old_content._id,
+      namespace: old_content.namespace,
+      engine: engine
+    };
+
+    const trainPayload = {
+      id: updated_content._id,
+      type: updated_content.type,
+      source: updated_content.source,
+      content: updated_content.content || '',
+      namespace: updated_content.namespace,
+      webhook,
+      hybrid,
+      engine,
+      embedding,
+      ...(updated_content.refresh_rate != null && { refresh_rate: updated_content.refresh_rate }),
+      ...(updated_content.scrape_type != null && { scrape_type: updated_content.scrape_type }),
+      ...(updated_content.scrape_options && { parameters_scrape_type_4: updated_content.scrape_options }),
+      ...(updated_content.tags && { tags: updated_content.tags })
+    };
+
+    if (process.env.NODE_ENV === 'test') {
+      return { ...updated_content, schedule_update_payload: { delete: deletePayload, train: trainPayload } };
+    }
+
+    await this.scheduleUpdate(
+      [{ id: updated_content._id, delete: deletePayload, train: trainPayload }],
+      hybrid
+    );
+    return updated_content;
+  }
+
   async updateSitemap(id_project, namespace, old_sitemap, new_sitemap) {
 
     let fieldsToCheck = ['scrape_type', 'scrape_options', 'refresh_rate', 'tags'];
@@ -451,6 +522,38 @@ class AiManager {
           winston.verbose("Scheduling result: ", result);
         }
         await this.updateStatus(r.id, error_code);
+      });
+    })
+
+    return true;
+  }
+
+  async scheduleUpdate(resources, hybrid) {
+
+    let scheduler;
+    if (hybrid) {
+      scheduler = new Scheduler({ jobManager: jobManagerHybrid });
+    } else {
+      scheduler = new Scheduler({ jobManager: jobManager });
+    }
+
+    if (!scheduler) {
+      winston.error("ScheduleUpdate JobManager is not defined");
+      return false;
+    }
+
+    resources.forEach(r => {
+      winston.debug("Schedule update job with following data: ", r);
+      const statusId = r.train && r.train.id ? r.train.id : r.id;
+      scheduler.updateSchedule(r, async (err, result) => {
+        let error_code = 100;
+        if (err) {
+          winston.error("Scheduling update error: ", err);
+          error_code = 400;
+        } else {
+          winston.verbose("Scheduling update result: ", result);
+        }
+        await this.updateStatus(statusId, error_code);
       });
     })
 

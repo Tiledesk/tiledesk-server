@@ -1914,6 +1914,99 @@ router.put('/:kb_id', async (req, res) => {
 
 })
 
+router.put('/:advanced', async (req, res) => {
+
+  const id_project = req.projectid;
+  const project = req.project;
+  const kb_id = req.params.kb_id;
+  
+  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags } = req.body;
+  const namespace_id = req.body.namespace;
+
+  if (!namespace_id) {
+    return res.status(400).send({ success: false, error: "Missing 'namespace' body parameter" })
+  }
+
+  let namespace;
+  try {
+    namespace = await aiManager.checkNamespace(id_project, namespace_id);
+  } catch (err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
+  }
+
+  let kb = await KB.findOne({ id_project, namespace: namespace_id, _id: kb_id }).lean().exec();
+
+  if (!kb) {
+    return res.status(404).send({ success: false, error: "Content not found. Unable to update a non-existing content" })
+  }
+
+  if (kb.type === 'sitemap') {
+    let new_sitemap = {
+      id_project,
+      name,
+      source,
+      type: 'sitemap',
+      content: "",
+      namespace: namespace_id,
+      status: -1,
+      scrape_type,
+      scrape_options,
+      refresh_rate,
+      ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
+    }
+
+    try {
+      let result = await aiManager.updateSitemap(id_project, namespace, kb, new_sitemap);
+      return res.status(200).send(result);
+    } catch (err) {
+      winston.error("Error updating sitemap: ", err);
+      return res.status(500).send({ success: false, error: err });
+    }
+  }
+
+  let new_content = {
+    id_project,
+    name,
+    type,
+    source,
+    content,
+    namespace: namespace_id,
+    status: -1,
+  }
+
+  if (new_content.type === 'url') {
+    new_content.refresh_rate = refresh_rate || 'never';
+    if (!scrape_type || scrape_type === 2) {
+      new_content.scrape_type = 2;
+      new_content.scrape_options = aiManager.setDefaultScrapeOptions();
+    } else {
+      new_content.scrape_type = scrape_type;
+      new_content.scrape_options = scrape_options;
+    }
+  }
+
+  if (kb.sitemap_origin_id) {
+    new_content.sitemap_origin_id = kb.sitemap_origin_id;
+    new_content.sitemap_origin = kb.sitemap_origin;
+  }
+
+  if (tags && Array.isArray(tags) && tags.every(tag => typeof tag === "string")) {
+    new_content.tags = tags;
+  }
+
+  winston.debug("Update content. New content: ", new_content);
+
+  try {
+    const update_response = await aiManager.updateContent(id_project, namespace, kb, new_content);
+    return res.status(200).send(update_response);
+  } catch (err) {
+    winston.error("Error updating content: ", err);
+    return res.status(500).send({ success: false, error: err });
+  }
+
+})
+
 // router.put('/:kb_id', async (req, res) => {
 
 //   let kb_id = req.params.kb_id;

@@ -29,6 +29,16 @@ class Scheduler {
         });
     }
 
+    updateSchedule(payload, callback) {
+        winston.debug("(updateScheduler) payload: ", payload);
+        this.jobManager.publishUpdate(payload, (err, ok) => {
+            let response_data = { success: true, message: "Scheduled" };
+            if (callback) {
+                callback(err, response_data);
+            }
+        });
+    }
+
     /**
      * Pubblica un job di delete sulla coda (routing key: delete).
      * @param {Object} payload - { id, ... } (id risorsa/contenuto; il body inviato sarà { payload }).

@@ -1,5 +1,5 @@
 var QueueManager = require("./queueManagerClassV2");
-const { ROUTING_KEY_INDEX, ROUTING_KEY_DELETE } = require("./trainJobConstants");
+const { ROUTING_KEY_INDEX, ROUTING_KEY_DELETE, ROUTING_KEY_UPDATE } = require("./trainJobConstants");
 
 class JobManager {
     constructor(queueUrl, options) {
@@ -113,6 +113,27 @@ class JobManager {
        
     }
 
+    /**
+     * Pubblica un job di update sulla coda (routing key: update).
+     * Body: { payload: { id, ... } }. Il consumer chiama l'API /update.
+     */
+    publishUpdate(payload, callback) {
+        const packet = { payload: payload };
+        if (this.queuePublisherConnected === true) {
+            if (this.debug) { console.log("[JobWorker] JobManager publishUpdate"); }
+            this.queueManager.sendJson(packet, ROUTING_KEY_UPDATE, (err, ok) => {
+                if (err) {
+                    console.error("sendJson (update) error: ", err);
+                } else if (this.debug) {
+                    console.log("sendJson (update) ok");
+                }
+                if (callback) callback(err, ok);
+            });
+        } else {
+            const err = new Error("Publisher not connected");
+            if (callback) callback(err, null);
+        }
+    }
 
     /**
      * Pubblica un job di delete sulla coda (routing key: delete).
@@ -178,3 +199,4 @@ class JobManager {
 module.exports = JobManager;
 module.exports.ROUTING_KEY_INDEX = ROUTING_KEY_INDEX;
 module.exports.ROUTING_KEY_DELETE = ROUTING_KEY_DELETE;
+module.exports.ROUTING_KEY_UPDATE = ROUTING_KEY_UPDATE;
