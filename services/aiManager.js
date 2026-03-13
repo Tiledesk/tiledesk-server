@@ -151,26 +151,25 @@ class AiManager {
     const fieldsToCheck = ['content', 'scrape_type', 'scrape_options', 'refresh_rate', 'tags', 'name', 'source', 'type'];
     const { stop } = this.shouldStop(old_content, new_content, fieldsToCheck);
 
-    let updated_content;
-    try {
-      updated_content = await KB.findOneAndUpdate(
-        { id_project, namespace: namespace.id, _id: old_content._id },
-        new_content,
-        { new: true }
-      ).lean().exec();
-    } catch (err) {
-      winston.error("Error updating content: ", err);
-      throw err;
-    }
-
-    if (!updated_content) {
-      throw new Error("Content not found after update");
-    }
-
     if (stop) {
-      return updated_content;
+      try {
+        updated_content = await KB.findOneAndUpdate(
+          { id_project, namespace: namespace.id, _id: old_content._id },
+          new_content,
+          { new: true }
+        ).lean().exec();
+
+        return updated_content;
+        
+      } catch (err) {
+        winston.error("Error updating content: ", err);
+        throw err;
+      }
+
     }
 
+    await this.updateStatus(old_content._id, 200);
+    
     const hybrid = namespace.hybrid;
     const engine = namespace.engine || default_engine;
     let embedding = namespace.embedding || default_embedding;
