@@ -4,6 +4,9 @@ var winston = require('../config/winston');
 var Channel = require('../models/channel');
 var MessageConstants = require('../models/messageConstants');
 var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
+// Retention in days (default 90 = 3 months). Set MESSAGE_RETENTION_DAYS to override.
+var messageRetentionDays = parseInt(process.env.MESSAGE_RETENTION_DAYS, 10) || 90;
+var messageRetentionSeconds = messageRetentionDays * 24 * 60 * 60;
 
 var MessageSchema = new Schema({
   // messageId: {
@@ -91,6 +94,7 @@ var MessageSchema = new Schema({
 );
 
 
+MessageSchema.index({ createdAt: 1 }, { expireAfterSeconds: messageRetentionSeconds });
 MessageSchema.index({ recipient: 1, createdAt:1 }); 
 MessageSchema.index({ id_project: 1, recipient:1, createdAt: 1 });
 MessageSchema.index({ recipient: 1, updatedAt:1 }); 

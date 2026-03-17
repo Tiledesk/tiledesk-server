@@ -17,6 +17,9 @@ var RequestSnapshotSchema = require("../models/requestSnapshot");
 var ContactSchema = require("../models/contact");
 var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 winston.info("Request defaultFullTextLanguage: "+ defaultFullTextLanguage);
+// Retention in days (default 90 = 3 months). Set REQUEST_RETENTION_DAYS to override.
+var requestRetentionDays = parseInt(process.env.REQUEST_RETENTION_DAYS, 10) || 90;
+var requestRetentionSeconds = requestRetentionDays * 24 * 60 * 60;
 
 const disableTicketIdSequence = process.env.DISABLE_TICKET_ID_SEQUENCE || false;
 winston.info("Request disableTicketIdSequence: "+ disableTicketIdSequence);
@@ -445,6 +448,7 @@ RequestSchema.method("getBotId", function () {
 
 // https://docs.mongodb.com/manual/indexes/
 // For a single-field index and sort operations, the sort order (i.e. ascending or descending) of the index key does not matter because MongoDB can traverse the index in either direction.
+RequestSchema.index({ createdAt: 1 }, { expireAfterSeconds: requestRetentionSeconds });
 RequestSchema.index({ createdAt: -1 }); // schema level
 RequestSchema.index({ updatedAt: -1 }); // schema level
 RequestSchema.index({ id_project: 1 }); // schema level
