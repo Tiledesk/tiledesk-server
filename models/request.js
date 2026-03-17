@@ -515,6 +515,7 @@ RequestSchema.index({ id_project: 1, createdAt: -1, status: 1 })
 RequestSchema.index({ id_project: 1, preflight: 1, smartAssignment: 1, "snapshot.department.routing": 1, createdAt: 1, status: 1 })
 
 RequestSchema.index({ status: 1, hasBot: 1, updatedAt: 1 }) // For closing unresponsive requests
+RequestSchema.index({ status: 1, hasBot: 1, workingStatus: 1, updatedAt: 1 }) // For closing unresponsive requests
 
 // Contact search by phone / email
 RequestSchema.index({ id_project: 1, 'contact.phone': 1 });

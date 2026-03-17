@@ -5,6 +5,7 @@ var Message = require("../models/message");
 var Faq_kb = require("../models/faq_kb");
 var MessageConstants = require("../models/messageConstants");
 var message2Event = require("../event/message2Event");
+var requestEvent = require("../event/requestEvent");
 
 var cacheUtil = require('../utils/cacheUtil');
 var cacheEnabler = require("../services/cacheEnabler");
@@ -57,8 +58,9 @@ function populateMessageWithRequest(message, eventPrefix) {
   
   var messageJson = message.toJSON();
 
-  
+  const t1 = Date.now();
     // cacherequest      // requestcachefarequi populaterequired cacheveryhightpriority
+  winston.info("main_flow_cache_message event populateMessageWithRequest");
     
   let q = Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
   populate('lead').
@@ -74,10 +76,10 @@ function populateMessageWithRequest(message, eventPrefix) {
   // request.department._id DA CORREGGERE ANCHE PER REQUEST.CREATE
   // request.department.hasBot 
   // request.isOpen
-  winston.debug('message Event populate');
+  winston.debug('messageEvent populate');
   if (cacheEnabler.request) {
     q.cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient) //request_cache ma con lean????attento metti a parte
-    winston.debug('request cache enabled');
+    winston.debug('messageEvent populate cache enabled');
   }
   q.exec(function (err, request) {
 
@@ -86,8 +88,9 @@ function populateMessageWithRequest(message, eventPrefix) {
       return messageEvent.emit(eventPrefix, message);
     }
 
-    winston.debug('message Event populate after query');
+    winston.info('message Event populate after query');
 
+    
 
   if (request) {
       winston.debug("request is defined in messageEvent",request );
@@ -105,6 +108,7 @@ function populateMessageWithRequest(message, eventPrefix) {
         }
 
         qbot.exec(function(err, bot) {
+          console.log("[Performance] messageEvent populateMessageWithRequest time: " + (Date.now() - t1));
           winston.debug('bot', bot);
           requestJson.department.bot = bot
           
@@ -177,6 +181,29 @@ function populateMessageWithRequest(message, eventPrefix) {
 
 messageEvent.on('message.create.simple', populateMessageCreate);
 messageEvent.on('message.update.simple', populateMessageUpdate);
+
+// When the user (lead/requester) sends a message, reopen the conversation if it was pending
+messageEvent.on('message.create.from.requester', function (messageJson) {
+  if (!messageJson.request || messageJson.request.workingStatus !== 'pending') return;
+  var request_id = messageJson.request.request_id;
+  var id_project = messageJson.request.id_project;
+  Request.findOneAndUpdate(
+    { request_id: request_id, id_project: id_project },
+    { $set: { workingStatus: 'open' } },
+    { new: true },
+    function (err, updatedRequest) {
+      if (err) {
+        winston.error("Error updating request workingStatus from pending to open", err);
+        return;
+      }
+      if (updatedRequest) {
+        winston.debug("Request workingStatus set to open (was pending)", { request_id, id_project });
+        requestEvent.emit('request.workingStatus.update', { request: updatedRequest });
+        requestEvent.emit('request.update', updatedRequest);
+      }
+    }
+  );
+});
 
 
 

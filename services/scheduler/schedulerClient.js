@@ -106,7 +106,7 @@ function createSchedulerClient({ baseUrl, timeoutMs = DEFAULT_TIMEOUT_MS }) {
     async createOnceJob({ flowId, jobKind, action, runAt, id_project, metadata }) {
       const runAtVal = runAt instanceof Date ? runAt.toISOString() : runAt;
       const payload = { flowId, jobKind, action, runAt: runAtVal };
-      if (id_project != null) payload.id_project = id_project;
+      if (id_project != null) payload.projectId = id_project;
       if (metadata != null && typeof metadata === 'object') payload.metadata = metadata;
       return request('POST', '/jobs/once', payload);
     },
@@ -118,7 +118,7 @@ function createSchedulerClient({ baseUrl, timeoutMs = DEFAULT_TIMEOUT_MS }) {
      */
     async createCronJob({ flowId, jobKind, action, cron, id_project, metadata }) {
       const payload = { flowId, jobKind, action, cron };
-      if (id_project != null) payload.id_project = id_project;
+      if (id_project != null) payload.projectId = id_project;
       if (metadata != null && typeof metadata === 'object') payload.metadata = metadata;
       return request('POST', '/jobs/cron', payload);
     },
