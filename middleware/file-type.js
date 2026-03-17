@@ -47,17 +47,41 @@ function areMimeTypesEquivalent(mimeType1, mimeType2) {
   return false;
 }
 
+const BASE64_REGEX = /^[A-Za-z0-9+/]+=*$/;
+
 /**
  * Ensures the input is a Node.js Buffer. file-type (and token-types/strtok3) require
  * a Buffer with methods like readUInt8; GridFS or other sources may return
- * Uint8Array, ArrayBuffer, or BSON Binary.
+ * Uint8Array, ArrayBuffer, BSON Binary, or (when client sends base64) a string.
+ * We always return a new Buffer so it's guaranteed to be a real Node Buffer.
  */
 function ensureBuffer(buffer) {
-  if (Buffer.isBuffer(buffer)) return buffer;
-  if (buffer instanceof Uint8Array) return Buffer.from(buffer);
-  if (buffer instanceof ArrayBuffer) return Buffer.from(buffer);
-  if (buffer?.buffer instanceof ArrayBuffer) return Buffer.from(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-  return Buffer.from(buffer);
+  if (!buffer) return buffer;
+
+  // Base64 string (e.g. client sends form body as base64): decode to binary
+  if (typeof buffer === 'string' && buffer.length > 0) {
+    const trimmed = buffer.replace(/\s/g, '');
+    if (BASE64_REGEX.test(trimmed)) {
+      return Buffer.from(trimmed, 'base64');
+    }
+    return Buffer.from(buffer, 'utf8');
+  }
+
+  // Force a real Node Buffer via Uint8Array copy so readUInt8 etc. are guaranteed
+  let uint8;
+  if (Buffer.isBuffer(buffer)) {
+    if (typeof buffer.readUInt8 === 'function') return buffer;
+    uint8 = new Uint8Array(buffer);
+  } else if (buffer instanceof Uint8Array) {
+    uint8 = buffer;
+  } else if (buffer instanceof ArrayBuffer) {
+    uint8 = new Uint8Array(buffer);
+  } else if (buffer && typeof buffer.buffer === 'object' && buffer.buffer instanceof ArrayBuffer) {
+    uint8 = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+  } else {
+    uint8 = new Uint8Array(Buffer.from(buffer));
+  }
+  return Buffer.from(uint8);
 }
 
 async function verifyFileContent(buffer, mimetype) {
