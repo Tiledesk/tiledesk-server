@@ -151,7 +151,8 @@ var webhook = require('./routes/webhook');
 var webhooks = require('./routes/webhooks');
 var copilot = require('./routes/copilot');
 var mcp = require('./routes/mcp');
-var scheduler = require('./routes/scheduledJobs');
+//var scheduler = require('./routes/scheduledJobs');
+var scheduler = require('./routes/scheduler');
 
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');

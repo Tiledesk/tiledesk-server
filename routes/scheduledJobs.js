@@ -11,12 +11,16 @@ var router = express.Router();
 var winston = require('../config/winston');
 const { body, param, query, validationResult } = require('express-validator');
 const { getSchedulerClient } = require('../services/scheduler/schedulerClient');
+var Message = require('../models/message');
+var Request = require('../models/request');
 
 const JOB_KIND_HTTP_REQUEST = 'http_request';
-/** Lista di jobKind consentiti (attualmente solo http_request; estendibile). */
-const ALLOWED_JOB_KINDS = [JOB_KIND_HTTP_REQUEST];
+const JOB_KIND_DB_TTL_DELETE = 'db_ttl_delete';
+/** Lista di jobKind consentiti (http_request, db_ttl_delete; estendibile). */
+const ALLOWED_JOB_KINDS = [JOB_KIND_HTTP_REQUEST, JOB_KIND_DB_TTL_DELETE];
 const ALLOWED_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 const AUTH_TYPES = ['none', 'bearer', 'basic'];
+const DB_TTL_TARGETS = ['messages', 'requests', 'both'];
 
 /**
  * Valida l'action per jobKind "http_request".
@@ -43,6 +47,22 @@ function validateHttpRequestAction(action) {
     if (action.auth.type != null && !AUTH_TYPES.includes(action.auth.type)) {
       return { valid: false, error: `action.auth.type must be one of: ${AUTH_TYPES.join(', ')}` };
     }
+  }
+  return { valid: true };
+}
+
+/**
+ * Valida l'action per jobKind "db_ttl_delete".
+ * action può essere vuoto o { target?: 'messages' | 'requests' | 'both' }.
+ * @param {object} action
+ * @returns {{ valid: boolean, error?: string }}
+ */
+function validateDbTtlDeleteAction(action) {
+  if (!action || typeof action !== 'object') {
+    return { valid: true }; // action vuoto = entrambi (messages + requests)
+  }
+  if (action.target != null && !DB_TTL_TARGETS.includes(action.target)) {
+    return { valid: false, error: `action.target must be one of: ${DB_TTL_TARGETS.join(', ')}` };
   }
   return { valid: true };
 }
@@ -104,6 +124,12 @@ router.post(
         return res.status(400).json({ success: false, error: actionCheck.error });
       }
     }
+    if (jobKind === JOB_KIND_DB_TTL_DELETE) {
+      const actionCheck = validateDbTtlDeleteAction(action);
+      if (!actionCheck.valid) {
+        return res.status(400).json({ success: false, error: actionCheck.error });
+      }
+    }
 
     if (type === 'once') {
       if (runAt == null || (typeof runAt === 'string' && !runAt.trim())) {
@@ -153,6 +179,55 @@ router.post(
       return res.status(201).json({ success: true, ...result });
     } catch (err) {
       return handleSchedulerError(err, res);
+    }
+  }
+);
+
+// --- POST /ttl-delete - Esecuzione retention (chiamabile dallo scheduler per job db_ttl_delete)
+// Body: { target?: 'messages' | 'requests' | 'both' }. Default: both.
+// Usa MESSAGE_RETENTION_DAYS e REQUEST_RETENTION_DAYS (default 90 giorni).
+router.post(
+  '/ttl-delete',
+  [
+    body('target').optional().isIn(DB_TTL_TARGETS).withMessage(`target must be one of: ${DB_TTL_TARGETS.join(', ')}`),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, error: errors.array().map(e => e.msg).join('; ') });
+    }
+    const id_project = req.projectid;
+    if (!id_project) {
+      return res.status(400).json({ success: false, error: 'Project context required' });
+    }
+    const target = req.body.target || 'both';
+    const messageRetentionDays = parseInt(process.env.MESSAGE_RETENTION_DAYS, 10) || 90;
+    const requestRetentionDays = parseInt(process.env.REQUEST_RETENTION_DAYS, 10) || 90;
+    const messageCutoff = new Date(Date.now() - messageRetentionDays * 24 * 60 * 60 * 1000);
+    const requestCutoff = new Date(Date.now() - requestRetentionDays * 24 * 60 * 60 * 1000);
+
+    const result = { deleted: { messages: 0, requests: 0 } };
+
+    try {
+      if (target === 'messages' || target === 'both') {
+        const msgResult = await Message.deleteMany({
+          id_project,
+          createdAt: { $lt: messageCutoff },
+        });
+        result.deleted.messages = msgResult.deletedCount || 0;
+      }
+      if (target === 'requests' || target === 'both') {
+        const reqResult = await Request.deleteMany({
+          id_project,
+          createdAt: { $lt: requestCutoff },
+        });
+        result.deleted.requests = reqResult.deletedCount || 0;
+      }
+      winston.info('db_ttl_delete executed', { id_project, target, ...result.deleted });
+      return res.json({ success: true, ...result });
+    } catch (err) {
+      winston.error('db_ttl_delete error', { err, id_project, target });
+      return res.status(500).json({ success: false, error: err.message || 'TTL delete failed' });
     }
   }
 );

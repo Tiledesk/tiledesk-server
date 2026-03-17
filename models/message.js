@@ -5,6 +5,10 @@ var Channel = require('../models/channel');
 var MessageConstants = require('../models/messageConstants');
 var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 
+// Retention: default 3 months (90 days), configurable via MESSAGE_RETENTION_DAYS
+const messageRetentionSeconds = parseInt(process.env.REQUEST_RETENTION_SECONDS, 10) || parseInt(process.env.REQUEST_RETENTION_DAYS, 10) * 24 * 60 * 60;
+winston.info("Message retention: " + messageRetentionSeconds + " seconds");
+
 var MessageSchema = new Schema({
   // messageId: {
   //   type: String,
@@ -96,6 +100,9 @@ MessageSchema.index({ id_project: 1, recipient:1, createdAt: 1 });
 MessageSchema.index({ recipient: 1, updatedAt:1 }); 
 MessageSchema.index({ id_project: 1, recipient:1, updatedAt: 1 });
 MessageSchema.index({ id_project: 1, "attributes._answerid": 1 });
+
+// TTL index for retention: messages older than retention period are automatically removed
+MessageSchema.index({ createdAt: 1 }, { expireAfterSeconds: messageRetentionSeconds });
 
 
 

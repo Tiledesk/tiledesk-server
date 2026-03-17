@@ -1,8 +1,9 @@
 const EventEmitter = require('events');
 var Message = require("../models/message");
 var Request = require("../models/request");
-
 var winston = require('../config/winston');
+const schedulerService = require('../services/schedulerService');
+
 
 class RequestEvent extends EventEmitter {
     constructor() {
@@ -60,6 +61,29 @@ requestEvent.on('request.create.simple', function(request, snapshot) {
         // //   requestEvent.emit('request.create', requestJson);
         // });
     });
+
+    
+
+    try {
+        const job = {
+            flowId: uuidv4(),
+            jobKind: 'db_ttl_delete',
+            runAt: new Date(Date.now() + Request.requestRetentionSeconds),
+            projectId: request.id_project,
+            action: {
+                databaseUrl: "mongodb://tiledesk-mongodb-v7/chat21", // STAGE - Change it
+                value: request.request_id,
+                targets: [
+                    { "collection": "messages", "field": "recipient" },
+                    { "collection": "requests", "field": "conversWith" },
+                ]
+            }
+        };
+
+        schedulerService.createOnceJob(job)
+    } catch (err) {
+        winston.error('error creating once job', err);
+    }
   });
 
 

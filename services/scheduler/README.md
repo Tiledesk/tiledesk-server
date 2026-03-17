@@ -26,7 +26,7 @@ Base path: **`/:projectid/scheduled_jobs`** (con auth JWT/basic e ruolo agent/bo
 | GET | `/:id` | Dettaglio job |
 | DELETE | `/:id` | Elimina job |
 
-Validazione: `jobKind` deve essere `"http_request"`. Per l’`action` sono obbligatorie le proprietà previste (es. `url` per http_request).
+Validazione: `jobKind` deve essere `"http_request"` o `"db_ttl_delete"`. Per `http_request` l'action richiede almeno `url`; per `db_ttl_delete` l'action può essere `{}` o `{ target?: 'messages' | 'requests' | 'both' }`. Esecuzione: lo scheduler invoca `POST /:projectid/scheduler/ttl-delete`. Per l’`action` sono obbligatorie le proprietà previste (es. `url` per http_request).
 
 ## Uso della libreria nel server (es. altri route o servizi)
 

@@ -21,6 +21,11 @@ winston.info("Request defaultFullTextLanguage: "+ defaultFullTextLanguage);
 const disableTicketIdSequence = process.env.DISABLE_TICKET_ID_SEQUENCE || false;
 winston.info("Request disableTicketIdSequence: "+ disableTicketIdSequence);
 
+// Retention: default 3 months (90 days), configurable via REQUEST_RETENTION_DAYS
+//const requestRetentionDays = parseInt(process.env.REQUEST_RETENTION_DAYS, 10) || 90;
+const requestRetentionSeconds = parseInt(process.env.REQUEST_RETENTION_SECONDS, 10) || parseInt(process.env.REQUEST_RETENTION_DAYS, 10) * 24 * 60 * 60;
+winston.info("Request retention: " + requestRetentionSeconds + " seconds");
+
 // var autoIncrement = require('mongoose-auto-increment');
 
 //https://github.com/Automattic/mongoose/issues/5924
@@ -447,6 +452,9 @@ RequestSchema.method("getBotId", function () {
 // For a single-field index and sort operations, the sort order (i.e. ascending or descending) of the index key does not matter because MongoDB can traverse the index in either direction.
 RequestSchema.index({ createdAt: -1 }); // schema level
 RequestSchema.index({ updatedAt: -1 }); // schema level
+
+// TTL index for retention: requests older than retention period are automatically removed
+RequestSchema.index({ createdAt: 1 }, { expireAfterSeconds: requestRetentionSeconds });
 RequestSchema.index({ id_project: 1 }); // schema level
 // https://stackoverflow.com/questions/27179664/error-when-using-a-text-index-on-mongodb/27180032
 RequestSchema.index({ id_project: 1, request_id: 1 }
@@ -532,4 +540,6 @@ if (process.env.MONGOOSE_SYNCINDEX) {
 
 }
 
-module.exports =request
+request.requestRetentionSeconds = requestRetentionSeconds;
+
+module.exports = request;
