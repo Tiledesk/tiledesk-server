@@ -48,6 +48,33 @@ function areMimeTypesEquivalent(mimeType1, mimeType2) {
   return false;
 }
 
+// Magic bytes for fallback when file-type throws (e.g. strtok3/token-types Uint8Array vs Buffer)
+const MAGIC_SIGNATURES = {
+  'video/webm': [[0x1A, 0x45, 0xDF, 0xA3]],           // EBML
+  'audio/webm': [[0x1A, 0x45, 0xDF, 0xA3]],
+  'audio/mpeg': [[0xFF, 0xFB], [0xFF, 0xFA], [0xFF, 0xF3], [0xFF, 0xF2], [0x49, 0x44, 0x33]], // ID3 or MP3 frame
+  'audio/mp3': [[0xFF, 0xFB], [0xFF, 0xFA], [0xFF, 0xF3], [0xFF, 0xF2], [0x49, 0x44, 0x33]],
+  'image/png': [[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]],
+  'image/jpeg': [[0xFF, 0xD8, 0xFF]],
+  'image/gif': [[0x47, 0x49, 0x46, 0x38, 0x37, 0x61], [0x47, 0x49, 0x46, 0x38, 0x39, 0x61]],
+  'application/pdf': [[0x25, 0x50, 0x44, 0x46]],
+};
+
+function magicMatches(buf, mimetype) {
+  const signatures = MAGIC_SIGNATURES[mimetype && mimetype.toLowerCase()];
+  if (!signatures) return false;
+  for (const sig of signatures) {
+    if (buf.length < sig.length) continue;
+    let ok = true;
+    for (let i = 0; i < sig.length; i++) {
+      const b = buf[i] !== undefined ? (buf[i] & 0xFF) : -1;
+      if (b !== sig[i]) { ok = false; break; }
+    }
+    if (ok) return true;
+  }
+  return false;
+}
+
 const BASE64_REGEX = /^[A-Za-z0-9+/]+=*$/;
 
 /**
@@ -90,51 +117,57 @@ async function verifyFileContent(buffer, mimetype) {
 
   const buf = ensureBuffer(buffer);
 
+  let fileType;
   try {
-    const fileType = await FileType.fromBuffer(buf);
+    fileType = await FileType.fromBuffer(buf);
+  } catch (err) {
+    // strtok3 uses Uint8Array for numBuffer but token-types expects Buffer.readUInt8 (known compat bug in deps)
+    if (err && typeof err.message === 'string' && err.message.includes('readUInt8')) {
+      if (mimetype && magicMatches(buf, mimetype)) return true;
+      const err2 = new Error(`File content could not be verified. Declared mimetype: ${mimetype}`);
+      err2.source = "FileContentVerification";
+      throw err2;
+    }
+    throw err;
+  }
 
-    // If FileType couldn't detect the file type (returns null/undefined)
-    if (!fileType) {
-      // For text-based MIME types, accept the declared mimetype since FileType can't detect them
-      if (mimetype && TEXT_MIME_TYPES.includes(mimetype)) {
-        // Optionally verify that the content is valid UTF-8 text
-        try {
-          buf.toString('utf8');
-          return true;
-        } catch (e) {
-          const err = new Error(`File content is not valid text for mimetype: ${mimetype}`);
-          err.source = "FileContentVerification";
-          throw err;
-        }
-      } else if (mimetype && mimetype.startsWith('image/svg')) {
-        // Handle SVG files (can be image/svg+xml or variants)
-        try {
-          buf.toString('utf8');
-          return true;
-        } catch (e) {
-          const err = new Error(`File content is not valid text for mimetype: ${mimetype}`);
-          err.source = "FileContentVerification";
-          throw err;
-        }
-      } else {
-        // For non-text files, FileType should be able to detect them
-        const err = new Error(`File content does not match mimetype. Detected: unknown, provided: ${mimetype}`);
+  // If FileType couldn't detect the file type (returns null/undefined)
+  if (!fileType) {
+    // For text-based MIME types, accept the declared mimetype since FileType can't detect them
+    if (mimetype && TEXT_MIME_TYPES.includes(mimetype)) {
+      try {
+        buf.toString('utf8');
+        return true;
+      } catch (e) {
+        const err = new Error(`File content is not valid text for mimetype: ${mimetype}`);
         err.source = "FileContentVerification";
         throw err;
       }
     }
-
-    // If FileType detected a type, it must match the declared mimetype (or be equivalent)
-    if (mimetype && !areMimeTypesEquivalent(fileType.mime, mimetype)) {
-        const err = new Error(`File content does not match mimetype. Detected: ${fileType.mime}, provided: ${mimetype}`);
+    if (mimetype && mimetype.startsWith('image/svg')) {
+      try {
+        buf.toString('utf8');
+        return true;
+      } catch (e) {
+        const err = new Error(`File content is not valid text for mimetype: ${mimetype}`);
         err.source = "FileContentVerification";
         throw err;
+      }
     }
-
-    return true;
-  } catch (err) {
+    if (mimetype && magicMatches(buf, mimetype)) return true;
+    const err = new Error(`File content does not match mimetype. Detected: unknown, provided: ${mimetype}`);
+    err.source = "FileContentVerification";
     throw err;
   }
+
+  // If FileType detected a type, it must match the declared mimetype (or be equivalent)
+  if (mimetype && !areMimeTypesEquivalent(fileType.mime, mimetype)) {
+    const err = new Error(`File content does not match mimetype. Detected: ${fileType.mime}, provided: ${mimetype}`);
+    err.source = "FileContentVerification";
+    throw err;
+  }
+
+  return true;
 }
 
 module.exports = verifyFileContent;
