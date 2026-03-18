@@ -26,6 +26,8 @@ if (process.env.TILEBOT_ENDPOINT) {
     TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/"
 }
 
+const defaultRetentionDays = parseInt(process.env.DEFAULT_RETENTION_DAYS) || 90;
+
 let tdCache = new TdCache({
     host: process.env.CACHE_REDIS_HOST,
     port: process.env.CACHE_REDIS_PORT,
@@ -620,11 +622,15 @@ class RequestService {
     }
 
     // expiresAt = createdAt + project.settings.retention (retention in days)
-    let expiresAt;
-    if (payload?.project?.settings?.retentionDays != null && typeof payload.project.settings.retentionDays === 'number') {
-      const retentionDays = payload.project.settings.retentionDays;
-      expiresAt = new Date(createdAt.getTime() + retentionDays * 86400000);
-    }
+    // Calcola la data di scadenza (expiresAt) in base ai giorni di retention configurati, con fallback a defaultRetentionDays
+    const retentionDays =
+      typeof payload?.project?.settings?.retentionDays === 'number' &&
+      !isNaN(payload.project.settings.retentionDays) &&
+      payload.project.settings.retentionDays > 0
+        ? payload.project.settings.retentionDays
+        : defaultRetentionDays;
+
+    const expiresAt = new Date(createdAt.getTime() + retentionDays * 86400000); // 86400000 ms in un giorno
 
     // Create request
     const newRequest = new Request({
