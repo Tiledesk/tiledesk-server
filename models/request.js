@@ -308,7 +308,7 @@ var RequestSchema = new Schema({
   contact: ContactSchema,
   expiresAt: {
     type: Date,
-    required: true,
+    required: false,
     index: true
   },
 }, {
