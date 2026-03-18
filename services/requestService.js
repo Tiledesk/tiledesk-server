@@ -630,7 +630,10 @@ class RequestService {
         ? payload.project.settings.retentionDays
         : defaultRetentionDays;
 
-    const expiresAt = new Date(createdAt.getTime() + retentionDays * 86400000); // 86400000 ms in un giorno
+    let expiresAt = new Date(createdAt.getTime() + retentionDays * 86400000); // 86400000 ms in un giorno
+    if (expiresAt.getTime() <= Date.now()) {
+        expiresAt = undefined;
+    }
 
     // Create request
     const newRequest = new Request({

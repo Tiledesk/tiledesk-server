@@ -81,7 +81,8 @@ class RequestRetention {
         const retentionDays = project.settings && typeof project.settings.retentionDays === 'number'
             ? project.settings.retentionDays
             : null;
-        if (retentionDays == null) {
+            
+        if (retentionDays == null || retentionDays <= 0) {
             return;
         }
         const createdAt = request.createdAt;

@@ -308,8 +308,7 @@ var RequestSchema = new Schema({
   contact: ContactSchema,
   expiresAt: {
     type: Date,
-    required: false,
-    index: true
+    required: false
   },
 }, {
   timestamps: true,
@@ -448,7 +447,7 @@ RequestSchema.method("getBotId", function () {
 
 });
 
-// Retention
+// Retention: TTL index. Documents are removed when expiresAt is in the past. Documents without expiresAt are never removed by TTL.
 RequestSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 // https://docs.mongodb.com/manual/indexes/
