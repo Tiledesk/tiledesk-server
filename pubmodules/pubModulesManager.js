@@ -74,6 +74,8 @@ class PubModulesManager {
         this.cache = undefined;
 
         this.dialogFlow = undefined;
+
+        this.requestRetention = undefined;
     }
 
   
@@ -595,6 +597,17 @@ class PubModulesManager {
                 winston.error("PubModulesManager error initializing init dialogFlow module", err);
             }
         }
+
+        try {
+            this.requestRetention = require('./retention').requestRetention;
+            winston.info("PubModulesManager requestRetention initialized");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("PubModulesManager init retention module not found");
+            } else {
+                winston.error("PubModulesManager error initializing retention module", err);
+            }
+        }
     }
 
     start() {
@@ -680,6 +693,15 @@ class PubModulesManager {
                 winston.info("PubModulesManager routingQueue queued started");
             } catch(err) {        
                 winston.info("PubModulesManager error starting routingQueue queued module", err);            
+            }
+        }
+
+        if (this.requestRetention) {
+            try {
+                this.jobsManager.listenRequestRetention(this.requestRetention);
+                winston.info("PubModulesManager requestRetention started");
+            } catch(err) {        
+                winston.info("PubModulesManager error starting requestRetention module", err);            
             }
         }
 

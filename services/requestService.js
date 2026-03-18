@@ -619,6 +619,13 @@ class RequestService {
       snapshot.lead = request.lead;
     }
 
+    // expiresAt = createdAt + project.settings.retention (retention in days)
+    let expiresAt;
+    if (payload?.project?.settings?.retentionDays != null && typeof payload.project.settings.retentionDays === 'number') {
+      const retentionDays = payload.project.settings.retentionDays;
+      expiresAt = new Date(createdAt.getTime() + retentionDays * 86400000);
+    }
+
     // Create request
     const newRequest = new Request({
       request_id,
@@ -651,6 +658,7 @@ class RequestService {
       createdAt,
       snapshot,
       contact,
+      expiresAt,
     })
 
     if (isTestConversation) {

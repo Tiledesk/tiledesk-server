@@ -102,7 +102,16 @@ class JobsManager {
         this.multiWorkerQueue = multiWorkerQueue;
         this.multiWorkerQueue.startJobsWorker();
     }
-
+    
+    listenRequestRetention(requestRetention) {
+        winston.info("JobsManager listenRequestRetention started");  
+        if ( this.jobWorkerEnabled == true) {
+            return winston.info("JobsManager jobWorkerEnabled is enabled. Skipping listener for Request Retention");  
+        }
+        this.requestRetention = requestRetention;
+        this.requestRetention.listen();
+    }
+    
     // listenTrainingQueue(trainingQueue) {
     //     console.log("JobsManager listenTrainingQueue started");
     //     console.log("trainingQueue is: ", trainingQueue)
