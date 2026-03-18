@@ -51,8 +51,11 @@ function areMimeTypesEquivalent(mimeType1, mimeType2) {
 async function verifyFileContent(buffer, mimetype) {
   if (!buffer) throw new Error("No file provided");
 
+  // file-type expects a Node.js Buffer; GridFS/streams may yield Uint8Array or other buffer-like
+  const buf = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
+
   try {
-    const fileType = await FileType.fromBuffer(buffer);
+    const fileType = await FileType.fromBuffer(buf);
 
     // If FileType couldn't detect the file type (returns null/undefined)
     if (!fileType) {
@@ -60,7 +63,7 @@ async function verifyFileContent(buffer, mimetype) {
       if (mimetype && TEXT_MIME_TYPES.includes(mimetype)) {
         // Optionally verify that the content is valid UTF-8 text
         try {
-          buffer.toString('utf8');
+          buf.toString('utf8');
           return true;
         } catch (e) {
           const err = new Error(`File content is not valid text for mimetype: ${mimetype}`);
@@ -70,7 +73,7 @@ async function verifyFileContent(buffer, mimetype) {
       } else if (mimetype && mimetype.startsWith('image/svg')) {
         // Handle SVG files (can be image/svg+xml or variants)
         try {
-          buffer.toString('utf8');
+          buf.toString('utf8');
           return true;
         } catch (e) {
           const err = new Error(`File content is not valid text for mimetype: ${mimetype}`);
