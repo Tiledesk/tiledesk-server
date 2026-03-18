@@ -54,7 +54,8 @@ const BASE64_REGEX = /^[A-Za-z0-9+/]+=*$/;
  * Ensures the input is a Node.js Buffer. file-type (and token-types/strtok3) require
  * a Buffer with methods like readUInt8; GridFS or other sources may return
  * Uint8Array, ArrayBuffer, BSON Binary, or (when client sends base64) a string.
- * We always return a new Buffer so it's guaranteed to be a real Node Buffer.
+ * We always allocate a new Buffer and copy bytes so file-type never receives
+ * a buffer-like that loses readUInt8 when sliced (e.g. by strtok3).
  */
 function ensureBuffer(buffer) {
   if (!buffer) return buffer;
@@ -68,16 +69,15 @@ function ensureBuffer(buffer) {
     return Buffer.from(buffer, 'utf8');
   }
 
-  // Force a real Node Buffer via Uint8Array copy so readUInt8 etc. are guaranteed
+  // Copy into a new Buffer so file-type's internal slices are always real Buffers
   let uint8;
-  if (Buffer.isBuffer(buffer)) {
-    if (typeof buffer.readUInt8 === 'function') return buffer;
-    uint8 = new Uint8Array(buffer);
-  } else if (buffer instanceof Uint8Array) {
+  if (buffer instanceof Uint8Array) {
     uint8 = buffer;
   } else if (buffer instanceof ArrayBuffer) {
     uint8 = new Uint8Array(buffer);
   } else if (buffer && typeof buffer.buffer === 'object' && buffer.buffer instanceof ArrayBuffer) {
+    uint8 = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+  } else if (Buffer.isBuffer(buffer)) {
     uint8 = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
   } else {
     uint8 = new Uint8Array(Buffer.from(buffer));
