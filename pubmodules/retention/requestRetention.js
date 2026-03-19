@@ -13,6 +13,8 @@ const QUEUED_EVENTS = [
     'request.update.queue'
 ]
 
+const defaultRetentionDays = parseInt(process.env.DEFAULT_RETENTION_DAYS) || 90;
+
 class RequestRetention {
 
     constructor() {
@@ -70,9 +72,11 @@ class RequestRetention {
             return;
         }
         let project = request.project || (request.id_project && typeof request.id_project.settings === 'object' ? request.id_project : null);
+        console.log("(updateExpiresAt) project from request: ", project);
         if (!project) {
             try {
                 project = await projectService.getCachedProject(request.id_project);
+                console.log("(updateExpiresAt) project from getCachedProject: ", project);
             } catch (err) {
                 winston.warn("RequestRetention getCachedProject error", { id_project: request.id_project, err });
                 return;
@@ -80,23 +84,26 @@ class RequestRetention {
         }
         const retentionDays = project.settings && typeof project.settings.retentionDays === 'number'
             ? project.settings.retentionDays
-            : null;
+            : defaultRetentionDays;
+
+        console.log("(updateExpiresAt) retentionDays: ", retentionDays);
             
         if (retentionDays == null || retentionDays <= 0) {
             return;
         }
-        const createdAt = request.createdAt;
-        if (!createdAt) {
+        const updatedAt = request.updatedAt;
+        if (!updatedAt) {
             return;
         }
-        const createdAtMs = typeof createdAt.getTime === 'function' ? createdAt.getTime() : new Date(createdAt).getTime();
-        const expiresAt = new Date(createdAtMs + retentionDays * 86400000);
+        const updatedAtMs = typeof updatedAt.getTime === 'function' ? updatedAt.getTime() : new Date(updatedAt).getTime();
+        const expiresAt = new Date(updatedAtMs + retentionDays * 86400000);
         const requestId = request.request_id || request._id;
         try {
             await Request.findOneAndUpdate(
                 { request_id: requestId, id_project: request.id_project },
                 { $set: { expiresAt } }
             );
+            console.log("(updateExpiresAt) updated expiresAt to: ", expiresAt);
             winston.debug("RequestRetention updated expiresAt", { request_id: requestId, expiresAt });
         } catch (err) {
             winston.error("RequestRetention updateExpiresAt error", { request_id: requestId, err });
