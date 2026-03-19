@@ -3,16 +3,15 @@ var Faq_kb = require("../models/faq_kb");
 var Subscription = require("../models/subscription");
 var winston = require('../config/winston');
 
-var cacheUtil = require('../utils/cacheUtil');
-var cacheEnabler = require("../services/cacheEnabler");
-
+var projectUserService = require("../services/projectUserService");
 class RoleChecker {
     
 
     
     constructor() {
+      winston.debug("RoleChecker");
 
-        this.ROLES =  {
+      this.ROLES =  {
             "guest":        ["guest"],
             "user":         ["guest","user"],
             "teammate":     ["guest","user","teammate"],
@@ -20,7 +19,7 @@ class RoleChecker {
             "supervisor":   ["guest","user","teammate","agent","supervisor"],
             "admin":        ["guest","user","teammate","agent", "supervisor", "admin"],
             "owner":        ["guest","user","teammate","agent", "supervisor", "admin", "owner"],
-        }
+      }
     }
       
     isType(type) {        
@@ -87,18 +86,90 @@ class RoleChecker {
       }    
         
   
+      hasPermission(permission) {
+        var that = this;
+        return async(req, res, next) => {
+          if (!req.params.projectid && !req.projectid) {
+            return res.status(400).send({success: false, msg: 'req.params.projectid is not defined.'});
+          }
+
+          let projectid = req.params.projectid || req.projectid;
+
+          var project_user = req.projectuser;
+          winston.debug("hasPermission project_user hasPermission", project_user);
+
+          if (!project_user) {
+
+            try {
+              project_user = await projectUserService.getWithPermissions(req.user._id, projectid, req.user.sub);            
+            } catch(err) {
+              winston.error("Error getting project_user for hasrole",err);
+              return next(err);
+            }
+            winston.debug("project_user: ", JSON.stringify(project_user));
+          }     
+
+          if (project_user) {
+            
+            req.projectuser = project_user;
+            winston.debug("hasPermission req.projectuser", req.projectuser);
+
+            var permissions = project_user._doc.rolePermissions;
+           
+            winston.debug("hasPermission permissions", permissions);
+  
+            winston.debug("hasPermission permission: "+ permission);
+
+            if (permission==undefined) {
+                winston.debug("permission is empty go next");
+                return next();
+            }
+
+            if (permissions!=undefined && permissions.length>0) {
+              if (permissions.includes(permission)) {
+                next();
+              }else {                         
+                res.status(403).send({success: false, msg: 'you dont have the required permission.'});                
+              }
+            } else { 
+              res.status(403).send({success: false, msg: 'you dont have the required permission. Is is empty'});                       
+            }
+          } else {
+          
+            /**
+            * Updated by Johnny - 29mar2024 - START
+            */
+            // console.log("req.user: ", req.user);
+            if (req.user.email === process.env.ADMIN_EMAIL) {
+              req.user.attributes = { isSuperadmin: true };
+              next();
+            } else {
+              res.status(403).send({success: false, msg: 'you dont belong to the project.'});
+            }
+            /**
+            * Updated by Johnny - 29mar2024 - END
+            */
+          
+          }
+       
+       
+         
+          
+        }
+      }
       
 
       hasRole(role) {
         return this.hasRoleOrTypes(role);
       }
 
-       hasRoleOrTypes(role, types) {
-           
+       hasRoleOrTypes(role, types, permission) {
+        // console.log("hasRoleOrTypes",role,types);
+
         var that = this;
 
         // winston.debug("HasRole");
-        return function(req, res, next) {
+        return async(req, res, next) => {
           
           // winston.debug("req.originalUrl" + req.originalUrl);
           // winston.debug("req.params" + JSON.stringify(req.params));
@@ -111,7 +182,7 @@ class RoleChecker {
 
           let projectid = req.params.projectid || req.projectid;
 
-        //  winston.info("req.user._id: " + req.user._id);
+          //  winston.info("req.user._id: " + req.user._id);
 
           // winston.info("req.projectuser: " + req.projectuser);
           //winston.debug("req.user", req.user);
@@ -135,136 +206,105 @@ class RoleChecker {
           //   res.status(403).send({success: false, msg: 'req.user._id not defined.'});
           // }
           winston.debug("hasRoleOrType req.user._id " +req.user._id);
-          // project_user_qui_importante
+          // project_user_qui_importante         
 
-          // JWT_HERE
-          var query = { id_project: projectid, id_user: req.user._id, status: "active"};
-          let cache_key = projectid+":project_users:iduser:"+req.user._id
+          var project_user = req.projectuser;
+          winston.debug("hasRoleOrTypes project_user hasRoleOrTypes", project_user);
 
-          if (req.user.sub && (req.user.sub=="userexternal" || req.user.sub=="guest")) {
-            query = { id_project: projectid, uuid_user: req.user._id, status: "active"};
-            cache_key = projectid+":project_users:uuid_user:"+req.user._id
+          if (!project_user) {
+            winston.debug("load project_user");
+            try {
+              project_user = await projectUserService.getWithPermissions(req.user._id, projectid, req.user.sub);            
+            } catch(err) {
+              winston.error("Error getting project_user for hasrole",err);
+              return next(err);
+            }
+                    
+            winston.debug("project_user: ", JSON.stringify(project_user));
+            
           }
-          winston.debug("hasRoleOrType query " + JSON.stringify(query));
+          
+          if (project_user) {
+            
+            req.projectuser = project_user;
+            winston.debug("hasRoleOrTypes req.projectuser", req.projectuser.toJSON());
 
-          let q = Project_user.findOne(query);
-          if (cacheEnabler.project_user) { 
-            q.cache(cacheUtil.defaultTTL, cache_key);
-            winston.debug("cacheEnabler.project_user enabled");
+            var userRole = project_user.role;
+            winston.debug("userRole", userRole);
 
-          }
-            q.exec(function (err, project_user) {
-              if (err) {
-                winston.error("Error on Request path: " + req.originalUrl);
-                winston.error("Error getting project_user for hasrole",err);
-                return next(err);
-              }
-              winston.debug("project_user: ", JSON.stringify(project_user));
-              
-              
-      
-              if (project_user) {
-                
-                req.projectuser = project_user;
-                winston.debug("req.projectuser", req.projectuser);
-
-                var userRole = project_user.role;
-                winston.debug("userRole", userRole);
-      
-                if (!role) {
-                  next();
-                }else {
-      
-                  var hierarchicalRoles = that.ROLES[userRole];
-                  winston.debug("hierarchicalRoles", hierarchicalRoles);
-      
-                  if ( hierarchicalRoles && hierarchicalRoles.includes(role)) {
-                    next();
-                  }else {
-                    res.status(403).send({success: false, msg: 'you dont have the required role.'});
-                  }
-                }
-              } else {
-              
-                /**
-                 * Updated by Johnny - 29mar2024 - START
-                 */
-                // console.log("req.user: ", req.user);
-                if (req.user.email === process.env.ADMIN_EMAIL) {
-                  req.user.attributes = { isSuperadmin: true };
+  
+            if (!role) { //????
+              next();
+            }else {
+  
+              var hierarchicalRoles = that.ROLES[userRole];
+              winston.debug("hierarchicalRoles", hierarchicalRoles);
+  
+              if ( hierarchicalRoles ) {  //standard role
+                winston.debug("standard role: "+ userRole);
+                if (hierarchicalRoles.includes(role)) {
                   next();
                 } else {
-                  res.status(403).send({success: false, msg: 'you dont belong to the project.'});
+                  res.status(403).send({success: false, msg: 'you dont have the required role.'});
                 }
-                /**
-                 * Updated by Johnny - 29mar2024 - END
-                 */
+              } else { //custom role
+                
+                winston.debug("custom role: "+ userRole);
+                return that.hasPermission(permission)(req, res, next);
 
-                // if (req.user) equals super admin next()
-                //res.status(403).send({success: false, msg: 'you dont belong to the project.'});
-              }
+                // if (permission==undefined) {
+                //   winston.debug("permission is empty go next");
+                //   return next();
+                // }
+
+                // // invece di questo codice richiama hasPermission()
+                // var permissions = project_user._doc.rolePermissions;
+           
+                // winston.debug("hasPermission permissions", permissions);
       
-          });
+                // winston.debug("hasPermission permission: "+ permission);               
+
+                // if (permissions!=undefined && permissions.length>0) {
+                //   if (permissions.includes(permission)) {
+                //     next();
+                //   }else {                         
+                //     res.status(403).send({success: false, msg: 'you dont have the required permission.'});                
+                //   }
+                // } else { 
+                //   res.status(403).send({success: false, msg: 'you dont have the required permission. Is is empty'});                       
+                // }
+
+
+              }
+                
+            }
+          
+          } else {
+          
+            /**
+             * Updated by Johnny - 29mar2024 - START
+             */
+            // console.log("req.user: ", req.user);
+            if (req.user.email === process.env.ADMIN_EMAIL) {
+              req.user.attributes = { isSuperadmin: true };
+              next();
+            } else {
+              res.status(403).send({success: false, msg: 'you dont belong to the project.'});
+            }
+            /**
+             * Updated by Johnny - 29mar2024 - END
+             */
+
+            // if (req.user) equals super admin next()
+            //res.status(403).send({success: false, msg: 'you dont belong to the project.'});
+          }
+      
       
         }
-        
       }
-
-// unused
-      hasRoleAsPromise(role, user_id, projectid) {
-           
-        var that = this;
-
-        return new Promise(function (resolve, reject) {              
-          // project_user_qui_importante
-
-           // JWT_HERE
-          var query = { id_project: req.params.projectid, id_user: req.user._id, status: "active"};
-          if (req.user.sub && (req.user.sub=="userexternal" || req.user.sub=="guest")) {
-            query = { id_project: req.params.projectid, uuid_user: req.user._id};
-          }
-
-          Project_user.find(query).
-            exec(function (err, project_users) {
-              if (err) {
-                winston.error(err);
-                return reject(err);
-              }
-
-      
-              if (project_users && project_users.length>0) {
-                
-                var project_user= project_users[0];
-
-                var userRole = project_user.role;
-                // winston.debug("userRole", userRole);
-      
-                if (!role) {
-                  resolve(project_user);
-                }else {
-      
-                  var hierarchicalRoles = that.ROLES[userRole];
-                  // winston.debug("hierarchicalRoles", hierarchicalRoles);
-      
-                  if ( hierarchicalRoles.includes(role)) {
-                    resolve(project_user);
-                  }else {
-                    reject({success: false, msg: 'you dont have the required role.'});
-                  }
-                }
-              } else {
-              
-                // if (req.user) equals super admin next()
-                reject({success: false, msg: 'you dont belong to the project.'});
-              }
-      
-          });
-      
-        });
-      
-    }
-
+        
 }
+
 
 
 var roleChecker = new RoleChecker();
