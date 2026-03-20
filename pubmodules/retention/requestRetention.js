@@ -108,6 +108,12 @@ class RequestRetention {
             console.log("(updateExpiresAt) updatedRequest.preflight: ", updatedRequest.preflight);
             console.log("(updateExpiresAt) updated expiresAt to: ", expiresAt);
             winston.debug("RequestRetention updated expiresAt", { request_id: requestId, expiresAt });
+
+            setTimeout( async () => {
+                requestEvent.emit('request.update', updatedRequest);
+                let r = await Request.findOne({ request_id: requestId, id_project: request.id_project });
+                console.log("after timeout request: ", r);
+            }, 2000);
         } catch (err) {
             winston.error("RequestRetention updateExpiresAt error", { request_id: requestId, err });
         }
