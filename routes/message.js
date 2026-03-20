@@ -269,7 +269,23 @@ async (req, res)  => {
           // TOOD update also request attributes and sourcePage
           // return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
           // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
-              
+          if (sender && sender !== 'system') {
+            Request.findOneAndUpdate(
+              { request_id: request.request_id, id_project: request.id_project }, 
+              { $set: { "attributes.last_message": savedMessage }},
+              { new: true }
+            )
+            .then((updatedRequest) => {
+              if (updatedRequest) {
+                // Emit the request.update event when the request is modified
+                requestEvent.emit('request.update', updatedRequest);
+              }
+            })
+            .catch((err) => {
+              winston.error("Create message - saving last message in request error: ", err);
+            });
+          }
+
           if (request.participants && request.participants.indexOf(sender) > -1) { //update waiitng time if write an  agent (member of participants)
             winston.debug("updateWaitingTimeByRequestId");
             return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project, true).then(function(upRequest) {

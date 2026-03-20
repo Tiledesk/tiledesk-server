@@ -18,6 +18,7 @@ var MessageConstants = require("../../models/messageConstants");
 var ProjectUserUtil = require("../../utils/project_userUtil");
 var RequestUtil = require("../../utils/requestUtil");
 const authEvent = require('../../event/authEvent');
+const requestEvent = require('../../event/requestEvent');
 
 var syncJoinAndLeaveGroupEvent =  false;
 if (process.env.SYNC_JOIN_LEAVE_GROUP_EVENT === true || process.env.SYNC_JOIN_LEAVE_GROUP_EVENT ==="true") {
