@@ -22,6 +22,7 @@ const { check, validationResult } = require('express-validator');
 var Project_user = require("../models/project_user");
 var mongoose = require('mongoose');
 var PromiseUtil = require("../utils/promiseUtil");
+const requestEvent = require('../event/requestEvent');
 
 csv = require('csv-express');
 csv.separator = ';';
