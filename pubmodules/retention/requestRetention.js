@@ -11,19 +11,13 @@ const EVENTS = [
 const QUEUED_EVENTS = [
     'request.create.queue',
     'request.update.queue'
-]
+];
 
-const defaultRetentionDays = parseInt(process.env.DEFAULT_RETENTION_DAYS) || 90;
+const defaultRetentionDays = parseInt(process.env.DEFAULT_RETENTION_DAYS, 10) || 90;
 
 class RequestRetention {
 
     constructor() {
-        console.log("\n\n\n--------------------------------\n\n\n");
-        console.log("RequestRetention constructor");
-        console.log("requestEvent.queueEnabled: ", requestEvent.queueEnabled);
-        console.log("EVENTS: ", EVENTS);
-        console.log("QUEUED_EVENTS: ", QUEUED_EVENTS);
-        console.log("\n\n\n--------------------------------\n\n\n");
         this.enabled = true;
         const retentionEnv = process.env.REQUEST_RETENTION_ENABLED;
         if (retentionEnv === "false" || retentionEnv === false) {
@@ -48,7 +42,7 @@ class RequestRetention {
         } else {
             return winston.info("RequestRetention disabled");
         }
-        
+
         requestEvent.on(this.eventKeys.requestCreate, (request) => {
             winston.debug("RequestRetention request.create", request);
         });
@@ -66,17 +60,24 @@ class RequestRetention {
     /**
      * Updates request.expiresAt based on project.settings.retentionDays.
      * Uses the project already populated on the request if available, otherwise uses getCachedProject (via cachegoose).
+     *
+     * IMPORTANT: skip while preflight === true. During preflight, other handlers emit request.update
+     * (e.g. message.create.from.requester → workingStatus) before ConciergeBot runs
+     * changeFirstTextAndPreflightByRequestId. Running findOneAndUpdate here races with cachegoose:
+     * request.update listeners may refresh Redis with a stale snapshot (preflight still true) after
+     * the DB already has preflight false. expiresAt is already set on create in requestService.
      */
     async updateExpiresAt(request) {
         if (!request || !request.id_project) {
             return;
         }
+        if (request.preflight === true) {
+            return;
+        }
         let project = request.project || (request.id_project && typeof request.id_project.settings === 'object' ? request.id_project : null);
-        console.log("(updateExpiresAt) project from request: ", project);
         if (!project) {
             try {
                 project = await projectService.getCachedProject(request.id_project);
-                console.log("(updateExpiresAt) project from getCachedProject: ", project);
             } catch (err) {
                 winston.warn("RequestRetention getCachedProject error", { id_project: request.id_project, err });
                 return;
@@ -86,8 +87,6 @@ class RequestRetention {
             ? project.settings.retentionDays
             : defaultRetentionDays;
 
-        console.log("(updateExpiresAt) retentionDays: ", retentionDays);
-            
         if (retentionDays == null || retentionDays <= 0) {
             return;
         }
@@ -101,9 +100,9 @@ class RequestRetention {
         try {
             await Request.findOneAndUpdate(
                 { request_id: requestId, id_project: request.id_project },
-                { $set: { expiresAt } }
+                { $set: { expiresAt } },
+                { new: true }
             );
-            console.log("(updateExpiresAt) updated expiresAt to: ", expiresAt);
             winston.debug("RequestRetention updated expiresAt", { request_id: requestId, expiresAt });
         } catch (err) {
             winston.error("RequestRetention updateExpiresAt error", { request_id: requestId, err });
