@@ -67,7 +67,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                             winston.debug("setting first_text to frame");
                         }
 
-
+                        console.log("(conciergebot) changing prefligh to false")
                         requestService.changeFirstTextAndPreflightByRequestId(message.request.request_id, message.request.id_project, first_text, false).then(function (reqChanged) {
                         //TESTA QUESTO
 

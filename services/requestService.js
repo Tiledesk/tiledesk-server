@@ -1133,7 +1133,7 @@ class RequestService {
             return reject(err);
           }
 
-
+          console.log("(requestService) request preflight changed to: ", updatedRequest.preflight);
           requestEvent.emit('request.update.preflight', updatedRequest); //archive to audit log
           requestEvent.emit('request.update', updatedRequest);
           requestEvent.emit("request.update.comment", { comment: "FIRSTTEXT_PREFLIGHT_CHANGE", request: updatedRequest });//Deprecated

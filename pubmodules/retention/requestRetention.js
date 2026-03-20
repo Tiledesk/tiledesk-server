@@ -98,11 +98,13 @@ class RequestRetention {
         const updatedAtMs = typeof updatedAt.getTime === 'function' ? updatedAt.getTime() : new Date(updatedAt).getTime();
         const expiresAt = new Date(updatedAtMs + retentionDays * 86400000);
         const requestId = request.request_id || request._id;
+        console.log("(updateExpiresAt) request.preflight: ", request.preflight);
         try {
-            await Request.findOneAndUpdate(
+            const updatedRequest = await Request.findOneAndUpdate(
                 { request_id: requestId, id_project: request.id_project },
                 { $set: { expiresAt } }
             );
+            console.log("(updateExpiresAt) updatedRequest.preflight: ", updatedRequest.preflight);
             console.log("(updateExpiresAt) updated expiresAt to: ", expiresAt);
             winston.debug("RequestRetention updated expiresAt", { request_id: requestId, expiresAt });
         } catch (err) {
