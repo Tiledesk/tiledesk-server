@@ -102,7 +102,8 @@ class RequestRetention {
         try {
             const updatedRequest = await Request.findOneAndUpdate(
                 { request_id: requestId, id_project: request.id_project },
-                { $set: { expiresAt } }
+                { $set: { expiresAt } },
+                { new: true }
             );
             console.log("(updateExpiresAt) updatedRequest.preflight: ", updatedRequest.preflight);
             console.log("(updateExpiresAt) updated expiresAt to: ", expiresAt);
