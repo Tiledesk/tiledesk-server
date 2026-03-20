@@ -380,6 +380,60 @@
 
     }
 
+    /**
+     * Chiavi cachegoose usate da Request.findOne(...).cache(id_project+":requests:request_id:"+id)
+     * (senza suffisso :simple). invalidatRequestSimple cancella solo le varianti :simple.
+     */
+    function invalidatRequestPopulateKeys(client, project_id, rid, request_id) {
+        if (rid) {
+            del(client._cache._engine.client, project_id + ":requests:id:" + rid, function (err, reply) {
+                winston.debug("Deleted populate cache id key", reply);
+            });
+        }
+        del(client._cache._engine.client, project_id + ":requests:request_id:" + request_id, function (err, reply) {
+            winston.debug("Deleted populate cache request_id key", reply);
+        });
+    }
+
+    function handleRequestUpdateCache(request) {
+        setImmediate(() => {
+            if (!request || !request.id_project || !request.request_id) {
+                return;
+            }
+            var rid = request.id || request._id;
+
+            // Non scrivere in cache snapshot con preflight ancora true: message.create.from.requester
+            // emette request.update prima di changeFirstTextAndPreflightByRequestId; client.set qui
+            // sovrascriveva Redis con preflight:true mentre il DB era già aggiornato, e le chiavi
+            // senza :simple non venivano invalidate da invalidatRequestSimple.
+            if (request.preflight === true) {
+                winston.verbose("request.update cache: skip set, invalidate only (preflight true)");
+                invalidatRequestSimple(client, request.id_project, rid, request.request_id);
+                invalidatRequestPopulateKeys(client, request.id_project, rid, request.request_id);
+                return;
+            }
+
+            var idForKey = rid || request.id;
+            if (idForKey) {
+                var keyById = request.id_project + ":requests:id:" + idForKey;
+                winston.verbose("Creating cache for request.update with key: " + keyById);
+                client.set(keyById, request, cacheUtil.defaultTTL, (err, reply) => {
+                    winston.debug("Created cache for request.update", reply);
+                    winston.verbose("Created cache for request.update", { err: err });
+                });
+            }
+
+            var key = request.id_project + ":requests:request_id:" + request.request_id;
+            winston.verbose("Creating cache for request.update with key: " + key);
+            client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
+                winston.debug("Created cache for request.update", reply);
+                winston.verbose("Created cache for request.update", { err: err });
+            });
+
+            invalidatRequestSimple(client, request.id_project, rid, request.request_id);
+        });
+    }
+
 
     requestEvent.on("request.create", function(request) {
         // setImmediate(() => { run immediatly this code and not defering in the next node loop becasue it is important to find immediarlely the hit when a new request is created. for request.create many code try to find from the db the request with populated fields. So it is important to sync save to the cache the request created to better use the cache for the subsequent query
@@ -411,34 +465,8 @@
 
 
 
-    requestEvent.on("request.update", function(request) {  
-        setImmediate(() => {
-            var key = request.id_project+":requests:id:"+request.id;
-            winston.verbose("Creating cache for request.update with key: " + key);
-            client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
-                winston.debug("Created cache for request.update",reply);
-                winston.verbose("Created cache for request.update",{err:err});
-            });
-
-            var key = request.id_project+":requests:request_id:"+request.request_id;
-            winston.verbose("Creating cache for request.update with key: " + key);
-            client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
-                winston.debug("Created cache for request.update",reply);
-                winston.verbose("Created cache for request.update",{err:err});
-            });
-
-            // TODO COMMENTA NON USATO
-            // key = request.id_project+":requests:query:*";
-            // winston.verbose("Deleting cache for request.update with key: " + key);
-            // client.del(key, function (err, reply) {
-            //     winston.debug("Deleted cache for request.update",reply);
-            //     winston.verbose("Deleted cache for request.update",{err:err});
-            // });   
-
-            invalidatRequestSimple(client, request.id_project, request.id, request.request_id)
-
-        });
-    });
+    requestEvent.on("request.update", handleRequestUpdateCache);
+    requestEvent.on("request.update.queue", handleRequestUpdateCache);
 
 
     requestEvent.on("request.close", function(request) { 
