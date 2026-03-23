@@ -427,6 +427,66 @@ router.post('/qa', async (req, res) => {
       return null;
     }
 
+    /** Same JSON shape as non-stream /qa: stream may wrap it in model_used */
+    function normalizeKbQaPayload(obj) {
+      if (obj && typeof obj === 'object' && obj.model_used != null && typeof obj.model_used === 'object') {
+        return obj.model_used;
+      }
+      return obj;
+    }
+
+    /** Flat final payload like non-stream /qa (answer, prompt_token_size, …) */
+    function isMetadataPayload(obj, streamedContent) {
+      if (obj == null || typeof obj !== 'object') return false;
+      if (streamedContent != null && streamedContent !== '') return false;
+      if (typeof obj.prompt_token_size === 'number') return true;
+      if (obj.answer != null) return true;
+      if (obj.sources != null) return true;
+      if (obj.chunks != null) return true;
+      if (obj.content_chunks != null) return true;
+      return false;
+    }
+
+    /** KB stream summary: full_response + model_used (same info as non-stream body, plus envelope) */
+    function isKbStreamCompletedSummary(obj) {
+      if (obj == null || typeof obj !== 'object') return false;
+      if (obj.status === 'completed') return true;
+      if (obj.full_response != null && obj.model_used != null && typeof obj.model_used === 'object') return true;
+      return false;
+    }
+
+    function forwardSsePayload(payload) {
+      if (payload === '[DONE]') return;
+      let obj;
+      try {
+        obj = JSON.parse(payload);
+      } catch (_) {
+        return;
+      }
+
+      if (obj.status === 'started') {
+        return;
+      }
+      if (isKbStreamCompletedSummary(obj)) {
+        res.write('data: ' + JSON.stringify(normalizeKbQaPayload(obj)) + '\n\n');
+        return;
+      }
+
+      if (obj.type === 'metadata' || obj.event === 'metadata') {
+        res.write('data: ' + JSON.stringify(normalizeKbQaPayload(obj)) + '\n\n');
+        return;
+      }
+      const content = extractContent(obj);
+      if (content != null && content !== '') {
+        res.write('data: ' + JSON.stringify({ content }) + '\n\n');
+        return;
+      }
+      const normalized = normalizeKbQaPayload(obj);
+      if (isMetadataPayload(normalized, content)) {
+        res.write('data: ' + JSON.stringify(normalized) + '\n\n');
+      }
+    }
+
     aiService.askStream(data).then((resp) => {
       const stream = resp.data;
       let buffer = '';
@@ -440,31 +500,17 @@ router.post('/qa', async (req, res) => {
           const trimmed = line.trim();
           if (!trimmed.startsWith('data: ')) continue;
           const payload = trimmed.slice(6);
-          if (payload === '[DONE]') continue;
-
-          try {
-            const obj = JSON.parse(payload);
-            const content = extractContent(obj);
-            if (content != null && content !== '') {
-              res.write('data: ' + JSON.stringify({ content }) + '\n\n');
-            }
-          } catch (_) {
-            // ignore parse errors for non-JSON lines
-          }
+          forwardSsePayload(payload);
         }
       });
 
       stream.on('end', () => {
-        if (buffer.trim().startsWith('data: ')) {
-          const payload = buffer.trim().slice(6);
-          if (payload !== '[DONE]') {
-            try {
-              const obj = JSON.parse(payload);
-              const content = extractContent(obj);
-              if (content != null && content !== '') {
-                res.write('data: ' + JSON.stringify({ content }) + '\n\n');
-              }
-            } catch (_) {}
+        const tail = buffer.trim();
+        if (tail) {
+          for (const line of tail.split('\n')) {
+            const trimmed = line.trim();
+            if (!trimmed.startsWith('data: ')) continue;
+            forwardSsePayload(trimmed.slice(6));
           }
         }
         res.write('data: [DONE]\n\n');
