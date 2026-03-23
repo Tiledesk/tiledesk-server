@@ -77,7 +77,9 @@ function populateMessageWithRequest(message, eventPrefix) {
   // request.isOpen
   winston.debug('message Event populate');
   if (cacheEnabler.request) {
-    q.cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient) //request_cache ma con lean????attento metti a parte
+    // Suffix :populated avoids clobbering by mongoose-cachegoose-fn client.set() on the same
+    // request_id key (unpopulated doc → lead is ObjectId, lead.lead_id undefined).
+    q.cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient+":populated")
     winston.debug('request cache enabled');
   }
   q.exec(function (err, request) {

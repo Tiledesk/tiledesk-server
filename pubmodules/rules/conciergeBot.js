@@ -13,6 +13,19 @@ const RequestConstants = require('../../models/requestConstants');
 
 class ConciergeBot {
 
+    /** Visitor lead id for preflight checks; populated lead preferred, else snapshot (cache may leave lead as ObjectId). */
+    static requestVisitorLeadId(request) {
+        if (!request) return undefined;
+        const lead = request.lead;
+        if (lead && typeof lead === 'object' && lead.lead_id) {
+            return lead.lead_id;
+        }
+        const snap = request.snapshot && request.snapshot.lead;
+        if (snap && snap.lead_id) {
+            return snap.lead_id;
+        }
+        return undefined;
+    }
 
     listen() {
 
@@ -38,15 +51,8 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 
             setImmediate(() => {
 
-                // winston.debug(" ConciergeBot message.request.preflight: "+message.request.preflight);
-                // winston.debug(" ConciergeBot message.sender: "+message.sender);
-                // winston.debug(" ConciergeBot message.request.lead.lead_id: "+message.request.lead.lead_id);
-                // winston.debug(" ConciergeBot message.text: "+message.text);
-                // winston.debug(" ConciergeBot message.request.first_text: "+message.request.first_text);
-
-                // lead_id used. Change it?
-                
-                if (message.request && message.request.preflight === true  && message.sender == message.request.lead.lead_id && message.text != message.request.first_text) {
+                const visitorLeadId = ConciergeBot.requestVisitorLeadId(message.request);
+                if (message.request && message.request.preflight === true  && message.sender == visitorLeadId && message.text != message.request.first_text) {
                     winston.debug("conciergebot: " + message.request.first_text );
                 // if (message.request && message.request.preflight === true  && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
                     // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
@@ -67,7 +73,6 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                             winston.debug("setting first_text to frame");
                         }
 
-                        console.log("(conciergebot) changing prefligh to false")
                         requestService.changeFirstTextAndPreflightByRequestId(message.request.request_id, message.request.id_project, first_text, false).then(function (reqChanged) {
                         //TESTA QUESTO
 
@@ -90,7 +95,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                                 
                                 // updateStatusWitId(lead_id, id_project, status)
                                 // lead_id used. Change it?
-                                leadService.updateStatusWitId(message.request.lead.lead_id, message.request.id_project, LeadConstants.NORMAL);
+                                leadService.updateStatusWitId(visitorLeadId, message.request.id_project, LeadConstants.NORMAL);
                             // });
                         });
 

@@ -308,7 +308,7 @@ async (req, res)  => {
               .populate({path:'requester',populate:{path:'id_user'}});
 
             if (cacheEnabler.request) {
-              q.cache(cacheUtil.defaultTTL, request.id_project+":requests:request_id:"+request.request_id)
+              q.cache(cacheUtil.defaultTTL, request.id_project+":requests:request_id:"+request.request_id+":populated")
               winston.debug('request cache enabled for messages');
             }
 

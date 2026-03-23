@@ -40,7 +40,7 @@ class MessageHandlebarsTransformerInterceptor {
                 // }
 
                 if (cacheEnabler.request) {
-                    q1.cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient) //request_cache
+                    q1.cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient+":populated")
                     winston.debug('request cache enabled');
                 }
 
