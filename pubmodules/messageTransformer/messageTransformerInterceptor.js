@@ -37,6 +37,8 @@ class MessageTransformerInterceptor {
 
                 var language = "EN";
 
+                winston.info("main_flow_cache_3 messageTransformerInterceptor");
+                
                 let q = Request.findOne({request_id:  message.recipient, id_project: message.id_project});
                     // populate('lead').
                     // populate('department').  
