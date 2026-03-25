@@ -47,11 +47,50 @@ function areMimeTypesEquivalent(mimeType1, mimeType2) {
   return false;
 }
 
+const BASE64_REGEX = /^[A-Za-z0-9+/]+=*$/;
+
+/**
+ * Ensures the input is a Node.js Buffer. file-type (and token-types/strtok3) require
+ * a Buffer with methods like readUInt8; GridFS or other sources may return
+ * Uint8Array, ArrayBuffer, BSON Binary, or (when client sends base64) a string.
+ * We always return a new Buffer so it's guaranteed to be a real Node Buffer.
+ */
+function ensureBuffer(buffer) {
+  if (!buffer) return buffer;
+
+  // Base64 string (e.g. client sends form body as base64): decode to binary
+  if (typeof buffer === 'string' && buffer.length > 0) {
+    const trimmed = buffer.replace(/\s/g, '');
+    if (BASE64_REGEX.test(trimmed)) {
+      return Buffer.from(trimmed, 'base64');
+    }
+    return Buffer.from(buffer, 'utf8');
+  }
+
+  // Force a real Node Buffer via Uint8Array copy so readUInt8 etc. are guaranteed
+  let uint8;
+  if (Buffer.isBuffer(buffer)) {
+    if (typeof buffer.readUInt8 === 'function') return buffer;
+    uint8 = new Uint8Array(buffer);
+  } else if (buffer instanceof Uint8Array) {
+    uint8 = buffer;
+  } else if (buffer instanceof ArrayBuffer) {
+    uint8 = new Uint8Array(buffer);
+  } else if (buffer && typeof buffer.buffer === 'object' && buffer.buffer instanceof ArrayBuffer) {
+    uint8 = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+  } else {
+    uint8 = new Uint8Array(Buffer.from(buffer));
+  }
+  return Buffer.from(uint8);
+}
+
 async function verifyFileContent(buffer, mimetype) {
   if (!buffer) throw new Error("No file provided");
 
+  const buf = ensureBuffer(buffer);
+
   try {
-    const fileType = await FileType.fromBuffer(buffer);
+    const fileType = await FileType.fromBuffer(buf);
 
     // If FileType couldn't detect the file type (returns null/undefined)
     if (!fileType) {
@@ -59,7 +98,7 @@ async function verifyFileContent(buffer, mimetype) {
       if (mimetype && TEXT_MIME_TYPES.includes(mimetype)) {
         // Optionally verify that the content is valid UTF-8 text
         try {
-          buffer.toString('utf8');
+          buf.toString('utf8');
           return true;
         } catch (e) {
           const err = new Error(`File content is not valid text for mimetype: ${mimetype}`);
@@ -69,7 +108,7 @@ async function verifyFileContent(buffer, mimetype) {
       } else if (mimetype && mimetype.startsWith('image/svg')) {
         // Handle SVG files (can be image/svg+xml or variants)
         try {
-          buffer.toString('utf8');
+          buf.toString('utf8');
           return true;
         } catch (e) {
           const err = new Error(`File content is not valid text for mimetype: ${mimetype}`);

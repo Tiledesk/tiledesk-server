@@ -177,10 +177,9 @@ class FileGridFsService extends FileService {
                 return reject(e);
             })
             stream.on('data', (data) => {
-                bufs.push(data);
+                bufs.push(Buffer.isBuffer(data) ? data : Buffer.from(data));
             });
             stream.on('end', () => {
-
                 var buffer = Buffer.concat(bufs);
                 return resolve(buffer);
             });

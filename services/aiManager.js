@@ -5,6 +5,7 @@ const { Scheduler } = require("./Scheduler");
 const { default: Sitemapper } = require('sitemapper');
 const winston = require('../config/winston');
 const configGlobal = require('../config/global');
+const _ = require('lodash');
 const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 
 // Constants
@@ -140,6 +141,73 @@ class AiManager {
       resolve(kb);
 
     })
+  }
+
+  async updateSitemap(id_project, namespace, old_sitemap, new_sitemap) {
+
+    let fieldsToCheck = ['scrape_type', 'scrape_options', 'refresh_rate', 'tags'];
+    let { stop } = this.shouldStop(old_sitemap, new_sitemap, fieldsToCheck);
+
+    let updated_sitemap;
+    try {
+      updated_sitemap = await KB.findOneAndUpdate({ id_project, namespace: namespace.id, _id: old_sitemap._id }, new_sitemap, { new: true });
+    } catch (err) {
+      winston.error("Error updating sitemap: ", err);
+      throw err;
+    }
+
+    if (stop) {
+      return;
+    }
+
+    // Find all url contents with sitemap_origin_id
+    let urlContents = await KB.find({ id_project, namespace: namespace.id, sitemap_origin_id: old_sitemap._id }).lean().exec();
+    if (urlContents.length === 0) {
+      winston.error("No url contents found with sitemap_origin_id: ", old_sitemap._id);
+      throw new Error("No url contents found with sitemap_origin_id: " + old_sitemap._id);
+    }
+
+    // Remove all url contents found with sitemap_origin_id
+    try {
+      await this.removeMultipleContents(namespace, urlContents);
+    } catch (err) {
+      winston.error("Error removing multiple contents: ", err);
+      throw err;
+    }
+
+    // Recreate all url contents with sitemap_origin_id
+    let result;
+    try {
+      result = await this.addMultipleUrls(namespace, urlContents.map(urlContent => urlContent.source), {
+        sitemap_origin_id: updated_sitemap._id,
+        sitemap_origin: updated_sitemap.source,
+        scrape_type: updated_sitemap.scrape_type,
+        scrape_options: updated_sitemap.scrape_options,
+        refresh_rate: updated_sitemap.refresh_rate,
+        tags: updated_sitemap.tags,
+      });
+    } catch (err) {
+      winston.error("Error recreating multiple contents: ", err);
+      throw err;
+    }
+
+    return result;
+
+  }
+
+  
+
+  shouldStop(oldObj, newObj, fieldsToCheck) {
+    for (const field of fieldsToCheck) {
+      const oldValue = _.get(oldObj, field);
+      const newValue = _.get(newObj, field);
+  
+      if (!_.isEqual(oldValue, newValue)) {
+        return { stop: false };
+      }
+    }
+  
+    return { stop: true };
   }
 
   async checkNamespace(id_project, namespace_id) {

@@ -318,6 +318,10 @@ router.patch('/:requestid', function (req, res) {
         return res.status(404).send({ success: false, msg: 'Request not found' });
       }
 
+      if (update.workingStatus !== undefined) {
+        requestEvent.emit('request.workingStatus.update', { request });
+      }
+
       requestEvent.emit("request.update", request);
       requestEvent.emit("request.update.comment", { comment: "PATCH", request: request }); //Deprecated
       requestEvent.emit("request.updated", { comment: "PATCH", request: request, patch: update });
@@ -1376,6 +1380,10 @@ router.get('/', function (req, res, next) {
     }
   }
 
+  if (req.query.workingStatus?.ne) {
+    query.workingStatus = { $ne: req.query.workingStatus.ne };
+  }
+
   if (req.query.priority) {
     query.priority = req.query.priority;
   }
@@ -1421,8 +1429,29 @@ router.get('/', function (req, res, next) {
     query["attributes.fully_abandoned"] = true
   }
 
+  if (req.query.rated && (req.query.rated === true || req.query.rated === 'true')) {
+    query.rating = { $exists: true }
+  }
+
   if (req.query.draft && (req.query.draft === 'false' || req.query.draft === false)) {
     query.draft = { $in: [false, null] }
+  }
+
+  let inWStatus = req.query.workingStatus?.in?.split(',').map(s => s.trim()).filter(Boolean);
+  let ninWStatus = req.query.workingStatus?.nin?.split(',').map(s => s.trim()).filter(Boolean);
+
+  if (ninWStatus && ninWStatus.length > 0) {
+    if (ninWStatus.length === 1) {
+      query.workingStatus = { $ne: ninWStatus[0] };
+    } else {
+      query.workingStatus = { $nin: ninWStatus };
+    }
+  } else if (inWStatus && inWStatus.length > 0) {
+    if (inWStatus.length === 1) {
+      query.workingStatus = inWStatus[0];
+    } else {
+      query.workingStatus = { $in: inWStatus };
+    }
   }
 
   var projection = undefined;
@@ -1872,21 +1901,38 @@ router.get('/csv', function (req, res, next) {
 
   var limit = 100000; // Number of request per page
   var page = 0;
+  var skip = 0;
+  let statusArray = [];
+  var projectuser = req.projectuser;
+  let filterRangeField = req.query.filterRangeField || 'createdAt';
 
   if (req.query.page) {
     page = req.query.page;
   }
 
-  var skip = page * limit;
+  skip = page * limit;
   winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
 
-  let statusArray = [];
+  // Default query (same as GET /)
+  var query = { "id_project": req.projectid, "status": { $lt: 1000, $nin: [50, 150] }, preflight: false };
 
-  var query = { "id_project": req.projectid };
+  if (req.user instanceof Subscription) {
+    // All request
+  } else if (projectuser && (projectuser.role == "owner" || projectuser.role == "admin")) {
+    if (req.query.mine) {
+      query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
+    }
+  } else {
+    query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
+  }
 
   if (req.query.dept_id) {
     query.department = req.query.dept_id;
     winston.debug('REQUEST ROUTE - QUERY DEPT ID', query.department);
+  }
+
+  if (req.query.requester_email) {
+    query["snapshot.lead.email"] = req.query.requester_email;
   }
 
   if (req.query.full_text) {
@@ -1894,34 +1940,27 @@ router.get('/csv', function (req, res, next) {
     query.$text = { "$search": req.query.full_text };
   }
 
-  if (req.query.status) {
+  if (req.query.phone) {
+    var phoneDigits = req.query.phone.replace(/\D/g, '');
+    if (phoneDigits.length > 0) {
+      query["contact.phone"] = new RegExp(phoneDigits);
+    }
+  }
 
+  var history_search = false;
+
+  // Multiple status management (same as GET /)
+  if (req.query.status) {
     if (req.query.status === 'all') {
       delete query.status;
     } else {
-      let statusArray = req.query.status.split(',').map(Number);
-      statusArray = statusArray.map(status => { return isNaN(status) ? null : status }).filter(status => status !== null)
+      statusArray = req.query.status.split(',').map(Number);
+      statusArray = statusArray.map(status => { return isNaN(status) ? null : status }).filter(status => status !== null);
       if (statusArray.length > 0) {
-        query.status = {
-          $in: statusArray
-        }
+        query.status = { $in: statusArray };
       } else {
         delete query.status;
       }
-    }
-
-    if (statusArray.length > 0) {
-      query.status = {
-        $in: statusArray
-      }
-    }
-
-  }
-
-  if (req.query.preflight) {
-    let preflight = (req.query.preflight === 'false');
-    if (preflight) {
-      query.preflight = false;
     }
   }
 
@@ -1942,49 +1981,96 @@ router.get('/csv', function (req, res, next) {
     query.hasBot = req.query.hasbot;
   }
 
-  /**
-   * DATE RANGE  */
-  if (req.query.start_date && req.query.end_date) {
-    winston.debug('REQUEST ROUTE - REQ QUERY start_date ', req.query.start_date);
-    winston.debug('REQUEST ROUTE - REQ QUERY end_date ', req.query.end_date);
-
-    /**
-     * USING TIMESTAMP  in MS    */
-    // var formattedStartDate = new Date(+req.query.start_date);
-    // var formattedEndDate = new Date(+req.query.end_date);
-    // query.createdAt = { $gte: formattedStartDate, $lte: formattedEndDate }
-
-
-    /**
-     * USING MOMENT      */
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-    var endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-
-    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED START DATE ', startDate);
-    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE ', endDate);
-
-    // ADD ONE DAY TO THE END DAY
-    var date = new Date(endDate);
-    var newdate = new Date(date);
-    var endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
-    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE + 1 DAY ', endDate_plusOneDay);
-    // var endDate_plusOneDay =   moment('2018-09-03').add(1, 'd')
-    // var endDate_plusOneDay =   endDate.add(1).day();
-    // var toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
-
-    query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString(), $lte: new Date(endDate_plusOneDay).toISOString() }
-    winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
-
-  } else if (req.query.start_date && !req.query.end_date) {
-    winston.debug('REQUEST ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)');
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-
-    query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString() };
-    winston.debug('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
+  if (req.query.tags) {
+    query["tags.tag"] = req.query.tags;
   }
-  winston.debug("csv query", query);
 
-  var direction = 1; //-1 descending , 1 ascending
+  if (req.query.location) {
+    query.location = req.query.location;
+  }
+
+  if (req.query.ticket_id) {
+    query.ticket_id = req.query.ticket_id;
+  }
+
+  if (req.query.preflight && (req.query.preflight === 'true' || req.query.preflight === true)) {
+    delete query.preflight;
+  }
+
+  let timezone = req.query.timezone || 'Europe/Rome';
+  let queryDateRange = false;
+  let queryStartDate;
+  let queryEndDate;
+
+  if (history_search === true && req.project && req.project.profile && ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false))) {
+    queryDateRange = true;
+    queryStartDate = moment().subtract(14, "days").format("YYYY/MM/DD");
+    queryEndDate = null;
+  }
+
+  if (req.query.start_date || req.query.end_date) {
+    queryDateRange = true;
+    queryStartDate = req.query.start_date;
+    queryEndDate = req.query.end_date;
+  } else if (req.query.start_date_time || req.query.end_date_time) {
+    queryDateRange = true;
+    queryStartDate = req.query.start_date_time;
+    queryEndDate = req.query.end_date_time;
+  }
+
+  if (queryDateRange) {
+    try {
+      let rangeQuery = datesUtil.createDateRangeQuery(queryStartDate, queryEndDate, timezone, filterRangeField);
+      Object.assign(query, rangeQuery);
+    } catch (error) {
+      winston.error('Error creating date range query: ', error);
+      return res.status(500).send({ success: false, error: error?.message });
+    }
+  }
+
+  if (req.query.snap_department_routing) {
+    query["snapshot.department.routing"] = req.query.snap_department_routing;
+  }
+
+  if (req.query.snap_department_default) {
+    query["snapshot.department.default"] = req.query.snap_department_default;
+  }
+
+  if (req.query.snap_department_id_bot) {
+    query["snapshot.department.id_bot"] = req.query.snap_department_id_bot;
+  }
+
+  if (req.query.snap_department_id_bot_exists) {
+    query["snapshot.department.id_bot"] = { "$exists": req.query.snap_department_id_bot_exists };
+  }
+
+  if (req.query.snap_lead_lead_id) {
+    query["snapshot.lead.lead_id"] = req.query.snap_lead_lead_id;
+  }
+
+  if (req.query.snap_lead_email) {
+    query["snapshot.lead.email"] = req.query.snap_lead_email;
+  }
+
+  if (req.query.smartAssignment) {
+    query.smartAssignment = req.query.smartAssignment;
+  }
+
+  if (req.query.channel) {
+    if (req.query.channel === "offline") {
+      query["channel.name"] = { "$in": ["email", "form"] };
+    } else if (req.query.channel === "online") {
+      query["channel.name"] = { "$nin": ["email", "form"] };
+    } else {
+      query["channel.name"] = req.query.channel;
+    }
+  }
+
+  if (req.query.priority) {
+    query.priority = req.query.priority;
+  }
+
+  var direction = -1; // same default as GET /
   if (req.query.direction) {
     direction = req.query.direction;
   }
@@ -1998,20 +2084,9 @@ router.get('/csv', function (req, res, next) {
 
   var sortQuery = {};
   sortQuery[sortField] = direction;
-
   winston.debug("sort query", sortQuery);
 
-  if (req.query.channel) {
-    if (req.query.channel === "offline") {
-      query["channel.name"] = { "$in": ["email", "form"] }
-    } else if (req.query.channel === "online") {
-      query["channel.name"] = { "$nin": ["email", "form"] }
-    } else {
-      query["channel.name"] = req.query.channel
-    }
-  }
-
-  // VOICE FILTERS - Start
+  // VOICE FILTERS
   if (req.query.caller) {
     query["attributes.caller_phone"] = req.query.caller;
   }
@@ -2021,45 +2096,52 @@ router.get('/csv', function (req, res, next) {
   if (req.query.call_id) {
     query["attributes.call_id"] = req.query.call_id;
   }
-  // VOICE FILTERS - End
-
-  // TODO ORDER BY SCORE
-  // return Faq.find(query,  {score: { $meta: "textScore" } }) 
-  // .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
-
-  // aggiungi filtro per data marco
 
   if (req.query.duration && req.query.duration_op) {
     let duration = Number(req.query.duration) * 60 * 1000;
     if (req.query.duration_op === 'gt') {
-      query.duration = { $gte: duration }
+      query.duration = { $gte: duration };
     } else if (req.query.duration_op === 'lt') {
-      query.duration = { $lte: duration }
+      query.duration = { $lte: duration };
     } else {
-      winston.verbose("Duration operator can be 'gt' or 'lt'. Skip duration_op " + req.query.duration_op)
+      winston.verbose("Duration operator can be 'gt' or 'lt'. Skip duration_op " + req.query.duration_op);
     }
   }
 
-  if (req.query.draft && (req.query.draft === 'false' || req.query.draft === false)) {
-    query.draft = { $in: [false, null] }
+  if (req.query.abandonded && (req.query.abandoned === true || req.query.abandoned === 'true')) {
+    query["attributes.fully_abandoned"] = true;
   }
 
-  winston.debug('REQUEST ROUTE - REQUEST FIND ', query)
-  return Request.find(query, '-transcript -status -__v').
+  if (req.query.rated && (req.query.rated === true || req.query.rated === 'true')) {
+    query.rating = { $exists: true };
+  }
+
+  if (req.query.draft && (req.query.draft === 'false' || req.query.draft === false)) {
+    query.draft = { $in: [false, null] };
+  }
+
+  var csvProjection = '-transcript -status -__v';
+  if (req.query.full_text && req.query.no_textscore != "true" && req.query.no_textscore != true) {
+    winston.verbose('fulltext projection on');
+    csvProjection = { transcript: 0, status: 0, __v: 0, score: { $meta: "textScore" } };
+  }
+
+  winston.debug("csv query", query);
+  winston.debug('REQUEST ROUTE - REQUEST FIND ', query);
+
+  var q = Request.find(query, csvProjection).
     skip(skip).limit(limit).
-    //populate('department', {'_id':-1, 'name':1}).     
     populate('department').
     populate('lead').
-    // populate('participatingBots').
-    // populate('participatingAgents'). 
-    lean().
-    // populate({
-    //   path: 'department', 
-    //   //select: { '_id': -1,'name':1}
-    //   select: {'name':1}
-    // }).  
-    sort(sortQuery).
-    exec(function (err, requests) {
+    lean();
+
+  if (req.query.full_text && req.query.no_textscore != "true" && req.query.no_textscore != true) {
+    q.sort({ score: { $meta: "textScore" } });
+  } else {
+    q.sort(sortQuery);
+  }
+
+  return q.exec(function (err, requests) {
       if (err) {
         winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
         return res.status(500).send({ success: false, msg: 'Error getting csv requests.', err: err });
