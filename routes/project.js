@@ -24,6 +24,7 @@ var cacheUtil = require('../utils/cacheUtil');
 var orgUtil = require("../utils/orgUtil");
 var cacheEnabler = require("../services/cacheEnabler");
 var mongoose = require('mongoose');
+var scheduleRequestExpiresRecalcIfRetentionChanged = require("../services/projectExpiresRecalcTrigger").scheduleRequestExpiresRecalcIfRetentionChanged;
 
 var jwt = require('jsonwebtoken');
 // CHECK IT ASAP!!!!
@@ -256,7 +257,14 @@ router.delete('/:projectid', [passport.authenticate(['basic', 'jwt'], { session:
 // })
 
 router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
-  
+  // Leggiamo i settings pre-update per confrontare la policy di retention (firma ms + sorgente) dopo il salvataggio.
+  Project.findById(req.params.projectid).select('settings').lean().exec(function (errLoad, existingProj) {
+    if (errLoad) {
+      winston.error('Error loading project before update ', errLoad);
+      return res.status(500).send({ success: false, msg: 'Error updating object.' });
+    }
+    const settingsBefore = existingProj && existingProj.settings;
+
   winston.debug('UPDATE PROJECT REQ BODY ', req.body);
 
   var update = {};
@@ -514,18 +522,34 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
       winston.error('Error putting project ', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
-    projectEvent.emit('project.update', updatedProject );
+    // Se retentionDays (o equivalente) ha cambiato policy, schedula ricalcolo batch expiresAt (worker/coda o in-process).
+    scheduleRequestExpiresRecalcIfRetentionChanged(
+      req.params.projectid,
+      settingsBefore,
+      updatedProject && updatedProject.settings,
+      function () {
+        projectEvent.emit('project.update', updatedProject);
 
-    if (updating_quotes == true) {
-      let obj = { createdAt: new Date() };
-      let quoteManager = req.app.get('quote_manager');
-      quoteManager.invalidateCheckpointKeys(updatedProject, obj);
-    }
-    res.json(updatedProject);
+        if (updating_quotes == true) {
+          let obj = { createdAt: new Date() };
+          let quoteManager = req.app.get('quote_manager');
+          quoteManager.invalidateCheckpointKeys(updatedProject, obj);
+        }
+        res.json(updatedProject);
+      }
+    );
+  });
   });
 });
 
 router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+  Project.findById(req.params.projectid).select('settings').lean().exec(function (errPatchLoad, existingPatchProj) {
+    if (errPatchLoad) {
+      winston.error('Error loading project before patch ', errPatchLoad);
+      return res.status(500).send({ success: false, msg: 'Error patching object.' });
+    }
+    const settingsBeforePatch = existingPatchProj && existingPatchProj.settings;
+
   winston.debug('PATCH PROJECT REQ BODY ', req.body);
 
   var update = {};
@@ -664,6 +688,10 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
   if (req.body.bannedUsers!=undefined) {
     update.bannedUsers = req.body.bannedUsers;
   }
+
+  if (req.body["settings.retentionDays"] != undefined) {
+    update["settings.retentionDays"] = req.body["settings.retentionDays"];
+  }
   
     
   // if (req.body.defaultLanguage!=undefined) {
@@ -678,8 +706,16 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
       winston.error('Error putting project ', err);
       return res.status(500).send({ success: false, msg: 'Error patching object.' });
     }
-    projectEvent.emit('project.update', updatedProject );
-    res.json(updatedProject);
+    scheduleRequestExpiresRecalcIfRetentionChanged(
+      req.params.projectid,
+      settingsBeforePatch,
+      updatedProject && updatedProject.settings,
+      function () {
+        projectEvent.emit('project.update', updatedProject);
+        res.json(updatedProject);
+      }
+    );
+  });
   });
 });
 
