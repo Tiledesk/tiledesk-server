@@ -75,6 +75,7 @@ router.post('/', function (req, res) {
 
     winston.debug("Chat21 message", message);
 
+      winston.info('chat21 webhook message received');
         // requestcachefarequi nocachepopulatereqired        
         let q = Request.findOne({request_id: message.recipient}) 
 
@@ -324,7 +325,6 @@ router.post('/', function (req, res) {
                 // TODO se stato = 50 e scrive visitatotre sposto a stato 100 poi queuue lo smista
 
                 // TOOD update also request attributes and sourcePage
-                console.log("\n\n message.sender: ", message.sender) 
                 if (message.sender !== "system") { 
                   const rid = request.request_id; 
                   const idProj = request.id_project; 
@@ -455,7 +455,7 @@ router.post('/', function (req, res) {
               var query = {request_id: recipient_id, id_project: projectId};
               winston.debug('query:'+ projectId);
               
-              winston.debug('conversation-archived Request.findOne(query);:');
+              winston.info('conversation-archived Request.findOne(query);:');
               let q = Request.findOne(query);
               // if (cacheEnabler.request) {
               //   q.cache(cacheUtil.defaultTTL, projectId+":requests:request_id:"+recipient_id+":simple"); //request_cache NOT IMPORTANT HERE
@@ -542,7 +542,7 @@ router.post('/', function (req, res) {
       winston.debug("id_project: " + id_project);
       
       // requestcachefarequi populaterequired
-      winston.debug('join-member Request.findOne(query);:');
+      winston.info('join-member Request.findOne(query);:');
       return Request.findOne({request_id: request_id, id_project: id_project})
           .populate('lead') //TODO posso prenderlo da snapshot senza populate cache_attention
           .exec(function(err, request) {
@@ -713,7 +713,7 @@ else if (req.body.event_type == "typing-start") {
 
   
   // requestcachefarequi nocachepopulatereqired
-  winston.debug('typing-start Request.findOne(query);:');
+  winston.info('typing-start Request.findOne(query);:');
   return Request.findOne({request_id: recipient_id})
                              //TOD  errore cache sistemare e riabbilitare->
   // .cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+recipient_id)   cache_attention
