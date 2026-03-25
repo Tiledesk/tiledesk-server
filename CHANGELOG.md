@@ -5,6 +5,11 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.16.1
+- Added stream option support to the KB /qa endpoint for real-time responses
+- Enhanced file upload route to correctly handle .webm files
+- Optimized token consumption and management in knowledge base operations
+
 # 2.16.0-hf
 - Fixed bug: issue on audio sent from widget
 
