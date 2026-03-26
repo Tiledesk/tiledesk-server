@@ -1,6 +1,7 @@
 /**
  * Ricalcolo batch di expiresAt su tutte le request di un progetto quando cambia la retention.
- * - Formula: updatedAt + retentionMs. Sempre $set di expiresAt, anche se la data risulta nel passato
+ * - Base temporale per retention: se esiste attributes.last_message.createdAt si usa quella (ultima attività “messaggio”),
+ *   altrimenti updatedAt della request. Poi + retentionMs. Sempre $set di expiresAt, anche se la data risulta nel passato
  *   (il TTL MongoDB si occuperà comunque della scadenza; qui non facciamo $unset come in RequestRetention per-update).
  * - Invalidazione job: all’inizio di ogni iterazione del while (quindi tra un batch e il successivo, incluso prima del primo batch)
  *   si rilegge dal DB project.retentionRecalcSeq e si confronta con payload.seq; se diversa, esci (è arrivato un cambio retention più recente).
@@ -21,6 +22,28 @@ function delay(ms) {
   return new Promise(function (resolve) {
     setTimeout(resolve, ms);
   });
+}
+
+/**
+ * Data da cui calcolare la scadenza: preferire last_message.createdAt (allineato all’ultimo messaggio sulla conversazione),
+ * altrimenti updatedAt della request.
+ */
+function getRetentionBaseDate(doc) {
+  const raw = doc.attributes && doc.attributes.last_message && doc.attributes.last_message.createdAt;
+  if (raw != null) {
+    const d = raw instanceof Date ? raw : new Date(raw);
+    if (!isNaN(d.getTime())) {
+      return d;
+    }
+  }
+  const u = doc.updatedAt;
+  if (u != null) {
+    const d = u instanceof Date ? u : new Date(u);
+    if (!isNaN(d.getTime())) {
+      return d;
+    }
+  }
+  return null;
 }
 
 class ProjectRequestsExpiresRecalc {
@@ -103,7 +126,7 @@ class ProjectRequestsExpiresRecalc {
       }
 
       const docs = await Request.find(q)
-        .select("_id updatedAt")
+        .select("_id updatedAt attributes.last_message.createdAt")
         .sort({ _id: 1 })
         .limit(BATCH_SIZE)
         .lean();
@@ -116,12 +139,12 @@ class ProjectRequestsExpiresRecalc {
       const bulkOps = [];
       for (let i = 0; i < docs.length; i++) {
         const doc = docs[i];
-        const updatedAt = doc.updatedAt;
-        if (!updatedAt) {
+        const baseAt = getRetentionBaseDate(doc);
+        if (!baseAt) {
           continue;
         }
         // Sempre impostiamo expiresAt (anche se nel passato): allineato alla richiesta di ricalcolo massivo post-cambio retention.
-        const expiresAt = new Date(updatedAt.getTime() + retentionMs);
+        const expiresAt = new Date(baseAt.getTime() + retentionMs);
         bulkOps.push({
           updateOne: {
             filter: { _id: doc._id },
