@@ -15,7 +15,7 @@ const Request = require("../../models/request");
 const { getRetentionMsFromProjectLike } = require("./retentionMsFromProject");
 
 const BATCH_SIZE = parseInt(process.env.REQUEST_EXPIRES_RECALC_BATCH_SIZE, 10) || 200;
-const BATCH_PAUSE_MS = parseInt(process.env.REQUEST_EXPIRES_RECALC_BATCH_PAUSE_MS, 10) || 50;
+const BATCH_PAUSE_MS = parseInt(process.env.REQUEST_EXPIRES_RECALC_BATCH_PAUSE_MS, 10) || 1000;
 
 function delay(ms) {
   return new Promise(function (resolve) {
