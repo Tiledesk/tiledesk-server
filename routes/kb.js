@@ -20,6 +20,7 @@ const Sitemapper = require('sitemapper');
 const aiService = require('../services/aiService');
 const aiManager = require('../services/aiManager');
 const integrationService = require('../services/integrationService');
+const kbEvent = require('../event/kbEvent');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
@@ -342,7 +343,10 @@ router.post('/qa', async (req, res) => {
     return res.status(errorCode).send({ success: false, error: err.error });
   }
 
+  console.log("model returned from resolveLLMConfig: ", model);
+
   if (!model.api_key && model.provider === 'openai') {
+    console.log("Set shared GPTKEY as api_key");
     model.api_key = process.env.GPTKEY;
     publicKey = true;
   }
@@ -393,7 +397,7 @@ router.post('/qa', async (req, res) => {
     }
   }
 
-  data.stream = false;
+  data.stream = data.stream === true;
   data.debug = true;
   delete data.advancedPrompt;
   winston.verbose("ask data: ", data);
@@ -402,16 +406,163 @@ router.post('/qa', async (req, res) => {
     return res.status(200).send({ success: true, message: "Question skipped in test environment", data: data });
   }
 
+  if (data.stream === true) {
+    // Streaming SSE: use askStream and forward only content as JSON SSE events
+    res.status(200);
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    const sendError = (message) => {
+      try {
+        res.write('data: ' + JSON.stringify({ error: message }) + '\n\n');
+      } catch (_) {}
+      res.end();
+    };
+
+    function extractContent(obj) {
+      if (obj.content != null) return obj.content;
+      if (obj.choices && obj.choices[0]) {
+        const c = obj.choices[0];
+        if (c.delta && c.delta.content != null) return c.delta.content;
+        if (c.message && c.message.content != null) return c.message.content;
+      }
+      return null;
+    }
+
+    /** Same JSON shape as non-stream /qa: stream may wrap it in model_used */
+    function normalizeKbQaPayload(obj) {
+      if (obj && typeof obj === 'object' && obj.model_used != null && typeof obj.model_used === 'object') {
+        return obj.model_used;
+      }
+      return obj;
+    }
+
+    /** Flat final payload like non-stream /qa (answer, prompt_token_size, …) */
+    function isMetadataPayload(obj, streamedContent) {
+      if (obj == null || typeof obj !== 'object') return false;
+      if (streamedContent != null && streamedContent !== '') return false;
+      if (typeof obj.prompt_token_size === 'number') return true;
+      if (obj.answer != null) return true;
+      if (obj.sources != null) return true;
+      if (obj.chunks != null) return true;
+      if (obj.content_chunks != null) return true;
+      return false;
+    }
+
+    /** KB stream summary: full_response + model_used (same info as non-stream body, plus envelope) */
+    function isKbStreamCompletedSummary(obj) {
+      if (obj == null || typeof obj !== 'object') return false;
+      if (obj.status === 'completed') return true;
+      if (obj.full_response != null && obj.model_used != null && typeof obj.model_used === 'object') return true;
+      return false;
+    }
+
+    function forwardSsePayload(payload) {
+      if (payload === '[DONE]') return;
+      let obj;
+      try {
+        obj = JSON.parse(payload);
+      } catch (_) {
+        return;
+      }
+
+      if (obj.status === 'started') {
+        return;
+      }
+      if (isKbStreamCompletedSummary(obj)) {
+        res.write('data: ' + JSON.stringify(normalizeKbQaPayload(obj)) + '\n\n');
+        return;
+      }
+
+      if (obj.type === 'metadata' || obj.event === 'metadata') {
+        res.write('data: ' + JSON.stringify(normalizeKbQaPayload(obj)) + '\n\n');
+        return;
+      }
+      const content = extractContent(obj);
+      if (content != null && content !== '') {
+        res.write('data: ' + JSON.stringify({ content }) + '\n\n');
+        return;
+      }
+      const normalized = normalizeKbQaPayload(obj);
+      if (isMetadataPayload(normalized, content)) {
+        res.write('data: ' + JSON.stringify(normalized) + '\n\n');
+      }
+    }
+
+    aiService.askStream(data).then((resp) => {
+      const stream = resp.data;
+      let buffer = '';
+
+      stream.on('data', (chunk) => {
+        buffer += chunk.toString();
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data: ')) continue;
+          const payload = trimmed.slice(6);
+          forwardSsePayload(payload);
+        }
+      });
+
+      stream.on('end', () => {
+        const tail = buffer.trim();
+        if (tail) {
+          for (const line of tail.split('\n')) {
+            const trimmed = line.trim();
+            if (!trimmed.startsWith('data: ')) continue;
+            forwardSsePayload(trimmed.slice(6));
+          }
+        }
+        res.write('data: [DONE]\n\n');
+        res.end();
+      });
+
+      stream.on('error', (err) => {
+        winston.error('qa stream err: ', err);
+        sendError(err.message || 'Stream error');
+      });
+
+      res.on('close', () => {
+        if (!res.writableEnded) {
+          stream.destroy();
+        }
+      });
+    }).catch((err) => {
+      winston.error('qa err: ', err);
+      winston.error('qa err.response: ', err.response);
+      const message = (err.response && err.response.data && typeof err.response.data.pipe !== 'function' && err.response.data.detail)
+        ? err.response.data.detail
+        : (err.response && err.response.statusText) || err.message || String(err);
+      if (!res.headersSent) {
+        res.status(err.response && err.response.status ? err.response.status : 500);
+      }
+      sendError(message);
+    });
+    return;
+  }
+
   aiService.askNamespace(data).then((resp) => {
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
 
     if (publicKey === true) {
-      let multiplier = MODELS_MULTIPLIER[data.model];
+      let modelKey;
+      if (typeof data.model === 'string') {
+        modelKey = data.model;
+      } else if (data.model && typeof data.model.name === 'string') {
+        modelKey = data.model.name;
+      }
+
+      let multiplier = MODELS_MULTIPLIER[modelKey];
       if (!multiplier) {
         multiplier = 1;
-        winston.info("No multiplier found for AI model (qa) " + data.model);
+        winston.info("No multiplier found for AI model (qa) " + modelKey);
       }
+
       obj.multiplier = multiplier;
       obj.tokens = answer.prompt_token_size;
 
@@ -628,6 +779,7 @@ router.delete('/deleteall', async (req, res) => {
 
   let project_id = req.projectid;
   let data = req.body;
+  let namespace_id = data.namespace;
   winston.debug('/delete all data: ', data);
 
   let namespace;
@@ -644,6 +796,7 @@ router.delete('/deleteall', async (req, res) => {
 
   aiService.deleteNamespace(data).then((resp) => {
     winston.debug("delete namespace resp: ", resp.data);
+    kbEvent.emit('kb.contents.delete', { req, namespace_id, project_id });
     res.status(200).send(resp.data);
   }).catch((err) => {
     winston.error("delete namespace err: ", err);
@@ -926,6 +1079,8 @@ router.post('/namespace', async (req, res) => {
       return res.status(500).send({ success: false, error: err });
     }
 
+    kbEvent.emit('kb.namespace.create', { req, savedNamespace, body, namespace_id, project_id });
+
     let namespaceObj = savedNamespace.toObject();
     delete namespaceObj._id;
     delete namespaceObj.__v;
@@ -1174,6 +1329,8 @@ router.delete('/namespace/:id', async (req, res) => {
       })
       winston.debug("delete all contents response: ", deleteResponse);
 
+      kbEvent.emit('kb.contents.delete', { req, namespace_id, project_id, deletedCount: deleteResponse?.deletedCount });
+
       return res.status(200).send({ success: true, message: "All contents deleted successfully" })
 
     }).catch((err) => {
@@ -1213,6 +1370,8 @@ router.delete('/namespace/:id', async (req, res) => {
         return res.status(500).send({ success: false, error: err });
       })
       winston.debug("delete namespace response: ", deleteNamespaceResponse);
+
+      kbEvent.emit('kb.namespace.delete', { req, namespace_id, project_id, namespace, deletedCount: deleteResponse?.deletedCount });
 
       return res.status(200).send({ success: true, message: "Namespace deleted succesfully" })
 
@@ -1594,6 +1753,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
       const quoteManager = req.app.get('quote_manager');
       try {
+        let quoteManager = req.app.get('quote_manager');
         await aiManager.checkQuotaAvailability(quoteManager, req.project, kbs.length)
       } catch(err) {
         let errorCode = err?.errorCode ?? 500;
@@ -1986,6 +2146,16 @@ router.delete('/:kb_id', async (req, res) => {
   data.engine = namespace.engine || default_engine;
   winston.verbose("/:delete_id data: ", data);
 
+  const emitKbContentDelete = (deletedKb) => {
+    console.log("emitKbContentDelete calling event");
+    kbEvent.emit('kb.content.delete', { req, kb_id, namespace_id, project_id, kb: deletedKb || kb });
+  };
+
+  if (process.env.NODE_ENV === 'test') {
+    emitKbContentDelete(kb);
+    return res.status(200).send({ success: true, message: "Content deleted successfully" });
+  }
+
   aiService.deleteIndex(data).then((resp) => {
     winston.debug("delete resp: ", resp.data);
     if (resp.data.success === true) {
@@ -1995,6 +2165,7 @@ router.delete('/:kb_id', async (req, res) => {
           winston.error("Delete kb error: ", err);
           return res.status(500).send({ success: false, error: err });
         }
+        emitKbContentDelete(deletedKb);
         res.status(200).send(deletedKb);
       })
 
@@ -2010,6 +2181,7 @@ router.delete('/:kb_id', async (req, res) => {
           winston.verbose("Unable to delete the content in indexing status")
           return res.status(500).send({ success: false, error: "Unable to delete the content in indexing status" })
         } else {
+          emitKbContentDelete(deletedKb);
           res.status(200).send(deletedKb);
         }
       })
