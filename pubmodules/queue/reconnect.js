@@ -3,6 +3,7 @@ var winston = require('../../config/winston');
 const requestEvent = require('../../event/requestEvent');
 const messageEvent = require('../../event/messageEvent');
 const leadEvent = require('../../event/leadEvent');
+const projectEvent = require('../../event/projectEvent');
 
 const botEvent = require('../../event/botEvent');
 const authEvent = require('../../event/authEvent');
@@ -214,6 +215,12 @@ function startWorker() {
           winston.info("Data queue", oka)
         });
 
+        // Ricalcolo massivo expiresAt dopo cambio retention progetto (stesso exchange topic degli altri job)
+        ch.bindQueue(_ok.queue, exchange, "project_retention_recalc", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: project_retention_recalc");
+          winston.info("Data queue", oka)
+        });
+
 
         ch.consume(queueName, processMsg, { noAck: false });
         winston.info("Worker is started");
@@ -334,6 +341,11 @@ function work(msg, cb) {
   if (topic === 'request_snapshot_update') {
     winston.debug("reconnect here topic request_snapshot_update:" + topic); 
     requestEvent.emit('request.snapshot.update.queue',  JSON.parse(message_string));
+  }
+
+  if (topic === 'project_retention_recalc') {
+    winston.debug("reconnect here topic project_retention_recalc:" + topic);
+    projectEvent.emit('project.retentionRecalc.queue', JSON.parse(message_string));
   }
 
 
@@ -494,6 +506,13 @@ function listen() {
       });
     });
 
+    // Inoltra sul broker il job di ricalcolo expiresAt (il processo worker emetterà project.retentionRecalc.queue)
+    projectEvent.on('project.retentionRecalc', function(payload) {
+      setImmediate(() => {
+        winston.debug("reconnect project.retentionRecalc publish");
+        publish(exchange, "project_retention_recalc", Buffer.from(JSON.stringify(payload)));
+      });
+    });
 
     
 
@@ -505,6 +524,7 @@ if (process.env.QUEUE_ENABLED === "true") {
     authEvent.queueEnabled = true;
     botEvent.queueEnabled = true;
     leadEvent.queueEnabled = true;
+    projectEvent.queueEnabled = true;
     listen();
     start();
     winston.info("Queue enabled. endpoint: " + url );

@@ -324,7 +324,6 @@ router.post('/', function (req, res) {
                 // TODO se stato = 50 e scrive visitatotre sposto a stato 100 poi queuue lo smista
 
                 // TOOD update also request attributes and sourcePage
-                console.log("\n\n message.sender: ", message.sender) 
                 if (message.sender !== "system") { 
                   const rid = request.request_id; 
                   const idProj = request.id_project; 
