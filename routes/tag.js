@@ -85,7 +85,7 @@ router.get('/:tagid', function (req, res) {
 });
 
 router.get('/', function (req, res) {
-  var limit = 40; // Number of Tags per page
+  var limit = 200; // Number of Tags per page
   var page = 0;
 
   if (req.query.page) {
