@@ -1,8 +1,8 @@
 /**
  * Ricalcolo batch di expiresAt su tutte le request di un progetto quando cambia la retention.
- * - Base temporale per retention: se esiste attributes.last_message.createdAt si usa quella (ultima attività “messaggio”),
- *   altrimenti updatedAt della request. Poi + retentionMs. Sempre $set di expiresAt, anche se la data risulta nel passato
- *   (il TTL MongoDB si occuperà comunque della scadenza; qui non facciamo $unset come in RequestRetention per-update).
+ * - Base temporale (solo retention finita): attributes.last_message.createdAt se presente, altrimenti updatedAt; poi + retentionMs.
+ *   Sempre $set di expiresAt anche se nel passato.
+ * - Retention infinita (settings.retentionDays -1 / 'never'): in batch si fa $unset di expiresAt su tutte le request del progetto.
  * - Invalidazione job: all’inizio di ogni iterazione del while (quindi tra un batch e il successivo, incluso prima del primo batch)
  *   si rilegge dal DB project.retentionRecalcSeq e si confronta con payload.seq; se diversa, esci (è arrivato un cambio retention più recente).
  * - Evento diretto: project.retentionRecalc; con coda: project.retentionRecalc.queue (come request.update).
@@ -118,6 +118,7 @@ class ProjectRequestsExpiresRecalc {
         winston.verbose("ProjectRequestsExpiresRecalc: skip project " + projectId + " (no valid retention ms)");
         return;
       }
+      const infiniteRetention = !!retentionInfo.infinite;
       const retentionMs = retentionInfo.retentionMs;
 
       const q = { id_project: idProjectFilter };
@@ -125,8 +126,12 @@ class ProjectRequestsExpiresRecalc {
         q._id = { $gt: lastId };
       }
 
+      const selectFields = infiniteRetention
+        ? "_id"
+        : "_id updatedAt attributes.last_message.createdAt";
+
       const docs = await Request.find(q)
-        .select("_id updatedAt attributes.last_message.createdAt")
+        .select(selectFields)
         .sort({ _id: 1 })
         .limit(BATCH_SIZE)
         .lean();
@@ -139,11 +144,19 @@ class ProjectRequestsExpiresRecalc {
       const bulkOps = [];
       for (let i = 0; i < docs.length; i++) {
         const doc = docs[i];
+        if (infiniteRetention) {
+          bulkOps.push({
+            updateOne: {
+              filter: { _id: doc._id },
+              update: { $unset: { expiresAt: "" } },
+            },
+          });
+          continue;
+        }
         const baseAt = getRetentionBaseDate(doc);
         if (!baseAt) {
           continue;
         }
-        // Sempre impostiamo expiresAt (anche se nel passato): allineato alla richiesta di ricalcolo massivo post-cambio retention.
         const expiresAt = new Date(baseAt.getTime() + retentionMs);
         bulkOps.push({
           updateOne: {

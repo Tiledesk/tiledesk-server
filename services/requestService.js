@@ -26,10 +26,7 @@ if (process.env.TILEBOT_ENDPOINT) {
     TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/"
 }
 
-const defaultRetentionDays = parseInt(process.env.DEFAULT_RETENTION_DAYS, 10) || 90;
-/** Test-only: if set to a positive integer, default retention uses seconds instead of days (ignored when project.settings.retentionDays is set). */
-const defaultRetentionSeconds = parseInt(process.env.DEFAULT_RETENTION_SECONDS, 10);
-const useDefaultRetentionSeconds = !isNaN(defaultRetentionSeconds) && defaultRetentionSeconds > 0;
+const { getRetentionMsFromProjectLike } = require("../pubmodules/retention/retentionMsFromProject");
 
 let tdCache = new TdCache({
     host: process.env.CACHE_REDIS_HOST,
@@ -624,20 +621,17 @@ class RequestService {
       snapshot.lead = request.lead;
     }
 
-    const retentionFromProject =
-      typeof payload?.project?.settings?.retentionDays === 'number'
-        && !isNaN(payload?.project?.settings?.retentionDays)
-        && payload.project.settings.retentionDays > 0;
-    const retentionDays = retentionFromProject
-      ? payload.project.settings.retentionDays
-      : defaultRetentionDays;
-
-    const retentionMs = !retentionFromProject && useDefaultRetentionSeconds
-      ? defaultRetentionSeconds * 1000
-      : retentionDays * 24 * 60 * 60 * 1000;
-    let expiresAt = new Date(createdAt.getTime() + retentionMs);
-    if (expiresAt.getTime() < Date.now()) {
+    const retentionInfo = getRetentionMsFromProjectLike(payload.project);
+    let expiresAt;
+    if (!retentionInfo) {
       expiresAt = undefined;
+    } else if (retentionInfo.infinite) {
+      expiresAt = undefined;
+    } else {
+      expiresAt = new Date(createdAt.getTime() + retentionInfo.retentionMs);
+      if (expiresAt.getTime() < Date.now()) {
+        expiresAt = undefined;
+      }
     }
     // Create request
     const newRequest = new Request({

@@ -69,6 +69,19 @@ class RequestRetention {
         if (!retentionInfo) {
             return;
         }
+        // Retention infinita: nessuna scadenza (rimuove il campo usato dal TTL)
+        if (retentionInfo.infinite) {
+            try {
+                await Request.findOneAndUpdate(
+                    { request_id: request.request_id, id_project: request.id_project },
+                    { $unset: { expiresAt: "" } },
+                    { new: true });
+            } catch (err) {
+                winston.error("RequestRetention error unsetting expiresAt (infinite retention)", err);
+            }
+            return;
+        }
+
         const retentionMs = retentionInfo.retentionMs;
 
         const updatedAt = request.updatedAt;

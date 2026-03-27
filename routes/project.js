@@ -473,6 +473,7 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
     update["settings.allowed_upload_extentions"] = req.body["settings.allowed_upload_extentions"];
   }
 
+  // Retention: numero giorni > 0, oppure -1 / "never" per infinita (nessuna scadenza TTL sulle request). Omesso → default piattaforma.
   if (req.body["settings.retentionDays"] != undefined) {
     update["settings.retentionDays"] = req.body["settings.retentionDays"];
   }
@@ -689,6 +690,7 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
     update.bannedUsers = req.body.bannedUsers;
   }
 
+  // Retention: giorni > 0, oppure -1 / "never" per infinita. Omesso → default piattaforma.
   if (req.body["settings.retentionDays"] != undefined) {
     update["settings.retentionDays"] = req.body["settings.retentionDays"];
   }

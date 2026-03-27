@@ -1,7 +1,14 @@
 /**
- * Calcolo dei millisecondi di retention da applicare alle request, allineato a
- * requestRetention.js / requestService (stessa logica di default e settings.retentionDays).
- * Centralizzato così il ricalcolo massivo dopo cambio progetto usa identiche regole.
+ * Calcolo retention da project.settings.retentionDays, allineato tra requestService, RequestRetention
+ * e ricalcolo massimo (projectRequestsExpiresRecalc).
+ *
+ * Retention infinita (nessuna scadenza TTL sulle request):
+ *   - Valore consigliato: **-1** (number).
+ *   - Equivalenti accettati: stringhe **'never'**, **'-1'** (client che serializzano tutto come stringa).
+ *   In questi casi non si imposta expiresAt (o si rimuove).
+ *
+ * Default piattaforma:
+ *   - **null** / **undefined** su settings.retentionDays → si usa DEFAULT_RETENTION_DAYS (o secondi di test).
  */
 
 const defaultRetentionDays = parseInt(process.env.DEFAULT_RETENTION_DAYS, 10) || 90;
@@ -10,11 +17,36 @@ const defaultRetentionSeconds = parseInt(process.env.DEFAULT_RETENTION_SECONDS, 
 const useDefaultRetentionSeconds = !isNaN(defaultRetentionSeconds) && defaultRetentionSeconds > 0;
 
 /**
+ * @param {object} [settings] - project.settings
+ * @returns {boolean}
+ */
+function isInfiniteRetentionSetting(settings) {
+  if (!settings || settings.retentionDays === undefined || settings.retentionDays === null) {
+    return false;
+  }
+  const v = settings.retentionDays;
+  if (v === -1) {
+    return true;
+  }
+  if (typeof v === "string") {
+    const t = v.trim().toLowerCase();
+    return t === "-1" || t === "never";
+  }
+  return false;
+}
+
+/**
  * @param {object} projectLike - es. { settings: {...} }
- * @returns {{ retentionMs: number, retentionFromProject: boolean } | null} null = non aggiornare expiresAt (stessa condizione di early-return in RequestRetention)
+ * @returns {{ infinite: true, retentionFromProject: true } | { retentionMs: number, retentionFromProject: boolean } | null}
+ *   null = stesso early-return storico (nessun ms valido per il default globale).
  */
 function getRetentionMsFromProjectLike(projectLike) {
   const settings = projectLike && projectLike.settings;
+
+  if (isInfiniteRetentionSetting(settings)) {
+    return { infinite: true, retentionFromProject: true };
+  }
+
   const retentionFromProject =
     settings &&
     typeof settings.retentionDays === "number" &&
@@ -34,13 +66,15 @@ function getRetentionMsFromProjectLike(projectLike) {
 }
 
 /**
- * Firma della "policy" di retention per rilevare se un aggiornamento progetto la modifica
- * (confronto prima/dopo senza simulare il merge dei settings).
+ * Firma della policy per confronti prima/dopo su PUT progetto (scheduling ricalcolo batch).
  */
 function retentionPolicySignature(settings) {
   const r = getRetentionMsFromProjectLike({ settings });
   if (!r) {
     return "skip";
+  }
+  if (r.infinite) {
+    return "infinite";
   }
   return `${r.retentionMs}:${r.retentionFromProject}`;
 }
@@ -48,6 +82,7 @@ function retentionPolicySignature(settings) {
 module.exports = {
   getRetentionMsFromProjectLike,
   retentionPolicySignature,
+  isInfiniteRetentionSetting,
   defaultRetentionDays,
   useDefaultRetentionSeconds,
   defaultRetentionSeconds,
