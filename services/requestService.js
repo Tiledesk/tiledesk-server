@@ -621,7 +621,16 @@ class RequestService {
       snapshot.lead = request.lead;
     }
 
-    const retentionInfo = getRetentionMsFromProjectLike(payload.project);
+    // TEMP (50) skips the block that sets payload; still need project for retention / expiresAt.
+    let projectForRetention = payload && payload.project;
+    if (!projectForRetention) {
+      try {
+        projectForRetention = await projectService.getCachedProject(id_project);
+      } catch (err) {
+        winston.error("Error getting project for retention", err);
+      }
+    }
+    const retentionInfo = getRetentionMsFromProjectLike(projectForRetention);
     let expiresAt;
     if (!retentionInfo) {
       expiresAt = undefined;
