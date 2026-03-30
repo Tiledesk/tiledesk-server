@@ -84,9 +84,19 @@ class RequestRetention {
 
         const retentionMs = retentionInfo.retentionMs;
 
-        const updatedAt = request.updatedAt;
-        if (!updatedAt) {
+        const updatedAtRaw = request.updatedAt;
+        if (updatedAtRaw == null || updatedAtRaw === "") {
             winston.warn("RequestRetention request.update without updatedAt. Skip updateExpiresAt");
+            return;
+        }
+
+        const updatedAt =
+            updatedAtRaw instanceof Date ? updatedAtRaw : new Date(updatedAtRaw);
+        if (Number.isNaN(updatedAt.getTime())) {
+            winston.warn(
+                "RequestRetention request.update with invalid updatedAt. Skip updateExpiresAt",
+                { updatedAt: updatedAtRaw }
+            );
             return;
         }
 
