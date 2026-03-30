@@ -9,7 +9,7 @@ var userService = require('../services/userService');
 var leadService = require('../services/leadService');
 var messageService = require('../services/messageService');
 var Project_user = require("../models/project_user");
-var roleConstants = require('../models/roleConstants');
+var RoleConstants = require('../models/roleConstants');
 const uuidv4 = require('uuid/v4');
 
 //Require the dev-dependencies
@@ -223,7 +223,8 @@ describe('MessageRoute', () => {
             // _id: new mongoose.Types.ObjectId(),
             id_project: savedProject._id,
             id_user: savedUser2._id,
-            role: roleConstants.AGENT,
+            role: RoleConstants.AGENT,
+            roleType : RoleConstants.TYPE_AGENTS,   
             user_available: true,
             createdBy: savedUser2._id,
             updatedBy: savedUser2._id,
@@ -298,7 +299,8 @@ describe('MessageRoute', () => {
           // _id: new mongoose.Types.ObjectId(),
           id_project: savedProject._id,
           uuid_user: uid,
-          role: roleConstants.USER,
+          role: RoleConstants.USER,
+          roleType : RoleConstants.TYPE_USERS,   
           user_available: true,
           createdBy: savedUser._id,
           updatedBy: savedUser._id,
@@ -875,7 +877,8 @@ describe('MessageRoute', () => {
             // _id: new mongoose.Types.ObjectId(),
             id_project: savedProject._id,
             id_user: savedUser2._id,
-            role: roleConstants.USER,
+            role: RoleConstants.USER,
+            roleType : RoleConstants.TYPE_USERS,   
             user_available: true,
             createdBy: savedUser2._id,
             updatedBy: savedUser2._id,
