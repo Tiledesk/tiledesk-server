@@ -176,7 +176,8 @@ router.post('/scrape/single', async (req, res) => {
       const options = {
         sitemap_origin_id: sitemapKb._id,
         sitemap_origin: sitemapKb.source,
-        scrape_type: sitemapKb.scrape_type,
+        //scrape_type: sitemapKb.scrape_type,
+        scrape_type: 0,
         scrape_options: sitemapKb.scrape_options,
         refresh_rate: sitemapKb.refresh_rate,
         tags: sitemapKb.tags
@@ -213,7 +214,8 @@ router.post('/scrape/single', async (req, res) => {
       }
 
       if (kb.scrape_type) {
-        json.scrape_type = kb.scrape_type
+        //json.scrape_type = kb.scrape_type //temp
+        json.scrape_type = 0;
       }
 
       if (kb.scrape_options) {
@@ -1567,11 +1569,13 @@ router.post('/', async (req, res) => {
   }
   if (type === 'url') {
     new_kb.refresh_rate = refresh_rate || 'never';
+    // TEMP TEST: forza scrape_type 0 (ignora client). Ripristinare dopo il test.
+    new_kb.scrape_type = 0;
     if (!scrape_type || scrape_type === 2) {
-      new_kb.scrape_type = 2;
+      //new_kb.scrape_type = 2;
       new_kb.scrape_options = aiManager.setDefaultScrapeOptions();
     } else {
-      new_kb.scrape_type = scrape_type;
+      //new_kb.scrape_type = scrape_type;
       new_kb.scrape_options = scrape_options;
     }
   }
@@ -1651,6 +1655,8 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
       return res.status(500).send({ success: false, error: err.error });
     }
   }
+
+  scrape_type = 0;
 
   const namespace_id = req.query.namespace;
   if (!namespace_id) {
@@ -1821,6 +1827,8 @@ router.post('/sitemap/import', async (req, res) => {
   if (scrape_type === 2 && !scrape_options) {
     scrape_options = aiManager.setDefaultScrapeOptions();
   }
+
+  scrape_type = 0;
 
   if (type !== "sitemap") {
     return res.status(403).send({success: false, error: "Endpoint available for sitemap type only." });
@@ -2003,11 +2011,12 @@ router.put('/:kb_id', async (req, res) => {
 
   if (new_content.type === 'url') {
     new_content.refresh_rate = refresh_rate || 'never';
+    scrape_type = 0;
     if (!scrape_type || scrape_type === 2) {
-      new_content.scrape_type = 2;
+      // new_content.scrape_type = 2;
       new_content.scrape_options = aiManager.setDefaultScrapeOptions();
     } else {
-      new_content.scrape_type = scrape_type;
+      // new_content.scrape_type = scrape_type;
       new_content.scrape_options = scrape_options;
     }
   }
