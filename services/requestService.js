@@ -26,6 +26,8 @@ if (process.env.TILEBOT_ENDPOINT) {
     TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/"
 }
 
+const { getRetentionMsFromProjectLike } = require("../pubmodules/retention/retentionMsFromProject");
+
 let tdCache = new TdCache({
     host: process.env.CACHE_REDIS_HOST,
     port: process.env.CACHE_REDIS_PORT,
@@ -619,6 +621,27 @@ class RequestService {
       snapshot.lead = request.lead;
     }
 
+    // TEMP (50) skips the block that sets payload; still need project for retention / expiresAt.
+    let projectForRetention = payload && payload.project;
+    if (!projectForRetention) {
+      try {
+        projectForRetention = await projectService.getCachedProject(id_project);
+      } catch (err) {
+        winston.error("Error getting project for retention", err);
+      }
+    }
+    const retentionInfo = getRetentionMsFromProjectLike(projectForRetention);
+    let expiresAt;
+    if (!retentionInfo) {
+      expiresAt = undefined;
+    } else if (retentionInfo.infinite) {
+      expiresAt = undefined;
+    } else {
+      expiresAt = new Date(createdAt.getTime() + retentionInfo.retentionMs);
+      if (expiresAt.getTime() < Date.now()) {
+        expiresAt = undefined;
+      }
+    }
     // Create request
     const newRequest = new Request({
       request_id,
@@ -651,6 +674,7 @@ class RequestService {
       createdAt,
       snapshot,
       contact,
+      expiresAt
     })
 
     if (isTestConversation) {
@@ -1077,6 +1101,10 @@ class RequestService {
             winston.error(err);
             return reject(err);
           }
+          // if (!updatedRequest) {
+          //   winston.warn("changeStatusByRequestId: no document matched (request_id=" + request_id + ", id_project=" + id_project + ")");
+          //   return reject({ success: false, msg: "Request not found for status change" });
+          // }
 
           requestEvent.emit('request.update', updatedRequest); //deprecated
           requestEvent.emit("request.update.comment", { comment: "STATUS_CHANGE", request: updatedRequest });//Deprecated
