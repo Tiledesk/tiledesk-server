@@ -69,7 +69,6 @@ class WebhookService {
                 winston.error("Error calling webhook on post. Status " + err?.status + " StatusText " + err?.statusText + " Data " + JSON.stringify(err?.response?.data));
                 reject(err);
             })
-
         })
     }
 
