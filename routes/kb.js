@@ -1567,12 +1567,13 @@ router.post('/', async (req, res) => {
   }
   if (type === 'url') {
     new_kb.refresh_rate = refresh_rate || 'never';
-    if (!scrape_type || scrape_type === 2) {
-      new_kb.scrape_type = 2;
-      new_kb.scrape_options = aiManager.setDefaultScrapeOptions();
-    } else {
+    if (scrape_type === 0 || scrape_type === 4) {
       new_kb.scrape_type = scrape_type;
       new_kb.scrape_options = scrape_options;
+    }
+    else {
+      new_kb.scrape_type = 2;
+      new_kb.scrape_options = aiManager.setDefaultScrapeOptions();
     }
   }
 
@@ -2003,12 +2004,13 @@ router.put('/:kb_id', async (req, res) => {
 
   if (new_content.type === 'url') {
     new_content.refresh_rate = refresh_rate || 'never';
-    if (!scrape_type || scrape_type === 2) {
-      new_content.scrape_type = 2;
-      new_content.scrape_options = aiManager.setDefaultScrapeOptions();
-    } else {
+    if (scrape_type === 0 || scrape_type === 4) {
       new_content.scrape_type = scrape_type;
       new_content.scrape_options = scrape_options;
+    }
+    else {
+      new_content.scrape_type = 2;
+      new_content.scrape_options = aiManager.setDefaultScrapeOptions();
     }
   }
 
