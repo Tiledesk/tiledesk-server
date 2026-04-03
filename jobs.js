@@ -95,6 +95,12 @@ async function main()
     let emailNotification = require('./pubmodules/emailNotification');
     jobsManager.listenEmailNotification(emailNotification);
 
+    let requestRetention = require('./pubmodules/retention').requestRetention;
+    jobsManager.listenRequestRetention(requestRetention);
+
+    let projectRequestsExpiresRecalc = require('./pubmodules/retention').projectRequestsExpiresRecalc;
+    jobsManager.listenProjectRequestsExpiresRecalc(projectRequestsExpiresRecalc);
+
    
     let activityArchiver = require('./pubmodules/activities').activityArchiver;    
     jobsManager.listenActivityArchiver(activityArchiver);

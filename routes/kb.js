@@ -25,6 +25,7 @@ const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
 const JOB_TOPIC_EXCHANGE_HYBRID = process.env.JOB_TOPIC_EXCHANGE_TRAIN_HYBRID || 'tiledesk-trainer-hybrid';
 const KB_WEBHOOK_TOKEN = process.env.KB_WEBHOOK_TOKEN || 'kbcustomtoken';
+const PINECONE_RERANKING = process.env.PINECONE_RERANKING === true || process.env.PINECONE_RERANKING === "true";
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 
 
@@ -392,7 +393,7 @@ router.post('/qa', async (req, res) => {
     data.search_type = 'hybrid';
     
     if (data.reranking === true) {
-      data.reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2";
+      data.reranker_model = process.env.RERANKING_MODEL || "cross-encoder/ms-marco-MiniLM-L-6-v2";
       
       if (!data.reranking_multiplier) {
         data.reranking_multiplier = 3;
@@ -406,12 +407,35 @@ router.post('/qa', async (req, res) => {
         data.reranking_multiplier = calculatedRerankingMultiplier;
       }
     }
+  } 
+
+  if (!namespace.hybrid && data.reranking === true && PINECONE_RERANKING) {
+    
+    data.reranking = {
+      "provider": "pinecone",
+      "api_key": process.env.PINECONE_API_KEY,
+      "model": process.env.PINECONE_RERANKING_MODEL || process.env.RERANKING_MODEL || "bge-reranker-v2-m3"
+    }
+
+    if (!data.reranking_multiplier) {
+      data.reranking_multiplier = 3;
+    }
+
+    if ((data.top_k * data.reranking_multiplier) > 100) {
+      let calculatedRerankingMultiplier = Math.floor(100 / data.top_k);
+      if (calculatedRerankingMultiplier < 1) {
+        calculatedRerankingMultiplier = 1;
+      }
+      data.reranking_multiplier = calculatedRerankingMultiplier;
+    }
   }
 
   data.stream = data.stream === true;
   data.debug = true;
   delete data.advancedPrompt;
   winston.verbose("ask data: ", data);
+
+  console.log("data: ", data);
 
   if (process.env.NODE_ENV === 'test') {
     return res.status(200).send({ success: true, message: "Question skipped in test environment", data: data });
