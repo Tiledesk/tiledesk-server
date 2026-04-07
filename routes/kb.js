@@ -81,6 +81,7 @@ const default_engine = require('../config/kb/engine');
 const default_engine_hybrid = require('../config/kb/engine.hybrid');
 const default_embedding = require('../config/kb/embedding');
 const PromptManager = require('../config/kb/prompt/rag/PromptManager');
+const situatedContext = require('../config/kb/situatedContext');
 
 const ragPromptManager = new PromptManager(path.join(__dirname, '../config/kb/prompt/rag'));
 
@@ -116,6 +117,15 @@ function normalizeEmbedding(embedding) {
     ? embedding.toObject()
     : (embedding || default_embedding);
   return { ...normalizedEmbedding };
+}
+
+function normalizeSituatedContext() {
+  return situatedContext.enable
+    ? {
+      ...situatedContext,
+      api_key: process.env.SITUATED_CONTEXT_API_KEY || process.env.GPTKEY
+    }
+    : undefined;
 }
 
 /**
@@ -249,6 +259,11 @@ router.post('/scrape/single', async (req, res) => {
 
       if (namespace.hybrid === true) {
         json.hybrid = true;
+      }
+
+      const situated_context = normalizeSituatedContext();
+      if (situated_context) {
+        json.situated_context = situated_context;
       }
 
       winston.verbose("/scrape/single json: ", json);
@@ -1201,6 +1216,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   let embedding = normalizeEmbedding(ns.embedding);
   embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
   let hybrid = ns.hybrid;
+  const situated_context = normalizeSituatedContext();
 
 
   if (process.env.NODE_ENV !== "test") {
@@ -1238,7 +1254,13 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
 
   let resources = new_contents.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
   resources = resources.map(({ _id, scrape_options, ...rest }) => {
-    return { id: _id, parameters_scrape_type_4: scrape_options, embedding: embedding, engine: engine, ...rest}
+    return { 
+      id: _id, 
+      parameters_scrape_type_4: scrape_options, 
+      embedding: embedding, 
+      engine: engine, 
+      ...(situated_context && { situated_context: situated_context }), 
+      ...rest}
   });
   
   winston.verbose("resources to be sent to worker: ", resources);
@@ -1614,6 +1636,8 @@ router.post('/', async (req, res) => {
       const embedding = normalizeEmbedding(namespace.embedding);
       embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
+      const situated_context = normalizeSituatedContext();
+
       const json = {
         id: saved_kb._id,
         type: saved_kb.type,
@@ -1624,6 +1648,7 @@ router.post('/', async (req, res) => {
         hybrid: namespace.hybrid,
         engine: namespace.engine || default_engine,
         embedding: embedding,
+        ...(situated_context && { situated_context: situated_context }),
         ...(saved_kb.scrape_type && { scrape_type: saved_kb.scrape_type }),
         ...(saved_kb.scrape_options && { parameters_scrape_type_4: saved_kb.scrape_options }),
         ...(saved_kb.tags && { tags: saved_kb.tags }),
@@ -1780,10 +1805,18 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
         let embedding = normalizeEmbedding(namespace.embedding);
         embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
         let hybrid = namespace.hybrid;
+        const situated_context = normalizeSituatedContext();
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, ...rest}) => {
-          return { id: _id, webhook: webhook, embedding: embedding, engine: engine, ...rest };
+          return { 
+            id: _id, 
+            webhook: webhook, 
+            embedding: embedding, 
+            engine: engine, 
+            ...(situated_context && { situated_context: situated_context }), 
+            ...rest 
+          };
         })
         winston.verbose("resources to be sent to worker: ", resources);
 
@@ -2051,6 +2084,7 @@ router.put('/:kb_id', async (req, res) => {
   const embedding = normalizeEmbedding(namespace.embedding);
   embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
   let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
+  const situated_context = normalizeSituatedContext();
 
   const json = {
     id: updated_content._id,
@@ -2062,6 +2096,7 @@ router.put('/:kb_id', async (req, res) => {
     hybrid: namespace.hybrid,
     engine: namespace.engine || default_engine,
     embedding: embedding,
+    ...(situated_context && { situated_context: situated_context }),
     ...(updated_content.scrape_type && { scrape_type: updated_content.scrape_type }),
     ...(updated_content.scrape_options && { parameters_scrape_type_4: updated_content.scrape_options }),
     ...(updated_content.tags && { tags: updated_content.tags }),
@@ -2077,40 +2112,6 @@ router.put('/:kb_id', async (req, res) => {
   return res.status(200).send(updated_content);
 
 })
-
-// router.put('/:kb_id', async (req, res) => {
-
-//   let kb_id = req.params.kb_id;
-//   winston.verbose("update kb_id " + kb_id);
-
-//   let update = {};
-
-//   if (req.body.name != undefined) {
-//     update.name = req.body.name;
-//   }
-
-//   if (req.body.status != undefined) {
-//     update.status = req.body.status;
-//   }
-
-//   winston.debug("kb update: ", update);
-
-//   KB.findByIdAndUpdate(kb_id, update, { new: true }, (err, savedKb) => {
-
-//     if (err) {
-//       winston.error("KB findByIdAndUpdate error: ", err);
-//       return res.status(500).send({ success: false, error: err });
-//     }
-
-//     if (!savedKb) {
-//       winston.debug("Try to updating a non-existing kb");
-//       return res.status(400).send({ success: false, message: "Content not found" })
-//     }
-
-//     res.status(200).send(savedKb)
-//   })
-
-// })
 
 router.delete('/:kb_id', async (req, res) => {
 
