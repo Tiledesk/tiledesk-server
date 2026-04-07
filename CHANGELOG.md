@@ -5,6 +5,11 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.17.2
+- Added support for situated context in kb route
+- Added RAG context management to KB routes
+- Added support for scrape type 0 (alias: trafilatura)
+
 # 2.16.2
 - Improved multiplier retrieval for model types in quotes route
 
