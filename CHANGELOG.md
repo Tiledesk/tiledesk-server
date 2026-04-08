@@ -5,11 +5,8 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.17.5
-- Refactor error handling and code structure in webhook.js
-
 # 2.17.4
-- Added support for Pinecone Reranking for Standard knowledge bases
+- Refactor error handling and code structure in webhook.js
 
 # 2.17.3
 - Added missing import path on kb route
