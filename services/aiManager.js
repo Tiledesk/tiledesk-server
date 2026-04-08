@@ -20,6 +20,7 @@ const default_engine = require('../config/kb/engine');
 const default_engine_hybrid = require('../config/kb/engine.hybrid');
 const default_embedding = require('../config/kb/embedding');
 const integrationService = require('./integrationService');
+const situatedContext = require('../config/kb/situatedContext');
 
 // Job managers
 let jobManager = new JobManager(AMQP_MANAGER_URL, {
@@ -93,11 +94,22 @@ class AiManager {
         let engine = namespace.engine || default_engine;
         let embedding = namespace.embedding || default_embedding;
         embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+
+        let situated_context = this.normalizeSituatedContext();
+
         let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, scrape_options, ...rest }) => {
-          return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, embedding: embedding, engine: engine, hybrid: hybrid, ...rest}
+          return { 
+            id: _id, 
+            webhook: webhook, 
+            parameters_scrape_type_4: scrape_options, 
+            embedding: embedding, 
+            engine: engine, 
+            hybrid: hybrid, 
+            ...(situated_context && { situated_context }),
+            ...rest}
         });
 
         winston.verbose("resources to be sent to worker: ", resources);
@@ -120,6 +132,8 @@ class AiManager {
   async scheduleSitemap(namespace, sitemap_content, options) {
     return new Promise((resolve, reject) => {
 
+      const situated_context = this.normalizeSituatedContext();
+
       let kb = {
         id: sitemap_content._id,
         source: sitemap_content.source,
@@ -130,6 +144,7 @@ class AiManager {
         engine: namespace.engine,
         embedding: namespace.embedding,
         hybrid: namespace.hybrid,
+        ...(situated_context && { situated_context }),
       }
 
       if (process.env.NODE_ENV === 'test') {
@@ -550,6 +565,15 @@ class AiManager {
         }
       })
     })
+  }
+
+  normalizeSituatedContext() {
+    return situatedContext.enable
+      ? {
+        ...situatedContext,
+        api_key: process.env.SITUATED_CONTEXT_API_KEY || process.env.GPTKEY
+      }
+      : undefined;
   }
 
 }

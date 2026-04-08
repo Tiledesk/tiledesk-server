@@ -5,6 +5,17 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.17.3
+- Added missing import path on kb route
+
+# 2.17.2
+- Added support for situated context in kb route
+- Added RAG context management to KB routes
+- Added support for scrape type 0 (alias: trafilatura)
+
+# 2.16.2
+- Improved multiplier retrieval for model types in quotes route
+
 # 2.16.1
 - Added stream option support to the KB /qa endpoint for real-time responses
 - Enhanced file upload route to correctly handle .webm files

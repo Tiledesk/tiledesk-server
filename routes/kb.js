@@ -3,6 +3,7 @@ var router = express.Router();
 var winston = require('../config/winston');
 var multer = require('multer')
 var upload = multer()
+const path = require('path');
 const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 var configGlobal = require('../config/global');
 var mongoose = require('mongoose');
@@ -81,6 +82,37 @@ let default_preview_settings = {
 const default_engine = require('../config/kb/engine');
 const default_engine_hybrid = require('../config/kb/engine.hybrid');
 const default_embedding = require('../config/kb/embedding');
+const PromptManager = require('../config/kb/prompt/rag/PromptManager');
+const situatedContext = require('../config/kb/situatedContext');
+
+const ragPromptManager = new PromptManager(path.join(__dirname, '../config/kb/prompt/rag'));
+
+const RAG_CONTEXT_ENV_OVERRIDES = {
+  "gpt-3.5-turbo":       process.env.GPT_3_5_CONTEXT,
+  "gpt-4":               process.env.GPT_4_CONTEXT,
+  "gpt-4-turbo-preview": process.env.GPT_4T_CONTEXT,
+  "gpt-4o":              process.env.GPT_4O_CONTEXT,
+  "gpt-4o-mini":         process.env.GPT_4O_MINI_CONTEXT,
+  "gpt-4.1":             process.env.GPT_4_1_CONTEXT,
+  "gpt-4.1-mini":        process.env.GPT_4_1_MINI_CONTEXT,
+  "gpt-4.1-nano":        process.env.GPT_4_1_NANO_CONTEXT,
+  "gpt-5":               process.env.GPT_5_CONTEXT,
+  "gpt-5-mini":          process.env.GPT_5_MINI_CONTEXT,
+  "gpt-5-nano":          process.env.GPT_5_NANO_CONTEXT,
+  "general":             process.env.GENERAL_CONTEXT
+};
+
+/** RAG system prompt per modello: file in config/kb/prompt/rag, sovrascrivibili via env (come prima). */
+function getRagContextTemplate(modelName) {
+  const envOverride = RAG_CONTEXT_ENV_OVERRIDES[modelName];
+  if (envOverride) {
+    return envOverride;
+  }
+  if (!PromptManager.modelMap[modelName] && process.env.GENERAL_CONTEXT) {
+    return process.env.GENERAL_CONTEXT;
+  }
+  return ragPromptManager.getPrompt(modelName);
+}
 
 function normalizeEmbedding(embedding) {
   const normalizedEmbedding = (embedding && typeof embedding.toObject === 'function')
@@ -89,19 +121,13 @@ function normalizeEmbedding(embedding) {
   return { ...normalizedEmbedding };
 }
 
-let contexts = {
-  "gpt-3.5-turbo":        process.env.GPT_3_5_CONTEXT       || "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### and the chat history to answer the question.\nIf you don't know the answer, just say: \"I don't know<NOANS>\"\n\n####{context}####",
-  "gpt-4":                process.env.GPT_4_CONTEXT         || "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### and the chat history to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf and only if none of the retrieved context is useful for your task, add this word to the end <NOANS>\n\n####{context}####",
-  "gpt-4-turbo-preview":  process.env.GPT_4T_CONTEXT        || "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### and the chat history to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf and only if none of the retrieved context is useful for your task, add this word to the end <NOANS>\n\n####{context}####",
-  "gpt-4o":               process.env.GPT_4O_CONTEXT        || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-4o-mini":          process.env.GPT_4O_MINI_CONTEXT   || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-4.1":              process.env.GPT_4_1_CONTEXT       || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-4.1-mini":         process.env.GPT_4_1_MINI_CONTEXT  || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-4.1-nano":         process.env.GPT_4_1_NANO_CONTEXT  || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-5":                process.env.GPT_5_CONTEXT         || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-5-mini":           process.env.GPT_5_MINI_CONTEXT    || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-5-nano":           process.env.GPT_5_NANO_CONTEXT    || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "general":              process.env.GENERAL_CONTEXT       || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end=="
+function normalizeSituatedContext() {
+  return situatedContext.enable
+    ? {
+      ...situatedContext,
+      api_key: process.env.SITUATED_CONTEXT_API_KEY || process.env.GPTKEY
+    }
+    : undefined;
 }
 
 /**
@@ -237,6 +263,11 @@ router.post('/scrape/single', async (req, res) => {
         json.hybrid = true;
       }
 
+      const situated_context = normalizeSituatedContext();
+      if (situated_context) {
+        json.situated_context = situated_context;
+      }
+
       winston.verbose("/scrape/single json: ", json);
 
       if (process.env.NODE_ENV === "test") {
@@ -362,7 +393,7 @@ router.post('/qa', async (req, res) => {
 
   // Check if "Advanced Mode" is active. In such case the default_context must be not appended
   if (!data.advancedPrompt) {
-    const contextTemplate = contexts[data.model.name] || contexts["general"];
+    const contextTemplate = getRagContextTemplate(data.model.name);
     if (data.system_context) {
       data.system_context = data.system_context + " \n" + contextTemplate;
     } else {
@@ -1210,6 +1241,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   let embedding = normalizeEmbedding(ns.embedding);
   embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
   let hybrid = ns.hybrid;
+  const situated_context = normalizeSituatedContext();
 
 
   if (process.env.NODE_ENV !== "test") {
@@ -1247,7 +1279,13 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
 
   let resources = new_contents.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
   resources = resources.map(({ _id, scrape_options, ...rest }) => {
-    return { id: _id, parameters_scrape_type_4: scrape_options, embedding: embedding, engine: engine, ...rest}
+    return { 
+      id: _id, 
+      parameters_scrape_type_4: scrape_options, 
+      embedding: embedding, 
+      engine: engine, 
+      ...(situated_context && { situated_context: situated_context }), 
+      ...rest}
   });
   
   winston.verbose("resources to be sent to worker: ", resources);
@@ -1591,12 +1629,13 @@ router.post('/', async (req, res) => {
   }
   if (type === 'url') {
     new_kb.refresh_rate = refresh_rate || 'never';
-    if (!scrape_type || scrape_type === 2) {
-      new_kb.scrape_type = 2;
-      new_kb.scrape_options = aiManager.setDefaultScrapeOptions();
-    } else {
+    if (scrape_type === 0 || scrape_type === 4) {
       new_kb.scrape_type = scrape_type;
       new_kb.scrape_options = scrape_options;
+    }
+    else {
+      new_kb.scrape_type = 2;
+      new_kb.scrape_options = aiManager.setDefaultScrapeOptions();
     }
   }
 
@@ -1622,6 +1661,8 @@ router.post('/', async (req, res) => {
       const embedding = normalizeEmbedding(namespace.embedding);
       embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
+      const situated_context = normalizeSituatedContext();
+
       const json = {
         id: saved_kb._id,
         type: saved_kb.type,
@@ -1632,6 +1673,7 @@ router.post('/', async (req, res) => {
         hybrid: namespace.hybrid,
         engine: namespace.engine || default_engine,
         embedding: embedding,
+        ...(situated_context && { situated_context: situated_context }),
         ...(saved_kb.scrape_type && { scrape_type: saved_kb.scrape_type }),
         ...(saved_kb.scrape_options && { parameters_scrape_type_4: saved_kb.scrape_options }),
         ...(saved_kb.tags && { tags: saved_kb.tags }),
@@ -1788,10 +1830,18 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
         let embedding = normalizeEmbedding(namespace.embedding);
         embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
         let hybrid = namespace.hybrid;
+        const situated_context = normalizeSituatedContext();
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, ...rest}) => {
-          return { id: _id, webhook: webhook, embedding: embedding, engine: engine, ...rest };
+          return { 
+            id: _id, 
+            webhook: webhook, 
+            embedding: embedding, 
+            engine: engine, 
+            ...(situated_context && { situated_context: situated_context }), 
+            ...rest 
+          };
         })
         winston.verbose("resources to be sent to worker: ", resources);
 
@@ -2027,12 +2077,13 @@ router.put('/:kb_id', async (req, res) => {
 
   if (new_content.type === 'url') {
     new_content.refresh_rate = refresh_rate || 'never';
-    if (!scrape_type || scrape_type === 2) {
-      new_content.scrape_type = 2;
-      new_content.scrape_options = aiManager.setDefaultScrapeOptions();
-    } else {
+    if (scrape_type === 0 || scrape_type === 4) {
       new_content.scrape_type = scrape_type;
       new_content.scrape_options = scrape_options;
+    }
+    else {
+      new_content.scrape_type = 2;
+      new_content.scrape_options = aiManager.setDefaultScrapeOptions();
     }
   }
 
@@ -2058,6 +2109,7 @@ router.put('/:kb_id', async (req, res) => {
   const embedding = normalizeEmbedding(namespace.embedding);
   embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
   let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
+  const situated_context = normalizeSituatedContext();
 
   const json = {
     id: updated_content._id,
@@ -2069,6 +2121,7 @@ router.put('/:kb_id', async (req, res) => {
     hybrid: namespace.hybrid,
     engine: namespace.engine || default_engine,
     embedding: embedding,
+    ...(situated_context && { situated_context: situated_context }),
     ...(updated_content.scrape_type && { scrape_type: updated_content.scrape_type }),
     ...(updated_content.scrape_options && { parameters_scrape_type_4: updated_content.scrape_options }),
     ...(updated_content.tags && { tags: updated_content.tags }),
@@ -2084,40 +2137,6 @@ router.put('/:kb_id', async (req, res) => {
   return res.status(200).send(updated_content);
 
 })
-
-// router.put('/:kb_id', async (req, res) => {
-
-//   let kb_id = req.params.kb_id;
-//   winston.verbose("update kb_id " + kb_id);
-
-//   let update = {};
-
-//   if (req.body.name != undefined) {
-//     update.name = req.body.name;
-//   }
-
-//   if (req.body.status != undefined) {
-//     update.status = req.body.status;
-//   }
-
-//   winston.debug("kb update: ", update);
-
-//   KB.findByIdAndUpdate(kb_id, update, { new: true }, (err, savedKb) => {
-
-//     if (err) {
-//       winston.error("KB findByIdAndUpdate error: ", err);
-//       return res.status(500).send({ success: false, error: err });
-//     }
-
-//     if (!savedKb) {
-//       winston.debug("Try to updating a non-existing kb");
-//       return res.status(400).send({ success: false, message: "Content not found" })
-//     }
-
-//     res.status(200).send(savedKb)
-//   })
-
-// })
 
 router.delete('/:kb_id', async (req, res) => {
 

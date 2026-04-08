@@ -193,6 +193,11 @@ router.post('/kb/reindex', async (req, res) => {
     embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
     json.embedding = embedding;
 
+    const situated_context = aiManager.normalizeSituatedContext();
+    if (situated_context) {
+      json.situated_context = situated_context;
+    }
+
     let resources = [];
     resources.push(json);
   
