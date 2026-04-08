@@ -58,7 +58,7 @@
 - Added migration script to add the contact field in request object improving the search by phone number
 
 # 2.15.2
-- Updated GitHub actions
+- Updated GitHub actionsm
 
 # 2.15.1
 - Updated whatsapp-connector to 1.0.24
