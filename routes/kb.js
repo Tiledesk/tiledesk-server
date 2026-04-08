@@ -3,6 +3,7 @@ var router = express.Router();
 var winston = require('../config/winston');
 var multer = require('multer')
 var upload = multer()
+const path = require('path');
 const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 var configGlobal = require('../config/global');
 var mongoose = require('mongoose');
