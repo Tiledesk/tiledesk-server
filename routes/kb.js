@@ -1,5 +1,4 @@
 var express = require('express');
-var path = require('path');
 var router = express.Router();
 var winston = require('../config/winston');
 var multer = require('multer')
