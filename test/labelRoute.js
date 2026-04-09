@@ -5,6 +5,9 @@ var User = require('../models/user');
 var projectService = require('../services/projectService');
 var userService = require('../services/userService');
 
+// mongoose.connect(config.databasetest);
+// require('../services/mongoose-cache-fn')(mongoose);
+
 //Require the dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');
@@ -23,6 +26,7 @@ chai.use(chaiHttp);
 describe('LabelRoute', () => {
 
     describe('/clone', () => {
+
 
         it('clone', (done) => {
 
@@ -53,6 +57,7 @@ describe('LabelRoute', () => {
             });
         });
 
+            // mocha test/labelRoute.js  --grep 'cloneENAndGetByLanguageEN'
 
         it('cloneENAndGetByLanguageEN', (done) => {
 
@@ -67,7 +72,7 @@ describe('LabelRoute', () => {
                         .auth(email, pwd)
                         .send({ lang: "EN" })
                         .end((err, res) => {
-
+                            console.log("res.body", res.body);
                             if (err) { console.error("err: ", err); }
                             if (log) { console.log("res.body", res.body); }
 
@@ -78,11 +83,14 @@ describe('LabelRoute', () => {
                             expect(res.body.data[0].default).to.equal(true);
                             expect(res.body.data[0].lang).to.equal("EN");
 
+                            // console.log("res.body 1", res.body);
+
                             chai.request(server)
                                 .get('/' + savedProject._id + '/labels/EN')
                                 .auth(email, pwd)
                                 .send()
                                 .end((err, res) => {
+                                    // console.log("res.body res 2", res.body);
 
                                     if (err) { console.error("err: ", err); }
                                     if (log) { console.log("res.body", res.body); }
