@@ -1,50 +1,52 @@
 const express = require('express');
 const router = express.Router();
-const { Namespace, UnansweredQuestion } = require('../models/kb_setting');
-var winston = require('../config/winston');
+const { Namespace, AnsweredQuestion } = require('../models/kb_setting');
+const winston = require('../config/winston');
 
-// Add a new unanswered question
+// Add a new unanswerd question
 router.post('/', async (req, res) => {
     try {
-        const { namespace, question } = req.body;
+        const { namespace, question, answer } = req.body;
         const id_project = req.projectid;
 
-        if (!namespace || !question) {
+        if (!namespace || !question || !answer) {
             return res.status(400).json({
                 success: false,
-                error: "Missing required parameters: namespace and question"
-            });
+                error: "Missing required parameters: namespace, question and answer"
+            })
         }
 
-        // Check if namespace belongs to project
+        // Check if namespae belongs to project
         const isValidNamespace = await validateNamespace(id_project, namespace);
         if (!isValidNamespace) {
             return res.status(403).json({
                 success: false,
                 error: "Not allowed. The namespace does not belong to the current project."
-            });
+            })
         }
 
-        const unansweredQuestion = new UnansweredQuestion({
+        const answeredQuestion = new AnsweredQuestion({
             id_project,
             namespace,
-            question
+            question,
+            answer
         });
 
-        const savedQuestion = await unansweredQuestion.save();
+        const savedQuestion = await answeredQuestion.save();
         res.status(200).json(savedQuestion);
 
     } catch (error) {
-        winston.error('Error adding unanswered question:', error);
+        winston.error('Error adding answered question:', error);
         res.status(500).json({
             success: false,
-            error: "Error adding unanswered question"
+            error: "Error adding answered question"
         });
     }
-});
+})
 
-// Get all unanswered questions for a namespace
+// Get all answered questions for a namespace
 router.get('/:namespace', async (req, res) => {
+
     try {
         const { namespace } = req.params;
         const id_project = req.projectid;
@@ -53,7 +55,7 @@ router.get('/:namespace', async (req, res) => {
             return res.status(400).json({
                 success: false,
                 error: "Missing required parameter: namespace"
-            });
+            })
         }
 
         // Check if namespace belongs to project
@@ -62,9 +64,9 @@ router.get('/:namespace', async (req, res) => {
             return res.status(403).json({
                 success: false,
                 error: "Not allowed. The namespace does not belong to the current project."
-            });
+            })
         }
-
+        
         const page = parseInt(req.query.page) || 0;
         const limit = parseInt(req.query.limit) || 20;
         const sortField = req.query.sortField || 'created_at';
@@ -87,7 +89,7 @@ router.get('/:namespace', async (req, res) => {
             sortObj = { [sortField]: direction };
         }
 
-        const query = UnansweredQuestion.find(filter, projection)
+        const query = AnsweredQuestion.find(filter, projection)
             .sort(sortObj)
             .skip(page * limit)
             .limit(limit);
@@ -107,23 +109,23 @@ router.get('/:namespace', async (req, res) => {
                 search: req.query.search || undefined
             }
         });
-
+        
     } catch (error) {
-        winston.error('Error getting unanswered questions:', error);
+        winston.error('Error getting answered questions:', error);
         res.status(500).json({
             success: false,
-            error: "Error getting unanswered questions"
+            error: "Error getting answered questions"
         });
     }
-});
 
-// Delete a specific unanswered question
+})
+
 router.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const id_project = req.projectid;
 
-        const deleted = await UnansweredQuestion.findOneAndDelete({ _id: id, id_project });
+        const deleted = await AnsweredQuestion.findOneAndDelete({ _id: id, id_project });
         if (!deleted) {
             return res.status(404).json({
                 success: false,
@@ -135,17 +137,16 @@ router.delete('/:id', async (req, res) => {
             success: true,
             message: "Question deleted successfully"
         });
-        
+
     } catch (error) {
-        winston.error('Error deleting unanswered question:', error);
+        winston.error('Error deleting answered question:', error);
         res.status(500).json({
             success: false,
-            error: "Error deleting unanswered question"
+            error: "Error deleting answered question"
         });
     }
-});
+})
 
-// Delete all unanswered questions for a namespace
 router.delete('/namespace/:namespace', async (req, res) => {
     try {
         const { namespace } = req.params;
@@ -159,8 +160,8 @@ router.delete('/namespace/:namespace', async (req, res) => {
                 error: "Not allowed. The namespace does not belong to the current project."
             });
         }
-
-        const result = await UnansweredQuestion.deleteMany({ id_project, namespace });
+        
+        const result = await AnsweredQuestion.deleteMany({ id_project, namespace });
         res.status(200).json({
             success: true,
             count: result.deletedCount,
@@ -168,53 +169,14 @@ router.delete('/namespace/:namespace', async (req, res) => {
         });
 
     } catch (error) {
-        winston.error('Error deleting unanswered questions:', error);
+        winston.error('Error deleting answered questions:', error);
         res.status(500).json({
             success: false,
-            error: "Error deleting unanswered questions"
+            error: "Error deleting answered questions"
         });
     }
-});
+})
 
-// Update an unanswered question
-router.put('/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { question } = req.body;
-        const id_project = req.projectid;
-
-        if (!question) {
-            return res.status(400).json({
-                success: false,
-                error: "Missing required parameter: question"
-            });
-        }
-
-        const updatedQuestion = await UnansweredQuestion.findOneAndUpdate(
-            { _id: id, id_project },
-            { question },
-            { new: true }
-        );
-
-        if (!updatedQuestion) {
-            return res.status(404).json({
-                success: false,
-                error: "Question not found"
-            });
-        }
-
-        res.status(200).json(updatedQuestion);
-
-    } catch (error) {
-        winston.error('Error updating unanswered question:', error);
-        res.status(500).json({
-            success: false,
-            error: "Error updating unanswered question"
-        });
-    }
-});
-
-// Count unanswered questions for a namespace
 router.get('/count/:namespace', async (req, res) => {
     try {
         const { namespace } = req.params;
@@ -236,34 +198,30 @@ router.get('/count/:namespace', async (req, res) => {
             });
         }
 
-        const count = await UnansweredQuestion.countDocuments({
-            id_project,
-            namespace
-        });
-
+        const count = await AnsweredQuestion.countDocuments({ id_project, namespace });
         res.status(200).json({ count });
 
     } catch (error) {
-        winston.error('Error counting unanswered questions:', error);
+        winston.error('Error counting answered questions:', error);
         res.status(500).json({
             success: false,
-            error: "Error counting unanswered questions"
+            error: "Error counting answered questions"
         });
     }
-});
+})
 
 // Helper function to validate namespace
 async function validateNamespace(id_project, namespace_id) {
     try {
-        const namespace = await Namespace.findOne({ 
+        const namespace = await Namespace.findOne({
             id_project: id_project,
-            id: namespace_id 
+            id: namespace_id
         });
-        return !!namespace; // return true if namespace exists, false otherwise
+        return !!namespace;
     } catch (err) {
-        winston.error("validate namespace error: ", err);
+        winston.error('validate namespace error: ', err);
         throw err;
     }
 }
 
-module.exports = router; 
+module.exports = router;

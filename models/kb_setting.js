@@ -2,6 +2,7 @@ let mongoose = require('mongoose');
 let Schema = mongoose.Schema;
 let winston = require('../config/winston');
 let expireAfterSeconds = process.env.UNANSWERED_QUESTION_EXPIRATION_TIME || 7 * 24 * 60 * 60; // 7 days
+let expireAnsweredAfterSeconds = process.env.ANSWERED_QUESTION_EXPIRATION_TIME || 7 * 24 * 60 * 60; // 30 days
 
 const EngineSchema = new Schema({
   name: {
@@ -199,13 +200,55 @@ const UnansweredQuestionSchema = new Schema({
   question: {
     type: String,
     required: true
+  },
+  request_id: {
+    type: String,
+    required: false,
+  },
+  sender: {
+    type: String,
+    required: false,
   }
 },{
   timestamps: true
 });
 
-// Add TTL index to automatically delete documents after 30 days
-UnansweredQuestionSchema.index({ created_at: 1 }, { expireAfterSeconds: expireAfterSeconds }); // 30 days
+const AnsweredQuestionSchema = new Schema({
+  id_project: {
+    type: String,
+    required: true,
+    index: true
+  },
+  namespace: {
+    type: String,
+    required: true,
+    index: true
+  },
+  question: {
+    type: String,
+    required: true
+  },
+  answer: {
+    type: String,
+    required: true
+  }
+}, {
+  timestamps: true
+});
+
+// Add TTL index to automatically delete documents
+UnansweredQuestionSchema.index({ created_at: 1 }, { expireAfterSeconds: expireAfterSeconds }); 
+UnansweredQuestionSchema.index({ id_project: 1, namespace: 1, created_at: -1 });
+UnansweredQuestionSchema.index({ question: "text" });
+
+AnsweredQuestionSchema.index({ created_at: 1 }, { expireAfterSeconds: expireAnsweredAfterSeconds });
+AnsweredQuestionSchema.index({ id_project: 1, namespace: 1, created_at: -1 });
+AnsweredQuestionSchema.index(
+  { question: "text", answer: "text" },
+  { weights: { question: 5, answer: 1 } }
+);
+
+
 
 // DEPRECATED !! - Start
 const KBSettingSchema = new Schema({
@@ -242,6 +285,7 @@ const Engine = mongoose.model('Engine', EngineSchema)
 const Namespace = mongoose.model('Namespace', NamespaceSchema)
 const KB = mongoose.model('KB', KBSchema)
 const UnansweredQuestion = mongoose.model('UnansweredQuestion', UnansweredQuestionSchema)
+const AnsweredQuestion = mongoose.model('AnsweredQuestion', AnsweredQuestionSchema)
 
 
 module.exports = {
@@ -249,5 +293,6 @@ module.exports = {
   Namespace: Namespace,
   Engine: Engine,
   KB: KB,
-  UnansweredQuestion: UnansweredQuestion
+  UnansweredQuestion: UnansweredQuestion,
+  AnsweredQuestion: AnsweredQuestion
 }

@@ -130,6 +130,7 @@ var integration = require('./routes/integration')
 var kbsettings = require('./routes/kbsettings');
 var kb = require('./routes/kb');
 var unanswered = require('./routes/unanswered');
+var answered = require('./routes/answered');
 
 // var admin = require('./routes/admin');
 var faqpub = require('./routes/faqpub');
@@ -642,6 +643,7 @@ app.use('/:projectid/mcp', [passport.authenticate(['basic', 'jwt'], { session: f
 
 app.use('/:projectid/kbsettings', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], kbsettings);
 app.use('/:projectid/kb/unanswered', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], unanswered);
+app.use('/:projectid/kb/answered', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], answered);
 app.use('/:projectid/kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], kb);
 
 app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], logs);
