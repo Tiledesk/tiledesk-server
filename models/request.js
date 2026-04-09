@@ -306,6 +306,10 @@ var RequestSchema = new Schema({
     index: true
   },
   contact: ContactSchema,
+  expiresAt: {
+    type: Date,
+    required: false
+  }
 }, {
   timestamps: true,
   toObject: { virtuals: true }, //IMPORTANT FOR trigger used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
@@ -443,6 +447,8 @@ RequestSchema.method("getBotId", function () {
 
 });
 
+// Retention: TTL index. Documents are removed when expiresAt is in the past. Documents without expiresAt are never removed by TTL.
+RequestSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 86400 }); // Set TTL to 1 day (86400 seconds)
 // https://docs.mongodb.com/manual/indexes/
 // For a single-field index and sort operations, the sort order (i.e. ascending or descending) of the index key does not matter because MongoDB can traverse the index in either direction.
 RequestSchema.index({ createdAt: -1 }); // schema level
