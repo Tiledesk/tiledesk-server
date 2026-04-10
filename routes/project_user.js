@@ -67,7 +67,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
       // winston.debug("role", role);
     
       // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
-      return Project_user.find({ id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS, status: "active"}, function (err, puser) {
+      return Project_user.findOne({ id_project: req.projectid, id_user: user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active"}, function (err, puser) {
       // return Project_user.find({ id_project: req.projectid, role: { $in : role }, status: "active"}, function (err, projectuser) {
         //puser = projectuser
       
@@ -77,10 +77,10 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
           return res.status(500).send({ success: false, msg: "An error occurred on inviting user " + email + " on project " + id_project })
         }
 
-        if (!roles.includes(req.body.role)) {
-          return res.status(400).send({ success: false, msg: 'Invalid role specified: ' + req.body.role });
-        }
-        
+        // if (!roles.includes(req.body.role)) {
+        //   return res.status(400).send({ success: false, msg: 'Invalid role specified: ' + req.body.role });
+        // }
+        console.log("puser: ", puser);
         let user_available = typeof req.body.user_available === 'boolean' ? req.body.user_available : true
 
         if (puser) {
@@ -127,6 +127,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
             id_project: id_project,
             id_user: user._id,
             role: req.body.role,
+            roleType : RoleConstants.TYPE_AGENTS,   
             user_available: user_available,
             createdBy: req.user.id,
             updatedBy: req.user.id
