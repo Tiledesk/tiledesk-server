@@ -77,6 +77,7 @@ router.post('/kb/reindex', async (req, res) => {
     return res.status(500).send({ success: false, error: "Error getting content with id " + content_id });
   }
 
+  
   if (!kb) {
     winston.warn("(webhook) Kb content not found with id " + content_id + ". Deleting scheduler...");
 
