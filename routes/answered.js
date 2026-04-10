@@ -6,7 +6,7 @@ const winston = require('../config/winston');
 // Add a new unanswerd question
 router.post('/', async (req, res) => {
     try {
-        const { namespace, question, answer, tokens } = req.body;
+        const { namespace, question, answer, tokens, request_id } = req.body;
         const id_project = req.projectid;
 
         if (!namespace || !question || !answer) {
