@@ -235,6 +235,10 @@ const AnsweredQuestionSchema = new Schema({
   tokens: {
     type: Number,
     required: false
+  },
+  request_id: {
+    type: String,
+    required: false
   }
 }, {
   timestamps: true

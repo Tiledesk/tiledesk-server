@@ -30,7 +30,8 @@ router.post('/', async (req, res) => {
             namespace,
             question,
             answer,
-            tokens
+            tokens,
+            request_id,
         });
 
         const savedQuestion = await answeredQuestion.save();
