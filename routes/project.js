@@ -349,9 +349,6 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
     update["settings.email.notification.conversation.pooled"] = req.body["settings.email.notification.conversation.pooled"];
   }
 
-
-
-
   if (req.body["settings.email.templates.assignedRequest"]!=undefined) {
     update["settings.email.templates.assignedRequest"] = req.body["settings.email.templates.assignedRequest"];
   }
@@ -379,7 +376,6 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   if (req.body["settings.email.templates.emailDirect"]!=undefined) {
     update["settings.email.templates.emailDirect"] = req.body["settings.email.templates.emailDirect"];
   }
-
 
   if (req.body["settings.email.from"]!=undefined) {
     update["settings.email.from"] = req.body["settings.email.from"];
@@ -451,6 +447,22 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
 
   if (req.body["settings.chatbots_attributes_hidden"]!=undefined) {
     update["settings.chatbots_attributes_hidden"] = req.body["settings.chatbots_attributes_hidden"];
+  }
+
+  if (req.body["settings.allow_send_emoji"]!=undefined) {
+    update["settings.allow_send_emoji"] = req.body["settings.allow_send_emoji"];
+  }
+
+  if (req.body["settings.allowed_urls"]!=undefined) {
+    update["settings.allowed_urls"] = req.body["settings.allowed_urls"];
+  }
+
+  if (req.body["settings.allowed_urls_list"]!=undefined) {
+    update["settings.allowed_urls_list"] = req.body["settings.allowed_urls_list"];
+  }
+
+  if (req.body["settings.allowed_upload_extentions"]!=undefined) {
+    update["settings.allowed_upload_extentions"] = req.body["settings.allowed_upload_extentions"];
   }
   
   if (req.body.widget!=undefined) {
@@ -1053,6 +1065,11 @@ router.get('/:projectid/users/availables', async  (req, res) => {
       if (!group) {
         winston.error("(Users Availables) group not found")
         return res.status(404).send({ success: false, error: "Group " + group_id + " not found" })
+      }
+
+      if (group.enabled === false) {
+        winston.error("(Users Availables) group disabled")
+        return res.status(403).send({ success: false, error: "Group " + group_id + " is currently disabled" })
       }
 
       query.id_user = { $in: group.members.map(id => mongoose.Types.ObjectId(id) )}

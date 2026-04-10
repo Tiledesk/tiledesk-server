@@ -9,6 +9,11 @@ var handlebars = require('handlebars');
 var encode = require('html-entities').encode;
 const emailEvent = require('../event/emailEvent');
 
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
+
 handlebars.registerHelper('ifEquals', function (arg1, arg2, options) {
   return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
 });
@@ -1476,12 +1481,14 @@ class EmailService {
     var baseScope = JSON.parse(JSON.stringify(that));
     delete baseScope.pass;
 
-
     let msgText = text;
-    msgText = encode(msgText);
     if (this.markdown) {
       msgText = marked(msgText);
+      msgText = DOMPurify.sanitize(msgText);
+    } else {
+      msgText = encode(msgText);
     }
+
 
     winston.debug("msgText: " + msgText);
     winston.debug("baseScope: " + JSON.stringify(baseScope));

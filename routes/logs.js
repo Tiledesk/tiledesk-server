@@ -43,7 +43,7 @@ router.get('/whatsapp/:transaction_id', async (req, res) => {
     let project_id = req.projectid;
 
     let transaction_id = req.params.transaction_id;
-    winston.info("Get logs for whatsapp transaction_id " + transaction_id);;
+    winston.info("Get logs for whatsapp transaction_id " + transaction_id);
 
     MessageLog.find({ id_project: project_id, transaction_id: transaction_id }).lean().exec((err, logs) => {
         if (err) {
@@ -51,6 +51,28 @@ router.get('/whatsapp/:transaction_id', async (req, res) => {
             return res.status(400).send({ success: false, message: "Unable to find logs for transaction_id " + transaction_id })
         }
 
+        winston.verbose("Logs found: ", logs);
+
+        let clearLogs = logs.map(({ _id, __v, ...keepAttrs }) => keepAttrs)
+        winston.verbose("clearLogs: ", clearLogs)
+
+        res.status(200).send(clearLogs);
+    })
+
+})
+
+router.get('/whatsapp/user/:phone_number', async (req, res) => {
+    
+    const id_project = req.projectid;
+    const phone_number = req.params.phone_number;
+    
+    let query = { id_project: id_project, "json_message.to": phone_number };
+
+    MessageLog.find(query).lean().exec((err, logs) => {
+        if (err) {
+            winston.error("Error find logs for phone_number " + phone_number);
+            return res.status(400).send({ success: false, message: "Unable to find logs for phone_number " + phone_number })
+        }
         winston.verbose("Logs found: ", logs);
 
         let clearLogs = logs.map(({ _id, __v, ...keepAttrs }) => keepAttrs)
@@ -87,35 +109,36 @@ router.post('/whatsapp', async (req, res) => {
 })
 
 
-router.get('/flows/:request_id', async (req, res) => {
+router.get('/flows/:id', async (req, res) => {
+    const id = req.params.id;
+    const { timestamp, direction, logLevel, type } = req.query;
 
-    let request_id = req.params.request_id;
-    const { timestamp, direction, logLevel } = req.query;
-
-    if (!request_id) {
-        return res.status(400).send({ success: false, error: "Missing required parameter 'request_id'." });
+    if (!id) {
+        return res.status(400).send({ success: false, error: "Missing required parameter 'id'." });
     }
+
+    // Determine if we're searching by request_id or webhook_id
+    const isWebhook = type === 'webhook';
+    const queryField = isWebhook ? 'webhook_id' : 'request_id';
 
     let method;
 
     if (!timestamp) {
-        method = logsService.getLastRows(request_id, 20, logLevel);
+        method = logsService.getLastRows(id, 20, logLevel, queryField);
     } else if (direction === 'prev') {
-        logsService.get
-        method = logsService.getOlderRows(request_id, 10, logLevel, new Date(timestamp));
+        method = logsService.getOlderRows(id, 10, logLevel, new Date(timestamp), queryField);
     } else if (direction === 'next') {
-        method = logsService.getNewerRows(request_id, 10, logLevel, new Date(timestamp))
+        method = logsService.getNewerRows(id, 10, logLevel, new Date(timestamp), queryField);
     } else {
-        return res.status(400).send({ success: false, error: "Missing or invalid 'direction' parameter. Use 'prev' or 'next'."})
+        return res.status(400).send({ success: false, error: "Missing or invalid 'direction' parameter. Use 'prev' or 'next'."});
     }
 
     method.then((logs) => {
         res.status(200).send(logs);
     }).catch((err) => {
         res.status(500).send({ success: false, error: "Error fetching logs: " + err.message });
-    })
-
-})
+    });
+});
 
 
 router.get('/flows/auth/:request_id', async (req, res) => {

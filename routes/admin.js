@@ -38,8 +38,7 @@ router.get('/saved', function (req, res) {
 });
 
 router.post('/', function (req, res) {
-       
-    console.log(req.body.FIREBASE_PRIVATE_KEY);
+    
     var env = `
     FIREBASE_PRIVATE_KEY=${req.body.FIREBASE_PRIVATE_KEY}
     FIREBASE_CLIENT_EMAIL=${req.body.FIREBASE_CLIENT_EMAIL}

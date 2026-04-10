@@ -156,7 +156,9 @@ class MessageActionsInterceptor {
                     
                     // closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
                     const closed_by = message.sender;
-                    requestService.closeRequestByRequestId(request.request_id, request.id_project, false, true, closed_by );
+                    requestService.closeRequestByRequestId(request.request_id, request.id_project, false, true, closed_by ).catch((err) => {
+                      winston.error("(MessageActionsInterceptor) closeRequestByRequestId error", err);
+                    });
                 //   }, 1500);
 
                

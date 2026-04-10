@@ -7,7 +7,7 @@ var projectService = require('../services/projectService');
 var userService = require('../services/userService');
 const Project_user = require('../models/project_user');
 
-const example_data = require('./example-json-multiple-operation-mock');
+const example_data = require('./fixtures/example-json-multiple-operation-mock');
 
 //Require the dev-dependencies
 let chai = require('chai');
@@ -611,7 +611,7 @@ describe('FaqKBRoute', () => {
                                 .post('/' + savedProject._id + '/faq/uploadcsv')
                                 .auth(email, pwd)
                                 .set('Content-Type', 'text/csv')
-                                .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-faqs.csv')), 'example-faqs.csv')
+                                .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './fixtures/example-faqs.csv')), 'example-faqs.csv')
                                 .field('id_faq_kb', id_faq_kb)
                                 .field('delimiter', ';')
                                 // .send({id_faq_kb: id_faq_kb})       
@@ -663,7 +663,7 @@ describe('FaqKBRoute', () => {
                                 .post('/' + savedProject._id + '/faq/uploadcsv')
                                 .auth(email, pwd)
                                 .set('Content-Type', 'text/csv')
-                                .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-faqs.csv')), 'example-faqs.csv')
+                                .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './fixtures/example-faqs.csv')), 'example-faqs.csv')
                                 .field('id_faq_kb', id_faq_kb)
                                 .field('delimiter', ';')
                                 // .send({id_faq_kb: id_faq_kb})       

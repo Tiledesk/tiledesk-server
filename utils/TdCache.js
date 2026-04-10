@@ -29,6 +29,7 @@ class TdCache {
             // });
             this.client.on('ready',function() {
                 resolve();
+                // onsole.log("Redis is ready.");
                 if (callback) {
                     callback();
                 }
@@ -75,6 +76,22 @@ class TdCache {
       });
     }
 
+    /**
+     * Set key only if it does not exist, with TTL (seconds). Returns true if key was set, false if key already existed.
+     * Uses Redis SET key value EX ttl NX to avoid email/notification flooding.
+     */
+    async setNX(key, value, ttlSeconds) {
+      return new Promise((resolve, reject) => {
+        this.client.set(key, value, 'EX', ttlSeconds, 'NX', (err, reply) => {
+          if (err) return reject(err);
+          resolve(reply === 'OK');
+        });
+      });
+    }
+
+
+
+
     async incr(key) {
       // console.log("incr key:", key)
       return new Promise( async (resolve, reject) => {
@@ -108,9 +125,7 @@ class TdCache {
         try {
           await this.client.incrbyfloat(key, increment);
         }
-
         catch(error) {
-          console.error("Error on incrby: ", error);
           reject(error);
         }
         return resolve();
@@ -261,6 +276,11 @@ class TdCache {
         }
         return resolve(result);
       })
+    }
+
+
+    getClient() {
+      return this.client;
     }
 }
 

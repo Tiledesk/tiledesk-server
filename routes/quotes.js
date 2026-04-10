@@ -18,10 +18,10 @@ router.post('/', async (req, res) => {
 
     // check if project is not null/undefined
     let quotes = await quoteManager.getAllQuotes(req.project, obj);
+    let currentSlot = await quoteManager.getCurrentSlot(req.project);
 
     winston.debug("quotes: ", quotes);
-    res.status(200).send({ message: 'ok', quotes: quotes });
-
+    res.status(200).send({ success: true, quotes: quotes, slot: currentSlot });
 })
 
 router.get('/:type', async (req, res) => {
@@ -44,10 +44,17 @@ router.post('/incr/:type', async (req, res) => {
 
     let quoteManager = req.app.get('quote_manager');
 
-    let multiplier = MODELS_MULTIPLIER[data.model];
+    let modelKey;
+    if (typeof data.model === 'string') {
+        modelKey = data.model;
+    } else if (data.model && typeof data.model.name === 'string') {
+        modelKey = data.model.name;
+    }
+
+    let multiplier = MODELS_MULTIPLIER[modelKey];
     if (!multiplier) {
         multiplier = 1;
-        winston.info("No multiplier found for AI model")
+        winston.info("No multiplier found for AI model (incr) " + modelKey)
     }
     data.multiplier = multiplier;
     data.createdAt = new Date();

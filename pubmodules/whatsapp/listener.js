@@ -28,6 +28,12 @@ class Listener {
         let graph_url = process.env.META_GRAPH_URL || config.graphUrl || "https://graph.facebook.com/v14.0/"
         winston.debug("Whatsapp graph_url: "+ password);
 
+        let fb_app_id = process.env.FB_APP_ID;
+        winston.debug("Whatsapp fb_app_id: "+ fb_app_id);
+
+        let configuration_id = process.env.CONFIGURATION_ID;
+        winston.debug("Whatsapp configuration_id: "+ configuration_id);
+
         let baseFileUrl = process.env.BASE_FILE_URL || apiUrl || "http://localhost:3000"
 
         let job_topic = process.env.JOB_TOPIC_EXCHANGE;
@@ -50,6 +56,8 @@ class Listener {
             API_URL: apiUrl,
             BASE_FILE_URL: baseFileUrl,
             GRAPH_URL: graph_url,
+            FB_APP_ID: fb_app_id,
+            CONFIGURATION_ID: configuration_id,
             BASE_URL: apiUrl + "/modules/whatsapp",                     
             APPS_API_URL: apiUrl + "/modules/apps",
             REDIS_HOST: host,

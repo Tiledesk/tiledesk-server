@@ -25,7 +25,9 @@ class ConciergeBot {
             winston.info(" ConciergeBot request create", request);
             if (request.status < 100 && request.department.id_bot) {
                 // addParticipantByRequestId(request_id, id_project, member) {
-                    requestService.addParticipantByRequestId(request.request_id, request.id_project, "bot_"+request.department.id_bot);
+                    requestService.addParticipantByRequestId(request.request_id, request.id_project, "bot_"+request.department.id_bot).catch((err) => {
+                      winston.error("(ConciergeBot) addParticipantByRequestId error", err);
+                    });
 devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente al primo messaggio non riceve il welcome iniziale
             }
         });
@@ -78,7 +80,10 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                                     //apply only if the status is temp and no bot is available. with agent you must reroute to assign temp request to an agent 
                                     winston.debug("rerouting");
                                     // reroute(request_id, id_project, nobot)
-                                    requestService.reroute(message.request.request_id, message.request.id_project, false ).catch((err) => {
+                                    
+                                    requestService.reroute(message.request.request_id, message.request.id_project, false ).then(function() {
+                                        winston.debug("reroute successful from event message.create");
+                                    }).catch((err) => {
                                         winston.error("ConciergeBot error reroute: " + err);
                                     });     
                                 }

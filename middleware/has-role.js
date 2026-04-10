@@ -1,4 +1,3 @@
-var Project_user = require("../models/project_user");
 var Faq_kb = require("../models/faq_kb");
 var Subscription = require("../models/subscription");
 var winston = require('../config/winston');
@@ -223,9 +222,7 @@ class RoleChecker {
             winston.debug("project_user: ", JSON.stringify(project_user));
             
           }
-          
-              
-      
+
           if (project_user) {
             
             req.projectuser = project_user;

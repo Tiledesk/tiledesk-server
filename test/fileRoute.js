@@ -34,7 +34,7 @@ describe('FileRoute', () => {
                     .post('/files/users/')
                     .auth(email, pwd)
                     .set('Content-Type', 'application/pdf')
-                    .attach('file', fs.readFileSync('./test/sample.pdf'), 'sample.pdf')
+                    .attach('file', fs.readFileSync('./test/fixtures/sample.pdf'), 'sample.pdf')
                     // .field('delimiter', ';')            
                     .end((err, res) => {
 
@@ -60,7 +60,7 @@ describe('FileRoute', () => {
             chai.request(server)
                 .post('/files/public/')
                 .set('Content-Type', 'application/pdf')
-                .attach('file', fs.readFileSync('./test/sample.pdf'), 'sample.pdf')
+                .attach('file', fs.readFileSync('./test/fixtures/sample.pdf'), 'sample.pdf')
                 .field('delimiter', ';')
                 .end((err, res) => {
 

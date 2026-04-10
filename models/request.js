@@ -16,7 +16,7 @@ var AclSchema = require("../models/acl");
 var TagSchema = require("../models/tag");
 var LocationSchema = require("../models/location");
 var RequestSnapshotSchema = require("../models/requestSnapshot");
-
+var ContactSchema = require("../models/contact");
 var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 winston.info("Request defaultFullTextLanguage: "+ defaultFullTextLanguage);
 
@@ -307,7 +307,8 @@ var RequestSchema = new Schema({
     required: false,
     index: true
   },
-  acl: { type: AclSchema, required: true, default: {} }
+  acl: { type: AclSchema, required: true, default: {} },
+  contact: ContactSchema,
 }, {
   timestamps: true,
   toObject: { virtuals: true }, //IMPORTANT FOR trigger used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
@@ -462,7 +463,7 @@ RequestSchema.index({ id_project: 1, request_id: 1 }
 //TODO cambiare dummy con language? attento che il codice deve essere compatibile
 
 
-RequestSchema.index({transcript: 'text', rating_message: 'text', subject: 'text', "tags.tag": 'text', "notes.text": 'text', "snapshot.lead.email": 'text', "snapshot.lead.fullname": 'text' },  
+RequestSchema.index({id_project: 1, transcript: 'text', rating_message: 'text', subject: 'text', "tags.tag": 'text', "notes.text": 'text', "snapshot.lead.email": 'text', "snapshot.lead.fullname": 'text' },  
  {"name":"request_fulltext","default_language": defaultFullTextLanguage,"language_override": "dummy"}); // schema level
 
 //  let query = {id_project: operatorSelectedEvent.id_project, participants: { $exists: true, $ne: [] }};
@@ -507,6 +508,13 @@ RequestSchema.index({ participants: 1, id_project: 1, createdAt: -1, status: 1 }
 RequestSchema.index({ id_project: 1, "snapshot.lead.email": 1, createdAt: -1, status: 1 })
 RequestSchema.index({ id_project: 1, createdAt: -1, status: 1 })
 RequestSchema.index({ id_project: 1, preflight: 1, smartAssignment: 1, "snapshot.department.routing": 1, createdAt: 1, status: 1 })
+
+RequestSchema.index({ status: 1, hasBot: 1, updatedAt: 1 }) // For closing unresponsive requests
+RequestSchema.index({ status: 1, hasBot: 1, workingStatus: 1, updatedAt: 1 }) // For closing unresponsive requests
+
+// Contact search by phone / email
+RequestSchema.index({ id_project: 1, 'contact.phone': 1 });
+RequestSchema.index({ id_project: 1, 'contact.email': 1 });
 
 // ERROR DURING DEPLOY OF 2.10.27
 //RequestSchema.index({ id_project: 1, participants: 1, "snapshot.agents.id_user": 1, createdAt: -1, status: 1 })
