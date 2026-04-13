@@ -205,7 +205,7 @@ const UnansweredQuestionSchema = new Schema({
 });
 
 // Add TTL index to automatically delete documents after 30 days
-UnansweredQuestionSchema.index({ created_at: 1 }, { expireAfterSeconds: expireAfterSeconds }); // 30 days
+UnansweredQuestionSchema.index({ createdAt: 1 }, { expireAfterSeconds: expireAfterSeconds }); // 30 days
 
 // DEPRECATED !! - Start
 const KBSettingSchema = new Schema({
