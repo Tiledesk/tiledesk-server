@@ -60,7 +60,6 @@ function logInvalidToken(req, err) {
 
 var cacheEnabler = require("../services/cacheEnabler");
 
-const aclConstants = require("../models/aclConstants");
 
 
 var lastRequestsLimit = process.env.WS_HISTORY_REQUESTS_LIMIT || 100;
@@ -277,18 +276,11 @@ class WebSocketServer {
                 winston.debug('queryRequest admin: ' + JSON.stringify(queryRequest));
               } 
               else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
-                // queryRequest["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }]
-                queryRequest["$or"] = [{ "snapshot.agents.id_user": req.user.id, "acl.group": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ}}, { "participants": req.user.id, "acl.user": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ} }];
-                
+                queryRequest["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }]
               } else {
                 winston.debug('queryRequest agent: ' + JSON.stringify(queryRequest));
-                queryRequest["$or"] = [{ "participants": req.user.id, "acl.user": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ} }];              
+                queryRequest["participants"] = req.user.id;
               }
-
-              if (projectuser.hasPermissionOrRole('request_read_other')) {
-                  query["$or"].push({"acl.other": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ}});
-              }
-
 
               // requestcachefarequi nocachepopulatereqired
               winston.debug("main_flow_cache_3 websocket1");
@@ -366,15 +358,11 @@ class WebSocketServer {
             if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
               winston.debug('ws requests query admin: ' + JSON.stringify(query));
             } else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
-              query["$or"] = [{ "snapshot.agents.id_user": req.user.id, "acl.group": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ}}, { "participants": req.user.id, "acl.user": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ} }];            
+              query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
               winston.debug('ws requests query agent: ' + JSON.stringify(query));
             } else {
-              query["$or"] = [{ "participants": req.user.id, "acl.user": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ} }];            
+              query["participants"] = req.user.id;
               winston.debug('ws requests query agent limited: ' + JSON.stringify(query));                
-            }
-                  
-            if (projectuser.hasPermissionOrRole('request_read_other')) {
-                query["$or"].push({"acl.other": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ}});
             }
 
 
@@ -671,19 +659,16 @@ class WebSocketServer {
             if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
               winston.debug('query admin: ' + JSON.stringify(query));
             } else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
-              query["$or"] = [{ "snapshot.agents.id_user": req.user.id, "acl.group": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ}}, { "participants": req.user.id, "acl.user": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ} }];          
+
+              query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }]
+
             } 
             // else if (projectuser.hasPermissionOrRole('request_read_mine', ["????"])) {
             //   query["participants"] = req.user.id;
             // }
             else {
-                query["$or"] = [{ "participants": req.user.id, "acl.user": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ} }];
+              query["participants"] = req.user.id;
               // generate empty requests response
-            }
-                
-            
-            if (projectuser.hasPermissionOrRole('request_read_other')) {
-                query["$or"].push({"acl.other": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ}});
             }
 
 
