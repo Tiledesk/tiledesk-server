@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.18.1
+- Added permissions logic
+- Added custom roles support
+
 # 2.17.4
 - Refactor error handling and code structure in webhook.js
 
