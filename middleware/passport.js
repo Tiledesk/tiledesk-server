@@ -81,13 +81,20 @@ winston.info('Authentication Oauth2 Signin enabled : ' + enableOauth2Signin);
 
 var jwthistory = undefined;
 try {
-    jwthistory = require('@tiledesk-ent/tiledesk-server-jwthistory');
-} catch (err) {
-    winston.debug("jwthistory not present");
+  jwthistory = require('@tiledesk-ent/tiledesk-server-jwthistory');
+} catch(err) {
+  winston.info("jwthistory not present", err);
 }
 
-module.exports = function (passport) {
+let JWT_HISTORY_ENABLED = false;
+if (process.env.JWT_HISTORY_ENABLED==true || process.env.JWT_HISTORY_ENABLED=="true") {
+  JWT_HISTORY_ENABLED = true;
+}
+winston.debug("JWT_HISTORY_ENABLED: " + JWT_HISTORY_ENABLED);
 
+
+
+module.exports = function(passport) {
     // passport.serializeUser(function(user, done) {
     //     console.log("serializeUser");
 
@@ -231,218 +238,212 @@ module.exports = function (passport) {
                 done(null, configSecret); //pub_jwt pp_jwt
             }
         }
+    };
+
+
+  winston.debug("passport opts: ", opts);
+
+  passport.use(new JwtStrategy(opts, async(req, jwt_payload, done)  => {
+  // passport.use(new JwtStrategy(opts, function(req, jwt_payload, done) {
+    winston.debug("jwt_payload",jwt_payload);
+    // console.log("req",req);
+    
+
+    // console.log("jwt_payload._doc._id",jwt_payload._doc._id);
+
+
+    if (jwt_payload._id == undefined  && (jwt_payload._doc == undefined || (jwt_payload._doc && jwt_payload._doc._id==undefined))) {
+      var err = "jwt_payload._id or jwt_payload._doc._id can t be undefined" ;
+      winston.error(err);
+      return done(null, false);
+    }
+                                                            //JWT OLD format
+     const identifier = jwt_payload._id || jwt_payload._doc._id;
+    
+    // const subject = jwt_payload.sub || jwt_payload._id || jwt_payload._doc._id;
+    winston.debug("passport identifier: " + identifier);
+
+    const subject = jwt_payload.sub;
+    winston.debug("passport subject: " + subject);
+
+    winston.debug("passport identifier: " + identifier + " subject " + subject);
+
+    var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
+    winston.debug("fullUrl:"+ fullUrl);
+
+    winston.debug("req.disablePassportEntityCheck:"+req.disablePassportEntityCheck);
+
+    if (req && req.disablePassportEntityCheck) { //req can be null
+      // jwt_payload.id = jwt_payload._id; //often req.user.id is used inside code. req.user.id  is a mongoose getter of _id
+      // is better to rename req.user.id to req.user._id in all files
+      winston.debug("req.disablePassportEntityCheck enabled");
+      return done(null, jwt_payload);
+    }
+    winston.debug("jwthistory passport",jwthistory);
+
+    //TODO check into DB if JWT is revoked 
+    if (jwthistory && JWT_HISTORY_ENABLED==true) {
+      var jwtRevoked = await jwthistory.isJWTRevoked(jwt_payload.jti);
+      winston.debug("passport jwt jwtRevoked: "+ jwtRevoked);
+      if (jwtRevoked) {
+        winston.warn("passport jwt is revoked with jti: "+ jwt_payload.jti);
+        return done(null, false);
+      }
     }
 
+    if (subject == "bot") {
+      winston.debug("Passport JWT bot");
 
-    winston.debug("passport opts: ", opts);
+        let qbot = Faq_kb.findOne({_id: identifier}); //TODO add cache_bot_here
 
-    passport.use(new JwtStrategy(opts, async (req, jwt_payload, done) => {
-        // passport.use(new JwtStrategy(opts, function(req, jwt_payload, done) {
-        winston.debug("jwt_payload", jwt_payload);
-        // console.log("req",req);
+          if (cacheEnabler.faq_kb) {
+            let id_project = jwt_payload.id_project;
+            winston.debug("jwt_payload.id_project:"+jwt_payload.id_project);
+            qbot.cache(cacheUtil.defaultTTL, id_project+":faq_kbs:id:"+identifier)
+            winston.debug('faq_kb cache enabled');
+          }
+  
+          qbot.exec(function(err, faq_kb) {
 
-
-        // console.log("jwt_payload._doc._id",jwt_payload._doc._id);
-
-
-        if (jwt_payload._id == undefined && (jwt_payload._doc == undefined || (jwt_payload._doc && jwt_payload._doc._id == undefined))) {
-            var err = "jwt_payload._id or jwt_payload._doc._id can t be undefined";
-            winston.error(err);
+          if (err) {
+            winston.error("Passport JWT bot err", err);
+            return done(err, false);
+          }
+          if (faq_kb) {
+            winston.debug("Passport JWT bot user", faq_kb);
+            return done(null, faq_kb);
+          } else {
+            winston.warn("Passport JWT bot not user");
             return done(null, false);
+          }
+      });
+    // } else if (subject=="projects") {      
+
+    } else if (subject=="subscription") {
+    
+      Subscription.findOne({_id: identifier}, function(err, subscription) {
+        if (err) {
+          winston.error("Passport JWT subscription err", err);
+          return done(err, false);
         }
-        //JWT OLD format
-        const identifier = jwt_payload._id || jwt_payload._doc._id;
-
-        // const subject = jwt_payload.sub || jwt_payload._id || jwt_payload._doc._id;
-        winston.debug("passport identifier: " + identifier);
-
-        const subject = jwt_payload.sub;
-        winston.debug("passport subject: " + subject);
-
-        winston.debug("passport identifier: " + identifier + " subject " + subject);
-
-        var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
-        winston.debug("fullUrl:" + fullUrl);
-
-        winston.debug("req.disablePassportEntityCheck:" + req.disablePassportEntityCheck);
-
-        if (req && req.disablePassportEntityCheck) { //req can be null
-            // jwt_payload.id = jwt_payload._id; //often req.user.id is used inside code. req.user.id  is a mongoose getter of _id
-            // is better to rename req.user.id to req.user._id in all files
-            winston.debug("req.disablePassportEntityCheck enabled");
-            return done(null, jwt_payload);
-        }
-
-        //TODO check into DB if JWT is revoked 
-        if (jwthistory) {
-            var jwtRevoked = await jwthistory.isJWTRevoked(jwt_payload.jti);
-            winston.debug("passport jwt jwtRevoked: " + jwtRevoked);
-            if (jwtRevoked) {
-                winston.warn("passport jwt is revoked with jti: " + jwt_payload.jti);
-                return done(null, false);
-            }
-        }
-
-        if (subject == "bot") {
-            winston.debug("Passport JWT bot");
-
-            let qbot = Faq_kb.findOne({_id: identifier}); //TODO add cache_bot_here
-
-            if (cacheEnabler.faq_kb) {
-                let id_project = jwt_payload.id_project;
-                winston.debug("jwt_payload.id_project:" + jwt_payload.id_project);
-                qbot.cache(cacheUtil.defaultTTL, id_project + ":faq_kbs:id:" + identifier)
-                winston.debug('faq_kb cache enabled');
-            }
-
-            qbot.exec(function (err, faq_kb) {
-
-                if (err) {
-                    winston.error("Passport JWT bot err", err);
-                    return done(err, false);
-                }
-                if (faq_kb) {
-                    winston.debug("Passport JWT bot user", faq_kb);
-                    return done(null, faq_kb);
-                } else {
-                    winston.warn("Passport JWT bot not user");
-                    return done(null, false);
-                }
-            });
-            // } else if (subject=="projects") {      
-
-        } else if (subject == "subscription") {
-
-            Subscription.findOne({_id: identifier}, function (err, subscription) {
-                if (err) {
-                    winston.error("Passport JWT subscription err", err);
-                    return done(err, false);
-                }
-                if (subscription) {
-                    winston.debug("Passport JWT subscription user", subscription);
-                    return done(null, subscription);
-                } else {
-                    winston.warn("Passport JWT subscription not user", subscription);
-                    return done(null, false);
-                }
-            });
-
-        } else if (subject == "userexternal") {
-
-
-            if (jwt_payload) {
-
-                // const audUrl  = new URL(jwt_payload.aud);
-                // winston.info("audUrl: "+ audUrl );
-
-                // const path = audUrl.pathname;
-                // winston.info("audUrl path: " + path );
-
-                // const AudienceType = path.split("/")[1];
-                // winston.info("audUrl AudienceType: " + AudienceType );
-
-                // const AudienceId = path.split("/")[2];
-                // winston.info("audUrl AudienceId: " + AudienceId );
-
-                // jwt_payload._id = AudienceId + "-" + jwt_payload._id;
-
-
-                winston.debug("Passport JWT userexternal", jwt_payload);
-                var userM = UserUtil.decorateUser(jwt_payload);
-                winston.debug("Passport JWT userexternal userM", userM);
-
-                return done(null, userM);
-            } else {
-                var err = {msg: "No jwt_payload passed. Its required"};
-                winston.error("Passport JWT userexternal err", err);
-                return done(err, false);
-            }
-
-        } else if (subject == "guest") {
-
-
-            if (jwt_payload) {
-                winston.debug("Passport JWT guest", jwt_payload);
-                var userM = UserUtil.decorateUser(jwt_payload);
-                winston.debug("Passport JWT guest userM", userM);
-                return done(null, userM);
-            } else {
-                var err = {msg: "No jwt_payload passed. Its required"};
-                winston.error("Passport JWT guest err", err);
-                return done(err, false);
-            }
-
+        if (subscription) {
+          winston.debug("Passport JWT subscription user", subscription);
+          return done(null, subscription);
         } else {
-            winston.debug("Passport JWT generic user");
-            let quser = User.findOne({_id: identifier, status: 100})   //TODO user_cache_here
-            //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+identifier)
+          winston.warn("Passport JWT subscription not user", subscription);
+          return done(null, false);
+        }
+      });              
 
-            if (cacheEnabler.user) {
-                quser.cache(cacheUtil.defaultTTL, "users:id:" + identifier)
-                winston.debug('user cache enabled');
-            }
+    } else if (subject=="userexternal") {
+    
+     
+        if (jwt_payload) {
 
-            quser.exec(function (err, user) {
-                if (err) {
-                    winston.error("Passport JWT generic err ", err);
-                    return done(err, false);
-                }
-                if (user) {
-                    winston.debug("Passport JWT generic user ", user);
-                    return done(null, user);
-                } else {
-                    winston.debug("Passport JWT generic not user");
-                    return done(null, false);
-                }
-            });
+          // const audUrl  = new URL(jwt_payload.aud);
+          // winston.info("audUrl: "+ audUrl );
 
+          // const path = audUrl.pathname;
+          // winston.info("audUrl path: " + path );
+          
+          // const AudienceType = path.split("/")[1];
+          // winston.info("audUrl AudienceType: " + AudienceType );
+
+          // const AudienceId = path.split("/")[2];
+          // winston.info("audUrl AudienceId: " + AudienceId );
+
+          // jwt_payload._id = AudienceId + "-" + jwt_payload._id;
+          
+
+
+          winston.debug("Passport JWT userexternal", jwt_payload);
+          var userM = UserUtil.decorateUser(jwt_payload);
+          winston.debug("Passport JWT userexternal userM", userM);
+
+          return done(null, userM );
+        }  else {
+          var err = {msg: "No jwt_payload passed. Its required"};
+          winston.error("Passport JWT userexternal err", err);
+          return done(err, false);
+        }                
+
+     } else if (subject=="guest") {
+    
+     
+        if (jwt_payload) {
+          winston.debug("Passport JWT guest", jwt_payload);
+          var userM = UserUtil.decorateUser(jwt_payload);
+          winston.debug("Passport JWT guest userM", userM);
+          return done(null, userM );
+        }  else {
+          var err = {msg: "No jwt_payload passed. Its required"};
+          winston.error("Passport JWT guest err", err);
+          return done(err, false);
+        }                   
+
+    } else {
+      winston.debug("Passport JWT generic user");
+      let quser = User.findOne({_id: identifier, status: 100})   //TODO user_cache_here
+        //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+identifier)
+
+        if (cacheEnabler.user) {
+          quser.cache(cacheUtil.defaultTTL, "users:id:"+identifier)
+          winston.debug('user cache enabled');
         }
 
+        quser.exec(function(err, user) {
+          if (err) {
+            winston.error("Passport JWT generic err ", err);
+            return done(err, false);
+          }
+          if (user) {
+            winston.debug("Passport JWT generic user ", user);
+            return done(null, user);
+          } else {
+            winston.debug("Passport JWT generic not user");
+            return done(null, false);
+          }
+      });
 
-    }));
-
-
-    passport.use(new BasicStrategy(function (userid, password, done) {
-
-        winston.debug("BasicStrategy: " + userid);
-
-
-        var email = userid.toLowerCase();
-        winston.debug("email lowercase: " + email);
-
-        User.findOne({
-            email: email,
-            status: 100
-        }, 'email firstname lastname password emailverified id') //TODO user_cache_here. NOT used frequently. ma attento select. ATTENTO QUI NN USEREI LA SELECT altrimenti con JWT ho tuttto USER mentre con basich auth solo aluni campi
-            //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:email:"+email)
-            .exec(function (err, user) {
-
-                if (err) {
-                    // console.log("BasicStrategy err.stop");
-                    return done(err);
-                }
-                if (!user) {
-                    return done(null, false);
-                }
-
-                user.comparePassword(password, function (err, isMatch) {
-                    if (isMatch && !err) {
-
-                        // if user is found and password is right create a token
-                        // console.log("BasicStrategy ok");
-                        return done(null, user);
-
-                    } else {
-                        return done(err);
-                    }
-                });
+    }
+   
 
 
-                // if (user) { return done(null, user); }
-                // if (!user) { return done(null, false); }
-                // if (!user.verifyPassword(password)) { return done(null, false); }
-            });
-    }));
+  }));
+
+
+
+  passport.use(new BasicStrategy(function(userid, password, done) {
+      
+      winston.debug("BasicStrategy: " + userid);
+      
+
+      var email = userid.toLowerCase();
+      winston.debug("email lowercase: " + email);
+
+      User.findOne({ email: email, status: 100}, 'email firstname lastname password emailverified id') //TODO user_cache_here. NOT used frequently. ma attento select. ATTENTO QUI NN USEREI LA SELECT altrimenti con JWT ho tuttto USER mentre con basich auth solo aluni campi
+      //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:email:"+email)
+      .exec(function (err, user) {
+       
+        if (err) {
+            // console.log("BasicStrategy err.stop");
+            return done(err); 
+        }
+        if (!user) { return done(null, false); }
+        
+        user.comparePassword(password, function (err, isMatch) {
+            if (isMatch && !err) {
+
+              // if user is found and password is right create a token
+              // console.log("BasicStrategy ok");
+              return done(null, user);
+
+            } else {
+                return done(err);
+            }
+        });
+      });
+  }));
 
 
     if (enableGoogleSignin == true) {

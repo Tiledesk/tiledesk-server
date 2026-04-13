@@ -10,6 +10,7 @@ let should = chai.should();
 var config = require('../config/database');
 var mongoose = require('mongoose');
 var winston = require('../config/winston');
+var RoleConstants = require('../models/roleConstants');
 
 let log = false;
 
@@ -991,7 +992,8 @@ describe('RequestService', function () {
             // _id: new mongoose.Types.ObjectId(),
             id_project: savedProject._id.toString(),
             id_user: savedUser2._id.toString(),
-            role: "agent",
+            role: RoleConstants.AGENT,
+            roleType : RoleConstants.TYPE_AGENTS,   
             user_available: false,
             createdBy: userid,
             updatedBy: userid
@@ -1073,7 +1075,8 @@ describe('RequestService', function () {
             // _id: new mongoose.Types.ObjectId(),
             id_project: savedProject._id.toString(),
             id_user: savedUser2._id.toString(),
-            role: "agent",
+            role: RoleConstants.AGENT,
+            roleType : RoleConstants.TYPE_AGENTS,  
             user_available: false,
             createdBy: userid,
             updatedBy: userid
@@ -1338,7 +1341,8 @@ describe('RequestService', function () {
             // _id: new mongoose.Types.ObjectId(),
             id_project: savedProject._id.toString(),
             id_user: savedUser2._id.toString(),
-            role: "agent",
+            role: RoleConstants.AGENT,
+            roleType : RoleConstants.TYPE_AGENTS,  
             user_available: true,
             createdBy: userid,
             updatedBy: userid

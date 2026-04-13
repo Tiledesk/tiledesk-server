@@ -1,7 +1,11 @@
 let mongoose = require('mongoose');
 let Schema = mongoose.Schema;
 let winston = require('../config/winston');
-let expireAfterSeconds = process.env.UNANSWERED_QUESTION_EXPIRATION_TIME || 7 * 24 * 60 * 60; // 7 days
+
+const expireAfterSeconds = (() => {
+  const n = Number(process.env.UNANSWERED_QUESTION_EXPIRATION_TIME);
+  return !isNaN(n) && n >= 0 ? n : 7 * 24 * 60 * 60; // default 7 days
+})();
 
 const EngineSchema = new Schema({
   name: {
