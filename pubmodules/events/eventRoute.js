@@ -33,57 +33,17 @@ router.post('/', [
     return res.status(422).json({ errors: errors.array() });
   }
 
-   
     var pu = undefined;
     if (req.projectuser) { //if the bot creates the event -> pu is undefined
       pu = req.projectuser.id
     }   
-    
-
-
-    // // da qui
-    
-    // performance log
-    // console.log("************* emit event"+new Date().toISOString());
-
-    // // message.senderFullname,     message.recipient, 
-    //             // message.recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp, message.group
-    // var recipient = req.body.attributes.request_id;
-    // console.log("recipient",recipient);
-    // var sender = req.user.id;
-    // console.log("sender",sender);
-
-    // let message = {
-    //   recipient: recipient,
-    //   recipient_fullname: "pluto",
-    //   // sender:"bb0d809b-b093-419b-8b48-11a192cc3619",
-    //   sender: sender,
-    //   senderFullname: "Tiledesk",
-    //   text:"welcome",
-    //   group: {
-    //     members: {
-    //       // "bb0d809b-b093-419b-8b48-11a192cc3619": 1,
-    //       // sender: 1
-          
-    //     }
-    //   }
-    // };
-    // message.group.members[sender]= 1;
-    // console.log("message", message)
-
-    // messageEvent.emit("message.test", message);
-    // res.json({"event":"1"});
-
-    // //fino qui
-
- 
     // // emit(name, attributes, id_project, project_user, createdBy, status, user) {
     eventService.emit(req.body.name, req.body.attributes, req.projectid, pu, req.user.id, undefined, req.user).then(function(event) {
 
       res.json(event);
     }).catch(function(err) {
-      winston.error('Error saving the event '+ JSON.stringify(event), err)
-      return res.status(500).send({success: false, msg: 'Error saving the event '+ JSON.stringify(event)});
+      winston.error('Error saving the event', err);
+      return res.status(500).send({success: false, msg: 'Error saving the event', error: err.message });
     });
 
 });

@@ -5,6 +5,228 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.17.4
+- Refactor error handling and code structure in webhook.js
+
+# 2.17.3
+- Added missing import path on kb route
+
+# 2.17.2
+- Added support for situated context in kb route
+- Added RAG context management to KB routes
+- Added support for scrape type 0 (alias: trafilatura)
+
+# 2.16.2
+- Improved multiplier retrieval for model types in quotes route
+
+# 2.16.1
+- Added stream option support to the KB /qa endpoint for real-time responses
+- Enhanced file upload route to correctly handle .webm files
+- Optimized token consumption and management in knowledge base operations
+
+# 2.16.0-hf
+- Fixed bug: issue on audio sent from widget
+
+# 2.16.0
+- Added possibility to update Knowledge Base content
+- Added rated only filter in Conversations History
+- Improved pending requests management
+
+# 2.15.8
+- Updated tybot-connector to 2.0.45
+- Added support for tags management in knowledge base routes
+
+# 2.15.7
+- Updated whatsapp-connector to 1.0.26
+
+# 2.15.6
+- Updated voice-twilio-connector to 0.3.2
+- Updated vxml-connector to 0.1.91
+
+# 2.15.5
+- Fixed email flooding when smart assignment is active and there are no operators available
+
+# 2.15.4
+- Updated endpoint to get project users adding the query parameter "trashed" in order to obtain also the trashed users.
+- Added endpoint /restore to restore a deleted project user
+
+# 2.15.3
+- Updated whatsapp-connector to 1.0.25
+- Updated sms-connector to 0.1.13
+- Bug fix: join a conversation with a note without text.
+- Added phone number filter when searching for conversations in history
+- Added migration script to add the contact field in request object improving the search by phone number
+
+# 2.15.2
+- Updated GitHub actions
+
+# 2.15.1
+- Updated whatsapp-connector to 1.0.24
+
+# 2.15.0
+- Updated whatsapp-connector to 1.0.23
+- Fix logout with Google Signin method
+
+# 2.14.28
+- Add audio MIME type equivalences for MPEG, MP3, and Opus formats
+
+# 2.14.26
+- Added endpoints to connect with a MCP Tools and get tools list.
+- Updated tybot-connectort to 2.0.44
+
+# 2.14.25
+- Deprecate user file upload routes in files.js and images.js
+
+# 2.14.24
+- Improved extension management on file uploading to support .wav and .svg
+
+# 2.14.23
+- Updated whatsapp-connector to 1.0.22
+- Added new endpoint for files uploading 
+
+# 2.14.22 - aborted
+- Updated whatsapp-connector to 1.0.20
+- Added new endpoint for files uploading 
+
+# 2.14.21 - aborted
+- Updated whatsapp-connector to 1.0.20
+- Added new endpoint for files uploading 
+
+# 2.14.20 - aborted
+- Updated whatsapp-connector to 1.0.19
+- Added new endpoint for files uploading 
+
+# 2.14.18
+- Bug fix already existing email when login from google 
+
+# 2.14.17
+- Bug fix google strategy passport
+
+# 2.14.14
+- Updated tybot-connector to 2.0.43
+
+# 2.14.13
+- Added sitemap scheduling in aiManager
+- Updated import route to use sitemap scheduling functionality
+
+# 2.14.12
+- Updated handling of unresponsive requests to close based on the updatedAt field instead of createdAt
+
+# 2.14.10
+- Added support for a custom reranking_multiplier parameter in the /qa endpoint
+- Improved DB performance by optimizing the query used to find conversations to be closed automatically
+
+# 2.14.9
+- Improved the requests search function and added the ability to specify a timezone when searching
+
+# 2.14.8
+- Added extraction of namespace_id from request body in scrape status route
+
+# 2.14.7
+- Added embedding configuration to namespace import route
+
+# 2.14.6
+- Fix namespace checking in export route and improve error handling
+
+# 2.14.5
+- Fixed bug: missing embeddings on single scrape
+
+# 2.14.4
+- Fixed bug: missing embeddings on content coming from auto-reindex scheduler
+
+# 2.14.3
+- Fixed bug: first message not sent from default chatbot. Refactored availableAgentsCount handling in requestService to ensure accurate snapshot updates during request creation.
+
+# 2.14.2
+- Updated updateRequestSnapshotQueued.js to update the snapshot only
+
+# 2.14.1
+- Fixed missing snapshot parameter in event request
+- Updated twilio-connector to 0.1.28
+
+# 2.14.0
+- Refactoring of route() and create() method on RequestService in order to improve performance for firt message
+- Fix bug: missing embedding apikey on add single content
+
+# 2.13.51 - aborted
+- Refactoring of route() and create() method on RequestService in order to improve performance for first message
+- Updated tests
+
+# 2.13.50
+- Updated kb route to support embeddings
+- Updated tybot-connector to 2.0.41
+- Updated vxml-connector to 0.1.89
+
+# 2.13.49
+- Updated tybot-connector to 2.0.41
+
+# 2.13.48
+- Updated twilio-connector to 0.1.26
+
+# 2.13.46
+- Updated whatsapp-connector to 1.0.18
+
+# 2.13.45
+- Updated tybot-connector to 2.0.40
+
+# 2.13.44 - aborted
+- Updated tybot-connector to 2.0.39
+
+# 2.13.43
+- Updated requestService to improve fully abandoned management
+
+# 2.13.42
+- Updated whatsapp-connector to 1.0.17
+
+# 2.13.40
+- Changed minimum role access to agent for route /:project_id/logs
+
+# 2.13.39
+- Fixed bug on /qa with reranking
+
+# 2.13.38
+- Updated tybot-connector to 2.0.38
+- Updated /qa to support reranking with hybrid namespaces
+- Updated default AI contexts
+
+# 2.13.37
+- Improved abandoned requests management
+
+# 2.13.36
+- Fixed /logs/whatsapp/:phone_number endpoint to logs route
+
+# 2.13.35
+- Updated whatsapp-connector to 1.0.15
+
+# 2.13.34
+- Updated whatsapp-connector to 1.0.14
+- Added /logs/whatsapp/:phone_number endpoint to logs route
+
+# 2.13.33
+- Fix bug on create chatbot from public template
+
+# 2.13.31
+- Added default context for general LLM
+- Updated tybot-connector to 2.0.35
+
+# 2.13.29
+- Minor improvements
+
+# 2.13.27
+- Added rate manager for webhook call
+- Increased json body limit for /webhook endpoint
+
+# 2.13.26
+- Fixed bug: LLM preview not working
+
+# 2.13.24
+- Code improvements
+
+# 2.13.23
+- Updated whatsapp-connector to 1.0.9
+- Updated messenger-connector to 0.1.28
+- Code improvements
+
 # 2.13.22
 - Updated whatsapp-connector to 1.0.9
 

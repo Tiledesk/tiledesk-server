@@ -33,6 +33,10 @@ const RoleConstants = require('../models/roleConstants');
 const eventService = require('../pubmodules/events/eventService');
 const { Scheduler } = require('../services/Scheduler');
 const faq_kb = require('../models/faq_kb');
+const aclConstants = require("../models/aclConstants");
+var aclService = require('../services/aclService');
+
+const datesUtil = require('../utils/datesUtil');
 //const JobManager = require('../utils/jobs-worker-queue-manager-v2/JobManagerV2');
 
 // var messageService = require('../services/messageService');
@@ -185,21 +189,9 @@ router.post('/',
           priority: req.body.priority,
           followers: req.body.followers,
         };
-
+        // acl_check_here?
         return requestService.create(new_request).then(function (savedRequest) {
-          // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-          // return requestService.createWithIdAndRequester(request_id, req.projectuser._id, createdLead._id, req.projectid, 
-          //   req.body.text, req.body.departmentid, req.body.sourcePage, 
-          //   req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject).then(function (savedRequest) {
-
-
-          // return messageService.create(sender || req.user._id, fullname, request_id, req.body.text,
-          // req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata, req.body.language, undefined, req.body.channel).then(function(savedMessage){                    
-
-          // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
-          // return messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, request_id, req.body.text,
-          //   req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata).then(function(savedMessage){                    
-
+        
 
           winston.debug('res.json(savedRequest)');
           var endTimestamp = new Date();
@@ -300,7 +292,15 @@ router.patch('/:requestid', function (req, res) {
   winston.verbose("Request patch update", update);
 
   //cacheinvalidation
-  return Request.findOneAndUpdate({ "request_id": req.params.requestid, "id_project": req.projectid }, { $set: update }, { new: true, upsert: false })
+    // acl_check_here //tested
+  var query = { "request_id": req.params.requestid, "id_project": req.projectid };
+  aclService.addACLQuery(query, req.user, aclConstants.ACL_PERMISSION.ONLY_WRITE);
+
+  winston.debug("Request patch query", query);
+  winston.debug("Request patch req.user.id: " + req.user.id);
+
+
+  return Request.findOneAndUpdate(query, { $set: update }, { new: true, upsert: false })
     .populate('lead')
     .populate('department')
     .populate('participatingBots')
@@ -315,6 +315,10 @@ router.patch('/:requestid', function (req, res) {
 
       if (!request) {
         return res.status(404).send({ success: false, msg: 'Request not found' });
+      }
+
+      if (update.workingStatus !== undefined) {
+        requestEvent.emit('request.workingStatus.update', { request });
       }
 
       requestEvent.emit("request.update", request);
@@ -363,19 +367,28 @@ router.put('/:requestid/close', async function (req, res) {
   return requestService.closeRequestByRequestId(req.params.requestid, req.projectid, false, true, closed_by, req.body.force).then(function (closedRequest) {
     winston.verbose("request closed", closedRequest);
     return res.json(closedRequest);
+  }).catch(function(err) {
+    winston.error("Error closing request", err);
+    return res.status(500).send({ success: false, error: "Error closing request" });
   });
 
 });
 
+//  curl -v -X PUT -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"first_text":"ciao"}' http://localhost:3000/68d4135a10e71f7bfa4dcf2f/requests/req123456/reopen
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.put('/:requestid/reopen', function (req, res) {
   winston.debug(req.body);
+ 
+  // acl_check_here?_internal
   // reopenRequestByRequestId(request_id, id_project) {
   return requestService.reopenRequestByRequestId(req.params.requestid, req.projectid).then(function (reopenRequest) {
 
     winston.verbose("request reopen", reopenRequest);
 
     return res.json(reopenRequest);
+  }).catch(function(err) {
+    winston.error("Error reopening request", err);
+    return res.status(500).send({ success: false, error: "Error reopening request" });
   });
 
 
@@ -388,12 +401,13 @@ router.put('/:requestid/assignee', function (req, res) {
   //TODO change assignee
 });
 
+// curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"member":"ciao"}' http://localhost:3000/68d4135a10e71f7bfa4dcf2f/requests/req123456/participants
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.post('/:requestid/participants',
   [
     check('member').notEmpty(),
   ],
-  function (req, res) {
+   async (req, res) => {
     winston.debug(req.body);
 
     const errors = validationResult(req);
@@ -401,12 +415,22 @@ router.post('/:requestid/participants',
       return res.status(422).json({ errors: errors.array() });
     }
 
+   if (await aclService.can(req.user.id, aclConstants.ACL_PERMISSION.ONLY_WRITE, req.params.requestid, req.projectid) ===false) {
+      winston.error("User with id: " + req.user.id + " can't add participant for request with request_id " + req.params.requestid + " and id_project " + req.projectid);
+      return res.status(403).send({ success: false, error: "User can't modify this request " })
+    }
+
+
+    // acl_check_here_internal
     //addParticipantByRequestId(request_id, id_project, member)
     return requestService.addParticipantByRequestId(req.params.requestid, req.projectid, req.body.member).then(function (updatedRequest) {
 
       winston.verbose("participant added", updatedRequest);
 
       return res.json(updatedRequest);
+    }).catch(function(err) {
+      winston.error("Error adding participant", err);
+      return res.status(500).send({ success: false, error: "Error adding participant" });
     });
 
   });
@@ -418,8 +442,16 @@ error: uncaughtException: Cannot set property 'participants' of null
 2020-03-08T12:53:35.793660+00:00 app[web.1]:     at /app/services/requestService.js:672:30
 2020-03-08T12:53:35.793661+00:00 app[web.1]:     at /app/node_modules/mongoose/lib/model.js:4779:16
 */
-router.put('/:requestid/participants', function (req, res) {
+
+//  curl -v -X PUT -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"member":"ciao"}' http://localhost:3000/68d4135a10e71f7bfa4dcf2f/requests/req123456/participants
+router.put('/:requestid/participants', async (req, res) => {
   winston.debug("req.body", req.body);
+
+
+  if (await aclService.can(req.user.id, aclConstants.ACL_PERMISSION.ONLY_WRITE, req.params.requestid, req.projectid) ===false) {
+    winston.error("User with id: " + req.user.id + " can't modify participants for request with request_id " + req.params.requestid + " and id_project " + req.projectid);
+    return res.status(403).send({ success: false, error: "User can't modify this request " })
+  }
 
   var participants = [];
   req.body.forEach(function (participant, index) {
@@ -427,12 +459,16 @@ router.put('/:requestid/participants', function (req, res) {
   });
   winston.debug("var participants", participants);
 
+  // acl_check_here_internal 
   //setParticipantsByRequestId(request_id, id_project, participants)
   return requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then(function (updatedRequest) {
 
     winston.debug("participant set", updatedRequest);
 
     return res.json(updatedRequest);
+  }).catch(function(err) {
+    winston.error("Error setting participants", err);
+    return res.status(500).send({ success: false, error: "Error setting participants" });
   });
 
 });
@@ -485,6 +521,7 @@ router.put('/:requestid/replace', async (req, res) => {
   participants.push(id);
   winston.verbose("participants to be set: ", participants);
 
+  // acl_check_here_internal 
   requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then((updatedRequest) => {
     winston.debug("SetParticipant response: ", updatedRequest);
     res.status(200).send(updatedRequest);
@@ -494,9 +531,17 @@ router.put('/:requestid/replace', async (req, res) => {
   })
 })
 
+// curl -v -X DELETE -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"member":"ciao"}' http://localhost:3000/68d4135a10e71f7bfa4dcf2f/requests/req123456/participants/12
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
-router.delete('/:requestid/participants/:participantid', function (req, res) {
+router.delete('/:requestid/participants/:participantid', async (req, res) => {
   winston.debug(req.body);
+
+  if (await aclService.can(req.user.id, aclConstants.ACL_PERMISSION.ONLY_WRITE, req.params.requestid, req.projectid) ===false) {
+    winston.error("User with id: " + req.user.id + " can't delete participants for request with request_id " + req.params.requestid + " and id_project " + req.projectid);
+    return res.status(403).send({ success: false, error: "User can't modify this request " })
+  }
+
+  // acl_check_here_internal controllo interno?
   //removeParticipantByRequestId(request_id, id_project, member)
   return requestService.removeParticipantByRequestId(req.params.requestid, req.projectid, req.params.participantid).then(function (updatedRequest) {
 
@@ -558,6 +603,7 @@ router.put('/:requestid/assign', function (req, res) {
         winston.info('Request already assigned');
         return res.json(request);
       }
+      // acl_check_here_internal
       //route(request_id, departmentid, id_project) {      
       requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
 
@@ -570,6 +616,7 @@ router.put('/:requestid/assign', function (req, res) {
         return res.json(updatedRequest);
       }).catch(function (error) {
         // TODO: error log removed due to attempt to reduces logs when no department is found
+        console.log('Error changing the department.', error)
         winston.verbose('Error changing the department.', error)
         return res.status(500).send({ success: false, msg: 'Error changing the department.' });
       })
@@ -579,6 +626,7 @@ router.put('/:requestid/assign', function (req, res) {
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.put('/:requestid/departments', function (req, res) {
   winston.debug(req.body);
+  // acl_check_here_internal
   //route(request_id, departmentid, id_project) {      
   requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
 
@@ -587,6 +635,7 @@ router.put('/:requestid/departments', function (req, res) {
     return res.json(updatedRequest);
   }).catch(function (error) {
     // TODO: error log removed due to attempt to reduces logs when no department is found
+    console.log('Error changing the department.', error)
     winston.verbose('Error changing the department.', error)
     return res.status(500).send({ success: false, msg: 'Error changing the department.' });
   })
@@ -615,6 +664,7 @@ router.put('/:requestid/agent', async (req, res) => {
   }
   winston.debug("departmentid after: " + departmentid);
 
+  // acl_check_here_internal
   requestService.route(req.params.requestid, departmentid, req.projectid, true, undefined).then(function (updatedRequest) {
 
     winston.debug("department changed", updatedRequest);
@@ -622,6 +672,7 @@ router.put('/:requestid/agent', async (req, res) => {
     return res.json(updatedRequest);
   }).catch(function (error) {
     // TODO: error log removed due to attempt to reduces logs when no department is found
+    console.log('Error changing the department.', error)
     winston.verbose('Error changing the department.', error)
     return res.status(500).send({ success: false, msg: 'Error changing the department.' });
   })
@@ -679,8 +730,14 @@ router.patch('/:requestid/attributes', function (req, res) {
   var id_project = req.projectid;
 
   // TODO use service method
+  // acl_check_here_query
 
-  Request.findOne({ "request_id": req.params.requestid, id_project: id_project })
+
+  var query = { "request_id": req.params.requestid, id_project: id_project };
+  aclService.addACLQuery(query, req.user, aclConstants.ACL_PERMISSION.ONLY_WRITE);
+  winston.debug("query", query);
+
+  Request.findOne(query)
     .populate('lead')
     .populate('department')
     .populate('participatingBots')
@@ -737,6 +794,10 @@ router.post('/:requestid/notes', async function (req, res) {
   note.text = req.body.text;
   note.createdBy = req.user.id;
 
+  if (!note.text || note.text.trim() === '') {
+    return res.status(400).send({ success: false, error: "Field 'text' is required. Received value: " + note.text });
+  }
+
   let project_user = req.projectuser;
 
   if (project_user.role === RoleConstants.AGENT) {
@@ -751,13 +812,19 @@ router.post('/:requestid/notes', async function (req, res) {
     }
 
     // Check if the user is a participant
+    // disable this check?
     if (!request.participantsAgents.includes(req.user.id)) {
       winston.verbose("Trying to add a note from a non participating agent");
       return res.status(403).send({ success: false, error: "You are not participating in the conversation"})
     }
   }
 
-  return Request.findOneAndUpdate({ request_id: request_id, id_project: req.projectid }, { $push: { notes: note } }, { new: true, upsert: false })
+    //   // acl_check_here_query
+  var query = { request_id: request_id, id_project: req.projectid };
+  aclService.addACLQuery(query, req.user, aclConstants.ACL_PERMISSION.ONLY_WRITE);
+  winston.debug("query", query);
+
+  return Request.findOneAndUpdate(query, { $push: { notes: note } }, { new: true, upsert: false })
     .populate('lead')
     .populate('department')
     .populate('participatingBots')
@@ -797,6 +864,7 @@ router.delete('/:requestid/notes/:noteid', async function (req, res) {
     }
   
     // Check if the user is a participant
+    // disable this check?
     if (!request.participantsAgents.includes(req.user.id)) {
       winston.verbose("Trying to delete a note from a non participating agent");
       return res.status(403).send({ success: false, error: "You are not participating in the conversation"})
@@ -804,7 +872,12 @@ router.delete('/:requestid/notes/:noteid', async function (req, res) {
   }
 
   //cacheinvalidation
-  return Request.findOneAndUpdate({ request_id: request_id, id_project: req.projectid }, { $pull: { notes: { "_id": note_id } } }, { new: true, upsert: false })
+    //   // acl_check_here_query
+  var query = { request_id: request_id, id_project: req.projectid };
+  aclService.addACLQuery(query, req.user, aclConstants.ACL_PERMISSION.ONLY_WRITE);
+  winston.debug("query", query);
+
+  return Request.findOneAndUpdate(query, { $pull: { notes: { "_id": note_id } } }, { new: true, upsert: false })
     .populate('lead')
     .populate('department')
     .populate('participatingBots')
@@ -897,6 +970,7 @@ router.post('/:requestid/followers',
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
     }
+    // acl_check_here?_internal
 
     //addParticipantByRequestId(request_id, id_project, member)
     return requestService.addFollowerByRequestId(req.params.requestid, req.projectid, req.body.member).then(function (updatedRequest) {
@@ -904,6 +978,9 @@ router.post('/:requestid/followers',
       winston.verbose("participant added", updatedRequest);
 
       return res.json(updatedRequest);
+    }).catch(function(err) {
+      winston.error("Error adding follower", err);
+      return res.status(500).send({ success: false, error: "Error adding follower" });
     });
 
   });
@@ -918,12 +995,16 @@ router.put('/:requestid/followers', function (req, res) {
   });
   winston.debug("var followers", followers);
 
+  // acl_check_here?_internal
   // setFollowersByRequestId(request_id, id_project, newfollowers)
   return requestService.setFollowersByRequestId(req.params.requestid, req.projectid, followers).then(function (updatedRequest) {
 
     winston.debug("followers set", updatedRequest);
 
     return res.json(updatedRequest);
+  }).catch(function(err) {
+    winston.error("Error setting followers", err);
+    return res.status(500).send({ success: false, error: "Error setting followers" });
   });
 
 });
@@ -966,7 +1047,12 @@ router.put('/:requestid/tag', async (req, res) => {
     tags: current_tags
   }
 
-  Request.findOneAndUpdate({ id_project: id_project, request_id: request_id }, update, { new: true }).then( async (updatedRequest) => {
+  var query = { id_project: id_project, request_id: request_id };
+  aclService.addACLQuery(query, req.user, aclConstants.ACL_PERMISSION.ONLY_WRITE);
+  winston.debug("query", query);
+
+  //  acl_check_here_query
+  Request.findOneAndUpdate(query, update, { new: true }).then( async (updatedRequest) => {
 
     if (!updatedRequest) {
       winston.warn("(Request) /tag The request was deleted while adding tags for request " + request_id);
@@ -1001,12 +1087,16 @@ router.put('/:requestid/tag', async (req, res) => {
 router.delete('/:requestid/followers/:followerid', function (req, res) {
   winston.debug(req.body);
 
+  // acl_check_here?_internal
   //removeFollowerByRequestId(request_id, id_project, member)
   return requestService.removeFollowerByRequestId(req.params.requestid, req.projectid, req.params.followerid).then(function (updatedRequest) {
 
     winston.verbose("follower removed", updatedRequest);
 
     return res.json(updatedRequest);
+  }).catch(function(err) {
+    winston.error("Error removing follower", err);
+    return res.status(500).send({ success: false, error: "Error removing follower" });
   });
 
 
@@ -1019,10 +1109,15 @@ router.delete('/:requestid/tag/:tag_id', async (req, res) => {
   let id_project = req.projectid;
   let request_id = req.params.requestid;
   let tag_id = req.params.tag_id;
+  
+  
+  var query = { id_project: id_project, request_id: request_id };
+  aclService.addACLQuery(query, req.user, aclConstants.ACL_PERMISSION.READ_WRIITE_DELETE);
+  winston.debug("query", query);
 
 
-
-  Request.findOneAndUpdate({ id_project: id_project, request_id: request_id }, { $pull: { tags: { _id: tag_id } } }, { new: true }).then( async (updatedRequest) => {
+  // acl_check_here_query
+  Request.findOneAndUpdate(query, { $pull: { tags: { _id: tag_id } } }, { new: true }).then( async (updatedRequest) => {
     
     if (!updatedRequest) {
       winston.warn("(Request) /removetag request not found with id: " + request_id)
@@ -1055,8 +1150,8 @@ router.delete('/:requestid', function (req, res) {
 
   var projectuser = req.projectuser;
 
-
-  if (projectuser.role != "owner") {
+  // request_role_check
+  if (!projectuser.hasPermissionOrRole('request_delete', 'owner')){
     return res.status(403).send({ success: false, msg: 'Unauthorized.' });
   }
 
@@ -1067,8 +1162,12 @@ router.delete('/:requestid', function (req, res) {
     winston.verbose('Messages deleted for the recipient: ' + req.params.requestid);
   });
 
+  var query = { request_id: req.params.requestid };
+  aclService.addACLQuery(query, req.user, aclConstants.ACL_PERMISSION.READ_WRIITE_DELETE);
+  winston.debug("query", query);
 
-  Request.findOneAndDelete({ request_id: req.params.requestid }, function (err, request) {
+  // acl_check_here_query
+  Request.findOneAndDelete(query, function (err, request) {
     if (err) {
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
@@ -1111,8 +1210,8 @@ router.delete('/id/:id', function (req, res) {
 
   var projectuser = req.projectuser;
 
-
-  if (projectuser.role != "owner") {
+  // request_role_check
+  if (!projectuser.hasPermissionOrRole('request_delete', 'owner')){
     return res.status(403).send({ success: false, msg: 'Unauthorized.' });
   }
 
@@ -1136,7 +1235,7 @@ router.delete('/id/:id', function (req, res) {
 });
 
 
-
+// curl -v -X GET -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 http://localhost:3000/68d4135a10e71f7bfa4dcf2f/requests
 
 router.get('/', function (req, res, next) {
 
@@ -1154,6 +1253,7 @@ router.get('/', function (req, res, next) {
   var skip = 0;
   let statusArray = [];
   var projectuser = req.projectuser;
+  let filterRangeField = req.query.filterRangeField || 'createdAt';
 
   if (req.query.limit) {
     limit = parseInt(req.query.limit);
@@ -1173,15 +1273,35 @@ router.get('/', function (req, res, next) {
 
   if (req.user instanceof Subscription) {
     // All request 
-  } else if (projectuser && (projectuser.role == "owner" || projectuser.role == "admin")) {
-    // All request 
-    // Per uni mostrare solo quelle proprie quindi solo participants
-    if (req.query.mine) {
-      query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
-    }
-  } else {
-    query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
+    winston.debug("Subscription All request ");
+  } else if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
+    // All request if owner or admin
+    winston.debug("hasPermissionOrRole All request if owner or admin");
+  } else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
+// snap_here
+    query["$or"] = [{ "snapshot.agents.id_user": req.user.id, "acl.group": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ}}, { "participants": req.user.id, "acl.user": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ} }];
+    winston.debug("hasPermissionOrRole request_read_group", query);
+
+  } 
+  // else if (projectuser.hasPermissionOrRole('request_read_mine', ["????"])) {
+  //   query["participants"] = req.user.id;
+  // }
+  else {
+     query["$or"] = [{ "participants": req.user.id, "acl.user": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ} }];
+  
+
+    // generate empty requests response
   }
+
+  if (projectuser.hasPermissionOrRole('request_read_other')) {
+     query["$or"].push({"acl.other": {"$gte": aclConstants.ACL_PERMISSION.ONLY_READ}});
+  }
+
+  
+  // last query
+  // query["$or"] = [{"acl.other": {"$gte": 4}}, { "snapshot.agents.id_user": req.user.id, "acl.group": {"$gte": 4}}, { "participants": req.user.id, "acl.user": {"$gte": 4} }];
+  // db.getCollection("requests").find({"$or":[{"acl.other":{"$gte":4}},{"acl.group":{"$gte":4},"snapshot.agents.id_user":ObjectId("6821fc203ce0764c1b23a763")},{"participants":"6821fc203ce0764c1b23a763","acl.user":{"$gte":4}}],"id_project":"68d4135a10e71f7bfa4dcf2f","preflight":false,"status":{"$lt":1000,"$nin":[50,150]}})
+
 
   if (req.query.dept_id) {
     query.department = req.query.dept_id;
@@ -1193,6 +1313,14 @@ router.get('/', function (req, res, next) {
 
   if (req.query.full_text) {
     query.$text = { "$search": req.query.full_text };
+  }
+
+  if (req.query.phone) {
+    // Match by digit sequence so e.g. "3456677888" finds "+393456677888"
+    var phoneDigits = req.query.phone.replace(/\D/g, '');
+    if (phoneDigits.length > 0) {
+      query["contact.phone"] = new RegExp(phoneDigits);
+    }
   }
 
   var history_search = false;
@@ -1254,6 +1382,10 @@ router.get('/', function (req, res, next) {
   //   query.request_id = req.query.request_id;
   // }
 
+  let timezone = req.query.timezone || 'Europe/Rome';
+  let queryDateRange = false;
+  let queryStartDate;
+  let queryEndDate;
   /**
    **! *** DATE RANGE  USECASE 1 ***
    *  in the tiledesk dashboard's HISTORY PAGE
@@ -1263,18 +1395,9 @@ router.get('/', function (req, res, next) {
    */
   //fixato. secondo me qui manca un parentesi tonda per gli or
   if (history_search === true && req.project && req.project.profile && ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false))) {
-
-    var startdate = moment().subtract(14, "days").format("YYYY-MM-DD");
-    var enddate = moment().format("YYYY-MM-DD");
-
-    winston.debug('»»» REQUEST ROUTE - startdate ', startdate);
-    winston.debug('»»» REQUEST ROUTE - enddate ', enddate);
-
-    var enddatePlusOneDay = moment(new Date()).add(1, 'days').toDate()
-    winston.debug('»»» REQUEST ROUTE - enddate + 1 days: ', enddatePlusOneDay);
-
-    query.createdAt = { $gte: new Date(Date.parse(startdate)).toISOString(), $lte: new Date(enddatePlusOneDay).toISOString() }
-    winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
+    queryDateRange = true;    
+    queryStartDate = moment().subtract(14, "days").format("YYYY/MM/DD");
+    queryEndDate = null;
   }
 
   /**
@@ -1282,45 +1405,26 @@ router.get('/', function (req, res, next) {
     *  in the tiledesk dashboard's HISTORY PAGE 
     *  WHEN THE USER SEARCH FOR DATE INTERVAL OF THE HISTORY OF REQUESTS
     */
-  if (req.query.start_date && req.query.end_date) {
-    winston.debug('REQUEST ROUTE - REQ QUERY start_date ', req.query.start_date);
-    winston.debug('REQUEST ROUTE - REQ QUERY end_date ', req.query.end_date);
 
-    /**
-     * USING TIMESTAMP  in MS    */
-    // var formattedStartDate = new Date(+req.query.start_date);
-    // var formattedEndDate = new Date(+req.query.end_date);
-    // query.createdAt = { $gte: formattedStartDate, $lte: formattedEndDate }
+  if (req.query.start_date || req.query.end_date) {
+    queryDateRange = true; 
+    queryStartDate = req.query.start_date;
+    queryEndDate = req.query.end_date;
+  }
+  else if (req.query.start_date_time || req.query.end_date_time) {
+    queryDateRange = true; 
+    queryStartDate = req.query.start_date_time;
+    queryEndDate = req.query.end_date_time;
+  }
 
-    /**
-     * USING MOMENT      */
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-    var endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-
-    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED START DATE ', startDate);
-    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE ', endDate);
-
-    // ADD ONE DAY TO THE END DAY
-    var date = new Date(endDate);
-    var newdate = new Date(date);
-    var endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
-    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE + 1 DAY ', endDate_plusOneDay);
-
-    query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString(), $lte: new Date(endDate_plusOneDay).toISOString() }
-    winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
-
-  } else if (req.query.start_date && !req.query.end_date) {
-    winston.debug('REQUEST ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)');
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-
-    var range = { $gte: new Date(Date.parse(startDate)).toISOString() };
-    if (req.query.filterRangeField) {
-      query[req.query.filterRangeField] = range;
-    } else {
-      query.createdAt = range;
+  if (queryDateRange) {
+    try {
+      let rangeQuery = datesUtil.createDateRangeQuery(queryStartDate, queryEndDate, timezone, filterRangeField);
+      Object.assign(query, rangeQuery);
+    } catch (error) {
+      winston.error('Error creating date range query: ', error);
+      return res.status(500).send({ success: false, error: error?.message });
     }
-
-    winston.debug('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
   }
 
   if (req.query.snap_department_routing) {
@@ -1360,6 +1464,10 @@ router.get('/', function (req, res, next) {
     } else {
       query["channel.name"] = req.query.channel
     }
+  }
+
+  if (req.query.workingStatus?.ne) {
+    query.workingStatus = { $ne: req.query.workingStatus.ne };
   }
 
   if (req.query.priority) {
@@ -1407,8 +1515,29 @@ router.get('/', function (req, res, next) {
     query["attributes.fully_abandoned"] = true
   }
 
+  if (req.query.rated && (req.query.rated === true || req.query.rated === 'true')) {
+    query.rating = { $exists: true }
+  }
+
   if (req.query.draft && (req.query.draft === 'false' || req.query.draft === false)) {
     query.draft = { $in: [false, null] }
+  }
+
+  let inWStatus = req.query.workingStatus?.in?.split(',').map(s => s.trim()).filter(Boolean);
+  let ninWStatus = req.query.workingStatus?.nin?.split(',').map(s => s.trim()).filter(Boolean);
+
+  if (ninWStatus && ninWStatus.length > 0) {
+    if (ninWStatus.length === 1) {
+      query.workingStatus = { $ne: ninWStatus[0] };
+    } else {
+      query.workingStatus = { $nin: ninWStatus };
+    }
+  } else if (inWStatus && inWStatus.length > 0) {
+    if (inWStatus.length === 1) {
+      query.workingStatus = inWStatus[0];
+    } else {
+      query.workingStatus = { $in: inWStatus };
+    }
   }
 
   var projection = undefined;
@@ -1422,6 +1551,7 @@ router.get('/', function (req, res, next) {
 
   winston.verbose('REQUEST ROUTE - REQUEST FIND QUERY ', query);
   
+    // acl_check_here_find
   var q1 = Request.find(query, projection).
     skip(skip).limit(limit);
 
@@ -1858,21 +1988,38 @@ router.get('/csv', function (req, res, next) {
 
   var limit = 100000; // Number of request per page
   var page = 0;
+  var skip = 0;
+  let statusArray = [];
+  var projectuser = req.projectuser;
+  let filterRangeField = req.query.filterRangeField || 'createdAt';
 
   if (req.query.page) {
     page = req.query.page;
   }
 
-  var skip = page * limit;
+  skip = page * limit;
   winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
 
-  let statusArray = [];
+  // Default query (same as GET /)
+  var query = { "id_project": req.projectid, "status": { $lt: 1000, $nin: [50, 150] }, preflight: false };
 
-  var query = { "id_project": req.projectid };
+  if (req.user instanceof Subscription) {
+    // All request
+  } else if (projectuser && (projectuser.role == "owner" || projectuser.role == "admin")) {
+    if (req.query.mine) {
+      query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
+    }
+  } else {
+    query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
+  }
 
   if (req.query.dept_id) {
     query.department = req.query.dept_id;
     winston.debug('REQUEST ROUTE - QUERY DEPT ID', query.department);
+  }
+
+  if (req.query.requester_email) {
+    query["snapshot.lead.email"] = req.query.requester_email;
   }
 
   if (req.query.full_text) {
@@ -1880,34 +2027,27 @@ router.get('/csv', function (req, res, next) {
     query.$text = { "$search": req.query.full_text };
   }
 
-  if (req.query.status) {
+  if (req.query.phone) {
+    var phoneDigits = req.query.phone.replace(/\D/g, '');
+    if (phoneDigits.length > 0) {
+      query["contact.phone"] = new RegExp(phoneDigits);
+    }
+  }
 
+  var history_search = false;
+
+  // Multiple status management (same as GET /)
+  if (req.query.status) {
     if (req.query.status === 'all') {
       delete query.status;
     } else {
-      let statusArray = req.query.status.split(',').map(Number);
-      statusArray = statusArray.map(status => { return isNaN(status) ? null : status }).filter(status => status !== null)
+      statusArray = req.query.status.split(',').map(Number);
+      statusArray = statusArray.map(status => { return isNaN(status) ? null : status }).filter(status => status !== null);
       if (statusArray.length > 0) {
-        query.status = {
-          $in: statusArray
-        }
+        query.status = { $in: statusArray };
       } else {
         delete query.status;
       }
-    }
-
-    if (statusArray.length > 0) {
-      query.status = {
-        $in: statusArray
-      }
-    }
-
-  }
-
-  if (req.query.preflight) {
-    let preflight = (req.query.preflight === 'false');
-    if (preflight) {
-      query.preflight = false;
     }
   }
 
@@ -1928,49 +2068,96 @@ router.get('/csv', function (req, res, next) {
     query.hasBot = req.query.hasbot;
   }
 
-  /**
-   * DATE RANGE  */
-  if (req.query.start_date && req.query.end_date) {
-    winston.debug('REQUEST ROUTE - REQ QUERY start_date ', req.query.start_date);
-    winston.debug('REQUEST ROUTE - REQ QUERY end_date ', req.query.end_date);
-
-    /**
-     * USING TIMESTAMP  in MS    */
-    // var formattedStartDate = new Date(+req.query.start_date);
-    // var formattedEndDate = new Date(+req.query.end_date);
-    // query.createdAt = { $gte: formattedStartDate, $lte: formattedEndDate }
-
-
-    /**
-     * USING MOMENT      */
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-    var endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-
-    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED START DATE ', startDate);
-    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE ', endDate);
-
-    // ADD ONE DAY TO THE END DAY
-    var date = new Date(endDate);
-    var newdate = new Date(date);
-    var endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
-    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE + 1 DAY ', endDate_plusOneDay);
-    // var endDate_plusOneDay =   moment('2018-09-03').add(1, 'd')
-    // var endDate_plusOneDay =   endDate.add(1).day();
-    // var toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
-
-    query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString(), $lte: new Date(endDate_plusOneDay).toISOString() }
-    winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
-
-  } else if (req.query.start_date && !req.query.end_date) {
-    winston.debug('REQUEST ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)');
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-
-    query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString() };
-    winston.debug('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
+  if (req.query.tags) {
+    query["tags.tag"] = req.query.tags;
   }
-  winston.debug("csv query", query);
 
-  var direction = 1; //-1 descending , 1 ascending
+  if (req.query.location) {
+    query.location = req.query.location;
+  }
+
+  if (req.query.ticket_id) {
+    query.ticket_id = req.query.ticket_id;
+  }
+
+  if (req.query.preflight && (req.query.preflight === 'true' || req.query.preflight === true)) {
+    delete query.preflight;
+  }
+
+  let timezone = req.query.timezone || 'Europe/Rome';
+  let queryDateRange = false;
+  let queryStartDate;
+  let queryEndDate;
+
+  if (history_search === true && req.project && req.project.profile && ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false))) {
+    queryDateRange = true;
+    queryStartDate = moment().subtract(14, "days").format("YYYY/MM/DD");
+    queryEndDate = null;
+  }
+
+  if (req.query.start_date || req.query.end_date) {
+    queryDateRange = true;
+    queryStartDate = req.query.start_date;
+    queryEndDate = req.query.end_date;
+  } else if (req.query.start_date_time || req.query.end_date_time) {
+    queryDateRange = true;
+    queryStartDate = req.query.start_date_time;
+    queryEndDate = req.query.end_date_time;
+  }
+
+  if (queryDateRange) {
+    try {
+      let rangeQuery = datesUtil.createDateRangeQuery(queryStartDate, queryEndDate, timezone, filterRangeField);
+      Object.assign(query, rangeQuery);
+    } catch (error) {
+      winston.error('Error creating date range query: ', error);
+      return res.status(500).send({ success: false, error: error?.message });
+    }
+  }
+
+  if (req.query.snap_department_routing) {
+    query["snapshot.department.routing"] = req.query.snap_department_routing;
+  }
+
+  if (req.query.snap_department_default) {
+    query["snapshot.department.default"] = req.query.snap_department_default;
+  }
+
+  if (req.query.snap_department_id_bot) {
+    query["snapshot.department.id_bot"] = req.query.snap_department_id_bot;
+  }
+
+  if (req.query.snap_department_id_bot_exists) {
+    query["snapshot.department.id_bot"] = { "$exists": req.query.snap_department_id_bot_exists };
+  }
+
+  if (req.query.snap_lead_lead_id) {
+    query["snapshot.lead.lead_id"] = req.query.snap_lead_lead_id;
+  }
+
+  if (req.query.snap_lead_email) {
+    query["snapshot.lead.email"] = req.query.snap_lead_email;
+  }
+
+  if (req.query.smartAssignment) {
+    query.smartAssignment = req.query.smartAssignment;
+  }
+
+  if (req.query.channel) {
+    if (req.query.channel === "offline") {
+      query["channel.name"] = { "$in": ["email", "form"] };
+    } else if (req.query.channel === "online") {
+      query["channel.name"] = { "$nin": ["email", "form"] };
+    } else {
+      query["channel.name"] = req.query.channel;
+    }
+  }
+
+  if (req.query.priority) {
+    query.priority = req.query.priority;
+  }
+
+  var direction = -1; // same default as GET /
   if (req.query.direction) {
     direction = req.query.direction;
   }
@@ -1984,20 +2171,9 @@ router.get('/csv', function (req, res, next) {
 
   var sortQuery = {};
   sortQuery[sortField] = direction;
-
   winston.debug("sort query", sortQuery);
 
-  if (req.query.channel) {
-    if (req.query.channel === "offline") {
-      query["channel.name"] = { "$in": ["email", "form"] }
-    } else if (req.query.channel === "online") {
-      query["channel.name"] = { "$nin": ["email", "form"] }
-    } else {
-      query["channel.name"] = req.query.channel
-    }
-  }
-
-  // VOICE FILTERS - Start
+  // VOICE FILTERS
   if (req.query.caller) {
     query["attributes.caller_phone"] = req.query.caller;
   }
@@ -2007,45 +2183,52 @@ router.get('/csv', function (req, res, next) {
   if (req.query.call_id) {
     query["attributes.call_id"] = req.query.call_id;
   }
-  // VOICE FILTERS - End
-
-  // TODO ORDER BY SCORE
-  // return Faq.find(query,  {score: { $meta: "textScore" } }) 
-  // .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
-
-  // aggiungi filtro per data marco
 
   if (req.query.duration && req.query.duration_op) {
     let duration = Number(req.query.duration) * 60 * 1000;
     if (req.query.duration_op === 'gt') {
-      query.duration = { $gte: duration }
+      query.duration = { $gte: duration };
     } else if (req.query.duration_op === 'lt') {
-      query.duration = { $lte: duration }
+      query.duration = { $lte: duration };
     } else {
-      winston.verbose("Duration operator can be 'gt' or 'lt'. Skip duration_op " + req.query.duration_op)
+      winston.verbose("Duration operator can be 'gt' or 'lt'. Skip duration_op " + req.query.duration_op);
     }
   }
 
-  if (req.query.draft && (req.query.draft === 'false' || req.query.draft === false)) {
-    query.draft = { $in: [false, null] }
+  if (req.query.abandonded && (req.query.abandoned === true || req.query.abandoned === 'true')) {
+    query["attributes.fully_abandoned"] = true;
   }
 
-  winston.debug('REQUEST ROUTE - REQUEST FIND ', query)
-  return Request.find(query, '-transcript -status -__v').
+  if (req.query.rated && (req.query.rated === true || req.query.rated === 'true')) {
+    query.rating = { $exists: true };
+  }
+
+  if (req.query.draft && (req.query.draft === 'false' || req.query.draft === false)) {
+    query.draft = { $in: [false, null] };
+  }
+
+  var csvProjection = '-transcript -status -__v';
+  if (req.query.full_text && req.query.no_textscore != "true" && req.query.no_textscore != true) {
+    winston.verbose('fulltext projection on');
+    csvProjection = { transcript: 0, status: 0, __v: 0, score: { $meta: "textScore" } };
+  }
+
+  winston.debug("csv query", query);
+  winston.debug('REQUEST ROUTE - REQUEST FIND ', query);
+
+  var q = Request.find(query, csvProjection).
     skip(skip).limit(limit).
-    //populate('department', {'_id':-1, 'name':1}).     
     populate('department').
     populate('lead').
-    // populate('participatingBots').
-    // populate('participatingAgents'). 
-    lean().
-    // populate({
-    //   path: 'department', 
-    //   //select: { '_id': -1,'name':1}
-    //   select: {'name':1}
-    // }).  
-    sort(sortQuery).
-    exec(function (err, requests) {
+    lean();
+
+  if (req.query.full_text && req.query.no_textscore != "true" && req.query.no_textscore != true) {
+    q.sort({ score: { $meta: "textScore" } });
+  } else {
+    q.sort(sortQuery);
+  }
+
+  return q.exec(function (err, requests) {
       if (err) {
         winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
         return res.status(500).send({ success: false, msg: 'Error getting csv requests.', err: err });
@@ -2300,8 +2483,13 @@ router.get('/:requestid', function (req, res) {
   var requestid = req.params.requestid;
   winston.debug("get request by id: " + requestid);
 
+  // acl_check_here_find   // acl_check_here_query
 
-  let q = Request.findOne({ request_id: requestid, id_project: req.projectid })
+
+  var query = { request_id: requestid, id_project: req.projectid };
+  aclService.addACLQuery(query, req.user, aclConstants.ACL_PERMISSION.ONLY_READ);
+
+  let q = Request.findOne(query)
     // .select("+snapshot.agents")
     .populate('lead')
     .populate('department')

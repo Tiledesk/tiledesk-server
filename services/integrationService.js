@@ -24,7 +24,7 @@ class IntegrationService {
         }
     }
 
-    async getKeyFromIntegration(id_project, integration_name) {
+    async getKeyFromIntegration(id_project, integration_name = 'openai') {
         if (!id_project || !integration_name) {
             throw({ code: 422, error: "Fields 'id_project', 'integration_name' are mandatory" });
         }
@@ -38,7 +38,7 @@ class IntegrationService {
             return integration?.value?.apikey;
 
         } catch (err) {
-            winston.error("Erro getting integration: ", err);
+            winston.error("Error getting integration: ", err);
             throw({ code: err.code || 500, error: err.error || `Error getting integration for ${integration_name} for project ${id_project}` })
         }
     }
