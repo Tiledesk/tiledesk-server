@@ -205,23 +205,48 @@ class AiService {
       base_url = kb_endpoint_qa_gpu;
     }
     winston.debug("[OPENAI SERVICE] kb endpoint: " + base_url);
-    
+
+    const config = {
+      url: base_url + "/qa",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: data,
+      method: 'POST'
+    };
+
     return new Promise((resolve, reject) => {
 
-      axios({
-        url: base_url + "/qa",
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        data: data,
-        method: 'POST'
-      }).then((resbody) => {
+      axios(config).then((resbody) => {
         resolve(resbody);
       }).catch((err) => {
         reject(err);
       })
 
     })
+  }
+
+  /**
+   * Stream /qa from KB service. Uses Axios with responseType: 'stream'.
+   * Returns the raw Axios response (resp.data is the Node.js Readable stream).
+   */
+  askStream(data) {
+    winston.debug("askStream data: ", data);
+    let base_url = kb_endpoint_qa;
+    if (data.hybrid || data.search_type === 'hybrid') {
+      base_url = kb_endpoint_qa_gpu;
+    }
+    winston.debug("[OPENAI SERVICE] kb stream endpoint: " + base_url);
+
+    return axios({
+      url: base_url + "/qa",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: data,
+      method: 'POST',
+      responseType: 'stream'
+    });
   }
 
   getContentChunks(namespace_id, content_id, engine, hybrid) {
@@ -291,6 +316,6 @@ class AiService {
 
 }
 
-var aiService = new AiService();
+const aiService = new AiService();
 
 module.exports = aiService;

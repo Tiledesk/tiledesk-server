@@ -64,10 +64,12 @@ var autoIndex = true;
 if (process.env.MONGOOSE_AUTOINDEX) {
   autoIndex = process.env.MONGOOSE_AUTOINDEX;
 }
-
 winston.info("DB AutoIndex: " + autoIndex);
 
-var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex }, function(err) {
+let useUnifiedTopology = process.env.MONGOOSE_UNIFIED_TOPOLOGY === 'true';
+winston.info("DB useUnifiedTopology: ", useUnifiedTopology, typeof useUnifiedTopology);
+
+var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex, "useUnifiedTopology": useUnifiedTopology }, function(err) {
   if (err) { 
     winston.error('Failed to connect to MongoDB on ' + databaseUri + " ", err);
     process.exit(1);
@@ -79,7 +81,7 @@ if (process.env.MONGOOSE_DEBUG==="true") {
 }
 mongoose.set('useFindAndModify', false); // https://mongoosejs.com/docs/deprecations.html#-findandmodify-
 mongoose.set('useCreateIndex', true);
-mongoose.set('useUnifiedTopology', false); 
+//mongoose.set('useUnifiedTopology', false); 
 
 // CONNECT REDIS - CHECK IT
 const { TdCache } = require('./utils/TdCache');
@@ -137,6 +139,7 @@ var cacheUtil = require("./utils/cacheUtil");
 var orgUtil = require("./utils/orgUtil");
 var images = require('./routes/images');
 var files = require('./routes/files');
+let filesp = require('./routes/filesp');
 var campaigns = require('./routes/campaigns');
 var logs = require('./routes/logs');
 var requestUtilRoot = require('./routes/requestUtilRoot');
@@ -146,7 +149,9 @@ var property = require('./routes/property');
 var segment = require('./routes/segment');
 var webhook = require('./routes/webhook');
 var webhooks = require('./routes/webhooks');
+var roles = require('./routes/roles');
 var copilot = require('./routes/copilot');
+var mcp = require('./routes/mcp');
 
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
@@ -180,6 +185,7 @@ var geoService = require('./services/geoService');
 // geoService.listen(); //queued
 
 var updateLeadQueued = require('./services/updateLeadQueued');
+var updateRequestSnapshotQueued = require('./services/updateRequestSnapshotQueued');
 
 let JobsManager = require('./jobsManager');
 
@@ -189,13 +195,13 @@ if (process.env.JOB_WORKER_ENABLED=="true" || process.env.JOB_WORKER_ENABLED == 
 }
 winston.info("JobsManager jobWorkerEnabled: "+ jobWorkerEnabled);  
 
-let jobsManager = new JobsManager(jobWorkerEnabled, geoService, botEvent, subscriptionNotifierQueued, botSubscriptionNotifier, updateLeadQueued);
+let jobsManager = new JobsManager(jobWorkerEnabled, geoService, botEvent, subscriptionNotifierQueued, botSubscriptionNotifier, updateLeadQueued, updateRequestSnapshotQueued);
 
 var faqBotHandler = require('./services/faqBotHandler');
 faqBotHandler.listen();
 
 var pubModulesManager = require('./pubmodules/pubModulesManager');
-pubModulesManager.init({express:express, mongoose:mongoose, passport:passport, databaseUri:databaseUri, routes:{}, jobsManager:jobsManager});
+pubModulesManager.init({express:express, mongoose:mongoose, passport:passport, databaseUri:databaseUri, routes:{}, jobsManager:jobsManager, tdCache:tdCache});
   
 jobsManager.listen(); //listen after pubmodules to enabled queued *.queueEnabled events
 
@@ -321,6 +327,10 @@ if (process.env.ENABLE_ACCESSLOG) {
 }
 
 app.use(passport.initialize());
+// If deployed behind a proxy/ingress (TLS terminated upstream), enable this
+// if (process.env.TRUST_PROXY === "true") {
+app.set('trust proxy', 1);
+// }
 
 // After you declare "app"
 if (process.env.DISABLE_SESSION_STRATEGY==true ||  process.env.DISABLE_SESSION_STRATEGY=="true" ) {
@@ -348,7 +358,6 @@ if (process.env.DISABLE_SESSION_STRATEGY==true ||  process.env.DISABLE_SESSION_S
         client: cacheClient,
         prefix: "sessions:",
       })
-
 
       app.use(
         session({
@@ -630,15 +639,19 @@ app.use('/:projectid/quotes', [passport.authenticate(['basic', 'jwt'], { session
 
 app.use('/:projectid/integration', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], integration )
 
+app.use('/:projectid/mcp', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], mcp);
+
 app.use('/:projectid/kbsettings', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], kbsettings);
 app.use('/:projectid/kb/unanswered', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], unanswered);
 app.use('/:projectid/kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], kb);
 
-app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], logs);
+app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], logs);
 
 app.use('/:projectid/webhooks', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], webhooks);
 app.use('/:projectid/copilot', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], copilot);
+app.use('/:projectid/roles', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], roles);
 
+app.use('/:projectid/files', filesp);
 
 if (pubModulesManager) {
   pubModulesManager.useUnderProjects(app);

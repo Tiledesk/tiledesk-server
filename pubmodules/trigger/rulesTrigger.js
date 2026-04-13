@@ -598,7 +598,9 @@ class RulesTrigger {
       
                   // closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
                   const closed_by = "_trigger";
-                  requestService.closeRequestByRequestId(request_id, id_project, false, true, closed_by);
+                  requestService.closeRequestByRequestId(request_id, id_project, false, true, closed_by).catch((err) => {
+                    winston.error("(RulesTrigger) closeRequestByRequestId error", err);
+                  });
                                       
                 } catch(e) {
                   winston.error("Error runAction", e);
@@ -634,7 +636,9 @@ class RulesTrigger {
                     winston.debug('runAction action id_project: ' + id_project);
         
                     //   reopenRequestByRequestId(request_id, id_project) {
-                    requestService.reopenRequestByRequestId(request_id, id_project);                    
+                    requestService.reopenRequestByRequestId(request_id, id_project).catch((err) => {
+                      winston.error("(RulesTrigger) reopenRequestByRequestId error", err);
+                    });                    
           
                   } catch(e) {
                     winston.error("Error runAction", e);
@@ -674,7 +678,9 @@ class RulesTrigger {
                 winston.debug('runAction action id_project: ' + id_project);
     
                 //     addParticipantByRequestId(request_id, id_project, member) {
-                requestService.addParticipantByRequestId(request_id, id_project, member);
+                requestService.addParticipantByRequestId(request_id, id_project, member).catch((err) => {
+                  winston.error("(RulesTrigger) addParticipantByRequestId error", err);
+                });
         
                        
               } catch(e) {
@@ -845,7 +851,9 @@ class RulesTrigger {
                 winston.debug('runAction action id_project: ' + id_project);
     
                 // addTagByRequestId(request_id, id_project, tag) {
-                requestService.addTagByRequestId(request_id, id_project, {tag:tag});
+                requestService.addTagByRequestId(request_id, id_project, {tag:tag}).catch((err) => {
+                  winston.error("(RulesTrigger) addTagByRequestId error", err);
+                });
         
                        
               } catch(e) {
@@ -1156,8 +1164,9 @@ class RulesTrigger {
                       lead: createdLead, requester: puser
                     };
       
+                    //let t1 = Date.now();
                     return requestService.create(new_request).then(function (savedRequest) {                   
-
+                      //console.log("[Performance] (rulesTrigger) requestService.create time: " + (Date.now() - t1));
                       // performance console log
                       // console.log("************* request created trigger: "+new Date().toISOString());
 
@@ -1168,8 +1177,11 @@ class RulesTrigger {
                         var senderFullname = fullname || 'Guest'; // guest_here
 
                         // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
-                        return messageService.create( id_user, senderFullname , savedRequest.request_id, text,
-                          id_project, id_user,  MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes, type, eventTrigger.event.metadata, language);
+                        //let t2 = Date.now();
+                        return messageService.create( id_user, senderFullname , savedRequest.request_id, text, id_project, id_user,  MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes, type, eventTrigger.event.metadata, language).then(function(savedMessage) {
+                          //console.log("[Performance] (rulesTrigger) messageService.create time: " + (Date.now() - t2));
+                          return savedMessage;
+                        });
                       }).catch(function (err) {
                         winston.error("Error trigger requestService.create", err);
                       });

@@ -149,15 +149,19 @@ async (req, res)  => {
           // prende fullname e email da quello loggato
 
           // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes) {
-          return leadService.createIfNotExistsWithLeadId(sender || req.user._id, fullname, email, req.projectid, null, req.body.attributes || req.user.attributes)
+          return leadService.createIfNotExistsWithLeadId(sender || req.user._id, fullname, email, req.projectid, null, req.body.attributes || req.user.attributes, undefined, req.user.phone)
           .then(function(createdLead) {
 
-            
+            const contact = {
+              ...(createdLead.phone && { phone: createdLead.phone }),
+              ...(createdLead.email && { email: createdLead.email })
+            };
         
             var new_request = {                                     
               request_id: req.params.request_id, 
-              project_user_id: project_user._id, 
+              project_user_id: project_user._id,
               lead_id: createdLead._id, 
+              ...(Object.keys(contact).length && { contact }),
               id_project:req.projectid,
               first_text: req.body.text, 
               departmentid: req.body.departmentid, 
@@ -264,7 +268,10 @@ async (req, res)  => {
 
           // TOOD update also request attributes and sourcePage
           // return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
-          // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
+          Request.findOneAndUpdate({request_id: request.request_id, id_project: request.id_project}, { "attributes.last_message": savedMessage}).catch((err) => {
+            winston.error("Create message - saved last message in request error: ", error);
+          })
+
               
           if (request.participants && request.participants.indexOf(sender) > -1) { //update waiitng time if write an  agent (member of participants)
             winston.debug("updateWaitingTimeByRequestId");
