@@ -89,6 +89,13 @@ class WebSocketServer {
   // https://medium.com/@martin.sikora/node-js-websocket-simple-chat-tutorial-2def3a841b61
   init(server) {
 
+    if (this._initDone === true) {
+      winston.error(`WebSocketServer.init called again in the same process; skipping to avoid duplicate ws server and duplicate event listeners (pid=${process.pid})`);
+      return;
+    }
+    this._initDone = true;
+    winston.info(`WebSocketServer.init (first call) pid=${process.pid} path=${websocketServerPath}`);
+
     winston.info('Starting websocket on path: ' + websocketServerPath);
 
     //var wss = new WebSocket.Server({ port: 40510 });
@@ -867,7 +874,7 @@ class WebSocketServer {
       setImmediate(async () => {
 
         var pu = data.updatedProject_userPopulated;
-        winston.debug('ws pu', pu);
+        winston.debug(`ws project_user.update id=${pu && pu.id} id_project=${pu && pu.id_project} role=${pu && pu.role}`);
 
         //TODO pubSubServer.handlePublishMessage ('/'+pu.id_project+'/project_users/', pu, undefined, true, "UPDATE");
 

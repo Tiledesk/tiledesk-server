@@ -5,6 +5,17 @@
  */
 
 var app = require('../app');
+
+// One process should load app once; if you see this twice with the same pid, something re-required the full stack.
+console.log('[TILEDESK BOOTSTRAP] app module loaded', {
+  pid: process.pid,
+  ts: Date.now(),
+  argv: process.argv.slice(1).join(' ')
+});
+if (process.env.TILEDESK_BOOTSTRAP_TRACE === 'true') {
+  console.trace('[TILEDESK BOOTSTRAP] stack trace (TILEDESK_BOOTSTRAP_TRACE)');
+}
+
 var debug = require('debug')('tiledesk-server:server');
 var http = require('http');
 var version = require('../package.json').version
@@ -34,6 +45,8 @@ webSocketServer.init(httpServer);
 
 // use ipv4 or ipv6 https://stackoverflow.com/questions/50855419/get-only-ipv4-ips-via-nodejs-express
 // var listener = httpServer.listen(port,'0.0.0.0', function(){      
+
+console.log('[TILEDESK SERVER LISTEN]', { pid: process.pid, port: port });
 
 var listener = httpServer.listen(port, function(){      
     console.log('Listening tiledesk-server ver:'+version+' on port ' + listener.address().port); //Listening on port 8888

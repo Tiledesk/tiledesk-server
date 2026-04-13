@@ -175,7 +175,7 @@ function work(msg, cb) {
 
   // Never concatenate full body into debug strings: args are evaluated before winston's
   // level check, which duplicates huge payloads every message and can OOM the process.
-  winston.debug('Got Fanout msg topic:%s length:%d', topic, message_string.length);
+  winston.debug(`Got Fanout msg topic:${topic} length:${message_string.length}`);
 
   var payload;
   try {
@@ -270,7 +270,7 @@ function listen() {
         }
         var dat = {updatedProject_userPopulated: data.updatedProject_userPopulated, req: {user: user, body: body}}; //remove request
         var _pu = dat.updatedProject_userPopulated;
-        winston.debug('fanout publish project_user_update id=%s id_project=%s', _pu && _pu.id, _pu && _pu.id_project);
+        winston.debug(`fanout publish project_user_update id=${_pu && _pu.id} id_project=${_pu && _pu.id_project}`);
 
       publish(exchange, "project_user_update", Buffer.from(JSON.stringify(dat)));
     });
@@ -288,14 +288,18 @@ function listen() {
 }
 
 if (process.env.QUEUE_ENABLED === "true") {
-    requestEvent.queueEnabled = true;
-    messageEvent.queueEnabled = true;
-    authEvent.queueEnabled = true; 
-    botEvent.queueEnabled = true;
-    listen();
-    start();
-    winston.info("Queue Fanout enabled. endpoint: " + url );
-    winston.info('[AMQP Fanout] authEvent listenerCount(project_user.update)=%d (baseline: 2 AMQP publishers + cachegoose; much higher may mean duplicate queue init)',
-      authEvent.listenerCount('project_user.update'));
-} 
+    if (global.__TILEDESK_FANOUT_AMQP_BOOT__) {
+      winston.error(`[AMQP Fanout] duplicate module bootstrap in pid ${process.pid} — listen()/start() skipped (fix duplicate require or cache clear)`);
+    } else {
+      global.__TILEDESK_FANOUT_AMQP_BOOT__ = true;
+      requestEvent.queueEnabled = true;
+      messageEvent.queueEnabled = true;
+      authEvent.queueEnabled = true;
+      botEvent.queueEnabled = true;
+      listen();
+      start();
+      winston.info("Queue Fanout enabled. endpoint: " + url );
+      winston.info(`[AMQP Fanout] authEvent listenerCount(project_user.update)=${authEvent.listenerCount('project_user.update')} (baseline: 2 AMQP publishers + cachegoose; much higher may mean duplicate queue init)`);
+    }
+}
 

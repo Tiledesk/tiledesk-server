@@ -249,13 +249,13 @@ function work(msg, cb) {
   const message_string = msg.content.toString();
   const topic = msg.fields.routingKey //.replace(/[.]/g, '/');
 
-  winston.debug('Got msg topic:%s length:%d', topic, message_string.length);
+  winston.debug(`Got msg topic:${topic} length:${message_string.length}`);
 
   var payload;
   try {
     payload = JSON.parse(message_string);
   } catch (parseErr) {
-    winston.error('[AMQP] invalid JSON (topic=%s len=%d): %s', topic, message_string.length, parseErr.message);
+    winston.error(`[AMQP] invalid JSON (topic=${topic} len=${message_string.length}): ${parseErr.message}`);
     return cb(true);
   }
 
@@ -470,7 +470,7 @@ function listen() {
         }
         var dat = {updatedProject_userPopulated: data.updatedProject_userPopulated, req: {user: user, body: body}}; //remove request
         var _pu = dat.updatedProject_userPopulated;
-        winston.debug('topic publish project_user_update id=%s id_project=%s', _pu && _pu.id, _pu && _pu.id_project);
+        winston.debug(`topic publish project_user_update id=${_pu && _pu.id} id_project=${_pu && _pu.id_project}`);
         publish(exchange, "project_user_update", Buffer.from(JSON.stringify(dat)));
       });
     });
@@ -513,13 +513,18 @@ function listen() {
 }
 
 if (process.env.QUEUE_ENABLED === "true") {
-    requestEvent.queueEnabled = true;
-    messageEvent.queueEnabled = true;
-    authEvent.queueEnabled = true;
-    botEvent.queueEnabled = true;
-    leadEvent.queueEnabled = true;
-    listen();
-    start();
-    winston.info("Queue enabled. endpoint: " + url );
-} 
+    if (global.__TILEDESK_TOPIC_AMQP_BOOT__) {
+      winston.error(`[AMQP Topic] duplicate module bootstrap in pid ${process.pid} — listen()/start() skipped`);
+    } else {
+      global.__TILEDESK_TOPIC_AMQP_BOOT__ = true;
+      requestEvent.queueEnabled = true;
+      messageEvent.queueEnabled = true;
+      authEvent.queueEnabled = true;
+      botEvent.queueEnabled = true;
+      leadEvent.queueEnabled = true;
+      listen();
+      start();
+      winston.info("Queue enabled. endpoint: " + url );
+    }
+}
 
