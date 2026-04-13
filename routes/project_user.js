@@ -81,7 +81,6 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
         // if (!roles.includes(req.body.role)) {
         //   return res.status(400).send({ success: false, msg: 'Invalid role specified: ' + req.body.role });
         // }
-        console.log("puser: ", puser);
         let user_available = typeof req.body.user_available === 'boolean' ? req.body.user_available : true
 
         if (puser) {
