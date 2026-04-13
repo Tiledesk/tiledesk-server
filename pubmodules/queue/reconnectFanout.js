@@ -11,6 +11,16 @@ const authEvent = require('../../event/authEvent');
 // if the connection is closed or fails to be established at all, we will reconnect
 var amqpConn = null;
 var url = process.env.CLOUDAMQP_URL + "?heartbeat=60" || "amqp://localhost";
+var fanoutReconnectTimer = null;
+function scheduleFanoutReconnect() {
+  if (fanoutReconnectTimer) {
+    return;
+  }
+  fanoutReconnectTimer = setTimeout(function () {
+    fanoutReconnectTimer = null;
+    start();
+  }, 1000);
+}
 // attento devi aggiornare configMap di PRE E PROD
 // var url = process.env.AMQP_URL + "?heartbeat=60" || "amqp://localhost";
 
@@ -21,7 +31,7 @@ function start() {
   amqp.connect(url, function(err, conn) {
     if (err) {
       winston.error("[AMQP Fanout]", err);
-      return setTimeout(start, 1000);
+      return scheduleFanoutReconnect();
     }
     conn.on("error", function(err) {
       if (err.message !== "Connection closing") {
@@ -30,7 +40,7 @@ function start() {
     });
     conn.on("close", function() {
       winston.error("[AMQP Fanout] reconnecting");
-      return setTimeout(start, 1000);
+      return scheduleFanoutReconnect();
     });
 
     winston.info("[AMQP Fanout] connected");
@@ -98,7 +108,11 @@ function startWorker() {
       ch.on("close", function() {
         winston.info("[AMQP Fanout] channel closed");
       });
-      ch.prefetch(10);//leggila da env
+      var fanoutPrefetch = parseInt(process.env.AMQP_FANOUT_PREFETCH || '10', 10);
+      if (isNaN(fanoutPrefetch) || fanoutPrefetch < 1) {
+        fanoutPrefetch = 10;
+      }
+      ch.prefetch(fanoutPrefetch);
 
       // ch.assertExchange(exchange, 'topic', {
       //   durable: true
@@ -159,34 +173,42 @@ function work(msg, cb) {
   const message_string = msg.content.toString();
   const topic = msg.fields.routingKey //.replace(/[.]/g, '/');
 
-  winston.debug("Got Fanout msg topic:" + topic);
-  
-  winston.debug("Got Fanout msg:"+ message_string +  " topic:" + topic);
+  // Never concatenate full body into debug strings: args are evaluated before winston's
+  // level check, which duplicates huge payloads every message and can OOM the process.
+  winston.debug('Got Fanout msg topic:%s length:%d', topic, message_string.length);
+
+  var payload;
+  try {
+    payload = JSON.parse(message_string);
+  } catch (parseErr) {
+    winston.error('[AMQP Fanout] invalid JSON (topic=%s len=%d): %s', topic, message_string.length, parseErr.message);
+    return cb(true);
+  }
 
   if (topic === 'request_create') {
     winston.debug("reconnectfanout here topic:" + topic);
     winston.debug("reconnect request.update")
-    requestEvent.emit('request.create.queue.pubsub', JSON.parse(message_string));
+    requestEvent.emit('request.create.queue.pubsub', payload);
   }
   if (topic === 'request_update') {
     winston.debug("reconnectfanout here topic:" + topic);
-    requestEvent.emit('request.update.queue.pubsub',  JSON.parse(message_string));
+    requestEvent.emit('request.update.queue.pubsub', payload);
   }
   if (topic === 'message_create') {
     winston.debug("reconnectfanout here topic:" + topic);
-    messageEvent.emit('message.create.queue.pubsub', JSON.parse(message_string));
+    messageEvent.emit('message.create.queue.pubsub', payload);
   }
   if (topic === 'project_user_update') {
     winston.debug("reconnectfanout here topic:" + topic);
-    authEvent.emit('project_user.update.queue.pubsub', JSON.parse(message_string));
+    authEvent.emit('project_user.update.queue.pubsub', payload);
   }
   if (topic === 'faqbot_update') {
     winston.debug("reconnectfanout here topic faqbot_update:" + topic);
-    botEvent.emit('faqbot.update.queue.pubsub', JSON.parse(message_string));
+    botEvent.emit('faqbot.update.queue.pubsub', payload);
   }
   if (topic === 'request_snapshot_add') {
     winston.debug("reconnectfanout here topic request_snapshot_add:" + topic); 
-    requestEvent.emit('request.snapshot.add.queue.pubsub', JSON.parse(message_string));
+    requestEvent.emit('request.snapshot.add.queue.pubsub', payload);
   }
   cb(true);
 //   WebSocket.cb(true);
@@ -247,7 +269,8 @@ function listen() {
           }
         }
         var dat = {updatedProject_userPopulated: data.updatedProject_userPopulated, req: {user: user, body: body}}; //remove request
-        winston.debug("dat",dat);
+        var _pu = dat.updatedProject_userPopulated;
+        winston.debug('fanout publish project_user_update id=%s id_project=%s', _pu && _pu.id, _pu && _pu.id_project);
 
       publish(exchange, "project_user_update", Buffer.from(JSON.stringify(dat)));
     });
@@ -258,7 +281,6 @@ function listen() {
     setImmediate(() => {
       winston.debug("reconnect faqbot.update")
       publish(exchange, "faqbot_update", Buffer.from(JSON.stringify(bot)));
-      winston.debug("reconnect fan: "+ Buffer.from(JSON.stringify(bot)))
     });
   });
 
@@ -273,5 +295,7 @@ if (process.env.QUEUE_ENABLED === "true") {
     listen();
     start();
     winston.info("Queue Fanout enabled. endpoint: " + url );
+    winston.info('[AMQP Fanout] authEvent listenerCount(project_user.update)=%d (baseline: 2 AMQP publishers + cachegoose; much higher may mean duplicate queue init)',
+      authEvent.listenerCount('project_user.update'));
 } 
 

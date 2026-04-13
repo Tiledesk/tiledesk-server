@@ -14,6 +14,16 @@ const authEvent = require('../../event/authEvent');
 var amqpConn = null;
 
 var url = process.env.CLOUDAMQP_URL + "?heartbeat=60" || "amqp://localhost";
+var topicReconnectTimer = null;
+function scheduleTopicReconnect() {
+  if (topicReconnectTimer) {
+    return;
+  }
+  topicReconnectTimer = setTimeout(function () {
+    topicReconnectTimer = null;
+    start();
+  }, 1000);
+}
 // attento devi aggiornare configMap di PRE E PROD
 // var url = process.env.AMQP_URL + "?heartbeat=60" || "amqp://localhost?heartbeat=60";
 
@@ -39,7 +49,7 @@ function start() {
   amqp.connect(url, function(err, conn) {
     if (err) {
       winston.error("[AMQP]", err);
-      return setTimeout(start, 1000);
+      return scheduleTopicReconnect();
     }
     conn.on("error", function(err) {
       if (err.message !== "Connection closing") {
@@ -48,7 +58,7 @@ function start() {
     });
     conn.on("close", function() {
       winston.error("[AMQP] reconnecting");
-      return setTimeout(start, 1000);
+      return scheduleTopicReconnect();
     });
 
     winston.info("[AMQP] connected");
@@ -239,101 +249,107 @@ function work(msg, cb) {
   const message_string = msg.content.toString();
   const topic = msg.fields.routingKey //.replace(/[.]/g, '/');
 
-  winston.debug("Got msg topic:" + topic);
+  winston.debug('Got msg topic:%s length:%d', topic, message_string.length);
 
-  winston.debug("Got msg:"+ message_string +  " topic:" + topic);
+  var payload;
+  try {
+    payload = JSON.parse(message_string);
+  } catch (parseErr) {
+    winston.error('[AMQP] invalid JSON (topic=%s len=%d): %s', topic, message_string.length, parseErr.message);
+    return cb(true);
+  }
 
   if (topic === 'request_create') {
     winston.debug("reconnect here topic:" + topic); 
     // requestEvent.emit('request.create.queue', msg.content);
-    requestEvent.emit('request.create.queue', JSON.parse(message_string));
+    requestEvent.emit('request.create.queue', payload);
   }
   if (topic === 'request_update') {
     winston.debug("reconnect here topic:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
-    requestEvent.emit('request.update.queue',  JSON.parse(message_string));
+    requestEvent.emit('request.update.queue',  payload);
   }
 
   if (topic === 'request_update_preflight') {
     winston.debug("reconnect here topic:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
-    requestEvent.emit('request.update.preflight.queue',  JSON.parse(message_string));
+    requestEvent.emit('request.update.preflight.queue',  payload);
   }    
 
   if (topic === 'request_participants_join') {
     winston.debug("reconnect here topic:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
-    requestEvent.emit('request.participants.join.queue',  JSON.parse(message_string));
+    requestEvent.emit('request.participants.join.queue',  payload);
   }   
 
 
   if (topic === 'request_participants_leave') {
     winston.debug("reconnect here topic:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
-    requestEvent.emit('request.participants.leave.queue',  JSON.parse(message_string));
+    requestEvent.emit('request.participants.leave.queue',  payload);
   }   
   
   if (topic === 'request_participants_update') {
     winston.debug("reconnect here topic:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
-    requestEvent.emit('request.participants.update.queue',  JSON.parse(message_string));
+    requestEvent.emit('request.participants.update.queue',  payload);
   }   
   
   if (topic === 'request_close') {
     winston.debug("reconnect here topic:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
-    requestEvent.emit('request.close.queue',  JSON.parse(message_string));
+    requestEvent.emit('request.close.queue',  payload);
   }     
   
   if (topic === 'request_close_extended') {
     winston.debug("reconnect here topic:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
-    requestEvent.emit('request.close.extended.queue',  JSON.parse(message_string));
+    requestEvent.emit('request.close.extended.queue',  payload);
   }     
 
   if (topic === 'request_workingStatus_update') {
     winston.debug("reconnect here topic:" + topic); 
-    requestEvent.emit('request.workingStatus.update.queue',  JSON.parse(message_string));
+    requestEvent.emit('request.workingStatus.update.queue',  payload);
   }     
 
   if (topic === 'message_create') {
     winston.debug("reconnect here topic:" + topic);
     // requestEvent.emit('request.create.queue', msg.content);
-    messageEvent.emit('message.create.queue', JSON.parse(message_string));
+    messageEvent.emit('message.create.queue', payload);
   }
   if (topic === 'project_user_update') {
     winston.debug("reconnect here topic:" + topic);
     // requestEvent.emit('request.create.queue', msg.content);
-    authEvent.emit('project_user.update.queue', JSON.parse(message_string));
+    authEvent.emit('project_user.update.queue', payload);
   }
 
   if (topic === 'faqbot_update') {
     winston.debug("reconnect here topic faqbot_update:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
-    botEvent.emit('faqbot.update.queue',  JSON.parse(message_string));
+    botEvent.emit('faqbot.update.queue',  payload);
   }
 
   if (topic === 'lead_create') {
     winston.debug("reconnect here topic lead_create:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
-    leadEvent.emit('lead.create.queue',  JSON.parse(message_string));
+    leadEvent.emit('lead.create.queue',  payload);
   }
 
   if (topic === 'lead_update') {
     winston.debug("reconnect here topic lead_update:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
-    leadEvent.emit('lead.update.queue',  JSON.parse(message_string));
+    leadEvent.emit('lead.update.queue',  payload);
   }
 
   if (topic === 'lead_fullname_email_update') {
     winston.debug("reconnect here topic lead_fullname_email_update:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
-    leadEvent.emit('lead.fullname.email.update.queue',  JSON.parse(message_string));
+    leadEvent.emit('lead.fullname.email.update.queue',  payload);
   }
 
   if (topic === 'request_snapshot_update') {
     winston.debug("reconnect here topic request_snapshot_update:" + topic); 
-    requestEvent.emit('request.snapshot.update.queue',  JSON.parse(message_string));
+    requestEvent.emit('request.snapshot.update.queue',  payload);
   }
 
 
@@ -453,7 +469,8 @@ function listen() {
           }
         }
         var dat = {updatedProject_userPopulated: data.updatedProject_userPopulated, req: {user: user, body: body}}; //remove request
-        winston.debug("dat",dat);
+        var _pu = dat.updatedProject_userPopulated;
+        winston.debug('topic publish project_user_update id=%s id_project=%s', _pu && _pu.id, _pu && _pu.id_project);
         publish(exchange, "project_user_update", Buffer.from(JSON.stringify(dat)));
       });
     });
@@ -463,7 +480,6 @@ function listen() {
       setImmediate(() => {
         winston.debug("reconnect faqbot.update")
         publish(exchange, "faqbot_update", Buffer.from(JSON.stringify(bot)));
-        winston.debug("reconnect: "+ Buffer.from(JSON.stringify(bot)))
       });
     });
 
@@ -472,7 +488,6 @@ function listen() {
       setImmediate(() => {
         winston.debug("reconnect lead.create")
         publish(exchange, "lead_create", Buffer.from(JSON.stringify(lead)));
-        winston.debug("reconnect: "+ Buffer.from(JSON.stringify(lead)))
       });
     });
 
@@ -481,7 +496,6 @@ function listen() {
       setImmediate(() => {
         winston.debug("reconnect lead.update")
         publish(exchange, "lead_update", Buffer.from(JSON.stringify(lead)));
-        winston.debug("reconnect: "+ Buffer.from(JSON.stringify(lead)))
       });
     });
 
@@ -490,7 +504,6 @@ function listen() {
       setImmediate(() => {
         winston.debug("reconnect lead.fullname.email.update")
         publish(exchange, "lead_fullname_email_update", Buffer.from(JSON.stringify(lead)));
-        winston.debug("reconnect: "+ Buffer.from(JSON.stringify(lead)))
       });
     });
 
