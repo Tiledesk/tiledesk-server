@@ -16,6 +16,7 @@ var passport = require('passport');
 require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 var roleChecker = require('../middleware/has-role');
+const puEvent = require('../event/projectUserEvent');
 
 
 router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
@@ -56,18 +57,31 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
 
     } else {
 
-      let roles = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
-
-      Project_user.findOne({ id_project: id_project, id_user: user._id, role: { $in: roles }}, (err, puser) => {
+      /**
+       * *** IT IS NOT ALLOWED TO INVITE A USER WHO IS ALREADY A MEMBER OF THE PROJECT *** 
+       * FIND THE PROJECT USERS FOR THE PROJECT ID PASSED BY THE CLIENT IN THE BODY OF THE REQUEST
+       * IF THE ID OF THE USER FOUND FOR THE EMAIL (PASSED IN THE BODY OF THE REQUEST - see above)
+       * MATCHES ONE OF THE USER ID CONTENTS IN THE PROJECTS USER OBJECT STOP THE WORKFLOW AND RETURN AN ERROR */
+      
+      // rolequery
+      // var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];     
+      // winston.debug("role", role);
+    
+      // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
+      return Project_user.findOne({ id_project: req.projectid, id_user: user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active"}, function (err, puser) {
+      // return Project_user.find({ id_project: req.projectid, role: { $in : role }, status: "active"}, function (err, projectuser) {
+        //puser = projectuser
+      
+        winston.debug('PRJCT-USERS FOUND (FILTERED FOR THE PROJECT ID) ', puser )
         if (err) {
           winston.error("Error inviting an already existing user: ", err);
           return res.status(500).send({ success: false, msg: "An error occurred on inviting user " + email + " on project " + id_project })
         }
 
-        if (!roles.includes(req.body.role)) {
-          return res.status(400).send({ success: false, msg: 'Invalid role specified: ' + req.body.role });
-        }
-        
+        // if (!roles.includes(req.body.role)) {
+        //   return res.status(400).send({ success: false, msg: 'Invalid role specified: ' + req.body.role });
+        // }
+        console.log("puser: ", puser);
         let user_available = typeof req.body.user_available === 'boolean' ? req.body.user_available : true
 
         if (puser) {
@@ -76,7 +90,20 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
             return res.status(403).send({ success: false, msg: 'Forbidden. User is already a member', code: 4001 });
           }
 
-          Project_user.findByIdAndUpdate(puser._id, { role: req.body.role, user_available: user_available, trashed: false, status: 'active' }, { new: true}, (err, updatedPuser) => {
+          winston.debug('NO ERROR, SO CREATE AND SAVE A NEW PROJECT USER ')
+
+          var newProject_user = new Project_user({
+            // _id: new mongoose.Types.ObjectId(),
+            id_project: req.projectid,
+            id_user: user._id,
+            role: req.body.role,         
+            roleType : RoleConstants.TYPE_AGENTS,   
+            user_available: user_available, 
+            createdBy: req.user.id,
+            updatedBy: req.user.id
+          });
+
+          return newProject_user.save(function (err, savedProject_user) {
             if (err) {
               winston.error("Error update existing project user before inviting it ", err)
               return res.status(500).send({ success: false, msg: "An error occurred on inviting user " + email + " on project " + id_project })
@@ -101,6 +128,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
             id_project: id_project,
             id_user: user._id,
             role: req.body.role,
+            roleType : RoleConstants.TYPE_AGENTS,   
             user_available: user_available,
             createdBy: req.user.id,
             updatedBy: req.user.id
@@ -138,6 +166,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
     // role: RoleConstants.USER,   
     // - Create project_user endpoint by agent (Ticketing) now is with Guest Role      
     role: RoleConstants.GUEST,
+    roleType : RoleConstants.TYPE_USERS,   
     user_available: false,
     tags: req.body.tags, 
     createdBy: req.user.id,
@@ -298,6 +327,7 @@ router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { ses
         return res.status(404).send({ success: false, error: 'Project user not found with id ' + pu_id });
       }
 
+      puEvent.emit('project_user.deleted', project_user);
       // Event 'project_user.delete' not working - Check it and improve it to manage soft/hard delete
       return res.status(200).send(project_user);
 
@@ -324,6 +354,7 @@ router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { ses
         });
       }
 
+      puEvent.emit('project_user.deleted', project_user);
       return res.status(200).send(project_user);
     });
   }
@@ -344,9 +375,61 @@ router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { ses
 
         // Event 'project_user.delete' not working - Check it and improve it to manage disable project user
         return res.status(200).send(project_user);
-      }
-    );
+      });
   }
+});
+
+// Restore a soft-deleted (trashed) project user. Fails if not found or not trashed.
+router.put('/:project_userid/restore', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+  const pu_id = req.params.project_userid;
+
+  Project_user.findOne({ _id: pu_id, id_project: req.projectid }, function (err, project_user) {
+    if (err) {
+      winston.error("Error finding project_user for restore", err);
+      return res.status(500).send({ success: false, msg: 'Error restoring Project User with id ' + pu_id });
+    }
+    if (!project_user) {
+      winston.warn("Project user not found for restore with id " + pu_id);
+      return res.status(404).send({ success: false, error: 'Project user not found with id ' + pu_id });
+    }
+    if (project_user.trashed !== true) {
+      winston.warn("Project user is not trashed, cannot restore id " + pu_id);
+      return res.status(400).send({ success: false, error: 'Project user is not trashed, cannot restore' });
+    }
+
+    Project_user.findByIdAndUpdate(pu_id, { trashed: false, status: 'active' }, { new: true }, function (err, updatedProject_user) {
+      if (err) {
+        winston.error("Error restoring project_user", err);
+        return res.status(500).send({ success: false, msg: 'Error restoring Project User with id ' + pu_id });
+      }
+
+      winston.debug("Restored project_user", updatedProject_user);
+      updatedProject_user.populate({ path: 'id_user', select: { 'firstname': 1, 'lastname': 1 } }, function (err, updatedProject_userPopulated) {
+        if (err) {
+          winston.error("Error populating restored project_user", err);
+        } else {
+          var pu = updatedProject_userPopulated.toJSON();
+          pu.isBusy = ProjectUserUtil.isBusy(updatedProject_user, req.project && req.project.settings && req.project.settings.max_agent_assigned_chat);
+          authEvent.emit('project_user.update', { updatedProject_userPopulated: pu, req: req });
+        }
+      });
+      return res.status(200).send(updatedProject_user);
+    });
+  });
+});
+
+router.get('/me', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res, next) {
+  if (!req.project) {
+    return res.status(404).send({ success: false, msg: 'Project not found.' });
+  }
+  var project_user = req.projectuser;
+
+  var pu = project_user.toJSON();
+   
+  pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_assigned_chat);
+  res.json([pu]);
+
+
 });
 
 router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res) {
@@ -475,14 +558,24 @@ router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session
  */                                                                                       
 router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription'])], function (req, res) {
 
-  var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
+  // rolequery
+  // var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
 
+  var query;
   if (req.query.role) {
     role = req.query.role;
+    winston.debug("role", role);
+    query =  {id_project: req.projectid, role: { $in : role } };
+  } else {
+     query =  {id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS };
   }
-  winston.debug("role", role);
 
-  var query = { id_project: req.projectid, role: { $in : role }, trashed: { $ne: true } };
+  if (!req.query.trashed || req.query.trashed === 'false' || req.query.trashed === false) {
+    query.trashed = { $ne: true };
+  }
+
+  // var query =  {id_project: req.projectid, role: { $in : role } };
+  
 
   if (req.query.presencestatus) {
     query["presence.status"] = req.query.presencestatus;

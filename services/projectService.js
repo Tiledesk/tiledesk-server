@@ -8,6 +8,7 @@ var projectEvent = require("../event/projectEvent");
 var winston = require('../config/winston');
 const cacheEnabler = require("./cacheEnabler");
 const cacheUtil = require("../utils/cacheUtil");
+var RoleConstants = require("../models/roleConstants");
 
 class ProjectService {
 
@@ -33,7 +34,8 @@ class ProjectService {
           var newProject_user = new Project_user({
             id_project: savedProject._id,
             id_user: createdBy,
-            role: 'owner',
+            role: RoleConstants.OWNER,
+            roleType : RoleConstants.TYPE_AGENTS,   
             user_available: true,
             createdBy: createdBy,
             updatedBy: createdBy

@@ -282,7 +282,7 @@ class EmailService {
   // }
 
   async send(mail, quoteEnabled, project, quoteManager) {
-
+    console.log("send email called: ", mail.to)
     if (!this.enabled) {
       winston.info('EmailService is disabled. Not sending email');
       return 0;
@@ -339,7 +339,8 @@ class EmailService {
         if (mail.callback) {
           mail.callback(error, { info: info });
         }
-        return winston.error("Error sending email ", { error: error, mailConfig: mail.config, mailOptions: mailOptions });
+        //return winston.error("Error sending email ", { error: error, mailConfig: mail.config, mailOptions: mailOptions });
+        return winston.error("Error sending email ", { error: error, mailConfig: mail.config });
       }
       winston.verbose('Email sent:', { info: info });
       winston.debug('Email sent:', { info: info, mailOptions: mailOptions });

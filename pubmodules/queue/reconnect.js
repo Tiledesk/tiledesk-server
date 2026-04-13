@@ -175,6 +175,11 @@ function startWorker() {
           winston.info("Data queue", oka)
         });
 
+        ch.bindQueue(_ok.queue, exchange, "request_workingStatus_update", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: request_workingStatus_update");
+          winston.info("Data queue", oka)
+        });
+
         ch.bindQueue(_ok.queue, exchange, "message_create", {}, function(err3, oka) {
               winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: message_create");
               winston.info("Data queue", oka)
@@ -204,9 +209,10 @@ function startWorker() {
           winston.info("Data queue", oka)
         });
 
-        
-
-
+        ch.bindQueue(_ok.queue, exchange, "request_snapshot_update", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: request_snapshot_update");
+          winston.info("Data queue", oka)
+        });
 
 
         ch.consume(queueName, processMsg, { noAck: false });
@@ -285,6 +291,11 @@ function work(msg, cb) {
     requestEvent.emit('request.close.extended.queue',  JSON.parse(message_string));
   }     
 
+  if (topic === 'request_workingStatus_update') {
+    winston.debug("reconnect here topic:" + topic); 
+    requestEvent.emit('request.workingStatus.update.queue',  JSON.parse(message_string));
+  }     
+
   if (topic === 'message_create') {
     winston.debug("reconnect here topic:" + topic);
     // requestEvent.emit('request.create.queue', msg.content);
@@ -318,6 +329,11 @@ function work(msg, cb) {
     winston.debug("reconnect here topic lead_fullname_email_update:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
     leadEvent.emit('lead.fullname.email.update.queue',  JSON.parse(message_string));
+  }
+
+  if (topic === 'request_snapshot_update') {
+    winston.debug("reconnect here topic request_snapshot_update:" + topic); 
+    requestEvent.emit('request.snapshot.update.queue',  JSON.parse(message_string));
   }
 
 
@@ -404,6 +420,18 @@ function listen() {
       });
     });
 
+    requestEvent.on('request.workingStatus.update', function(request) {
+      setImmediate(() => {
+        publish(exchange, "request_workingStatus_update", Buffer.from(JSON.stringify(request)));
+      });
+    });
+
+    requestEvent.on('request.snapshot.update', function(data) {
+      setImmediate(() => {
+        winston.debug("reconnect request.snapshot.update")
+        publish(exchange, "request_snapshot_update", Buffer.from(JSON.stringify(data)));
+      });
+    });
 
 
     messageEvent.on('message.create', function(message) {

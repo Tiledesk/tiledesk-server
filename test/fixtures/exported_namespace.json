@@ -19,7 +19,8 @@
             "name": "Example content",
             "namespace": "6835be87d0a352002d806f73",
             "status": -1,
-            "updatedAt": "2025-05-27T13:32:18.078Z"
+            "updatedAt": "2025-05-27T13:32:18.078Z",
+            "tags": ["tag1", "tag2"]
         },
         {
             "_id": "6835bed02c061f7021f46e99",

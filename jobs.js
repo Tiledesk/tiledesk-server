@@ -29,6 +29,7 @@ const botEvent = require('./event/botEvent');
 var channelManager = require('./channels/channelManager');
 
 var updateLeadQueued = require('./services/updateLeadQueued');
+var updateRequestSnapshotQueued = require('./services/updateRequestSnapshotQueued');
 
 
 require('./services/mongoose-cache-fn')(mongoose);
@@ -47,7 +48,10 @@ if (!databaseUri) { //TODO??
   winston.warn('DATABASE_URI not specified, falling back to localhost.');
 }
 
-var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex }, function(err) {
+let useUnifiedTopology = process.env.MONGOOSE_UNIFIED_TOPOLOGY === 'true';
+winston.info("DB useUnifiedTopology: ", useUnifiedTopology, typeof useUnifiedTopology);
+
+var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex, "useUnifiedTopology": useUnifiedTopology }, function(err) {
   if (err) { 
     winston.error('Failed to connect to MongoDB on ' + databaseUri + " ", err);
     process.exit(1);
@@ -83,7 +87,7 @@ async function main()
     
 
 
-    let jobsManager = new JobsManager(undefined, geoService, botEvent, subscriptionNotifierQueued, botSubscriptionNotifier, updateLeadQueued);
+    let jobsManager = new JobsManager(undefined, geoService, botEvent, subscriptionNotifierQueued, botSubscriptionNotifier, updateLeadQueued, updateRequestSnapshotQueued);
 
     jobsManager.listen();
 

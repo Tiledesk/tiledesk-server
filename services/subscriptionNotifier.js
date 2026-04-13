@@ -27,6 +27,13 @@ var webhook_origin = process.env.WEBHOOK_ORIGIN || "http://localhost:3000";
 winston.debug("webhook_origin: "+webhook_origin);
 
 
+var SUBSCRIPTION_LOG_ENABLED = false;
+if (process.env.SUBSCRIPTION_LOG_ENABLED==true || process.env.SUBSCRIPTION_LOG_ENABLED=="true") {
+  SUBSCRIPTION_LOG_ENABLED = true;
+}
+winston.info("SUBSCRIPTION_LOG_ENABLED: "+SUBSCRIPTION_LOG_ENABLED);
+
+
 var request = require('retry-request', {
   request: require('request')
 });
@@ -124,6 +131,8 @@ class SubscriptionNotifier {
             winston.debug("SubscriptionLog response", response);
             winston.debug("SubscriptionLog jsonResponse", jsonResponse);
 
+            if (SUBSCRIPTION_LOG_ENABLED==true) {
+              
               var subscriptionLog = new SubscriptionLog({event: s.event, target: s.target, 
                 response: JSON.stringify(response),
                 body: JSON.stringify(jsonResponse),
@@ -137,7 +146,9 @@ class SubscriptionNotifier {
                 }
                 winston.debug("SubscriptionLog saved", sl);
               });
-
+              
+            }
+            
             if (err) {
               winston.error("Error sending webhook for event " + s.event + " TO " + s.target +  " with error " , err);
               if (callback) {
