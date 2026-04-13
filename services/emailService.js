@@ -282,7 +282,6 @@ class EmailService {
   // }
 
   async send(mail, quoteEnabled, project, quoteManager) {
-    console.log("send email called: ", mail.to)
     if (!this.enabled) {
       winston.info('EmailService is disabled. Not sending email');
       return 0;
