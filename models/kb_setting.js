@@ -245,12 +245,12 @@ const AnsweredQuestionSchema = new Schema({
 });
 
 // Add TTL index to automatically delete documents
-UnansweredQuestionSchema.index({ created_at: 1 }, { expireAfterSeconds: expireAfterSeconds }); 
-UnansweredQuestionSchema.index({ id_project: 1, namespace: 1, created_at: -1 });
+UnansweredQuestionSchema.index({ createdAt: 1 }, { expireAfterSeconds: expireAfterSeconds }); 
+UnansweredQuestionSchema.index({ id_project: 1, namespace: 1, createdAt: -1 });
 UnansweredQuestionSchema.index({ question: "text" });
 
-AnsweredQuestionSchema.index({ created_at: 1 }, { expireAfterSeconds: expireAnsweredAfterSeconds });
-AnsweredQuestionSchema.index({ id_project: 1, namespace: 1, created_at: -1 });
+AnsweredQuestionSchema.index({ createdAt: 1 }, { expireAfterSeconds: expireAnsweredAfterSeconds });
+AnsweredQuestionSchema.index({ id_project: 1, namespace: 1, createdAt: -1 });
 AnsweredQuestionSchema.index(
   { question: "text", answer: "text" },
   { weights: { question: 5, answer: 1 } }
