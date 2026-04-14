@@ -5,17 +5,27 @@ const BATCH_SIZE = 100;
 /** Log a progress line every this many bulkWrite rounds (plus always after the 1st). */
 const PROGRESS_LOG_EVERY_BATCHES = 10;
 
+/** Only documents that still need roleType (idempotent re-runs). */
+const WITHOUT_ROLE_TYPE = {
+  $or: [{ roleType: { $exists: false } }, { roleType: null }]
+};
+
 const AGENT_ROLES_FILTER = {
-  $or: [
-    { role: 'agent' },
-    { role: 'supervisor' },
-    { role: 'admin' },
-    { role: 'owner' }
+  $and: [
+    {
+      $or: [
+        { role: 'agent' },
+        { role: 'supervisor' },
+        { role: 'admin' },
+        { role: 'owner' }
+      ]
+    },
+    WITHOUT_ROLE_TYPE
   ]
 };
 
 const USER_ROLES_FILTER = {
-  $or: [{ role: 'user' }, { role: 'guest' }]
+  $and: [{ $or: [{ role: 'user' }, { role: 'guest' }] }, WITHOUT_ROLE_TYPE]
 };
 
 async function batchSetRoleType(filter, roleType, phaseLabel) {
@@ -42,7 +52,7 @@ async function batchSetRoleType(filter, roleType, phaseLabel) {
     scanned++;
     batch.push({
       updateOne: {
-        filter: { _id: doc._id },
+        filter: { _id: doc._id, ...WITHOUT_ROLE_TYPE },
         update: { $set: { roleType } }
       }
     });
