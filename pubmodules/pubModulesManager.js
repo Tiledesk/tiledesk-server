@@ -74,6 +74,8 @@ class PubModulesManager {
         this.cache = undefined;
 
         this.dialogFlow = undefined;
+
+        this.analyticsPublisher = undefined;
     }
 
   
@@ -593,6 +595,18 @@ class PubModulesManager {
                 winston.info("PubModulesManager init dialogFlow module not found");
             }else {
                 winston.error("PubModulesManager error initializing init dialogFlow module", err);
+            }
+        }
+
+        try {
+            this.analyticsPublisher = require('./analytics-publisher');
+            this.analyticsPublisher.listen();
+            winston.info("PubModulesManager analyticsPublisher initialized.");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("PubModulesManager init analyticsPublisher module not found");
+            } else {
+                winston.info("PubModulesManager error initializing analyticsPublisher module", err);
             }
         }
     }
