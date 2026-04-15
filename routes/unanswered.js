@@ -89,14 +89,12 @@ router.get('/:namespace', async (req, res) => {
             sortObj = { [sortField]: direction };
         }
 
-        const query = UnansweredQuestion.find(filter, projection)
+        const questions = await UnansweredQuestion.find(filter, projection)
             .sort(sortObj)
             .skip(page * limit)
             .limit(limit);
 
-        const questions = await query;
-
-        const count = await query.countDocuments();
+        const count = await UnansweredQuestion.countDocuments(filter);
 
         res.status(200).json({
             count,
