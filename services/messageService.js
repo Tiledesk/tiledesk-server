@@ -312,9 +312,13 @@ class MessageService {
 
                 })
 
+                console.log("(getAudioTranscription) integration: ", integration);
+
                 if (!integration || !integration?.value?.apikey) {
                     winston.verbose("Integration for openai not found or apikey is undefined.")
+                    console.log("(getAudioTranscription) Integration for openai not found or apikey is undefined.")
                     key = process.env.GPTKEY;
+                    console.log("(getAudioTranscription) use shared key: ", key);
                 } else {
                     key = integration.value.apikey;
                 }
@@ -324,7 +328,7 @@ class MessageService {
                     resolve(null)
                 }
 
-                aiService.transcription(file, key).then((response) => {
+                aiService.transcription(file, { key: key }).then((response) => {
                     resolve(response.data.text);
                 }).catch((err) => {
                     winston.error("Error getting audio transcription: ", err?.response?.data);
