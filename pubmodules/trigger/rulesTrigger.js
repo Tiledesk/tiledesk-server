@@ -1164,11 +1164,7 @@ class RulesTrigger {
                       lead: createdLead, requester: puser
                     };
       
-                    //let t1 = Date.now();
                     return requestService.create(new_request).then(function (savedRequest) {                   
-                      //console.log("[Performance] (rulesTrigger) requestService.create time: " + (Date.now() - t1));
-                      // performance console log
-                      // console.log("************* request created trigger: "+new Date().toISOString());
 
                         if (attributes) {
                           attributes.sendnotification = false; //  sembra nn funzionae
@@ -1177,9 +1173,7 @@ class RulesTrigger {
                         var senderFullname = fullname || 'Guest'; // guest_here
 
                         // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
-                        //let t2 = Date.now();
                         return messageService.create( id_user, senderFullname , savedRequest.request_id, text, id_project, id_user,  MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes, type, eventTrigger.event.metadata, language).then(function(savedMessage) {
-                          //console.log("[Performance] (rulesTrigger) messageService.create time: " + (Date.now() - t2));
                           return savedMessage;
                         });
                       }).catch(function (err) {
