@@ -322,7 +322,7 @@ class MessageService {
                     resolve(null)
                 }
 
-                aiService.transcription(file, key).then((response) => {
+                aiService.transcription(file, { key: key }).then((response) => {
                     resolve(response.data.text);
                 }).catch((err) => {
                     winston.error("Error getting audio transcription: ", err?.response?.data);
