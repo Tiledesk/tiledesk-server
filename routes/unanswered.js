@@ -69,7 +69,7 @@ router.get('/:namespace', async (req, res) => {
 
         const page = parseInt(req.query.page) || 0;
         const limit = parseInt(req.query.limit) || 20;
-        const sortField = req.query.sortField || 'created_at';
+        const sortField = req.query.sortField || 'createdAt';
         const direction = parseInt(req.query.direction) || -1;
 
         const filter = { id_project, namespace };
