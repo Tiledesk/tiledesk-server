@@ -1,8 +1,25 @@
 let mongoose = require('mongoose');
 let Schema = mongoose.Schema;
 let winston = require('../config/winston');
-let expireAfterSeconds = process.env.UNANSWERED_QUESTION_EXPIRATION_TIME || 7 * 24 * 60 * 60; // 7 days
-let expireAnsweredAfterSeconds = process.env.ANSWERED_QUESTION_EXPIRATION_TIME || 7 * 24 * 60 * 60; // 30 days
+
+const DEFAULT_UNANSWERED_TTL_SEC = 7 * 24 * 60 * 60; // 7 days
+const DEFAULT_ANSWERED_TTL_SEC = 7 * 24 * 60 * 60; // 7 days
+
+function ttlSecondsFromEnv(raw, fallbackSec) {
+  if (raw == null || String(raw).trim() === '') return fallbackSec;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? n : fallbackSec;
+}
+
+let expireAfterSeconds = ttlSecondsFromEnv(
+  process.env.UNANSWERED_QUESTION_EXPIRATION_TIME,
+  DEFAULT_UNANSWERED_TTL_SEC
+);
+let expireAnsweredAfterSeconds = ttlSecondsFromEnv(
+  process.env.ANSWERED_QUESTION_EXPIRATION_TIME,
+  DEFAULT_ANSWERED_TTL_SEC
+);
+
 
 const EngineSchema = new Schema({
   name: {
