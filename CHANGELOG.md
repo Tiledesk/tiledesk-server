@@ -5,7 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.17.5 (next-release)
+# 2.18.1
+- Added permissions logic
+- Added custom roles support
 - Add answered questions functionality
 - Added AnsweredQuestion schema with TTL index for automatic deletion.
 - Updated UnansweredQuestion schema to include additional fields and improved query handling for searching and sorting.

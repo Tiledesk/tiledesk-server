@@ -270,7 +270,7 @@ AnsweredQuestionSchema.index({ createdAt: 1 }, { expireAfterSeconds: expireAnswe
 AnsweredQuestionSchema.index({ id_project: 1, namespace: 1, createdAt: -1 });
 AnsweredQuestionSchema.index(
   { question: "text", answer: "text" },
-  { weights: { question: 5, answer: 1 } }
+  { weights: { question: 3, answer: 1 } }
 );
 
 

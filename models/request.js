@@ -11,6 +11,7 @@ var ProjectUserSchema = require("../models/project_user").schema;
 var RequestStatus = require("../models/requestStatus");
 var LeadSchema = require("../models/lead").schema; //it's not used but i you run test like (mocha departmentService.js) it throws this not blocking exception: error: error getting requestSchema hasn't been registered for model "lead".
 var NoteSchema = require("../models/note").schema;
+
 var TagSchema = require("../models/tag");
 var LocationSchema = require("../models/location");
 var RequestSnapshotSchema = require("../models/requestSnapshot");
