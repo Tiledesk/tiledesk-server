@@ -5,7 +5,7 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.18.1
+# 2.18.3
 - Added permissions logic
 - Added custom roles support
 - Add answered questions functionality
