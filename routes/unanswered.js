@@ -6,7 +6,7 @@ var winston = require('../config/winston');
 // Add a new unanswered question
 router.post('/', async (req, res) => {
     try {
-        const { namespace, question } = req.body;
+        const { namespace, question, request_id, sender } = req.body;
         const id_project = req.projectid;
 
         if (!namespace || !question) {
@@ -28,7 +28,9 @@ router.post('/', async (req, res) => {
         const unansweredQuestion = new UnansweredQuestion({
             id_project,
             namespace,
-            question
+            question,
+            request_id,
+            sender
         });
 
         const savedQuestion = await unansweredQuestion.save();
@@ -70,18 +72,29 @@ router.get('/:namespace', async (req, res) => {
         const sortField = req.query.sortField || 'createdAt';
         const direction = parseInt(req.query.direction) || -1;
 
-        const questions = await UnansweredQuestion.find({
-            id_project,
-            namespace
-        })
-        .sort({ [sortField]: direction })
-        .skip(page * limit)
-        .limit(limit);
+        const filter = { id_project, namespace };
 
-        const count = await UnansweredQuestion.countDocuments({
-            id_project,
-            namespace
-        });
+        let projection = undefined;
+
+        if (req.query.search) {
+            filter.$text = { $search: req.query.search };
+            // Add score to projection if it's a text search
+            projection = { score: { $meta: "textScore" } };
+        }
+
+        let sortObj;
+        if (projection && projection.score) {
+            sortObj = { score: { $meta: "textScore" } };
+        } else {
+            sortObj = { [sortField]: direction };
+        }
+
+        const questions = await UnansweredQuestion.find(filter, projection)
+            .sort(sortObj)
+            .skip(page * limit)
+            .limit(limit);
+
+        const count = await UnansweredQuestion.countDocuments(filter);
 
         res.status(200).json({
             count,
@@ -90,7 +103,8 @@ router.get('/:namespace', async (req, res) => {
                 page,
                 limit,
                 sortField,
-                direction
+                direction,
+                search: req.query.search || undefined
             }
         });
 
@@ -109,20 +123,19 @@ router.delete('/:id', async (req, res) => {
         const { id } = req.params;
         const id_project = req.projectid;
 
-        const question = await UnansweredQuestion.findOne({ _id: id, id_project });
-        if (!question) {
+        const deleted = await UnansweredQuestion.findOneAndDelete({ _id: id, id_project });
+        if (!deleted) {
             return res.status(404).json({
                 success: false,
                 error: "Question not found"
             });
         }
 
-        await UnansweredQuestion.deleteOne({ _id: id });
         res.status(200).json({
             success: true,
             message: "Question deleted successfully"
         });
-
+        
     } catch (error) {
         winston.error('Error deleting unanswered question:', error);
         res.status(500).json({

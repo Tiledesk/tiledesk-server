@@ -527,9 +527,15 @@ class Chat21Handler {
             requestEvent.on('request.create',  function(request) {          
 
                 winston.debug("chat21Handler requestEvent request.create called" , request);
+                console.log('[WELCOME_MSG_FLOW] chat21Handler: received request.create', { request_id: request.request_id, channelOutbound: request.channelOutbound?.name, first_text: request.first_text });
                 // setImmediate(() => {
 // perche nn c'è setImmedite? per performace
-                    if (request.channelOutbound.name === ChannelConstants.CHAT21) {
+                    if (request.channelOutbound && request.channelOutbound.name === ChannelConstants.CHAT21) {
+                        console.log('[WELCOME_MSG_FLOW] chat21Handler: channelOutbound is CHAT21, creating group');
+                    } else {
+                        console.log('[WELCOME_MSG_FLOW] chat21Handler: channelOutbound is NOT CHAT21, skipping group creation', { channelOutbound: request.channelOutbound, channelOutboundName: request.channelOutbound?.name, expected: ChannelConstants.CHAT21 });
+                    }
+                    if (request.channelOutbound && request.channelOutbound.name === ChannelConstants.CHAT21) {
 
                         chat21.auth.setAdminToken(adminToken);
 
@@ -619,6 +625,7 @@ class Chat21Handler {
                                 // performance console log
                                 // console.log("************* after request.support_group.created: "+new Date().toISOString()); 
 
+                                console.log('[WELCOME_MSG_FLOW] chat21Handler: emitting request.support_group.created', { request_id: request.request_id, id_project: request.id_project });
                                 requestEvent.emit('request.support_group.created', request);
 
                                 chat21Event.emit('group.create', data);      

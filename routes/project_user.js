@@ -20,6 +20,7 @@ const puEvent = require('../event/projectUserEvent');
 const { track } = require('../lib/analyticsClient');
 
 
+
 router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
 
   winston.debug('Invite ProjectUser body ', req.body);
@@ -69,7 +70,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
       // winston.debug("role", role);
     
       // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
-      return Project_user.findOne({ id_project: req.projectid, id_user: user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active"}, function (err, puser) {
+      return Project_user.findOne({ id_project: id_project, id_user: user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active"}, function (err, puser) {
       // return Project_user.find({ id_project: req.projectid, role: { $in : role }, status: "active"}, function (err, projectuser) {
         //puser = projectuser
       
@@ -113,7 +114,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
 
             updatedPuser.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedPuserPopulated){
               var pu = updatedPuserPopulated.toJSON();
-              pu.isBusy = ProjectUserUtil.isBusy(savedProject_userPopulated, req.project.settings && req.project.settings.max_agent_assigned_chat);
+              pu.isBusy = ProjectUserUtil.isBusy(pu, req.project.settings && req.project.settings.max_agent_assigned_chat);
               var eventData = {req:req, updatedPuserPopulated: pu};
               winston.debug("eventData",eventData);
               authEvent.emit('project_user.invite', eventData);
@@ -270,6 +271,10 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
   const allowedStatuses = ['active', 'disabled'];
   if (req.body.status !== undefined && allowedStatuses.includes(req.body.status)) {
       update.status = req.body.status;
+  }
+
+  if (req.body.trashed != undefined) {
+    update.trashed = req.body.trashed;
   }
 
   if (req.body["settings.email.notification.conversation.assigned.toyou"]!=undefined) {
@@ -597,7 +602,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     winston.debug("role", role);
     query =  {id_project: req.projectid, role: { $in : role } };
   } else {
-     query =  {id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS };
+    query =  {id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS };
   }
 
   if (!req.query.trashed || req.query.trashed === 'false' || req.query.trashed === false) {

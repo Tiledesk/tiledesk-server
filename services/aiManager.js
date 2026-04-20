@@ -247,6 +247,7 @@ class AiManager {
 
   async resolveLLMConfig(id_project, provider = 'openai', model) {
 
+    console.log("resolveLLMConfig...");
     if (provider === 'ollama' || provider === 'vllm') {
       try {
         const integration = await integrationService.getIntegration(id_project, provider);
@@ -270,6 +271,9 @@ class AiManager {
     try {
       let key = await integrationService.getKeyFromIntegration(id_project, provider)
 
+      console.log("key: ", key);
+
+      console.log("returning ", { provider, name: model, api_key: key });
       return {
         provider,
         name: model,

@@ -9,6 +9,12 @@
 - Added permissions logic
 - Added custom roles support
 
+# 2.17.5
+- Add answered questions functionality
+- Added AnsweredQuestion schema with TTL index for automatic deletion.
+- Updated UnansweredQuestion schema to include additional fields and improved query handling for searching and sorting.
+- Enhanced the deletion process for unanswered questions.
+
 # 2.17.4
 - Refactor error handling and code structure in webhook.js
 
@@ -62,7 +68,7 @@
 - Added migration script to add the contact field in request object improving the search by phone number
 
 # 2.15.2
-- Updated GitHub actions
+- Updated GitHub actionsm
 
 # 2.15.1
 - Updated whatsapp-connector to 1.0.24
