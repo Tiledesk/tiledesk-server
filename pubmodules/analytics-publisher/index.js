@@ -240,9 +240,7 @@ function listen() {
   //   user_email string   (required, email format — skip if unavailable)
   //   role       string   (required)
   //   invited_by string|null
-  // TODO: check
   authEvent.on("project_user.invite", function (event) {
-    console.log("project_user.invite", event);
     var pu = event.savedProject_userPopulated || event.updatedPuserPopulated;
     if (!pu) return;
 
@@ -269,23 +267,21 @@ function listen() {
   //   agent_id        string   (required)
   //   previous_status 'available'|'unavailable'|'busy'
   //   new_status      'available'|'unavailable'|'busy'
-  // TODO: check
   authEvent.on("project_user.update.agent", function (event) {
-    console.log("project_user.update.agent", event);
     var pu = event.updatedProject_userPopulated;
     if (!pu) return;
     if (pu.user_available === undefined) return; // not a status-change update
 
-    var prevBool = event.previousUserAvailable;
-    if (prevBool === pu.user_available) return; // no actual change
+    // var prevBool = event.previousUserAvailable;
+    // if (prevBool === pu.user_available) return; // no actual change
 
-    var prevStatus = availabilityLabel(prevBool);
+    var prevStatus = availabilityLabel(false);
     var newStatus = availabilityLabel(pu.user_available);
 
     // Both statuses must be valid enum members — skip if either resolves to null.
-    if (!prevStatus || !newStatus) return;
+    // if (!prevStatus || !newStatus) return;
 
-    var agentId = pu.uuid_user || toStringId(pu);
+    var agentId = toStringId(pu.id_user);
     if (!agentId) return;
 
     track("agent.status_changed", pu.id_project, {
@@ -303,7 +299,6 @@ function listen() {
   //   assigned_by     string|null
   //   routing_type    string
   requestEvent.on("request.department.update", function (requestComplete) {
-    console.log("request.department.update", requestComplete);
     var dept = requestComplete.department;
 
     var deptId = departmentId(dept);
