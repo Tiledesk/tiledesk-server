@@ -1011,6 +1011,11 @@ router.put('/:requestid/tag', async (req, res) => {
           .execPopulate();
 
     requestEvent.emit("request.update", populatedRequest)
+
+    if (adding_tags.length > 0) {
+      requestEvent.emit("request.tag.update", { request: populatedRequest, tags: adding_tags });
+    }
+
     res.status(200).send(updatedRequest)
     
     if (process.env.NODE_ENV !== 'test') {

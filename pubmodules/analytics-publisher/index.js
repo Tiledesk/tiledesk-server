@@ -116,7 +116,7 @@ function listen() {
       channel: (request.channel && request.channel.name) || "web",
       first_response_time: null,
       with_bot: request.hasBot || false,
-      visitor_id: firstVisitorId(request.participants),
+      visitor_id: (request.lead && request.lead.lead_id) || null,
     });
   });
 
@@ -301,6 +301,19 @@ function listen() {
       agent_id: agentId,
       previous_status: prevStatus,
       new_status: newStatus,
+    });
+  });
+
+  // ── 9. conversation.tag_added ─────────────────────────────────────────────
+  // Contract: packages/contracts/src/payloads/conversation-tag-added.ts
+  //   id_request string (required)
+  //   tag        string (required)
+  requestEvent.on("request.tag.update", function ({ request, tags }) {
+    tags.forEach(function (tagObj) {
+      track("conversation.tag_added", request.id_project, {
+        id_request: request.request_id || toStringId(request),
+        tag:        tagObj.tag,
+      });
     });
   });
 
