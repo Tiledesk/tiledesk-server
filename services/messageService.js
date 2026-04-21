@@ -115,7 +115,7 @@ class MessageService {
                     messageToCreate.metadata &&
                     messageToCreate.metadata.type.startsWith('audio/')) {
                         try {
-                            let audio_transcription = await that.getAudioTranscription(id_project, messageToCreate.metadata.src);
+                            let audio_transcription = await that.getAudioTranscription(id_project, messageToCreate.metadata.src, message.language);
                             if (audio_transcription) {
                                 messageToCreate.text = audio_transcription;
                             }
@@ -294,7 +294,7 @@ class MessageService {
         });
     }
 
-    getAudioTranscription(id_project, audio_url) {
+    getAudioTranscription(id_project, audio_url, language) {
         return new Promise( async (resolve) => {
             try {
 
@@ -322,7 +322,7 @@ class MessageService {
                     resolve(null)
                 }
 
-                aiService.transcription(file, { key: key }).then((response) => {
+                aiService.transcription(file, { key: key, language: language }).then((response) => {
                     resolve(response.data.text);
                 }).catch((err) => {
                     winston.error("Error getting audio transcription: ", err?.response?.data);
