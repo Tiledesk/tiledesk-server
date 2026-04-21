@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /**
  * analytics-publisher pubmodule
@@ -14,10 +14,10 @@
  * here must match those schemas exactly.
  */
 
-var requestEvent = require('../../event/requestEvent');
-var messageEvent = require('../../event/messageEvent');
-var authEvent    = require('../../event/authEvent');
-var { track }    = require('../../lib/analyticsClient');
+var requestEvent = require("../../event/requestEvent");
+var messageEvent = require("../../event/messageEvent");
+var authEvent = require("../../event/authEvent");
+var { track } = require("../../lib/analyticsClient");
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -28,20 +28,27 @@ var { track }    = require('../../lib/analyticsClient');
  * tiledesk-server only sets available/unavailable; 'busy' is reserved.
  */
 function availabilityLabel(boolVal) {
-  if (boolVal === true)  return 'available';
-  if (boolVal === false) return 'unavailable';
+  if (boolVal === true) return "available";
+  if (boolVal === false) return "unavailable";
   return null;
 }
 
 /**
  * Derive sender_type enum value from a raw sender string.
  * Contract enum: 'user' | 'agent' | 'bot'
+ *
+ * Uses request.lead.lead_id (the visitor's ID) to distinguish a human visitor
+ * from a human agent — without this check every non-bot sender falls through
+ * to 'user', misclassifying agent messages.
  */
-function senderType(sender) {
-  if (!sender)                   return 'user';
-  if (sender.startsWith('bot_')) return 'bot';
-  if (sender === 'system')       return 'agent';
-  return 'user';
+function senderType(sender, request) {
+  if (!sender) return "user";
+  if (sender.startsWith("bot_")) return "bot";
+  if (sender === "system") return "agent";
+  // Use the visitor (lead) ID to distinguish visitor from agent.
+  var leadId = request && request.lead && request.lead.lead_id;
+  if (leadId) return sender === leadId ? "user" : "agent";
+  return "user"; // conservative fallback when no lead context available
 }
 
 /**
@@ -50,7 +57,7 @@ function senderType(sender) {
 function firstVisitorId(participants) {
   var list = participants || [];
   for (var i = 0; i < list.length; i++) {
-    if (!list[i].startsWith('bot_')) return list[i];
+    if (!list[i].startsWith("bot_")) return list[i];
   }
   return null;
 }
@@ -61,8 +68,8 @@ function firstVisitorId(participants) {
  */
 function departmentId(dept) {
   if (!dept) return null;
-  if (typeof dept === 'string') return dept;
-  return (dept._id || dept.id || '').toString() || null;
+  if (typeof dept === "string") return dept;
+  return (dept._id || dept.id || "").toString() || null;
 }
 
 /**
@@ -72,7 +79,7 @@ function departmentId(dept) {
  */
 function departmentName(dept) {
   if (!dept) return null;
-  if (typeof dept === 'string') return dept; // bare string ID — use as-is
+  if (typeof dept === "string") return dept; // bare string ID — use as-is
   return dept.name || (dept._id && dept._id.toString()) || null;
 }
 
@@ -81,14 +88,13 @@ function departmentName(dept) {
  */
 function toStringId(doc) {
   if (!doc) return null;
-  if (typeof doc === 'string') return doc;
+  if (typeof doc === "string") return doc;
   return (doc._id || doc.id || doc).toString() || null;
 }
 
 // ─── listeners ──────────────────────────────────────────────────────────────
 
 function listen() {
-
   // ── 1. conversation.created ────────────────────────────────────────────────
   // Contract: packages/contracts/src/payloads/conversation-created.ts
   //   id_request          string   (required)
@@ -100,22 +106,19 @@ function listen() {
   //   tag                 string|null (optional)
   //   with_bot            boolean  (default false)
   //   visitor_id          string|null (optional)
-  requestEvent.on('request.create', function(request) {
-    if (request.preflight === true) return;
-
+  requestEvent.on("request.create", function (request) {
     var dept = request.department;
 
-    track('conversation.created', request.id_project, {
-      id_request:          request.request_id || toStringId(request),
-      request_id:          request.request_id || toStringId(request),
-      department:          departmentName(dept) || departmentId(dept),
-      channel:             (request.channel && request.channel.name) || 'web',
+    track("conversation.created", request.id_project, {
+      id_request: request.request_id || toStringId(request),
+      request_id: request.request_id || toStringId(request),
+      department: departmentName(dept) || departmentId(dept),
+      channel: (request.channel && request.channel.name) || "web",
       first_response_time: null,
-      with_bot:            request.hasBot || false,
-      visitor_id:          firstVisitorId(request.participants),
+      with_bot: request.hasBot || false,
+      visitor_id: firstVisitorId(request.participants),
     });
   });
-
 
   // ── 2. conversation.closed ─────────────────────────────────────────────────
   // Contract: packages/contracts/src/payloads/conversation-closed.ts
@@ -126,32 +129,36 @@ function listen() {
   //   duration_seconds     number
   //   waiting_time_seconds number|null
   //   satisfaction_rating  number 1-5 | null
-  requestEvent.on('request.close', function(request) {
+  requestEvent.on("request.close", function (request) {
     var createdAt = new Date(request.createdAt);
-    var closedAt  = request.closed_at ? new Date(request.closed_at) : new Date();
-    var durationSeconds = request.duration != null
-      ? Math.round(request.duration / 1000)
-      : Math.round((closedAt - createdAt) / 1000);
+    var closedAt = request.closed_at ? new Date(request.closed_at) : new Date();
+    var durationSeconds =
+      request.duration != null
+        ? Math.round(request.duration / 1000)
+        : Math.round((closedAt - createdAt) / 1000);
 
     // Normalise rating: must be an integer 1–5 or null.
     var rawRating = request.rating;
     var satisfactionRating = null;
     if (rawRating != null) {
       var r = parseInt(rawRating, 10);
-      satisfactionRating = (r >= 1 && r <= 5) ? r : null;
+      satisfactionRating = r >= 1 && r <= 5 ? r : null;
     }
 
-    track('conversation.closed', request.id_project, {
-      id_request:           request.request_id || toStringId(request),
-      request_id:           request.request_id || toStringId(request),
-      closed_by:            request.closed_by || 'system',
-      close_reason:         null,
-      duration_seconds:     durationSeconds,
-      waiting_time_seconds: request.waiting_time != null ? Math.round(request.waiting_time / 1000) : null,
-      satisfaction_rating:  satisfactionRating,
+    // TODO: da splittare rispetto al rating
+    track("conversation.closed", request.id_project, {
+      id_request: request.request_id || toStringId(request),
+      request_id: request.request_id || toStringId(request),
+      closed_by: request.closed_by || "system",
+      close_reason: null,
+      duration_seconds: durationSeconds,
+      waiting_time_seconds:
+        request.waiting_time != null
+          ? Math.round(request.waiting_time / 1000)
+          : null,
+      satisfaction_rating: satisfactionRating,
     });
   });
-
 
   // ── 3. message.sent ────────────────────────────────────────────────────────
   // Contract: packages/contracts/src/payloads/message-sent.ts
@@ -162,24 +169,23 @@ function listen() {
   //   message_type  string   (required, non-null)
   //   has_attachment boolean (default false)
   //   language      string|null
-  messageEvent.on('message.create', function(messageJson) {
+  messageEvent.on("message.create", function (messageJson) {
     var sender = messageJson.sender;
 
     // recipient is the room/request ID (chat21 convention)
     var idRequest = messageJson.recipient || null;
     if (!idRequest) return; // cannot emit without a conversation reference
 
-    track('message.sent', messageJson.id_project, {
-      id_message:     (messageJson._id || messageJson.id || '').toString(),
-      id_request:     idRequest,
-      sender_id:      sender || 'unknown',   // required non-null — fallback to 'unknown'
-      sender_type:    senderType(sender),
-      message_type:   messageJson.type || 'text', // required non-null — fallback to 'text'
+    track("message.sent", messageJson.id_project, {
+      id_message: (messageJson._id || messageJson.id || "").toString(),
+      id_request: idRequest,
+      sender_id: sender || "unknown", // required non-null — fallback to 'unknown'
+      sender_type: senderType(sender, messageJson.request),
+      message_type: messageJson.type || "text", // required non-null — fallback to 'text'
       has_attachment: !!(messageJson.metadata && messageJson.metadata.src),
-      language:       messageJson.language || null,
+      language: messageJson.language || null,
     });
   });
-
 
   // ── 4. handover_to_agent ──────────────────────────────────────────────────
   // Contract: packages/contracts/src/payloads/handover-to-agent.ts
@@ -190,34 +196,43 @@ function listen() {
   //   waiting_time_seconds number int>=0 | null
   //   bot_id               string|null (optional)
   //   trigger_intent       string|null (optional)
-  requestEvent.on('request.participants.update', function(data) {
-    var request             = data.request             || {};
+  requestEvent.on("request.participants.update", function (data) {
+    var request = data.request || {};
     var removedParticipants = data.removedParticipants || [];
-    var addedParticipants   = data.addedParticipants   || [];
+    var addedParticipants = data.addedParticipants || [];
 
-    var botRemoved = removedParticipants.some(function(p) { return p.startsWith('bot_'); });
-    var humanAdded = addedParticipants.some(function(p)   { return !p.startsWith('bot_'); });
+    var botRemoved = removedParticipants.some(function (p) {
+      return p.startsWith("bot_");
+    });
+    var humanAdded = addedParticipants.some(function (p) {
+      return !p.startsWith("bot_");
+    });
     if (!botRemoved || !humanAdded) return;
 
-    var botId   = removedParticipants.find(function(p) { return p.startsWith('bot_');  }) || null;
-    var agentId = addedParticipants.find(function(p)   { return !p.startsWith('bot_'); }) || null;
+    var botId =
+      removedParticipants.find(function (p) {
+        return p.startsWith("bot_");
+      }) || null;
+    var agentId =
+      addedParticipants.find(function (p) {
+        return !p.startsWith("bot_");
+      }) || null;
 
     var waitingTimeSecs = null;
     if (request.waiting_time != null) {
       waitingTimeSecs = Math.round(request.waiting_time / 1000);
     }
 
-    track('handover_to_agent', request.id_project, {
-      id_request:           request.request_id || toStringId(request),
-      agent_id:             agentId,
-      reason:               null,
-      department_id:        departmentId(request.department),
+    track("handover_to_agent", request.id_project, {
+      id_request: request.request_id || toStringId(request),
+      agent_id: agentId,
+      reason: null,
+      department_id: departmentId(request.department),
       waiting_time_seconds: waitingTimeSecs,
-      bot_id:               botId,
-      trigger_intent:       null,
+      bot_id: botId,
+      trigger_intent: null,
     });
   });
-
 
   // ── 5. project_user.activated ─────────────────────────────────────────────
   // Contract: packages/contracts/src/payloads/project-user-activated.ts
@@ -225,37 +240,38 @@ function listen() {
   //   user_email string   (required, email format — skip if unavailable)
   //   role       string   (required)
   //   invited_by string|null
-  authEvent.on('project_user.invite', function(event) {
-    var pu   = event.savedProject_userPopulated || event.updatedPuserPopulated;
+  // TODO: check
+  authEvent.on("project_user.invite", function (event) {
+    console.log("project_user.invite", event);
+    var pu = event.savedProject_userPopulated || event.updatedPuserPopulated;
     if (!pu) return;
 
-    var user  = pu.id_user;
+    var user = pu.id_user;
     var email = (user && user.email) || null;
 
     // user_email is required as a valid email string — skip rather than send
     // a payload that will be rejected with 422 by the ingest sidecar.
     if (!email) return;
 
-    var userId = pu.uuid_user
-      || (user && toStringId(user))
-      || null;
+    var userId = pu.uuid_user || (user && toStringId(user)) || null;
     if (!userId) return;
 
-    track('project_user.activated', pu.id_project, {
-      id_user:    userId,
+    track("project_user.activated", pu.id_project, {
+      id_user: userId,
       user_email: email,
-      role:       pu.role || 'agent',
+      role: pu.role || "agent",
       invited_by: (event.req && event.req.user && event.req.user.id) || null,
     });
   });
-
 
   // ── 6. agent.status_changed ───────────────────────────────────────────────
   // Contract: packages/contracts/src/payloads/agent-status-changed.ts
   //   agent_id        string   (required)
   //   previous_status 'available'|'unavailable'|'busy'
   //   new_status      'available'|'unavailable'|'busy'
-  authEvent.on('project_user.update.agent', function(event) {
+  // TODO: check
+  authEvent.on("project_user.update.agent", function (event) {
+    console.log("project_user.update.agent", event);
     var pu = event.updatedProject_userPopulated;
     if (!pu) return;
     if (pu.user_available === undefined) return; // not a status-change update
@@ -264,7 +280,7 @@ function listen() {
     if (prevBool === pu.user_available) return; // no actual change
 
     var prevStatus = availabilityLabel(prevBool);
-    var newStatus  = availabilityLabel(pu.user_available);
+    var newStatus = availabilityLabel(pu.user_available);
 
     // Both statuses must be valid enum members — skip if either resolves to null.
     if (!prevStatus || !newStatus) return;
@@ -272,13 +288,12 @@ function listen() {
     var agentId = pu.uuid_user || toStringId(pu);
     if (!agentId) return;
 
-    track('agent.status_changed', pu.id_project, {
-      agent_id:        agentId,
+    track("agent.status_changed", pu.id_project, {
+      agent_id: agentId,
       previous_status: prevStatus,
-      new_status:      newStatus,
+      new_status: newStatus,
     });
   });
-
 
   // ── 7. department.assignment ──────────────────────────────────────────────
   // Contract: packages/contracts/src/payloads/department-assignment.ts
@@ -287,21 +302,22 @@ function listen() {
   //   department_name string   (required, non-null)
   //   assigned_by     string|null
   //   routing_type    string
-  requestEvent.on('request.department.update', function(requestComplete) {
+  requestEvent.on("request.department.update", function (requestComplete) {
+    console.log("request.department.update", requestComplete);
     var dept = requestComplete.department;
 
-    var deptId   = departmentId(dept);
+    var deptId = departmentId(dept);
     var deptName = departmentName(dept) || deptId;
 
     // Both department_id and department_name are required non-null in the contract.
     if (!deptId) return;
 
-    track('department.assignment', requestComplete.id_project, {
-      id_request:      requestComplete.request_id || toStringId(requestComplete),
-      department_id:   deptId,
+    track("department.assignment", requestComplete.id_project, {
+      id_request: requestComplete.request_id || toStringId(requestComplete),
+      department_id: deptId,
       department_name: deptName,
-      assigned_by:     requestComplete.updatedBy || null,
-      routing_type:    'auto',
+      assigned_by: requestComplete.updatedBy || null,
+      routing_type: "auto",
     });
   });
 }
