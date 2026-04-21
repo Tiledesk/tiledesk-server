@@ -128,7 +128,6 @@ function listen() {
   //   close_reason         string|null
   //   duration_seconds     number
   //   waiting_time_seconds number|null
-  //   satisfaction_rating  number 1-5 | null
   requestEvent.on("request.close", function (request) {
     var createdAt = new Date(request.createdAt);
     var closedAt = request.closed_at ? new Date(request.closed_at) : new Date();
@@ -137,15 +136,6 @@ function listen() {
         ? Math.round(request.duration / 1000)
         : Math.round((closedAt - createdAt) / 1000);
 
-    // Normalise rating: must be an integer 1–5 or null.
-    var rawRating = request.rating;
-    var satisfactionRating = null;
-    if (rawRating != null) {
-      var r = parseInt(rawRating, 10);
-      satisfactionRating = r >= 1 && r <= 5 ? r : null;
-    }
-
-    // TODO: da splittare rispetto al rating
     track("conversation.closed", request.id_project, {
       id_request: request.request_id || toStringId(request),
       request_id: request.request_id || toStringId(request),
@@ -156,11 +146,34 @@ function listen() {
         request.waiting_time != null
           ? Math.round(request.waiting_time / 1000)
           : null,
-      satisfaction_rating: satisfactionRating,
     });
   });
 
-  // ── 3. message.sent ────────────────────────────────────────────────────────
+  // ── 3. conversation.satisfaction ──────────────────────────────────────────
+  // Contract: packages/contracts/src/payloads/conversation-satisfaction.ts
+  //   id_request     string      (required)
+  //   request_id     string      (required)
+  //   rating         number 1-5  (required)
+  //   rating_message string|null
+  requestEvent.on("request.satisfaction", function (data) {
+    var request = data.request;
+    var patch = data.patch || {};
+
+    var rawRating = patch.rating != null ? patch.rating : (request && request.rating);
+    if (rawRating == null) return; // nothing to track if no rating was submitted
+
+    var rating = parseInt(rawRating, 10);
+    if (!(rating >= 1 && rating <= 5)) return; // guard against out-of-range values
+
+    track("conversation.satisfaction", request.id_project, {
+      id_request: request.request_id || toStringId(request),
+      request_id: request.request_id || toStringId(request),
+      rating: rating,
+      rating_message: patch.rating_message || request.rating_message || null,
+    });
+  });
+
+  // ── 4. message.sent ────────────────────────────────────────────────────────
   // Contract: packages/contracts/src/payloads/message-sent.ts
   //   id_message    string   (required)
   //   id_request    string   (required)
@@ -187,7 +200,7 @@ function listen() {
     });
   });
 
-  // ── 4. handover_to_agent ──────────────────────────────────────────────────
+  // ── 5. handover_to_agent ──────────────────────────────────────────────────
   // Contract: packages/contracts/src/payloads/handover-to-agent.ts
   //   id_request           string   (required)
   //   agent_id             string|null
@@ -234,7 +247,7 @@ function listen() {
     });
   });
 
-  // ── 5. project_user.activated ─────────────────────────────────────────────
+  // ── 6. project_user.activated ─────────────────────────────────────────────
   // Contract: packages/contracts/src/payloads/project-user-activated.ts
   //   id_user    string   (required)
   //   user_email string   (required, email format — skip if unavailable)
@@ -262,7 +275,7 @@ function listen() {
     });
   });
 
-  // ── 6. agent.status_changed ───────────────────────────────────────────────
+  // ── 7. agent.status_changed ───────────────────────────────────────────────
   // Contract: packages/contracts/src/payloads/agent-status-changed.ts
   //   agent_id        string   (required)
   //   previous_status 'available'|'unavailable'|'busy'
@@ -291,7 +304,7 @@ function listen() {
     });
   });
 
-  // ── 7. department.assignment ──────────────────────────────────────────────
+  // ── 8. department.assignment ──────────────────────────────────────────────
   // Contract: packages/contracts/src/payloads/department-assignment.ts
   //   id_request      string   (required)
   //   department_id   string   (required, non-null)
