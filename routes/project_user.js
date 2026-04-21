@@ -112,7 +112,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
 
             emailService.sendYouHaveBeenInvited(email, req.user.firstname, req.user.lastname, req.project.name, id_project, user.firstname, user.lastname, req.body.role)
 
-            updatedPuser.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedPuserPopulated){
+            updatedPuser.populate({path:'id_user', select:{'firstname':1, 'lastname':1, 'email': 1}},function (err, updatedPuserPopulated){
               var pu = updatedPuserPopulated.toJSON();
               pu.isBusy = ProjectUserUtil.isBusy(pu, req.project.settings && req.project.settings.max_agent_assigned_chat);
               var eventData = {req:req, updatedPuserPopulated: pu};
@@ -143,7 +143,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
 
             emailService.sendYouHaveBeenInvited(email, req.user.firstname, req.user.lastname, req.project.name, id_project, user.firstname, user.lastname, req.body.role)
 
-            savedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, savedProject_userPopulated){
+            savedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1, 'email': 1}},function (err, savedProject_userPopulated){
               var pu = savedProject_userPopulated.toJSON();
               pu.isBusy = ProjectUserUtil.isBusy(savedProject_userPopulated, req.project.settings && req.project.settings.max_agent_assigned_chat);
               var eventData = {req:req, savedProject_userPopulated: pu};
