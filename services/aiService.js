@@ -187,6 +187,7 @@ class AiService {
     const voice = options.voice || 'marin';
     const instructions = options.instructions;
     const response_format = options.response_format || 'mp3';
+    const speed = options.speed || 1.2;
     const formatMeta = {
       mp3: { contentType: 'audio/mpeg', extension: 'mp3' },
       opus: { contentType: 'audio/opus', extension: 'opus' },
@@ -199,7 +200,7 @@ class AiService {
 
 
 
-    const payload = { input: text, model, voice, response_format };
+    const payload = { input: text, model, voice, response_format, speed };
     if (instructions) {
       payload.instructions = instructions;
     }
@@ -219,10 +220,11 @@ class AiService {
   }
 
   async speechOpenaiStream(text, options = {}) {
-    const model = options.model || 'tts-1';
-    const voice = options.voice || 'alloy';
+    const model = options.model || 'gpt-4o-mini-tts';
+    const voice = options.voice || 'marin';
     const instructions = options.instructions;
     const response_format = options.response_format || 'mp3';
+    const speed = options.speed || 1.2;
   
     const formatMeta = {
       mp3: { contentType: 'audio/mpeg', extension: 'mp3' },
@@ -239,7 +241,8 @@ class AiService {
       input: text,
       model,
       voice,
-      response_format
+      response_format,
+      speed
     };
   
     if (instructions) {
