@@ -223,6 +223,7 @@ router.post('/speech', async (req, res) => {
     const language = req.body.language !== undefined && req.body.language !== null
         ? req.body.language
         : SPEECH_DEFAULTS.language;
+    const instructions = req.body.instructions;
 
     let text = req.body.text;
 
@@ -268,6 +269,7 @@ router.post('/speech', async (req, res) => {
             model,
             voice,
             language,
+            instructions,
             response_format: req.body.response_format
         });
         const audioBuffer = response.data;
