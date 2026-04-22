@@ -280,7 +280,7 @@ router.post('/speech', async (req, res) => {
                 language,
                 instructions,
                 response_format: req.body.response_format,
-                stream: req.body.preview === true
+                stream: true
               });
 
             const contentType = streamResponse.contentType || 'audio/mpeg';
