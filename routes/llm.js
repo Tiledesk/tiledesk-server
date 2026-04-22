@@ -217,7 +217,7 @@ router.post('/speech', async (req, res) => {
 
     const id_project = req.projectid;
 
-    const isPreview = req.body.preview === true;
+    const isPreview = req.body.streaming === true;
 
     const provider = (req.body.provider || SPEECH_DEFAULTS.provider).toLowerCase();
     const model = req.body.model || SPEECH_DEFAULTS.model;
