@@ -69,7 +69,7 @@ class AiService {
     const formData = new FormData();
     formData.append('file', buffer, { filename, contentType });
     formData.append('model', model);
-    formData.append('language', language);
+    //formData.append('language', language);
 
     const res = await axios.post(
       openai_endpoint + "/audio/transcriptions",
