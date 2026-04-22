@@ -157,6 +157,7 @@ function listen() {
   //   rating         number 1-5  (required)
   //   rating_message string|null
   requestEvent.on("request.satisfaction", function (data) {
+    console.log("request.satisfaction", data);
     var request = data.request;
     var patch = data.patch || {};
 
