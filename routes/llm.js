@@ -215,7 +215,9 @@ router.post('/transcription', upload.single('uploadFile'), async (req, res) => {
 
 router.post('/speech', async (req, res) => {
 
-    let id_project = req.projectid;
+    const id_project = req.projectid;
+
+    const isPreview = req.body.preview === true;
 
     const provider = (req.body.provider || SPEECH_DEFAULTS.provider).toLowerCase();
     const model = req.body.model || SPEECH_DEFAULTS.model;
@@ -225,44 +227,88 @@ router.post('/speech', async (req, res) => {
         : SPEECH_DEFAULTS.language;
     const instructions = req.body.instructions;
 
-    let text = req.body.text;
+    const text = req.body.text;
 
     if (!text) {
-        return res.status(400).send({ success: false, error: "No text provided"})
+        return res.status(400).send({ success: false, error: "No text provided" });
     }
-    
+
     let key;
 
     let integration;
     try {
-        integration = await Integration.findOne({ id_project: id_project, name: provider });
+        integration = await Integration.findOne({ id_project, name: provider });
     } catch (err) {
         winston.error("Error finding integration for " + provider);
-        return res.status(500).send({ success: false, error: "Error finding integration for " + provider});
+        return res.status(500).send({ success: false, error: "Error finding integration for " + provider });
     }
+
     if (!integration) {
-        winston.verbose("Integration for " + provider + " not found.")
         if (provider === 'openai') {
-            winston.verbose("Try to retrieve shared OpenAI key for speech")
             if (!process.env.GPTKEY) {
-                winston.error("Shared key for OpenAI not configured.");
                 return res.status(404).send({ success: false, error: "No key found for " + provider });
             }
             key = process.env.GPTKEY;
-    
         }
     } else if (!integration?.value?.apikey) {
         if (provider === 'openai' && process.env.GPTKEY) {
             key = process.env.GPTKEY;
-            winston.verbose("Using shared OpenAI key (integration key missing) for speech.");
         } else {
-            return res.status(422).send({ success: false, error: "The key provided for " + provider + " is not valid or undefined." })
+            return res.status(422).send({
+                success: false,
+                error: "The key provided for " + provider + " is not valid or undefined."
+            });
         }
     } else {
         key = integration.value.apikey;
     }
 
     try {
+
+        /**
+         * =========================
+         * 🔥 PREVIEW = STREAMING
+         * =========================
+         */
+        if (isPreview) {
+
+            const streamResponse = await aiService.speech(text, {
+                key,
+                provider,
+                model,
+                voice,
+                language,
+                instructions,
+                response_format: req.body.response_format,
+                stream: req.body.preview === true
+              });
+
+            const contentType = streamResponse.contentType || 'audio/mpeg';
+
+            res.setHeader('Content-Type', contentType);
+            res.setHeader('Transfer-Encoding', 'chunked');
+
+            streamResponse.data.on('data', (chunk) => {
+                res.write(chunk);
+            });
+
+            streamResponse.data.on('end', () => {
+                res.end();
+            });
+
+            streamResponse.data.on('error', (err) => {
+                winston.error('Streaming error:', err);
+                res.end();
+            });
+
+            return;
+        }
+
+        /**
+         * =========================
+         * 💾 NORMAL FLOW (UPLOAD)
+         * =========================
+         */
         const response = await aiService.speech(text, {
             key,
             provider,
@@ -272,38 +318,46 @@ router.post('/speech', async (req, res) => {
             instructions,
             response_format: req.body.response_format
         });
+
         const audioBuffer = response.data;
         const contentType = response.contentType || 'audio/mpeg';
         const ext = (response.extension || 'mp3').replace(/^\./, '');
 
         const expireAt = new Date(Date.now() + chatFileExpirationTime * 1000);
-        var subfolder = '/public';
-        if (req.user && req.user.id) {
+
+        let subfolder = '/public';
+        if (req.user?.id) {
             subfolder = '/users/' + req.user.id;
         }
+
         const folder = uuidv4();
         const filePath = `uploads${subfolder}/files/${folder}/speech.${ext}`;
 
         await fileService.createFile(filePath, audioBuffer, undefined, contentType, {
             metadata: { expireAt }
         });
+
         const fileRecord = await fileService.find(filePath);
+
         await mongoose.connection.db.collection('files.chunks').updateMany(
             { files_id: fileRecord._id },
             { $set: { 'metadata.expireAt': expireAt } }
         );
 
-        winston.verbose('Speech audio stored at:', filePath);
         return res.status(201).send({
             message: 'Speech audio saved successfully',
             filename: encodeURIComponent(filePath),
             contentType
         });
+
     } catch (err) {
         winston.error('Speech error: ', err.response?.data || err);
-        return res.status(500).send({ success: false, error: err.response?.data || err.message || err });
+        return res.status(500).send({
+            success: false,
+            error: err.response?.data || err.message || err
+        });
     }
-})
+});
 
   
 module.exports = router;

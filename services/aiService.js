@@ -169,9 +169,14 @@ class AiService {
 
   async speech(text, options = {}) {
     const provider = (options.provider || 'openai').toLowerCase();
+  
     switch (provider) {
       case 'openai':
+        if (options.stream) {
+          return this.speechOpenaiStream(text, options);
+        }
         return this.speechOpenai(text, options);
+  
       default:
         return Promise.reject(new Error('Unsupported speech provider: ' + provider));
     }
