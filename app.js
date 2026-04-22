@@ -632,7 +632,8 @@ app.use('/:projectid/emails',[passport.authenticate(['basic', 'jwt'], { session:
 app.use('/:projectid/properties',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], property);
 app.use('/:projectid/segments',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], segment);
 
-app.use('/:projectid/llm', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], llm);
+//app.use('/:projectid/llm', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], llm);
+app.use('/:projectid/llm', llm);
 app.use('/:projectid/openai', openai);
 app.use('/:projectid/quotes', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], quotes)
 

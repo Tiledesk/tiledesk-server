@@ -183,8 +183,8 @@ class AiService {
   }
 
   async speechOpenai(text, options = {}) {
-    const model = options.model || 'tts-1';
-    const voice = options.voice || 'alloy';
+    const model = options.model || 'gpt-4o-mini-tts';
+    const voice = options.voice || 'marin';
     const instructions = options.instructions;
     const response_format = options.response_format || 'mp3';
     const formatMeta = {
