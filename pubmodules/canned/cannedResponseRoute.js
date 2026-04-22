@@ -3,6 +3,7 @@ var router = express.Router();
 var CannedResponse = require("./cannedResponse");
 var winston = require('../../config/winston');
 const RoleConstants = require('../../models/roleConstants');
+const roleConstants = require('../../models/roleConstants');
 // const CannedResponseEvent = require('../event/CannedResponseEvent');
 
 
@@ -16,13 +17,18 @@ router.post('/', function (req, res) {
     text: req.body.text,
     id_project: req.projectid,
     createdBy: req.user.id,
-    updatedBy: req.user.id
+    updatedBy: req.user.id,
+    shared: false
   });
 
   if (req.projectuser.role == 'owner' || req.projectuser.role == 'admin') {
     newCannedResponse.shared = true;
   } else {
-    newCannedResponse.shared = false;
+    if (req.projectuser.roleType === roleConstants.TYPE_AGENTS) {
+      if (req.body.shared && req.body.shared === true) {
+        newCannedResponse.shared = true;
+      }
+    }
   }
 
   newCannedResponse.save(function (err, savedCannedResponse) {
@@ -40,8 +46,8 @@ router.put('/:cannedResponseid', async function (req, res) {
   winston.debug(req.body);
   const canned_id = req.params.cannedResponseid;
   const id_project = req.projectid;
-  let user_role = req.projectuser.role;
-  
+  let user_role = req.projectuser?.role;
+  let roleType = req.projectuser?.roleType || null;
   var update = {};
 
   const allowedFields = ['title', 'text', 'attributes']
@@ -79,6 +85,12 @@ router.put('/:cannedResponseid', async function (req, res) {
       winston.warn("Not allowed. User " + req.user.id + " can't modify a canned response of user " + canned.createdBy);
       return res.status(403).send({ success: false, error: "Not allowed to modify a non administration canned response"})
     }
+  }
+  else if (roleType === RoleConstants.TYPE_AGENTS) {
+    if (canned.hasOwnProperty('shared') && canned.shared === false && canned.createdBy !== req.user.id) {
+      winston.warn("Not allowed. User " + req.user.id + " can't modify a canned response of user " + canned.createdBy);
+      return res.status(403).send({ success: false, error: "Not allowed to modify a non administration canned response"})
+    }
   } else {
     winston.warn("User " + req.user.id + "trying to modify canned with role " + user_role);
     return res.status(401).send({ success: false, error: "Unauthorized"})
@@ -100,6 +112,7 @@ router.delete('/:cannedResponseid', async function (req, res) {
   const canned_id = req.params.cannedResponseid;
   const id_project = req.projectid;
   let user_role = req.projectuser.role;
+  let roleType = req.projectuser?.roleType || null;
 
   let canned = await CannedResponse.findOne({ _id: canned_id, id_project: id_project }).catch((err) => {
     winston.error("Error finding canned response: ", err);
@@ -128,7 +141,14 @@ router.delete('/:cannedResponseid', async function (req, res) {
       winston.warn("Not allowed. User " + req.user.id + " can't delete a canned response of user " + canned.createdBy);
       return res.status(403).send({ success: false, error: "Not allowed to delete a non administration canned response"})
     }
-  } else {
+  } 
+  else if (roleType === RoleConstants.TYPE_AGENTS) {
+    if (canned.hasOwnProperty('shared') && canned.shared === false && canned.createdBy !== req.user.id) {
+      winston.warn("Not allowed. User " + req.user.id + " can't delete a canned response of user " + canned.createdBy);
+      return res.status(403).send({ success: false, error: "Not allowed to delete a non administration canned response"})
+    }
+  }
+  else {
     winston.warn("User " + req.user.id + "trying to delete canned with role " + user_role);
     return res.status(401).send({ success: false, error: "Unauthorized"})
   }
@@ -149,6 +169,7 @@ router.delete('/:cannedResponseid/physical', async function (req, res) {
   const canned_id = req.params.cannedResponseid;
   const id_project = req.projectid;
   let user_role = req.projectuser.role;
+  let roleType = req.projectuser?.roleType || null;
 
   let canned = await CannedResponse.findOne({ _id: canned_id, id_project: id_project }).catch((err) => {
     winston.error("Error finding canned response: ", err);
@@ -177,7 +198,14 @@ router.delete('/:cannedResponseid/physical', async function (req, res) {
       winston.warn("Not allowed. User " + req.user.id + " can't delete a canned response of user " + canned.createdBy);
       return res.status(403).send({ success: false, error: "Not allowed to delete a non administration canned response"})
     }
-  } else {
+  } 
+  else if (roleType === RoleConstants.TYPE_AGENTS) {
+    if (canned.hasOwnProperty('shared') && canned.shared === false && canned.createdBy !== req.user.id) {
+      winston.warn("Not allowed. User " + req.user.id + " can't delete a canned response of user " + canned.createdBy);
+      return res.status(403).send({ success: false, error: "Not allowed to delete a non administration canned response"})
+    }
+  }
+  else {
     winston.warn("User " + req.user.id + "trying to delete canned with role " + user_role);
     return res.status(401).send({ success: false, error: "Unauthorized"})
   }
