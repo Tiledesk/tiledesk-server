@@ -12,7 +12,7 @@ var ObjectId = require('mongoose').Types.ObjectId;
 const default_embedding = require('../config/kb/embedding');
 
 const port = process.env.PORT || '3000';
-let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/";;
+let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/";
 if (process.env.TILEBOT_ENDPOINT) {
     TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/"
 }
@@ -69,20 +69,15 @@ router.post('/kb/reindex', async (req, res) => {
   
   let content_id = req.body.content_id;
 
-  let kb = await KB.findById(content_id).catch( async (err) => {
+  let kb;
+  try {
+    kb = await KB.findById(content_id);
+  } catch (err) {
     winston.error("(webhook) Error getting kb content: ", err);
     return res.status(500).send({ success: false, error: "Error getting content with id " + content_id });
-  })
-
-  const namespace_id = kb.namespace;
-  let namespace;
-  try {
-    namespace = await aiManager.checkNamespace(kb.id_project, namespace_id);
-  } catch (err) {
-    let errorCode = err?.errorCode ?? 500;
-    return res.status(errorCode).send({ success: false, error: err.error });
   }
 
+  
   if (!kb) {
     winston.warn("(webhook) Kb content not found with id " + content_id + ". Deleting scheduler...");
 
@@ -99,8 +94,19 @@ router.post('/kb/reindex', async (req, res) => {
       winston.verbose("(webhook) delete response: ", deleteResponse);
       return;
     }, 10000);
-    
-  } else if (kb.type === 'sitemap') {
+    return;
+  }
+
+  const namespace_id = kb.namespace;
+  let namespace;
+  try {
+    namespace = await aiManager.checkNamespace(kb.id_project, namespace_id);
+  } catch (err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
+  }
+
+  if (kb.type === 'sitemap') {
 
     const urls = await aiManager.fetchSitemap(kb.source).catch((err) => {
       winston.error("(webhook) Error fetching sitemap: ", err);
