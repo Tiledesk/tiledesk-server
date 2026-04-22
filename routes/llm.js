@@ -33,9 +33,10 @@ const TRANSCRIPTION_DEFAULTS = {
 
 const SPEECH_DEFAULTS = {
     provider: 'openai',
-    model: 'tts-1',
-    voice: 'coral',
-    language: 'en'
+    model: 'gpt-4o-mini-tts',
+    voice: 'marin',
+    speed: 1.2,
+    instructions: "Speak in a cheerful and positive tone."
 };
 
 router.post('/preview', async (req, res) => {
@@ -216,16 +217,13 @@ router.post('/transcription', upload.single('uploadFile'), async (req, res) => {
 router.post('/speech', async (req, res) => {
 
     const id_project = req.projectid;
-
     const isPreview = req.body.streaming === true;
-
     const provider = (req.body.provider || SPEECH_DEFAULTS.provider).toLowerCase();
     const model = req.body.model || SPEECH_DEFAULTS.model;
     const voice = req.body.voice || SPEECH_DEFAULTS.voice;
-    const language = req.body.language !== undefined && req.body.language !== null
-        ? req.body.language
-        : SPEECH_DEFAULTS.language;
-    const instructions = req.body.instructions;
+    const speed = req.body.speed || SPEECH_DEFAULTS.speed;
+    const instructions = req.body.instructions || SPEECH_DEFAULTS.instructions;
+    const response_format = req.body.response_format || SPEECH_DEFAULTS.response_format;
 
     const text = req.body.text;
 
@@ -277,10 +275,10 @@ router.post('/speech', async (req, res) => {
                 provider,
                 model,
                 voice,
-                language,
+                speed,
                 instructions,
-                response_format: req.body.response_format,
-                stream: req.body.preview === true
+                response_format,
+                stream: true
               });
 
             const contentType = streamResponse.contentType || 'audio/mpeg';
@@ -314,9 +312,9 @@ router.post('/speech', async (req, res) => {
             provider,
             model,
             voice,
-            language,
+            speed,
             instructions,
-            response_format: req.body.response_format
+            response_format
         });
 
         const audioBuffer = response.data;
