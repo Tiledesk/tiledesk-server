@@ -6,6 +6,7 @@ const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 const { AiReindexService } = require('../services/aiReindexService');
 const { Webhook } = require('../models/webhook');
 const webhookService = require('../services/webhookService');
+const webhookEvent = require('../event/webhookEvent');
 const errorCodes = require('../errorCodes');
 const aiManager = require('../services/aiManager');
 var ObjectId = require('mongoose').Types.ObjectId;
@@ -308,6 +309,7 @@ router.all('/:webhook_id', async (req, res) => {
   //webhookService.run(webhook, payload)
   // To delete - End
   webhookService.run(webhook, payload, dev, redis_client).then((response) => {
+    webhookEvent.emit("webhook.triggered", { webhook: webhook, payload: payload });
     return res.status(200).send(response);
   }).catch((err) => {
     if (err.code === errorCodes.WEBHOOK.ERRORS.NO_PRELOADED_DEV_REQUEST) {

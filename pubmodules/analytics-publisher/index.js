@@ -17,6 +17,7 @@
 var requestEvent = require("../../event/requestEvent");
 var messageEvent = require("../../event/messageEvent");
 var authEvent = require("../../event/authEvent");
+var webhookEvent = require("../../event/webhookEvent");
 var { track } = require("../../lib/analyticsClient");
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -339,6 +340,26 @@ function listen() {
       department_name: deptName,
       assigned_by: requestComplete.updatedBy || null,
       routing_type: "auto",
+    });
+  });
+
+  // ── 10. webhook.triggered ─────────────────────────────────────────────────
+  // Emitted by routes/webhook.js when a chatbot automation is triggered via
+  // the public webhook URL (production runs only — dev-mode runs are excluded).
+  //   webhook_id  string   (required)
+  //   chatbot_id  string   (required)
+  //   block_id    string   (required)
+  //   async       boolean
+  //   request_id  string|null  — synthetic automation-request-... identifier
+  webhookEvent.on("webhook.triggered", function ({ webhook, payload }) {
+    if (!webhook || !webhook.id_project) return;
+
+    track("webhook.triggered", webhook.id_project, {
+      webhook_id: webhook.webhook_id,
+      chatbot_id: webhook.chatbot_id,
+      block_id:   webhook.block_id,
+      async:      webhook.async,
+      request_id: (payload && payload.preloaded_request_id) || null,
     });
   });
 }
