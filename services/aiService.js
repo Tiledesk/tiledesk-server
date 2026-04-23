@@ -498,6 +498,7 @@ class AiService {
 
       let payload = { engine: engine };
       let token = jwt.sign(payload, secret);
+      console.log("token: ", token)
       axios({
         url: base_url + "/id/" + content_id + "/namespace/" + namespace_id + "/" + token,
         headers: {
@@ -553,7 +554,6 @@ class AiService {
       })
     })
   }
-
 
 }
 
