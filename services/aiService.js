@@ -69,7 +69,7 @@ class AiService {
     const formData = new FormData();
     formData.append('file', buffer, { filename, contentType });
     formData.append('model', model);
-    formData.append('language', language);
+    //formData.append('language', language);
 
     const res = await axios.post(
       openai_endpoint + "/audio/transcriptions",
@@ -169,19 +169,25 @@ class AiService {
 
   async speech(text, options = {}) {
     const provider = (options.provider || 'openai').toLowerCase();
+  
     switch (provider) {
       case 'openai':
+        if (options.stream) {
+          return this.speechOpenaiStream(text, options);
+        }
         return this.speechOpenai(text, options);
+  
       default:
         return Promise.reject(new Error('Unsupported speech provider: ' + provider));
     }
   }
 
   async speechOpenai(text, options = {}) {
-    const model = options.model || 'tts-1';
-    const voice = options.voice || 'alloy';
+    const model = options.model || 'gpt-4o-mini-tts';
+    const voice = options.voice || 'marin';
     const instructions = options.instructions;
     const response_format = options.response_format || 'mp3';
+    const speed = options.speed || 1.2;
     const formatMeta = {
       mp3: { contentType: 'audio/mpeg', extension: 'mp3' },
       opus: { contentType: 'audio/opus', extension: 'opus' },
@@ -194,7 +200,7 @@ class AiService {
 
 
 
-    const payload = { input: text, model, voice, response_format };
+    const payload = { input: text, model, voice, response_format, speed };
     if (instructions) {
       payload.instructions = instructions;
     }
@@ -211,6 +217,54 @@ class AiService {
     );
     const buffer = Buffer.isBuffer(res.data) ? res.data : Buffer.from(res.data);
     return { data: buffer, contentType: meta.contentType, extension: meta.extension };
+  }
+
+  async speechOpenaiStream(text, options = {}) {
+    const model = options.model || 'gpt-4o-mini-tts';
+    const voice = options.voice || 'marin';
+    const instructions = options.instructions;
+    const response_format = options.response_format || 'mp3';
+    const speed = options.speed || 1.2;
+  
+    const formatMeta = {
+      mp3: { contentType: 'audio/mpeg', extension: 'mp3' },
+      opus: { contentType: 'audio/opus', extension: 'opus' },
+      aac: { contentType: 'audio/aac', extension: 'aac' },
+      flac: { contentType: 'audio/flac', extension: 'flac' },
+      wav: { contentType: 'audio/wav', extension: 'wav' },
+      pcm: { contentType: 'audio/pcm', extension: 'pcm' }
+    };
+  
+    const meta = formatMeta[response_format] || formatMeta.mp3;
+  
+    const payload = {
+      input: text,
+      model,
+      voice,
+      response_format,
+      speed
+    };
+  
+    if (instructions) {
+      payload.instructions = instructions;
+    }
+  
+    const res = await axios.post(
+      openai_endpoint + "/audio/speech",
+      payload,
+      {
+        responseType: 'stream', // 👈 fondamentale
+        headers: {
+          Authorization: "Bearer " + options.key
+        }
+      }
+    );
+  
+    return {
+      data: res.data, // Readable stream
+      contentType: meta.contentType,
+      extension: meta.extension
+    };
   }
 
   async speechGoogle(text, options = {}) {
