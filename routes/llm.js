@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var winston = require('../config/winston');
 const fs = require('fs');
+const fsp = fs.promises;
 const path = require('path');
 const os = require('os');
 let Integration = require('../models/integrations');
@@ -46,6 +47,10 @@ const SPEECH_DEFAULTS = {
 const SPEECH_PRELOAD_DIR = process.env.SPEECH_PRELOAD_DIR || os.tmpdir();
 const SPEECH_PRELOAD_TTL_MS = parseInt(process.env.SPEECH_PRELOAD_TTL_MS || String(30 * 60 * 1000), 10);
 const SPEECH_PRELOAD_MAX_BUFFER_BYTES = parseInt(process.env.SPEECH_PRELOAD_MAX_BUFFER_BYTES || String(512 * 1024), 10);
+const SPEECH_REDIS_KEY_PREFIX = process.env.SPEECH_REDIS_KEY_PREFIX || 'tiledesk:speech:preload:';
+const SPEECH_PRELOAD_TAIL_POLL_MS = parseInt(process.env.SPEECH_PRELOAD_TAIL_POLL_MS || '80', 10);
+const SPEECH_PRELOAD_TAIL_MAX_MS = parseInt(process.env.SPEECH_PRELOAD_TAIL_MAX_MS || String(15 * 60 * 1000), 10);
+const SPEECH_PRELOAD_REDIS_DISABLED = process.env.SPEECH_PRELOAD_REDIS === 'false' || process.env.SPEECH_PRELOAD_REDIS === '0';
 
 const FORMAT_CONTENT_TYPES = {
     mp3: 'audio/mpeg',
@@ -61,6 +66,173 @@ const FORMAT_CONTENT_TYPES = {
  * @type {Map<string, object>}
  */
 const speechStore = new Map();
+
+/** ISO + ms + hrtime per correlare i log (es. Argo) */
+function speechLogMeta(extra = {}) {
+    const tsMs = Date.now();
+    return Object.assign(
+        {
+            ts: new Date(tsMs).toISOString(),
+            tsMs,
+            tsMonoNs: process.hrtime.bigint().toString()
+        },
+        extra
+    );
+}
+
+function speechRedisKey(id) {
+    return SPEECH_REDIS_KEY_PREFIX + id;
+}
+
+function speechRedisTtlSeconds() {
+    if (SPEECH_PRELOAD_TTL_MS <= 0) {
+        return 86400;
+    }
+    return Math.max(60, Math.ceil(SPEECH_PRELOAD_TTL_MS / 1000));
+}
+
+function speechRedisEnabled(tdCache) {
+    return !SPEECH_PRELOAD_REDIS_DISABLED && tdCache && typeof tdCache.set === 'function';
+}
+
+async function speechRedisReserve(tdCache, id, meta) {
+    if (!speechRedisEnabled(tdCache)) {
+        return true;
+    }
+    try {
+        const payload = JSON.stringify(meta);
+        const ok = await tdCache.setNX(speechRedisKey(id), payload, speechRedisTtlSeconds());
+        return ok === true;
+    } catch (e) {
+        winston.warn('[speech-preload] Redis reserve failed:', e.message);
+        return true;
+    }
+}
+
+async function speechRedisUpsert(tdCache, id, meta) {
+    if (!speechRedisEnabled(tdCache)) {
+        return;
+    }
+    try {
+        await tdCache.set(speechRedisKey(id), JSON.stringify(meta), { EX: speechRedisTtlSeconds() });
+    } catch (e) {
+        winston.warn('[speech-preload] Redis upsert failed:', e.message);
+    }
+}
+
+async function speechRedisDelete(tdCache, id) {
+    if (!speechRedisEnabled(tdCache)) {
+        return;
+    }
+    try {
+        await tdCache.del(speechRedisKey(id));
+    } catch (e) {
+        winston.warn('[speech-preload] Redis delete failed:', e.message);
+    }
+}
+
+async function speechRedisGetMeta(tdCache, id) {
+    if (!speechRedisEnabled(tdCache)) {
+        return null;
+    }
+    try {
+        let raw = await tdCache.get(speechRedisKey(id));
+        if (raw == null) {
+            return null;
+        }
+        if (Buffer.isBuffer(raw)) {
+            raw = raw.toString('utf8');
+        }
+        if (typeof raw !== 'string') {
+            return null;
+        }
+        return JSON.parse(raw);
+    } catch (e) {
+        return null;
+    }
+}
+
+function delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Stream a file being written on a shared volume (another replica). Polls Redis until status is completed.
+ */
+async function streamGrowingPreloadFile(res, req, filePath, tdCache, id, contentType) {
+    winston.info('[speech/:id] growing file stream start', speechLogMeta({ id, filePath }));
+
+    const ct = contentType || 'audio/mpeg';
+    res.setHeader('Content-Type', ct);
+    res.setHeader('Transfer-Encoding', 'chunked');
+
+    let offset = 0;
+    let stopped = false;
+    const stop = () => {
+        stopped = true;
+    };
+    req.on('close', stop);
+    res.on('finish', stop);
+
+    const deadline = Date.now() + SPEECH_PRELOAD_TAIL_MAX_MS;
+
+    try {
+        while (!stopped && !res.writableEnded && Date.now() < deadline) {
+            let st = null;
+            try {
+                st = await fsp.stat(filePath);
+            } catch (e) {
+                if (e.code === 'ENOENT') {
+                    await delay(SPEECH_PRELOAD_TAIL_POLL_MS);
+                    meta = await speechRedisGetMeta(tdCache, id);
+                    continue;
+                }
+                throw e;
+            }
+
+            const size = st.size;
+            if (size > offset) {
+                const len = size - offset;
+                const buf = Buffer.alloc(len);
+                const fh = await fsp.open(filePath, 'r');
+                try {
+                    await fh.read(buf, 0, len, offset);
+                } finally {
+                    await fh.close();
+                }
+                offset = size;
+                if (!res.writableEnded) {
+                    res.write(buf);
+                }
+            }
+
+            meta = await speechRedisGetMeta(tdCache, id);
+            const done = meta && meta.status === 'completed' && offset >= size;
+            if (done) {
+                if (!res.writableEnded) {
+                    res.end();
+                }
+                return;
+            }
+
+            await delay(SPEECH_PRELOAD_TAIL_POLL_MS);
+        }
+
+        if (!res.writableEnded) {
+            if (Date.now() >= deadline) {
+                winston.warn('[speech/:id] growing file stream timeout', speechLogMeta({ id, filePath }));
+            }
+            res.end();
+        }
+    } catch (err) {
+        winston.error('[speech/:id] growing file stream error:', err);
+        try {
+            if (!res.writableEnded) {
+                res.end();
+            }
+        } catch (e) {}
+    }
+}
 
 function safePreloadId(id) {
     return typeof id === 'string' && /^[a-zA-Z0-9_-]{1,256}$/.test(id);
@@ -120,7 +292,7 @@ function extensionForSpeechFormat(response_format) {
     return allowed.includes(fmt) ? fmt : 'mp3';
 }
 
-function schedulePreloadTtl(id, entry) {
+function schedulePreloadTtl(id, entry, tdCache) {
     if (SPEECH_PRELOAD_TTL_MS <= 0) {
         return;
     }
@@ -131,6 +303,7 @@ function schedulePreloadTtl(id, entry) {
             }
         });
         speechStore.delete(id);
+        speechRedisDelete(tdCache, id);
     }, SPEECH_PRELOAD_TTL_MS);
 }
 
@@ -163,9 +336,10 @@ function destroyPreloadListeners(entry, err) {
     entry.listeners.clear();
 }
 
-function removePreloadEntry(id) {
+function removePreloadEntry(id, tdCache) {
     const entry = speechStore.get(id);
     if (!entry) {
+        speechRedisDelete(tdCache, id);
         return;
     }
     if (entry.ttlTimer) {
@@ -175,6 +349,7 @@ function removePreloadEntry(id) {
         entry.writeStream.destroy();
     }
     speechStore.delete(id);
+    speechRedisDelete(tdCache, id);
     fs.unlink(entry.path, (unlinkErr) => {
         if (unlinkErr && unlinkErr.code !== 'ENOENT') {
             winston.warn('Speech preload cleanup unlink:', unlinkErr.message);
@@ -182,7 +357,7 @@ function removePreloadEntry(id) {
     });
 }
 
-async function runPreloadStream(id, text, aiOpts, entry) {
+async function runPreloadStream(id, text, aiOpts, entry, tdCache) {
     const streamResponse = await aiService.speech(text, aiOpts);
     const contentType = streamResponse.contentType || 'audio/mpeg';
     entry.contentType = contentType;
@@ -191,10 +366,19 @@ async function runPreloadStream(id, text, aiOpts, entry) {
     entry.writeStream = ws;
 
     const src = streamResponse.data;
+    let loggedFirstChunk = false;
 
     src.on('data', (chunk) => {
         if (!Buffer.isBuffer(chunk)) {
             chunk = Buffer.from(chunk);
+        }
+        if (!loggedFirstChunk) {
+            loggedFirstChunk = true;
+            winston.info('[speech-preload] first upstream chunk received', speechLogMeta({
+                id,
+                firstChunkBytes: chunk.length,
+                contentType
+            }));
         }
         const ok = ws.write(chunk);
         for (const client of entry.listeners) {
@@ -227,7 +411,7 @@ async function runPreloadStream(id, text, aiOpts, entry) {
         try {
             ws.destroy();
         } catch (e) {}
-        removePreloadEntry(id);
+        removePreloadEntry(id, tdCache);
     });
 
     ws.on('error', (err) => {
@@ -236,7 +420,7 @@ async function runPreloadStream(id, text, aiOpts, entry) {
         try {
             src.destroy();
         } catch (e) {}
-        removePreloadEntry(id);
+        removePreloadEntry(id, tdCache);
     });
 
     src.on('end', () => {
@@ -247,8 +431,22 @@ async function runPreloadStream(id, text, aiOpts, entry) {
         if (!speechStore.has(id)) {
             return;
         }
-        finalizePreloadCompleted(entry);
-        schedulePreloadTtl(id, entry);
+        const filename = path.basename(entry.path);
+        const metaDone = {
+            status: 'completed',
+            filename,
+            contentType: entry.contentType || 'audio/mpeg'
+        };
+        Promise.resolve(speechRedisUpsert(tdCache, id, metaDone))
+            .catch((e) => winston.warn('[speech-preload] Redis completed upsert:', e.message))
+            .finally(() => {
+                winston.info('[speech-preload] file write finished (completed)', speechLogMeta({
+                    id,
+                    path: entry.path
+                }));
+                finalizePreloadCompleted(entry);
+                schedulePreloadTtl(id, entry, tdCache);
+            });
     });
 }
 
@@ -461,6 +659,26 @@ router.post('/preload/speech', async (req, res) => {
     const audioPath = path.join(SPEECH_PRELOAD_DIR, `${id}.${ext}`);
     const contentTypeGuess = contentTypeForFormat(ext);
 
+    const tdCache = req.app.get('redis_client');
+
+    const redisStreamingMeta = {
+        status: 'streaming',
+        filename: `${id}.${ext}`,
+        contentType: contentTypeGuess
+    };
+
+    const reserved = await speechRedisReserve(tdCache, id, redisStreamingMeta);
+    if (!reserved) {
+        winston.info('[speech-preload] Redis NX miss — preload already reserved elsewhere', speechLogMeta({
+            id,
+            projectId: req.projectid
+        }));
+        return res.status(409).send({
+            success: false,
+            error: 'Preload already exists for this id (reserved in Redis or another replica)'
+        });
+    }
+
     const entry = {
         status: 'streaming',
         path: audioPath,
@@ -472,6 +690,24 @@ router.post('/preload/speech', async (req, res) => {
         writeStream: null
     };
     speechStore.set(id, entry);
+
+    winston.info('[speech-preload] store entry inserted', speechLogMeta({
+        id,
+        projectId: req.projectid,
+        status: entry.status,
+        storeSize: speechStore.size,
+        audioPath,
+        redisReserved: true
+    }));
+
+    winston.info('[speech-preload] started', speechLogMeta({
+        id,
+        projectId: req.projectid,
+        textLength: text.length,
+        provider: opts.provider,
+        model: opts.model,
+        audioPath
+    }));
 
     res.status(202).json({ status: 'started' });
 
@@ -487,19 +723,47 @@ router.post('/preload/speech', async (req, res) => {
     };
 
     try {
-        await runPreloadStream(id, text, aiOpts, entry);
+        await runPreloadStream(id, text, aiOpts, entry, tdCache);
     } catch (err) {
         winston.error('Preload speech error:', err.response?.data || err);
         destroyPreloadListeners(entry, err);
-        removePreloadEntry(id);
+        removePreloadEntry(id, tdCache);
     }
 });
 
 router.post('/speech/:id', async (req, res) => {
     const id = req.params.id;
+
+    if (!safePreloadId(id)) {
+        return res.status(400).send({
+            success: false,
+            error: 'Invalid id'
+        });
+    }
+
+    const tdCache = req.app.get('redis_client');
+
     const entry = speechStore.get(id);
 
+    winston.info('[speech/:id] request', speechLogMeta({
+        id,
+        projectId: req.projectid,
+        hasLocalEntry: !!entry,
+        localStatus: entry ? entry.status : null
+    }));
+
     if (entry) {
+        const hasBufferedChunks = entry.buffer.length > 0;
+        winston.info('[speech/:id] serving local preload', speechLogMeta({
+            id,
+            projectId: req.projectid,
+            status: entry.status,
+            bufferedChunkCount: entry.buffer.length,
+            bufferedBytes: entry.bufferedBytes,
+            hasBufferedChunks,
+            activeListenersBeforeAdd: entry.listeners.size
+        }));
+
         const contentType = entry.contentType || 'audio/mpeg';
         res.setHeader('Content-Type', contentType);
         res.setHeader('Transfer-Encoding', 'chunked');
@@ -528,6 +792,89 @@ router.post('/speech/:id', async (req, res) => {
         return;
     }
 
+    const meta = await speechRedisGetMeta(tdCache, id);
+    const filename = meta && meta.filename ? meta.filename : `${id}.mp3`;
+    const sharedFilePath = path.join(SPEECH_PRELOAD_DIR, filename);
+
+    winston.info('[speech/:id] redis meta', speechLogMeta({
+        id,
+        projectId: req.projectid,
+        redisStatus: meta ? meta.status : null,
+        redisFilename: meta ? meta.filename : null,
+        hasLocalEntry: false
+    }));
+
+    if (meta && meta.status === 'completed') {
+        winston.info('[speech/:id] serving shared volume (Redis completed)', speechLogMeta({
+            id,
+            projectId: req.projectid,
+            path: sharedFilePath
+        }));
+        try {
+            await fsp.access(sharedFilePath, fs.constants.R_OK);
+        } catch (e) {
+            return res.status(404).send({
+                success: false,
+                error: 'Audio file missing on volume'
+            });
+        }
+        res.setHeader('Content-Type', meta.contentType || 'audio/mpeg');
+        res.setHeader('Transfer-Encoding', 'chunked');
+        const rs = fs.createReadStream(sharedFilePath);
+        rs.on('error', (err) => {
+            winston.error('Speech preload shared file read error:', err);
+            if (!res.headersSent) {
+                return res.status(500).send({ success: false, error: err.message });
+            }
+            res.end();
+        });
+        rs.pipe(res);
+        return;
+    }
+
+    if (meta && meta.status === 'streaming') {
+        winston.info('[speech/:id] serving shared volume tail (Redis streaming)', speechLogMeta({
+            id,
+            projectId: req.projectid,
+            path: sharedFilePath
+        }));
+        await streamGrowingPreloadFile(res, req, sharedFilePath, tdCache, id, meta.contentType);
+        return;
+    }
+
+    const fallbackMp3 = path.join(SPEECH_PRELOAD_DIR, `${id}.mp3`);
+    try {
+        const st = await fsp.stat(fallbackMp3);
+        if (st.size > 0) {
+            winston.info('[speech/:id] serving file fallback (no Redis meta, id.mp3 on volume)', speechLogMeta({
+                id,
+                projectId: req.projectid,
+                path: fallbackMp3,
+                sizeBytes: st.size
+            }));
+            res.setHeader('Content-Type', 'audio/mpeg');
+            res.setHeader('Transfer-Encoding', 'chunked');
+            const rs = fs.createReadStream(fallbackMp3);
+            rs.on('error', (err) => {
+                winston.error('Speech preload fallback file read error:', err);
+                if (!res.headersSent) {
+                    return res.status(500).send({ success: false, error: err.message });
+                }
+                res.end();
+            });
+            rs.pipe(res);
+            return;
+        }
+    } catch (e) {
+        /* no file */
+    }
+
+    winston.info('[speech/:id] no cached preload — OpenAI fallback if body has text', speechLogMeta({
+        id,
+        projectId: req.projectid,
+        hasTextInBody: !!(req.body.text && String(req.body.text).trim() !== '')
+    }));
+
     const text = req.body.text;
     if (!text || String(text).trim() === '') {
         return res.status(400).send({
@@ -535,6 +882,12 @@ router.post('/speech/:id', async (req, res) => {
             error: 'No preloaded speech for this id; include text in the body for direct streaming'
         });
     }
+
+    winston.info('[speech/:id] OpenAI live stream fallback', speechLogMeta({
+        id,
+        projectId: req.projectid,
+        textLength: String(text).length
+    }));
 
     const opts = speechOptionsFromBody(req.body);
     const keyResult = await resolveSpeechKey(req.projectid, opts.provider);
@@ -565,11 +918,11 @@ router.post('/speech/:id', async (req, res) => {
             res.end();
         });
         streamResponse.data.on('error', (err) => {
-            winston.error('Speech GET stream error:', err);
+            winston.error('[speech/:id] fallback stream error:', err);
             res.end();
         });
     } catch (err) {
-        winston.error('Speech GET error:', err.response?.data || err);
+        winston.error('[speech/:id] fallback error:', err.response?.data || err);
         return res.status(500).send({
             success: false,
             error: err.response?.data || err.message || err
