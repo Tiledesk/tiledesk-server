@@ -99,7 +99,7 @@ class AiManager {
 
         let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
 
-        let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
+        let resources = result.map(({ name, status, __v, createdAt, updatedAt, ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, scrape_options, ...rest }) => {
           return { 
             id: _id, 
@@ -109,6 +109,7 @@ class AiManager {
             engine: engine, 
             hybrid: hybrid, 
             ...(situated_context && { situated_context }),
+            ...(options.request_id && { request_id: options.request_id }),
             ...rest}
         });
 
