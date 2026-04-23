@@ -167,6 +167,11 @@ class AiService {
     return { data: { text: text || '' } };
   }
 
+  /**
+   * Text-to-speech. When `options.stream` is true (OpenAI), uses Axios with
+   * `responseType: 'stream'` and resolves to `{ data, contentType, extension }`
+   * where `data` is a Node.js Readable stream of audio bytes (not a Web ReadableStream).
+   */
   async speech(text, options = {}) {
     const provider = (options.provider || 'openai').toLowerCase();
   
