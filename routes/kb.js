@@ -207,7 +207,8 @@ router.post('/scrape/single', async (req, res) => {
         scrape_type: sitemapKb.scrape_type,
         scrape_options: sitemapKb.scrape_options,
         refresh_rate: sitemapKb.refresh_rate,
-        tags: sitemapKb.tags
+        tags: sitemapKb.tags,
+        request_id: data.request_id || null
       }
       aiManager.addMultipleUrls(namespace, addedUrls, options).catch((err) => {
         winston.error("(webhook) error adding multiple urls contents: ", err);
@@ -270,6 +271,10 @@ router.post('/scrape/single', async (req, res) => {
       }
 
       winston.verbose("/scrape/single json: ", json);
+
+      json.id_project = project_id;
+      if (data.request_id) json.request_id = data.request_id;
+      // agent_id: not accepted by ItemSingle, intentionally omitted
 
       if (process.env.NODE_ENV === "test") {
         res.status(200).send({ success: true, message: "Skip indexing in test environment", data: json })
@@ -357,6 +362,8 @@ router.post('/qa', async (req, res) => {
   let id_project = req.projectid;
   let publicKey = false;
   let data = req.body;
+  data.id_project = id_project;
+  // request_id and agent_id pass through automatically from req.body
 
   let namespace;
   try {

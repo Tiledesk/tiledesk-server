@@ -99,6 +99,10 @@ router.post('/preview', async (req, res) => {
         json.system_context = body.context;
     }
 
+    json.id_project = id_project;
+    if (body.request_id) json.request_id = body.request_id;
+    if (body.agent_id)   json.agent_id   = body.agent_id;
+
     if (body.llm === 'ollama') {
         json.llm_key = "";
         json.model = {
