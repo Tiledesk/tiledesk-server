@@ -191,10 +191,19 @@ async function runPreloadStream(id, text, aiOpts, entry) {
     entry.writeStream = ws;
 
     const src = streamResponse.data;
+    let loggedFirstChunk = false;
 
     src.on('data', (chunk) => {
         if (!Buffer.isBuffer(chunk)) {
             chunk = Buffer.from(chunk);
+        }
+        if (!loggedFirstChunk) {
+            loggedFirstChunk = true;
+            winston.info('[speech-preload] first upstream chunk received', {
+                id,
+                firstChunkBytes: chunk.length,
+                contentType
+            });
         }
         const ok = ws.write(chunk);
         for (const client of entry.listeners) {
@@ -473,6 +482,15 @@ router.post('/preload/speech', async (req, res) => {
     };
     speechStore.set(id, entry);
 
+    winston.info('[speech-preload] started', {
+        id,
+        projectId: req.projectid,
+        textLength: text.length,
+        provider: opts.provider,
+        model: opts.model,
+        audioPath
+    });
+
     res.status(202).json({ status: 'started' });
 
     const aiOpts = {
@@ -499,7 +517,24 @@ router.post('/speech/:id', async (req, res) => {
     const id = req.params.id;
     const entry = speechStore.get(id);
 
+    winston.info('[speech/:id] request', {
+        id,
+        projectId: req.projectid,
+        hasPreloadEntry: !!entry
+    });
+
     if (entry) {
+        const hasBufferedChunks = entry.buffer.length > 0;
+        winston.info('[speech/:id] serving preload', {
+            id,
+            projectId: req.projectid,
+            status: entry.status,
+            bufferedChunkCount: entry.buffer.length,
+            bufferedBytes: entry.bufferedBytes,
+            hasBufferedChunks,
+            activeListenersBeforeAdd: entry.listeners.size
+        });
+
         const contentType = entry.contentType || 'audio/mpeg';
         res.setHeader('Content-Type', contentType);
         res.setHeader('Transfer-Encoding', 'chunked');
@@ -527,6 +562,11 @@ router.post('/speech/:id', async (req, res) => {
         });
         return;
     }
+
+    winston.info('[speech/:id] no preload entry — fallback to live OpenAI stream', {
+        id,
+        projectId: req.projectid
+    });
 
     const text = req.body.text;
     if (!text || String(text).trim() === '') {
@@ -565,11 +605,11 @@ router.post('/speech/:id', async (req, res) => {
             res.end();
         });
         streamResponse.data.on('error', (err) => {
-            winston.error('Speech GET stream error:', err);
+            winston.error('[speech/:id] fallback stream error:', err);
             res.end();
         });
     } catch (err) {
-        winston.error('Speech GET error:', err.response?.data || err);
+        winston.error('[speech/:id] fallback error:', err.response?.data || err);
         return res.status(500).send({
             success: false,
             error: err.response?.data || err.message || err
