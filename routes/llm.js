@@ -81,20 +81,6 @@ function speechOptionsFromBody(body) {
     };
 }
 
-function speechOptionsFromQuery(query) {
-    const q = query || {};
-    const speedRaw = q.speed;
-    const speed = speedRaw !== undefined && speedRaw !== '' ? Number(speedRaw) : SPEECH_DEFAULTS.speed;
-    return {
-        provider: (q.provider || SPEECH_DEFAULTS.provider).toLowerCase(),
-        model: q.model || SPEECH_DEFAULTS.model,
-        voice: q.voice || SPEECH_DEFAULTS.voice,
-        speed: Number.isFinite(speed) ? speed : SPEECH_DEFAULTS.speed,
-        instructions: q.instructions !== undefined && q.instructions !== null ? q.instructions : SPEECH_DEFAULTS.instructions,
-        response_format: q.response_format || SPEECH_DEFAULTS.response_format
-    };
-}
-
 async function resolveSpeechKey(id_project, provider) {
     let key;
     let integration;
@@ -513,7 +499,7 @@ router.post('/preload/speech', async (req, res) => {
     }
 });
 
-router.get('/speech/:id', async (req, res) => {
+router.post('/speech/:id', async (req, res) => {
     const id = req.params.id;
     const entry = speechStore.get(id);
 
@@ -546,15 +532,15 @@ router.get('/speech/:id', async (req, res) => {
         return;
     }
 
-    const text = req.query.text;
+    const text = req.body.text;
     if (!text || String(text).trim() === '') {
         return res.status(400).send({
             success: false,
-            error: 'No preloaded speech for this id; provide text as query parameter for direct streaming'
+            error: 'No preloaded speech for this id; include text in the body for direct streaming'
         });
     }
 
-    const opts = speechOptionsFromQuery(req.query);
+    const opts = speechOptionsFromBody(req.body);
     const keyResult = await resolveSpeechKey(req.projectid, opts.provider);
     if (keyResult.error) {
         return res.status(keyResult.status).send({ success: false, error: keyResult.error });
