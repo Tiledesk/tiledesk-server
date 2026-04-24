@@ -452,7 +452,8 @@ router.post('/qa', async (req, res) => {
   }
 
   data.stream = data.stream === true;
-  data.hyde = data.hyde === true;
+  data.use_hyde = data.use_hyde === true;
+  data.use_cache = true;
   data.debug = true;
   delete data.advancedPrompt;
   winston.verbose("ask data: ", data);
