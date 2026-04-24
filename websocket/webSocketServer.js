@@ -111,6 +111,27 @@ class WebSocketServer {
         winston.debug('token:' + token);
         winston.debug('configSecretOrPubicKay:' + configSecretOrPubicKay);
 
+        //const req = info.req;
+        //const fullUrl = req.headers.origin + req.url;
+        //const forwardedFor = req.headers['x-forwarded-for'];
+        //const socketAddr = req.socket?.remoteAddress;
+        //const connectionAddr = req.connection?.remoteAddress;
+
+        // console.log('[WS VERIFY]', {
+        //   timestamp: new Date().toISOString(),
+        //   ipInfo: {
+        //     xForwardedFor: forwardedFor,
+        //     socketRemoteAddress: socketAddr,
+        //     connectionRemoteAddress: connectionAddr
+        //   },
+        //   origin: req.headers.origin,
+        //   url: req.url,
+        //   fullUrl,
+        //   headers: req.headers,
+        //   userAgent: req.headers['user-agent'],
+        //   tokenSnippet: token ? token.substring(0, 30) + '...' : null
+        // });
+
 
         if (!token)
           cb(false, 401, 'Unauthorized');
@@ -353,7 +374,7 @@ class WebSocketServer {
             }
             winston.debug('projectuser', projectuser.toObject());
 
-            var query = { "id_project": projectId, "status": { $lt: 1000, $gt: 50, $ne: 150 }, preflight: false, "draft": { $in: [false, null] } };
+            var query = { "id_project": projectId, "status": { $lt: 1000, $gt: 50 }, preflight: false, "draft": { $in: [false, null] } };
             
             if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
               winston.debug('ws requests query admin: ' + JSON.stringify(query));
@@ -800,6 +821,7 @@ class WebSocketServer {
 
     winston.debug('requestUpdateKey: ' + requestUpdateKey);
     requestEvent.on(requestUpdateKey, async function (request) {
+
       setImmediate(async () => {
 
         // TODO setImmediate(() => {        
