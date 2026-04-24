@@ -30,7 +30,7 @@ var upload = multer({limits: uploadlimits});
 
 const TRANSCRIPTION_DEFAULTS = {
     provider: 'openai',
-    model: 'whisper-1',
+    model: 'gpt-4o-transcribe',
     voice: 'alloy',
     language: 'en'
 };
@@ -559,7 +559,8 @@ router.post('/transcription', upload.single('uploadFile'), async (req, res) => {
     let id_project = req.projectid;
 
     const provider = (req.body.provider || TRANSCRIPTION_DEFAULTS.provider).toLowerCase();
-    const model = req.body.model || TRANSCRIPTION_DEFAULTS.model;
+    const model = TRANSCRIPTION_DEFAULTS.model;
+    //const model = req.body.model || TRANSCRIPTION_DEFAULTS.model;
     const voice = req.body.voice || TRANSCRIPTION_DEFAULTS.voice;
     const language = req.body.language !== undefined && req.body.language !== null
         ? req.body.language

@@ -61,7 +61,7 @@ class AiService {
   }
 
   async transcriptionOpenai(buffer, options = {}) {
-    const model = options.model || 'whisper-1';
+    const model = options.model || 'gpt-4o-transcribe';
     const language = options.language || 'en';
     const filename = options.filename || 'audiofile';
     const contentType = options.contentType || 'audio/mpeg';
