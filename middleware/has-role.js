@@ -222,7 +222,6 @@ class RoleChecker {
             winston.debug("project_user: ", JSON.stringify(project_user));
             
           }
-
           if (project_user) {
             
             req.projectuser = project_user;
