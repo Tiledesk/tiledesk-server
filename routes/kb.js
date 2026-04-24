@@ -121,7 +121,8 @@ function normalizeEmbedding(embedding) {
   return { ...normalizedEmbedding };
 }
 
-function normalizeSituatedContext() {
+function normalizeSituatedContext(enable = false) {
+  situatedContext.enable = enable;
   return situatedContext.enable
     ? {
       ...situatedContext,
@@ -199,6 +200,10 @@ router.post('/scrape/single', async (req, res) => {
       })
     }
 
+    if (sitemapKb.situated_context && sitemapKb.situated_context === true && sitemapKb.scrape_type === 0) {
+      situated_context = true;
+    }
+
     if (addedUrls.length > 0) {
       const options = {
         sitemap_origin_id: sitemapKb._id,
@@ -206,7 +211,8 @@ router.post('/scrape/single', async (req, res) => {
         scrape_type: sitemapKb.scrape_type,
         scrape_options: sitemapKb.scrape_options,
         refresh_rate: sitemapKb.refresh_rate,
-        tags: sitemapKb.tags
+        tags: sitemapKb.tags,
+        ...(situated_context && { situated_context: situated_context }),
       }
       aiManager.addMultipleUrls(namespace, addedUrls, options).catch((err) => {
         winston.error("(webhook) error adding multiple urls contents: ", err);
@@ -263,9 +269,8 @@ router.post('/scrape/single', async (req, res) => {
         json.hybrid = true;
       }
 
-      const situated_context = normalizeSituatedContext();
-      if (situated_context) {
-        json.situated_context = situated_context;
+      if (json.situated_context && json.situated_context === true && json.scrape_type === 0) {
+        json.situated_context = normalizeSituatedContext(true);
       }
 
       winston.verbose("/scrape/single json: ", json);
@@ -447,6 +452,7 @@ router.post('/qa', async (req, res) => {
   }
 
   data.stream = data.stream === true;
+  data.hyde = data.hyde === true;
   data.debug = true;
   delete data.advancedPrompt;
   winston.verbose("ask data: ", data);
@@ -1591,7 +1597,7 @@ router.post('/', async (req, res) => {
   const id_project = req.projectid;
   const project = req.project
 
-  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags } = req.body;
+  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags, situated_context } = req.body;
   const namespace_id = req.body?.namespace;
   
   if (!namespace_id) {
@@ -1643,6 +1649,10 @@ router.post('/', async (req, res) => {
     new_kb.tags = tags;
   }
 
+  if (situated_context && situated_context === true && scrape_type === 0) {
+    new_kb.situated_context = situated_context;
+  }
+
   winston.debug("adding kb: ", new_kb);
 
   KB.findOneAndUpdate({ id_project, type, source }, new_kb, { upsert: true, new: true, rawResult: true }, async (err, raw_content) => {
@@ -1661,7 +1671,7 @@ router.post('/', async (req, res) => {
       const embedding = normalizeEmbedding(namespace.embedding);
       embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
-      const situated_context = normalizeSituatedContext();
+      const situated_context_obj = normalizeSituatedContext(saved_kb.situated_context);
 
       const json = {
         id: saved_kb._id,
@@ -1673,7 +1683,7 @@ router.post('/', async (req, res) => {
         hybrid: namespace.hybrid,
         engine: namespace.engine || default_engine,
         embedding: embedding,
-        ...(situated_context && { situated_context: situated_context }),
+        ...(situated_context_obj && { situated_context: situated_context_obj }),
         ...(saved_kb.scrape_type && { scrape_type: saved_kb.scrape_type }),
         ...(saved_kb.scrape_options && { parameters_scrape_type_4: saved_kb.scrape_options }),
         ...(saved_kb.tags && { tags: saved_kb.tags }),
@@ -1705,7 +1715,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
   const id_project = req.projectid;
   const project = req.project;
-  let { refresh_rate = 'never', scrape_type = 2, scrape_options } = req.body;
+  let { refresh_rate = 'never', scrape_type = 2, scrape_options, situated_context } = req.body;
   let tags = parseStringArrayField(req.body.tags);
 
 
@@ -1748,6 +1758,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     scrape_type,
     scrape_options,
     refresh_rate,
+    ...(situated_context && situated_context === true && scrape_type === 0 ? { situated_context: true } : {}),
     ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
   }
 
@@ -1771,6 +1782,10 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
   const { delimiter = ';' } = req.body;
   let tags = parseStringArrayField(req.body.tags);
+
+  if (req.body.situated_context && req.body.situated_context === true) {
+    situated_context = true;
+  }
 
 
   let namespace;
@@ -1799,6 +1814,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
         content: question + "\n" + answer,
         namespace: namespace_id,
         status: -1,
+        ...(situated_context && { situated_context: situated_context }),
         ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
       })
     })
@@ -1830,7 +1846,11 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
         let embedding = normalizeEmbedding(namespace.embedding);
         embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
         let hybrid = namespace.hybrid;
-        const situated_context = normalizeSituatedContext();
+
+        let situated_context_obj;
+        if (situated_context) {
+          situated_context_obj = normalizeSituatedContext(situated_context);
+        }
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, ...rest}) => {
@@ -1839,7 +1859,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
             webhook: webhook, 
             embedding: embedding, 
             engine: engine, 
-            ...(situated_context && { situated_context: situated_context }), 
+            ...(situated_context_obj && { situated_context: situated_context_obj }), 
             ...rest 
           };
         })
@@ -1891,7 +1911,7 @@ router.post('/sitemap/import', async (req, res) => {
   const id_project = req.projectid;
   const namespace_id = req.query.namespace;
 
-  let { type, source, refresh_rate = 'never', scrape_type = 2, scrape_options, tags } = req.body;
+  let { type, source, refresh_rate = 'never', scrape_type = 2, scrape_options, tags, situated_context } = req.body;
   if (scrape_type === 2 && !scrape_options) {
     scrape_options = aiManager.setDefaultScrapeOptions();
   }
@@ -1957,6 +1977,7 @@ router.post('/sitemap/import', async (req, res) => {
     scrape_type,
     scrape_options,
     refresh_rate,
+    ...(situated_context && situated_context === true && scrape_type === 0 ? { situated_context: true } : {}),
     ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
   }
 
@@ -1974,7 +1995,8 @@ router.post('/sitemap/import', async (req, res) => {
     scrape_type,
     scrape_options,
     refresh_rate,
-    ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
+    ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {}),
+    ...(situated_context && situated_context === true && scrape_type === 0 ? { situated_context: true } : {}),
   }
   
   try {
@@ -1998,7 +2020,7 @@ router.put('/:kb_id', async (req, res) => {
   const project = req.project;
   const kb_id = req.params.kb_id;
   
-  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags } = req.body;
+  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags, situated_context } = req.body;
   const namespace_id = req.body.namespace;
 
   if (!namespace_id) {
@@ -2065,6 +2087,10 @@ router.put('/:kb_id', async (req, res) => {
     return res.status(500).send({ success: false, error: err });
   }
 
+  if (situated_context && situated_context === true && scrape_type === 0) {
+    situated_context = true;
+  }
+
   let new_content = {
     id_project,
     name,
@@ -2096,6 +2122,10 @@ router.put('/:kb_id', async (req, res) => {
     new_content.tags = tags;
   }
 
+  if (situated_context && situated_context === true && scrape_type === 0) {
+    new_content.situated_context = situated_context;
+  }
+
   winston.debug("Update content. New content: ", new_content);
 
   let updated_content;
@@ -2109,7 +2139,7 @@ router.put('/:kb_id', async (req, res) => {
   const embedding = normalizeEmbedding(namespace.embedding);
   embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
   let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
-  const situated_context = normalizeSituatedContext();
+  const situated_context_obj = normalizeSituatedContext(updated_content.situated_context);
 
   const json = {
     id: updated_content._id,
@@ -2121,7 +2151,7 @@ router.put('/:kb_id', async (req, res) => {
     hybrid: namespace.hybrid,
     engine: namespace.engine || default_engine,
     embedding: embedding,
-    ...(situated_context && { situated_context: situated_context }),
+    ...(situated_context_obj && { situated_context: situated_context_obj }),
     ...(updated_content.scrape_type && { scrape_type: updated_content.scrape_type }),
     ...(updated_content.scrape_options && { parameters_scrape_type_4: updated_content.scrape_options }),
     ...(updated_content.tags && { tags: updated_content.tags }),
