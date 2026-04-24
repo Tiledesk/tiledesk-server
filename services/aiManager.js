@@ -156,7 +156,7 @@ class AiManager {
         engine: namespace.engine,
         embedding: namespace.embedding,
         hybrid: namespace.hybrid,
-        ...(situated_context && { situated_context }),
+        ...(options.situated_context && { situated_context: options.situated_context }),
       }
 
       if (process.env.NODE_ENV === 'test') {
