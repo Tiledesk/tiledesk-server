@@ -31,7 +31,7 @@ class UrlPreviewService {
     const response = await axios.get(url, {
       timeout: 10000,
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TiledeskBot/1.0)' },
-      maxContentLength: 500000,
+      maxContentLength: 2000000,
     });
     return this._extractMeta(response.data, url);
   }
