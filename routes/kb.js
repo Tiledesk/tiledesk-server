@@ -21,6 +21,7 @@ const Sitemapper = require('sitemapper');
 const aiService = require('../services/aiService');
 const aiManager = require('../services/aiManager');
 const integrationService = require('../services/integrationService');
+const kbEvent = require('../event/kbEvent');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
@@ -121,7 +122,8 @@ function normalizeEmbedding(embedding) {
   return { ...normalizedEmbedding };
 }
 
-function normalizeSituatedContext() {
+function normalizeSituatedContext(enable = false) {
+  situatedContext.enable = enable;
   return situatedContext.enable
     ? {
       ...situatedContext,
@@ -199,6 +201,10 @@ router.post('/scrape/single', async (req, res) => {
       })
     }
 
+    if (sitemapKb.situated_context && sitemapKb.situated_context === true && sitemapKb.scrape_type === 0) {
+      situated_context = true;
+    }
+
     if (addedUrls.length > 0) {
       const options = {
         sitemap_origin_id: sitemapKb._id,
@@ -206,7 +212,8 @@ router.post('/scrape/single', async (req, res) => {
         scrape_type: sitemapKb.scrape_type,
         scrape_options: sitemapKb.scrape_options,
         refresh_rate: sitemapKb.refresh_rate,
-        tags: sitemapKb.tags
+        tags: sitemapKb.tags,
+        ...(situated_context && { situated_context: situated_context }),
       }
       aiManager.addMultipleUrls(namespace, addedUrls, options).catch((err) => {
         winston.error("(webhook) error adding multiple urls contents: ", err);
@@ -263,9 +270,8 @@ router.post('/scrape/single', async (req, res) => {
         json.hybrid = true;
       }
 
-      const situated_context = normalizeSituatedContext();
-      if (situated_context) {
-        json.situated_context = situated_context;
+      if (json.situated_context && json.situated_context === true && json.scrape_type === 0) {
+        json.situated_context = normalizeSituatedContext(true);
       }
 
       winston.verbose("/scrape/single json: ", json);
@@ -374,7 +380,10 @@ router.post('/qa', async (req, res) => {
     return res.status(errorCode).send({ success: false, error: err.error });
   }
 
+  console.log("model returned from resolveLLMConfig: ", model);
+
   if (!model.api_key && model.provider === 'openai') {
+    console.log("Set shared GPTKEY as api_key");
     model.api_key = process.env.GPTKEY;
     publicKey = true;
   }
@@ -447,6 +456,8 @@ router.post('/qa', async (req, res) => {
   }
 
   data.stream = data.stream === true;
+  data.use_hyde = data.use_hyde === true;
+  data.use_cache = true;
   data.debug = true;
   delete data.advancedPrompt;
   winston.verbose("ask data: ", data);
@@ -712,7 +723,7 @@ router.post('/qa', async (req, res) => {
 
 //   // Check if "Advanced Mode" is active. In such case the default_context must be not appended
 //   if (!data.advancedPrompt) {
-//     const contextTemplate = contexts[data.model] || contexts["general"];
+//     const contextTemplate = getRagContextTemplate(data.model);
 //     if (data.system_context) {
 //       data.system_context = data.system_context + " \n" + contextTemplate;
 //     } else {
@@ -830,6 +841,7 @@ router.delete('/deleteall', async (req, res) => {
 
   let project_id = req.projectid;
   let data = req.body;
+  let namespace_id = data.namespace;
   winston.debug('/delete all data: ', data);
 
   let namespace;
@@ -846,6 +858,7 @@ router.delete('/deleteall', async (req, res) => {
 
   aiService.deleteNamespace(data).then((resp) => {
     winston.debug("delete namespace resp: ", resp.data);
+    kbEvent.emit('kb.contents.delete', { req, namespace_id, project_id });
     res.status(200).send(resp.data);
   }).catch((err) => {
     winston.error("delete namespace err: ", err);
@@ -1128,6 +1141,8 @@ router.post('/namespace', async (req, res) => {
       return res.status(500).send({ success: false, error: err });
     }
 
+    kbEvent.emit('kb.namespace.create', { req, savedNamespace, body, namespace_id, project_id });
+
     let namespaceObj = savedNamespace.toObject();
     delete namespaceObj._id;
     delete namespaceObj.__v;
@@ -1383,6 +1398,8 @@ router.delete('/namespace/:id', async (req, res) => {
       })
       winston.debug("delete all contents response: ", deleteResponse);
 
+      kbEvent.emit('kb.contents.delete', { req, namespace_id, project_id, deletedCount: deleteResponse?.deletedCount });
+
       return res.status(200).send({ success: true, message: "All contents deleted successfully" })
 
     }).catch((err) => {
@@ -1422,6 +1439,8 @@ router.delete('/namespace/:id', async (req, res) => {
         return res.status(500).send({ success: false, error: err });
       })
       winston.debug("delete namespace response: ", deleteNamespaceResponse);
+
+      kbEvent.emit('kb.namespace.delete', { req, namespace_id, project_id, namespace, deletedCount: deleteResponse?.deletedCount });
 
       return res.status(200).send({ success: true, message: "Namespace deleted succesfully" })
 
@@ -1591,7 +1610,7 @@ router.post('/', async (req, res) => {
   const id_project = req.projectid;
   const project = req.project
 
-  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags } = req.body;
+  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags, situated_context } = req.body;
   const namespace_id = req.body?.namespace;
   
   if (!namespace_id) {
@@ -1643,6 +1662,10 @@ router.post('/', async (req, res) => {
     new_kb.tags = tags;
   }
 
+  if (situated_context && situated_context === true && scrape_type === 0) {
+    new_kb.situated_context = situated_context;
+  }
+
   winston.debug("adding kb: ", new_kb);
 
   KB.findOneAndUpdate({ id_project, type, source }, new_kb, { upsert: true, new: true, rawResult: true }, async (err, raw_content) => {
@@ -1661,7 +1684,7 @@ router.post('/', async (req, res) => {
       const embedding = normalizeEmbedding(namespace.embedding);
       embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
-      const situated_context = normalizeSituatedContext();
+      const situated_context_obj = normalizeSituatedContext(saved_kb.situated_context);
 
       const json = {
         id: saved_kb._id,
@@ -1673,7 +1696,7 @@ router.post('/', async (req, res) => {
         hybrid: namespace.hybrid,
         engine: namespace.engine || default_engine,
         embedding: embedding,
-        ...(situated_context && { situated_context: situated_context }),
+        ...(situated_context_obj && { situated_context: situated_context_obj }),
         ...(saved_kb.scrape_type && { scrape_type: saved_kb.scrape_type }),
         ...(saved_kb.scrape_options && { parameters_scrape_type_4: saved_kb.scrape_options }),
         ...(saved_kb.tags && { tags: saved_kb.tags }),
@@ -1705,7 +1728,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
   const id_project = req.projectid;
   const project = req.project;
-  let { refresh_rate = 'never', scrape_type = 2, scrape_options } = req.body;
+  let { refresh_rate = 'never', scrape_type = 2, scrape_options, situated_context } = req.body;
   let tags = parseStringArrayField(req.body.tags);
 
 
@@ -1748,6 +1771,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     scrape_type,
     scrape_options,
     refresh_rate,
+    ...(situated_context && situated_context === true && scrape_type === 0 ? { situated_context: true } : {}),
     ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
   }
 
@@ -1771,6 +1795,10 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
   const { delimiter = ';' } = req.body;
   let tags = parseStringArrayField(req.body.tags);
+
+  if (req.body.situated_context && req.body.situated_context === true) {
+    situated_context = true;
+  }
 
 
   let namespace;
@@ -1799,6 +1827,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
         content: question + "\n" + answer,
         namespace: namespace_id,
         status: -1,
+        ...(situated_context && { situated_context: situated_context }),
         ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
       })
     })
@@ -1807,6 +1836,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
       const quoteManager = req.app.get('quote_manager');
       try {
+        let quoteManager = req.app.get('quote_manager');
         await aiManager.checkQuotaAvailability(quoteManager, req.project, kbs.length)
       } catch(err) {
         let errorCode = err?.errorCode ?? 500;
@@ -1830,7 +1860,11 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
         let embedding = normalizeEmbedding(namespace.embedding);
         embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
         let hybrid = namespace.hybrid;
-        const situated_context = normalizeSituatedContext();
+
+        let situated_context_obj;
+        if (situated_context) {
+          situated_context_obj = normalizeSituatedContext(situated_context);
+        }
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, ...rest}) => {
@@ -1839,7 +1873,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
             webhook: webhook, 
             embedding: embedding, 
             engine: engine, 
-            ...(situated_context && { situated_context: situated_context }), 
+            ...(situated_context_obj && { situated_context: situated_context_obj }), 
             ...rest 
           };
         })
@@ -1891,7 +1925,7 @@ router.post('/sitemap/import', async (req, res) => {
   const id_project = req.projectid;
   const namespace_id = req.query.namespace;
 
-  let { type, source, refresh_rate = 'never', scrape_type = 2, scrape_options, tags } = req.body;
+  let { type, source, refresh_rate = 'never', scrape_type = 2, scrape_options, tags, situated_context } = req.body;
   if (scrape_type === 2 && !scrape_options) {
     scrape_options = aiManager.setDefaultScrapeOptions();
   }
@@ -1957,6 +1991,7 @@ router.post('/sitemap/import', async (req, res) => {
     scrape_type,
     scrape_options,
     refresh_rate,
+    ...(situated_context && situated_context === true && scrape_type === 0 ? { situated_context: true } : {}),
     ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
   }
 
@@ -1974,7 +2009,8 @@ router.post('/sitemap/import', async (req, res) => {
     scrape_type,
     scrape_options,
     refresh_rate,
-    ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
+    ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {}),
+    ...(situated_context && situated_context === true && scrape_type === 0 ? { situated_context: true } : {}),
   }
   
   try {
@@ -1998,7 +2034,7 @@ router.put('/:kb_id', async (req, res) => {
   const project = req.project;
   const kb_id = req.params.kb_id;
   
-  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags } = req.body;
+  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags, situated_context } = req.body;
   const namespace_id = req.body.namespace;
 
   if (!namespace_id) {
@@ -2065,6 +2101,10 @@ router.put('/:kb_id', async (req, res) => {
     return res.status(500).send({ success: false, error: err });
   }
 
+  if (situated_context && situated_context === true && scrape_type === 0) {
+    situated_context = true;
+  }
+
   let new_content = {
     id_project,
     name,
@@ -2096,6 +2136,10 @@ router.put('/:kb_id', async (req, res) => {
     new_content.tags = tags;
   }
 
+  if (situated_context && situated_context === true && scrape_type === 0) {
+    new_content.situated_context = situated_context;
+  }
+
   winston.debug("Update content. New content: ", new_content);
 
   let updated_content;
@@ -2109,7 +2153,7 @@ router.put('/:kb_id', async (req, res) => {
   const embedding = normalizeEmbedding(namespace.embedding);
   embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
   let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
-  const situated_context = normalizeSituatedContext();
+  const situated_context_obj = normalizeSituatedContext(updated_content.situated_context);
 
   const json = {
     id: updated_content._id,
@@ -2121,7 +2165,7 @@ router.put('/:kb_id', async (req, res) => {
     hybrid: namespace.hybrid,
     engine: namespace.engine || default_engine,
     embedding: embedding,
-    ...(situated_context && { situated_context: situated_context }),
+    ...(situated_context_obj && { situated_context: situated_context_obj }),
     ...(updated_content.scrape_type && { scrape_type: updated_content.scrape_type }),
     ...(updated_content.scrape_options && { parameters_scrape_type_4: updated_content.scrape_options }),
     ...(updated_content.tags && { tags: updated_content.tags }),
@@ -2176,6 +2220,16 @@ router.delete('/:kb_id', async (req, res) => {
   data.engine = namespace.engine || default_engine;
   winston.verbose("/:delete_id data: ", data);
 
+  const emitKbContentDelete = (deletedKb) => {
+    console.log("emitKbContentDelete calling event");
+    kbEvent.emit('kb.content.delete', { req, kb_id, namespace_id, project_id, kb: deletedKb || kb });
+  };
+
+  if (process.env.NODE_ENV === 'test') {
+    emitKbContentDelete(kb);
+    return res.status(200).send({ success: true, message: "Content deleted successfully" });
+  }
+
   aiService.deleteIndex(data).then((resp) => {
     winston.debug("delete resp: ", resp.data);
     if (resp.data.success === true) {
@@ -2185,6 +2239,7 @@ router.delete('/:kb_id', async (req, res) => {
           winston.error("Delete kb error: ", err);
           return res.status(500).send({ success: false, error: err });
         }
+        emitKbContentDelete(deletedKb);
         res.status(200).send(deletedKb);
       })
 
@@ -2200,6 +2255,7 @@ router.delete('/:kb_id', async (req, res) => {
           winston.verbose("Unable to delete the content in indexing status")
           return res.status(500).send({ success: false, error: "Unable to delete the content in indexing status" })
         } else {
+          emitKbContentDelete(deletedKb);
           res.status(200).send(deletedKb);
         }
       })
