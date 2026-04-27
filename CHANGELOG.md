@@ -5,7 +5,7 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.18.4-rc29
+# 2.18.4-rc31
 - Updated url-preview service
 
 # 2.18.4-rc27
