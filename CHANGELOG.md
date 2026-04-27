@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.18.4-rc32
+- Updated maxContentLength limit
+
 # 2.18.4-rc31
 - Updated url-preview service
 
