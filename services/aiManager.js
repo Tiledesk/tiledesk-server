@@ -123,6 +123,8 @@ class AiManager {
           resolve({ result, schedule_json: resources });
           return;
         }
+
+        console.log("resource: ", resources[0]);
   
         this.scheduleScrape(resources, hybrid);
         resolve(result);
