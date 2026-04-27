@@ -4,22 +4,20 @@ const winston = require('../config/winston');
 const urlPreviewService = require('../services/urlPreviewService');
 
 // POST /:projectid/url-preview
-// Body: { "url": "https://example.com" }
+// Body: { "urls": ["https://example.com", "https://another.com"] }
 router.post('/', async (req, res) => {
-  const id_project = req.projectid;
-  const url = req.body.url;
+  const urls = req.body.urls;
 
-  if (!url) {
-    return res.status(422).send({ success: false, error: 'url field is required in request body' });
+  if (!Array.isArray(urls) || urls.length === 0) {
+    return res.status(422).send({ success: false, error: 'urls must be a non-empty array' });
   }
 
   try {
-    const preview = await urlPreviewService.fetchPagePreview(id_project, url);
-    res.status(200).send(preview);
+    const previews = await urlPreviewService.fetchPagesPreviews(urls);
+    res.status(200).send(previews);
   } catch (err) {
-    winston.error('[urlPreview] error fetching preview', err);
-    const status = err.code || 500;
-    res.status(status).send({ success: false, error: err.error || err.message || 'Internal error' });
+    winston.error('[urlPreview] error', err);
+    res.status(500).send({ success: false, error: err.message || 'Internal error' });
   }
 });
 
