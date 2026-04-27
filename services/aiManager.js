@@ -99,7 +99,7 @@ class AiManager {
 
         let situated_context;
         if (options.situated_context) {
-          situated_context = normalizeSituatedContext(options.situated_context);
+          situated_context = this.normalizeSituatedContext(options.situated_context);
         }
 
         let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
