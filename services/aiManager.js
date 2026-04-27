@@ -147,7 +147,7 @@ class AiManager {
         engine: namespace.engine,
         embedding: namespace.embedding,
         hybrid: namespace.hybrid,
-        ...(situated_context && { situated_context }),
+        ...(options.situated_context && { situated_context: options.situated_context }),
       }
 
       if (process.env.NODE_ENV === 'test') {
@@ -252,6 +252,7 @@ class AiManager {
 
   async resolveLLMConfig(id_project, provider = 'openai', model) {
 
+    console.log("resolveLLMConfig...");
     if (provider === 'ollama' || provider === 'vllm') {
       try {
         const integration = await integrationService.getIntegration(id_project, provider);
@@ -275,6 +276,9 @@ class AiManager {
     try {
       let key = await integrationService.getKeyFromIntegration(id_project, provider)
 
+      console.log("key: ", key);
+
+      console.log("returning ", { provider, name: model, api_key: key });
       return {
         provider,
         name: model,

@@ -18,6 +18,7 @@ var MessageConstants = require("../../models/messageConstants");
 var ProjectUserUtil = require("../../utils/project_userUtil");
 var RequestUtil = require("../../utils/requestUtil");
 const authEvent = require('../../event/authEvent');
+const requestEvent = require('../../event/requestEvent');
 
 var syncJoinAndLeaveGroupEvent =  false;
 if (process.env.SYNC_JOIN_LEAVE_GROUP_EVENT === true || process.env.SYNC_JOIN_LEAVE_GROUP_EVENT ==="true") {
@@ -74,6 +75,7 @@ router.post('/', function (req, res) {
 
     winston.debug("Chat21 message", message);
 
+      winston.info('chat21 webhook message received');
         // requestcachefarequi nocachepopulatereqired        
         let q = Request.findOne({request_id: message.recipient}) 
 
@@ -96,6 +98,15 @@ router.post('/', function (req, res) {
           if (!request) { //the request doen't exists create it
 
             winston.debug("request not exists with request_id: " + message.recipient);
+
+            // After close or retention delete, Chat21 may still POST new-message (e.g. system line).
+            // Sender "system" is not a project_user (no uuid_user/id_user row); creating a request here is wrong.
+            // if (message.sender === "system") {
+            //   winston.verbose("Chat21 webhook: no request for recipient, sender is system — ignore (no new request)", {
+            //     recipient: message.recipient
+            //   });
+            //   return res.status(200).send({ success: true, msg: "Ignored: system message without existing request" });
+            // }
 
             var departmentid = "default";
 
@@ -208,7 +219,14 @@ router.post('/', function (req, res) {
                       winston.debug("project_user_id: " + project_user_id);
                     } else {
                       // error->utente bloccato oppure non autenticator request.requester sarà nulll...⁄
-                      return winston.error("project_user not found with query: ", queryProjectUser);
+                      
+                      winston.warn("project_user not found with query: ", queryProjectUser);
+                      return res.status(404).send({
+                        success: false,
+                        msg: "Project user not found for sender; cannot create request",
+                        query: queryProjectUser
+                      });
+                      //return winston.error("project_user not found with query: ", queryProjectUser);
                     }
 
 
@@ -307,12 +325,46 @@ router.post('/', function (req, res) {
                 // TODO se stato = 50 e scrive visitatotre sposto a stato 100 poi queuue lo smista
 
                 // TOOD update also request attributes and sourcePage
-                if (message.sender !== 'system') {
-                  Request.findOneAndUpdate({request_id: request.request_id, id_project: request.id_project}, { "attributes.last_message": savedMessage}).catch((err) => {
-                    winston.error("Create message - saving last message in request error: ", err);
-                  })
+                if (message.sender !== "system") { 
+                  const rid = request.request_id; 
+                  const idProj = request.id_project; 
+                  Request.findOneAndUpdate( 
+                    { request_id: rid, id_project: idProj }, 
+                    { $set: { "attributes.last_message": savedMessage } }, 
+                    { new: true } 
+                  )
+                  .then(() => { 
+                    // ConciergeBot runs on message.create inside setImmediate and sets preflight:false (request.update). 
+                    // Emitting request.update here with findOneAndUpdate's doc can race: cache/WS may apply this emit 
+                    // AFTER Concierge's and overwrite preflight:false with a stale true. Defer + full reload matches 
+                    // changeFirstTextAndPreflightByRequestId populates and picks up the committed preflight + last_message. 
+                    
+                    setImmediate(() => { 
+                      Request.findOne({ request_id: rid, id_project: idProj }) 
+                      .populate('lead') 
+                      .populate('department') 
+                      .populate('participatingBots') 
+                      .populate('participatingAgents') 
+                      .populate({ path: 'requester', populate: { path: 'id_user' } }) 
+                      .exec((err, freshRequest) => { 
+                        if (err) { 
+                          winston.error("Create message - Error reloading request after last_message update", err); 
+                          return; 
+                        } 
+                        
+                        if (freshRequest) { 
+                          requestEvent.emit('request.update', freshRequest); 
+                        } 
+                      }); 
+                    }); 
+                  }) 
+                  .catch((err) => { 
+                    winston.error("Create message - Error updating request attributes with last_message", err); 
+                  });
+                  
                 }
 
+                
                     // return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
                       // winston.debug("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
                       winston.debug("before updateWaitingTimeByRequestId*******",request.participants, message.sender);
@@ -320,7 +372,7 @@ router.post('/', function (req, res) {
                       // TODO it doesn't work for internal requests bacause participanets == message.sender⁄
                       if (request.participants && request.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent (member of participants)
                         winston.debug("updateWaitingTimeByRequestId*******");
-                                                                                                                  //leave this parameter to true because it is used by websocket to notify request.update                                 
+                        //leave this parameter to true because it is used by websocket to notify request.update                                 
                         return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project, true).then(function(upRequest) {
                           return res.json(upRequest);
                         });
@@ -403,7 +455,7 @@ router.post('/', function (req, res) {
               var query = {request_id: recipient_id, id_project: projectId};
               winston.debug('query:'+ projectId);
               
-              winston.debug('conversation-archived Request.findOne(query);:');
+              winston.info('conversation-archived Request.findOne(query);:');
               let q = Request.findOne(query);
               // if (cacheEnabler.request) {
               //   q.cache(cacheUtil.defaultTTL, projectId+":requests:request_id:"+recipient_id+":simple"); //request_cache NOT IMPORTANT HERE
@@ -490,7 +542,7 @@ router.post('/', function (req, res) {
       winston.debug("id_project: " + id_project);
       
       // requestcachefarequi populaterequired
-      winston.debug('join-member Request.findOne(query);:');
+      winston.info('join-member Request.findOne(query);:');
       return Request.findOne({request_id: request_id, id_project: id_project})
           .populate('lead') //TODO posso prenderlo da snapshot senza populate cache_attention
           .exec(function(err, request) {
@@ -661,7 +713,7 @@ else if (req.body.event_type == "typing-start") {
 
   
   // requestcachefarequi nocachepopulatereqired
-  winston.debug('typing-start Request.findOne(query);:');
+  winston.info('typing-start Request.findOne(query);:');
   return Request.findOne({request_id: recipient_id})
                              //TOD  errore cache sistemare e riabbilitare->
   // .cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+recipient_id)   cache_attention
