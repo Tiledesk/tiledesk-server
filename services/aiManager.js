@@ -52,15 +52,6 @@ jobManagerHybrid.connectAndStartPublisher((status, error) => {
   }
 });
 
-function normalizeSituatedContext(enable = false) {
-  situatedContext.enable = enable;
-  return situatedContext.enable
-    ? {
-      ...situatedContext,
-      api_key: process.env.SITUATED_CONTEXT_API_KEY || process.env.GPTKEY
-    }
-    : undefined;
-}
 
 class AiManager {
 
@@ -579,6 +570,16 @@ class AiManager {
         }
       })
     })
+  }
+
+  normalizeSituatedContext(enable = false) {
+    situatedContext.enable = enable;
+    return situatedContext.enable
+      ? {
+        ...situatedContext,
+        api_key: process.env.SITUATED_CONTEXT_API_KEY || process.env.GPTKEY
+      }
+      : undefined;
   }
 
 }
