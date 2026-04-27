@@ -6,7 +6,7 @@
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
 
-# 2.18.4-nr (next-release)
+# 2.18.4-rc27
 - Added url-preview service
 
 # 2.18.3
