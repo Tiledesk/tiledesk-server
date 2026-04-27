@@ -97,24 +97,21 @@ class AiManager {
         let embedding = namespace.embedding || default_embedding;
         embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
-        let situated_context;
-        if (options.situated_context) {
-          situated_context = this.normalizeSituatedContext(options.situated_context);
-        }
-
         let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
-        resources = resources.map(({ _id, scrape_options, ...rest }) => {
-          return { 
-            id: _id, 
-            webhook: webhook, 
-            parameters_scrape_type_4: scrape_options, 
-            embedding: embedding, 
-            engine: engine, 
-            hybrid: hybrid, 
-            ...(situated_context && { situated_context }),
-            ...rest}
+        resources = resources.map(({ _id, scrape_options, situated_context: kbSituated, ...rest }) => {
+          const situated_context_obj = this.normalizeSituatedContext(kbSituated);
+          return {
+            id: _id,
+            webhook: webhook,
+            parameters_scrape_type_4: scrape_options,
+            embedding: embedding,
+            engine: engine,
+            hybrid: hybrid,
+            ...rest,
+            ...(situated_context_obj && { situated_context: situated_context_obj }),
+          };
         });
 
         winston.verbose("resources to be sent to worker: ", resources);
@@ -139,6 +136,8 @@ class AiManager {
   async scheduleSitemap(namespace, sitemap_content, options) {
     return new Promise((resolve, reject) => {
 
+      const situated_context_obj = this.normalizeSituatedContext(sitemap_content.situated_context);
+
       let kb = {
         id: sitemap_content._id,
         source: sitemap_content.source,
@@ -149,7 +148,7 @@ class AiManager {
         engine: namespace.engine,
         embedding: namespace.embedding,
         hybrid: namespace.hybrid,
-        ...(options.situated_context && { situated_context: options.situated_context }),
+        ...(situated_context_obj && { situated_context: situated_context_obj }),
       }
 
       if (process.env.NODE_ENV === 'test') {
