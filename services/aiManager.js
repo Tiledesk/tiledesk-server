@@ -52,15 +52,6 @@ jobManagerHybrid.connectAndStartPublisher((status, error) => {
   }
 });
 
-function normalizeSituatedContext(enable = false) {
-  situatedContext.enable = enable;
-  return situatedContext.enable
-    ? {
-      ...situatedContext,
-      api_key: process.env.SITUATED_CONTEXT_API_KEY || process.env.GPTKEY
-    }
-    : undefined;
-}
 
 class AiManager {
 
@@ -132,6 +123,8 @@ class AiManager {
           resolve({ result, schedule_json: resources });
           return;
         }
+
+        console.log("resource: ", resources[0]);
   
         this.scheduleScrape(resources, hybrid);
         resolve(result);
@@ -583,6 +576,16 @@ class AiManager {
         }
       })
     })
+  }
+
+  normalizeSituatedContext(enable = false) {
+    situatedContext.enable = enable;
+    return situatedContext.enable
+      ? {
+        ...situatedContext,
+        api_key: process.env.SITUATED_CONTEXT_API_KEY || process.env.GPTKEY
+      }
+      : undefined;
   }
 
 }

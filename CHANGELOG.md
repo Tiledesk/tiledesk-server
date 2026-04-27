@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+
+# 2.18.4-rc27
+- Added url-preview service
+
 # 2.18.3
 - Added permissions logic
 - Added custom roles support

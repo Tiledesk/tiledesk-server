@@ -150,7 +150,11 @@ router.post('/kb/reindex', async (req, res) => {
         sitemap_origin: kb.source,
         scrape_type: kb.scrape_type,
         scrape_options: kb.scrape_options,
-        refresh_rate: kb.refresh_rate
+        refresh_rate: kb.refresh_rate,
+        ...(kb.tags ? { tags: kb.tags } : {}),
+        ...(kb.situated_context === true && (kb.scrape_type === 0 || kb.scrape_type === '0')
+          ? { situated_context: true }
+          : {}),
       }
       aiManager.addMultipleUrls(namespace, addedUrls, options).catch((err) => {
         winston.error("(webhook) error adding multiple urls contents: ", err);
@@ -200,9 +204,9 @@ router.post('/kb/reindex', async (req, res) => {
     embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
     json.embedding = embedding;
 
-    const situated_context = aiManager.normalizeSituatedContext();
-    if (situated_context) {
-      json.situated_context = situated_context;
+    const situated_context_obj = aiManager.normalizeSituatedContext(kb.situated_context);
+    if (situated_context_obj) {
+      json.situated_context = situated_context_obj;
     }
 
     let resources = [];
