@@ -637,7 +637,7 @@ app.use('/:projectid/segments',[passport.authenticate(['basic', 'jwt'], { sessio
 
 app.use('/:projectid/llm', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], llm);
 app.use('/:projectid/openai', openai);
-app.use('/:projectid/url-preview', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription'])], urlPreview);
+app.use('/:projectid/url-preview', urlPreview);
 app.use('/:projectid/quotes', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], quotes)
 
 app.use('/:projectid/integration', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], integration )
