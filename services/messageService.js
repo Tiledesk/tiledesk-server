@@ -145,6 +145,7 @@ class MessageService {
                 });
 
                 // winston.debug("create new message", newMessage);
+                winston.info("main_flow_cache_3 messageService before saving message");
 
                 return newMessage.save(function (err, savedMessage) {
                     if (err) {
@@ -227,7 +228,8 @@ class MessageService {
         return new Promise(function (resolve, reject) {
             // winston.debug("request_id", request_id);
             // winston.debug("newstatus", newstatus);
-
+            winston.info("main_flow_cache_2 message changeStatus");
+            
             return Message.findByIdAndUpdate(message_id, { status: newstatus }, { new: true, upsert: false }, function (err, updatedMessage) {
                 if (err) {
                     winston.error(err);
@@ -302,7 +304,10 @@ class MessageService {
                     resolve("This is a mock trancripted audio")
                 }
 
+                let t1 = Date.now();
                 let file = await fileUtils.downloadFromUrl(audio_url);
+                let t2 = Date.now();
+                console.log("(getAudioTranscription) downloadFromUrl time: ", t2 - t1, "ms");
                 let key;
                 let integration = await Integration.findOne({ id_project: id_project, name: 'openai' }).catch((err) => {
                     winston.error("Error finding integration for openai");
@@ -310,9 +315,13 @@ class MessageService {
 
                 })
 
+                console.log("(getAudioTranscription) integration: ", integration);
+
                 if (!integration || !integration?.value?.apikey) {
                     winston.verbose("Integration for openai not found or apikey is undefined.")
+                    console.log("(getAudioTranscription) Integration for openai not found or apikey is undefined.")
                     key = process.env.GPTKEY;
+                    console.log("(getAudioTranscription) use shared key: ", key);
                 } else {
                     key = integration.value.apikey;
                 }
@@ -322,7 +331,10 @@ class MessageService {
                     resolve(null)
                 }
 
+                let t3 = Date.now();
                 aiService.transcription(file, { key: key, language: language }).then((response) => {
+                    let t4 = Date.now();
+                    console.log("(getAudioTranscription) transcription time: ", t4 - t3, "ms");
                     resolve(response.data.text);
                 }).catch((err) => {
                     winston.error("Error getting audio transcription: ", err?.response?.data);
