@@ -5,6 +5,11 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.18.4-rc35
+- Disabled Authentication in URL Preview
+- Added Max 10 URLs per request — returns 422 if exceeded
+- Added SSRF Validation
+
 # 2.18.4-rc32
 - Updated maxContentLength limit
 
