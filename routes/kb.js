@@ -200,8 +200,9 @@ router.post('/scrape/single', async (req, res) => {
       })
     }
 
+    let situated_context;
     if (sitemapKb.situated_context && sitemapKb.situated_context === true && sitemapKb.scrape_type === 0) {
-      situated_context = true;
+      situated_context = normalizeSituatedContext(true);
     }
 
     if (addedUrls.length > 0) {
@@ -453,13 +454,10 @@ router.post('/qa', async (req, res) => {
 
   data.stream = data.stream === true;
   data.use_hyde = data.use_hyde === true;
-  data.use_cache = true;
+  data.use_cache = data.use_cache === true;
   data.debug = true;
   delete data.advancedPrompt;
   winston.verbose("ask data: ", data);
-
-  console.log("data: ", data);
-
   if (process.env.NODE_ENV === 'test') {
     return res.status(200).send({ success: true, message: "Question skipped in test environment", data: data });
   }
