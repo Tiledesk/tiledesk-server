@@ -16,6 +16,9 @@ var passport = require('passport');
 require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 var roleChecker = require('../middleware/has-role');
+const puEvent = require('../event/projectUserEvent');
+const { track } = require('../lib/analyticsClient');
+
 
 
 router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
@@ -56,18 +59,30 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
 
     } else {
 
-      let roles = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
-
-      Project_user.findOne({ id_project: id_project, id_user: user._id, role: { $in: roles }}, (err, puser) => {
+      /**
+       * *** IT IS NOT ALLOWED TO INVITE A USER WHO IS ALREADY A MEMBER OF THE PROJECT *** 
+       * FIND THE PROJECT USERS FOR THE PROJECT ID PASSED BY THE CLIENT IN THE BODY OF THE REQUEST
+       * IF THE ID OF THE USER FOUND FOR THE EMAIL (PASSED IN THE BODY OF THE REQUEST - see above)
+       * MATCHES ONE OF THE USER ID CONTENTS IN THE PROJECTS USER OBJECT STOP THE WORKFLOW AND RETURN AN ERROR */
+      
+      // rolequery
+      // var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];     
+      // winston.debug("role", role);
+    
+      // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
+      return Project_user.findOne({ id_project: id_project, id_user: user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active"}, function (err, puser) {
+      // return Project_user.find({ id_project: req.projectid, role: { $in : role }, status: "active"}, function (err, projectuser) {
+        //puser = projectuser
+      
+        winston.debug('PRJCT-USERS FOUND (FILTERED FOR THE PROJECT ID) ', puser )
         if (err) {
           winston.error("Error inviting an already existing user: ", err);
           return res.status(500).send({ success: false, msg: "An error occurred on inviting user " + email + " on project " + id_project })
         }
 
-        if (!roles.includes(req.body.role)) {
-          return res.status(400).send({ success: false, msg: 'Invalid role specified: ' + req.body.role });
-        }
-        
+        // if (!roles.includes(req.body.role)) {
+        //   return res.status(400).send({ success: false, msg: 'Invalid role specified: ' + req.body.role });
+        // }
         let user_available = typeof req.body.user_available === 'boolean' ? req.body.user_available : true
 
         if (puser) {
@@ -76,7 +91,20 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
             return res.status(403).send({ success: false, msg: 'Forbidden. User is already a member', code: 4001 });
           }
 
-          Project_user.findByIdAndUpdate(puser._id, { role: req.body.role, user_available: user_available, trashed: false, status: 'active' }, { new: true}, (err, updatedPuser) => {
+          winston.debug('NO ERROR, SO CREATE AND SAVE A NEW PROJECT USER ')
+
+          var newProject_user = new Project_user({
+            // _id: new mongoose.Types.ObjectId(),
+            id_project: req.projectid,
+            id_user: user._id,
+            role: req.body.role,         
+            roleType : RoleConstants.TYPE_AGENTS,   
+            user_available: user_available, 
+            createdBy: req.user.id,
+            updatedBy: req.user.id
+          });
+
+          return newProject_user.save(function (err, savedProject_user) {
             if (err) {
               winston.error("Error update existing project user before inviting it ", err)
               return res.status(500).send({ success: false, msg: "An error occurred on inviting user " + email + " on project " + id_project })
@@ -84,9 +112,9 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
 
             emailService.sendYouHaveBeenInvited(email, req.user.firstname, req.user.lastname, req.project.name, id_project, user.firstname, user.lastname, req.body.role)
 
-            updatedPuser.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedPuserPopulated){
+            updatedPuser.populate({path:'id_user', select:{'firstname':1, 'lastname':1, 'email': 1}},function (err, updatedPuserPopulated){
               var pu = updatedPuserPopulated.toJSON();
-              pu.isBusy = ProjectUserUtil.isBusy(savedProject_userPopulated, req.project.settings && req.project.settings.max_agent_assigned_chat);
+              pu.isBusy = ProjectUserUtil.isBusy(pu, req.project.settings && req.project.settings.max_agent_assigned_chat);
               var eventData = {req:req, updatedPuserPopulated: pu};
               winston.debug("eventData",eventData);
               authEvent.emit('project_user.invite', eventData);
@@ -101,6 +129,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
             id_project: id_project,
             id_user: user._id,
             role: req.body.role,
+            roleType : RoleConstants.TYPE_AGENTS,   
             user_available: user_available,
             createdBy: req.user.id,
             updatedBy: req.user.id
@@ -114,7 +143,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
 
             emailService.sendYouHaveBeenInvited(email, req.user.firstname, req.user.lastname, req.project.name, id_project, user.firstname, user.lastname, req.body.role)
 
-            savedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, savedProject_userPopulated){
+            savedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1, 'email': 1}},function (err, savedProject_userPopulated){
               var pu = savedProject_userPopulated.toJSON();
               pu.isBusy = ProjectUserUtil.isBusy(savedProject_userPopulated, req.project.settings && req.project.settings.max_agent_assigned_chat);
               var eventData = {req:req, savedProject_userPopulated: pu};
@@ -138,6 +167,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
     // role: RoleConstants.USER,   
     // - Create project_user endpoint by agent (Ticketing) now is with Guest Role      
     role: RoleConstants.GUEST,
+    roleType : RoleConstants.TYPE_USERS,   
     user_available: false,
     tags: req.body.tags, 
     createdBy: req.user.id,
@@ -190,6 +220,8 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     update.tags = req.body.tags;
   }
 
+  const previousUserAvailable = req.projectuser.user_available;
+
   Project_user.findByIdAndUpdate(req.projectuser.id, update,  { new: true, upsert: true }, function (err, updatedProject_user) {
     if (err) {
       winston.error("Error gettting project_user for update", err);
@@ -199,7 +231,7 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     updatedProject_user.populate({ path:'id_user', select: { 'firstname': 1, 'lastname': 1 }}, function (err, updatedProject_userPopulated) {    
       var pu = updatedProject_userPopulated.toJSON();
       pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, req.project.settings && req.project.settings.max_agent_assigned_chat);
-      authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req});
+      authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req, previousUserAvailable: previousUserAvailable});
     });
     
     res.json(updatedProject_user);
@@ -241,6 +273,10 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
       update.status = req.body.status;
   }
 
+  if (req.body.trashed != undefined) {
+    update.trashed = req.body.trashed;
+  }
+
   if (req.body["settings.email.notification.conversation.assigned.toyou"]!=undefined) {
     update["settings.email.notification.conversation.assigned.toyou"] = req.body["settings.email.notification.conversation.assigned.toyou"];
   }
@@ -255,24 +291,34 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 
   winston.debug("project_userid update", update);
 
-  Project_user.findByIdAndUpdate(req.params.project_userid, update, { new: true, upsert: true }, function (err, updatedProject_user) {
-    if (err) {
-      winston.error("Error gettting project_user for update", err);
-      return res.status(500).send({ success: false, msg: 'Error updating object.' });
-    }
-      updatedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){    
-        if (err) {
-          winston.error("Error gettting updatedProject_userPopulated for update", err);
-        }            
-        var pu = updatedProject_userPopulated.toJSON();
-        pu.isBusy = ProjectUserUtil.isBusy(updatedProject_user, req.project.settings && req.project.settings.max_agent_assigned_chat);
-        
-          authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req});
-      });
-    
+  function _doUpdateProjectUser(previousUserAvailable) {
+    Project_user.findByIdAndUpdate(req.params.project_userid, update, { new: true, upsert: true }, function (err, updatedProject_user) {
+      if (err) {
+        winston.error("Error gettting project_user for update", err);
+        return res.status(500).send({ success: false, msg: 'Error updating object.' });
+      }
+        updatedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){    
+          if (err) {
+            winston.error("Error gettting updatedProject_userPopulated for update", err);
+          }            
+          var pu = updatedProject_userPopulated.toJSON();
+          pu.isBusy = ProjectUserUtil.isBusy(updatedProject_user, req.project.settings && req.project.settings.max_agent_assigned_chat);
+          
+            authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req, previousUserAvailable: previousUserAvailable});
+        });
+      
 
-    res.json(updatedProject_user);
-  });
+      res.json(updatedProject_user);
+    });
+  }
+
+  if (update.user_available !== undefined && process.env.ANALYTICS_INGEST_URL) {
+    Project_user.findById(req.params.project_userid, 'user_available').lean().exec(function(err, currentPu) {
+      _doUpdateProjectUser(currentPu ? currentPu.user_available : null);
+    });
+  } else {
+    _doUpdateProjectUser(null);
+  }
 });
 
 // TODO fai servizio di patch degli attributi come request
@@ -298,6 +344,7 @@ router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { ses
         return res.status(404).send({ success: false, error: 'Project user not found with id ' + pu_id });
       }
 
+      puEvent.emit('project_user.deleted', project_user);
       // Event 'project_user.delete' not working - Check it and improve it to manage soft/hard delete
       return res.status(200).send(project_user);
 
@@ -324,6 +371,7 @@ router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { ses
         });
       }
 
+      puEvent.emit('project_user.deleted', project_user);
       return res.status(200).send(project_user);
     });
   }
@@ -341,6 +389,24 @@ router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { ses
         }
 
         winston.debug("Disabled project_user", project_user);
+
+        // Populate id_user to obtain user_email for the analytics event.
+        // user_email is required as a valid email string by the contract
+        // (project-user-deactivated.ts) — skip the event when unavailable.
+        project_user.populate({ path: 'id_user', select: { 'email': 1 } }, function(populateErr, populatedPu) {
+          var puToUse = populatedPu || project_user;
+          var userObj = puToUse.id_user;
+          var email   = (userObj && userObj.email) || null;
+
+          if (email) {
+            track('project_user.deactivated', puToUse.id_project, {
+              id_user:        puToUse.uuid_user || puToUse._id.toString(),
+              user_email:     email,
+              deactivated_by: (req.user && req.user.id) || null,
+              reason:         null,
+            });
+          }
+        });
 
         // Event 'project_user.delete' not working - Check it and improve it to manage disable project user
         return res.status(200).send(project_user);
@@ -385,6 +451,20 @@ router.put('/:project_userid/restore', [passport.authenticate(['basic', 'jwt'], 
       return res.status(200).send(updatedProject_user);
     });
   });
+});
+
+router.get('/me', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res, next) {
+  if (!req.project) {
+    return res.status(404).send({ success: false, msg: 'Project not found.' });
+  }
+  var project_user = req.projectuser;
+
+  var pu = project_user.toJSON();
+   
+  pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_assigned_chat);
+  res.json([pu]);
+
+
 });
 
 router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res) {
@@ -513,17 +593,24 @@ router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session
  */                                                                                       
 router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription'])], function (req, res) {
 
-  var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
+  // rolequery
+  // var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
 
+  var query;
   if (req.query.role) {
     role = req.query.role;
+    winston.debug("role", role);
+    query =  {id_project: req.projectid, role: { $in : role } };
+  } else {
+    query =  {id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS };
   }
-  winston.debug("role", role);
 
-  var query = { id_project: req.projectid, role: { $in : role } };
   if (!req.query.trashed || req.query.trashed === 'false' || req.query.trashed === false) {
     query.trashed = { $ne: true };
   }
+
+  // var query =  {id_project: req.projectid, role: { $in : role } };
+  
 
   if (req.query.presencestatus) {
     query["presence.status"] = req.query.presencestatus;
