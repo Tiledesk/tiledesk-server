@@ -1643,6 +1643,10 @@ router.post('/', async (req, res) => {
     new_kb.tags = tags;
   }
 
+  if (situated_context && situated_context === true && (type !== 'url' ||  scrape_type === 0)) {
+    new_kb.situated_context = situated_context;
+  }
+
   winston.debug("adding kb: ", new_kb);
 
   KB.findOneAndUpdate({ id_project, type, source }, new_kb, { upsert: true, new: true, rawResult: true }, async (err, raw_content) => {

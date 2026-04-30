@@ -52,6 +52,16 @@ jobManagerHybrid.connectAndStartPublisher((status, error) => {
   }
 });
 
+let default_preview_settings = {
+  model: 'gpt-4o',
+  max_tokens: 4096,
+  temperature: 0.7,
+  top_k: 4,
+  alpha: 0.5,
+  context: null
+}
+
+
 class AiManager {
 
   constructor() { }
@@ -74,6 +84,7 @@ class AiManager {
           ...(options.sitemap_origin_id && { sitemap_origin_id: options.sitemap_origin_id }),
           ...(options.sitemap_origin && { sitemap_origin: options.sitemap_origin }),
           ...(options.tags && { tags: options.tags }),
+          ...(options.situated_context && { situated_context: options.situated_context }),
         }
         return kb;
       })
@@ -95,11 +106,14 @@ class AiManager {
         let embedding = namespace.embedding || default_embedding;
         embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
-        let situated_context = this.normalizeSituatedContext();
+        let situated_context;
+        if (options.situated_context) {
+          situated_context = this.normalizeSituatedContext(options.situated_context);
+        }
 
         let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
 
-        let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
+        let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, situated_context, ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, scrape_options, ...rest }) => {
           return { 
             id: _id, 
@@ -132,8 +146,6 @@ class AiManager {
   async scheduleSitemap(namespace, sitemap_content, options) {
     return new Promise((resolve, reject) => {
 
-      const situated_context = this.normalizeSituatedContext();
-
       let kb = {
         id: sitemap_content._id,
         source: sitemap_content.source,
@@ -144,7 +156,7 @@ class AiManager {
         engine: namespace.engine,
         embedding: namespace.embedding,
         hybrid: namespace.hybrid,
-        ...(situated_context && { situated_context }),
+        ...(options.situated_context && { situated_context: options.situated_context }),
       }
 
       if (process.env.NODE_ENV === 'test') {
@@ -189,6 +201,8 @@ class AiManager {
       winston.error("Error removing multiple contents: ", err);
       throw err;
     }
+
+
 
     // Recreate all url contents with sitemap_origin_id
     let result;
@@ -567,13 +581,50 @@ class AiManager {
     })
   }
 
-  normalizeSituatedContext() {
+  normalizeSituatedContext(enable = false) {
+    situatedContext.enable = enable;
     return situatedContext.enable
       ? {
         ...situatedContext,
         api_key: process.env.SITUATED_CONTEXT_API_KEY || process.env.GPTKEY
       }
       : undefined;
+  }
+
+  async createNamespace(id_project, data, idDefault = false) {
+
+    const id = idDefault ? id_project : mongoose.Types.ObjectId();
+    const name = idDefault ? "Default" : data.name;
+    const hybrid = idDefault ? false : (data?.hybrid ?? false);
+    const preview_settings = default_preview_settings;
+    const engine = hybrid ? default_engine_hybrid : default_engine
+    const embedding = default_embedding;
+
+
+    const namespace = new Namespace({
+      id_project,
+      id,
+      name,
+      hybrid,
+      preview_settings,
+      engine,
+      embedding
+    })
+
+    try {
+      const savedNamespace = await namespace.save();
+
+      const namespaceObj = savedNamespace.toObject();
+      delete namespaceObj._id;
+      delete namespaceObj.__v;
+
+      return namespaceObj;
+
+    } catch (err) {
+      winston.error("Error creating namespace: ", err);
+      throw err;
+
+    }
   }
 
 }
