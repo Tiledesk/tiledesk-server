@@ -85,6 +85,7 @@ roundRobin(operatorSelectedEvent) {
         participants: { $exists: true, $ne: [] }};
       
       winston.debug('query', query);            
+      winston.info("main_flow_cache_3 department find last request");
 
       // let lastRequests = await 
       // requestcachefarequi nocachepopulatereqired
@@ -225,14 +226,26 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
 
       let query;
+      var cacheKey;
       if (departmentid == 'default' || departmentid == undefined) {
         query = { default: true, id_project: projectid };
+        cacheKey =  projectid+":departments:default";
       } else {
         query = { _id: departmentid };
+        cacheKey =  projectid+":departments:id:"+departmentid;
       }
+      winston.info("main_flow_cache_2 departmentService getOperators");
+      
        // console.log('query', query);
-      return Department.findOne(query).exec(function (err, department) {
-        // return Department.findOne(query).exec().then(function (department) {
+      var q = Department.findOne(query);
+      
+      if (cacheEnabler.department) {
+        winston.info("cacheKey: "+cacheKey);
+        q.cache(cacheUtil.defaultTTL, cacheKey);
+        winston.debug("cacheEnabler.lead enabled");
+      }
+
+      return q.exec(function (err, department) {
 
         if (err) {
           winston.error('-- > 1 DEPT FIND BY ID ERR ', err)
@@ -289,7 +302,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
             winston.debug('project_user cache enabled');
           }
   
-  
+          const t1 = Date.now();
           return qpu.exec(function (err, project_users) {
             if (err) {
               winston.error('-- > 2 DEPT FIND BY ID ERR ', err)
@@ -297,11 +310,12 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
             }
             // console.log('OPERATORS - BOT IS DEFINED - MEMBERS ', project_users)
             // console.log('OPERATORS - BOT IS DEFINED - MEMBERS LENGHT ', project_users.length);
-
+            console.log("[Performance] getOperatorsWithOperatingHours time: " + (Date.now() - t1));
             // getAvailableOperatorsWithOperatingHours: IN BASE ALLE 'OPERATING HOURS' DEL PROGETTO ESEGUE 
             // getAvailableOperator CHE RITORNA I PROJECT USER DISPONIBILI
+            const t2 = Date.now();
             return that.getAvailableOperatorsWithOperatingHours(project_users, projectid).then(function (_available_agents) {
-
+              console.log("[Performance] getAvailableOperatorsWithOperatingHours time: " + (Date.now() - t2));
               // console.log("D -> [ OPERATORS - BOT IS DEFINED ] -> AVAILABLE PROJECT-USERS: ", _available_agents);
 
               // here subscription notifier??              
@@ -547,8 +561,9 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
         
         if (isOpen) {
 
+          const t1 = Date.now();
           var _available_agents = that.getAvailableOperator(project_users);
-
+          console.log("[Performance] getAvailableOperator time: " + (Date.now() - t1));
           return resolve(_available_agents);
         } else {
           // console.logO ---> [ OHS ] -> PROJECT NOT FOUND("HERERERERERERE");
