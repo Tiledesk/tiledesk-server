@@ -1648,7 +1648,7 @@ router.post('/', async (req, res) => {
     new_kb.tags = tags;
   }
 
-  if (situated_context && situated_context === true && scrape_type === 0) {
+  if (situated_context && situated_context === true && (type !== "url" || scrape_type === 0)) {
     new_kb.situated_context = situated_context;
   }
 
