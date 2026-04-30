@@ -1660,9 +1660,12 @@ router.post('/', async (req, res) => {
     new_kb.tags = tags;
   }
 
+  console.log("situated_context: ", situated_context);
   if (situated_context && situated_context === true && (type !== "url" || scrape_type === 0)) {
+    console.log("setting situated_context to true");
     new_kb.situated_context = situated_context;
   }
+  console.log("new_kb.situated_context: ", new_kb.situated_context);
 
   winston.debug("adding kb: ", new_kb);
 
