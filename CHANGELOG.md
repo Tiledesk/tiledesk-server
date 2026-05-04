@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.18.5
+- Fixed bug on update url content on Knwoledge Base
+
 # 2.18.4
 - Added HyDE support for Knowledge Base Q&A
 - Introduced Cache (cRag) functionality in Knowledge Base Q&A
