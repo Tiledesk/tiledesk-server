@@ -1782,9 +1782,9 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
   const { delimiter = ';' } = req.body;
   let tags = parseStringArrayField(req.body.tags);
 
-  let situated_context;
-  if (req.body.situated_context && req.body.situated_context === true) {
-    situated_context = true;
+  let situated_context = false;
+  if (req.body.situated_context) {
+    situated_context = req.body.situated_context === true || req.body.situated_context === "true";
   }
 
 
