@@ -2020,8 +2020,9 @@ router.put('/:kb_id', async (req, res) => {
   const project = req.project;
   const kb_id = req.params.kb_id;
   
-  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags, situated_context } = req.body;
+  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags } = req.body;
   const namespace_id = req.body.namespace;
+  let situated_context = req.body.situated_context;
 
   if (!namespace_id) {
     return res.status(400).send({ success: false, error: "Missing 'namespace' body parameter" })
