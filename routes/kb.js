@@ -1847,12 +1847,15 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
         embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
         let hybrid = namespace.hybrid;
 
+        console.log("situated_context: ", situated_context);
         let situated_context_obj;
         if (situated_context) {
           situated_context_obj = normalizeSituatedContext(situated_context);
         }
 
-        let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
+        console.log("situated_context_obj: ", situated_context_obj);
+
+        let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, situated_context,  ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, ...rest}) => {
           return { 
             id: _id, 
