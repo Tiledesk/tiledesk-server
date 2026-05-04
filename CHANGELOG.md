@@ -5,6 +5,12 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.18.4
+- Added HyDE support for Knowledge Base Q&A
+- Introduced Cache (cRag) functionality in Knowledge Base Q&A
+- Enabled Situated Context for enhanced Knowledge Base content indexing
+- Bumped tybot-connector version to 2.0.48
+
 # 2.18.3
 - Added permissions logic
 - Added custom roles support
