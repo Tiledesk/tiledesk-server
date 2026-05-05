@@ -105,9 +105,19 @@ module.exports = function(passport) {
     //     done(null, user);
     //   });
 
+    function buildJwtFromRequest() {
+        var extractors = [ExtractJwt.fromAuthHeaderWithScheme("jwt")];
+        if (process.env.JWT_ALLOW_QUERY_PARAMETER !== 'false' && process.env.JWT_ALLOW_QUERY_PARAMETER !== '0') {
+            extractors.push(ExtractJwt.fromUrlQueryParameter('secret_token'));
+        } else {
+            winston.info('JWT from URL query (secret_token) is disabled. Set JWT_ALLOW_QUERY_PARAMETER to true to allow legacy clients.');
+        }
+        return ExtractJwt.fromExtractors(extractors);
+    }
+
     var opts = {
         // jwtFromRequest: ExtractJwt.fromAuthHeader(),
-        jwtFromRequest: ExtractJwt.fromExtractors([ExtractJwt.fromAuthHeaderWithScheme("jwt"), ExtractJwt.fromUrlQueryParameter('secret_token')]),
+        jwtFromRequest: buildJwtFromRequest(),
         //this will help you to pass request body to passport
         passReqToCallback: true, //https://stackoverflow.com/questions/55163015/how-to-bind-or-pass-req-parameter-to-passport-js-jwt-strategy
         // secretOrKey: configSecret,

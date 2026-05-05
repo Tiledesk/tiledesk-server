@@ -41,6 +41,7 @@ if (pubKey) {
 
 var recaptcha = require('../middleware/recaptcha');
 const errorCodes = require('../errorCodes');
+var authRateLimit = require('../middleware/authRouteRateLimit');
 
 
 
@@ -50,6 +51,7 @@ const errorCodes = require('../errorCodes');
 
 router.post('/signup',
   [
+    authRateLimit.signup,
     check('email').isEmail(),
     check('firstname').notEmpty(),
     check('lastname').notEmpty(),
@@ -349,7 +351,7 @@ router.post('/signinWithCustomToken', [
            } catch(e) {
             winston.debug('error signup already exists??: ')
 
-            if (e.code = "E11000") {
+            if (e.code =="E11000") {
               newUser = await User.findOne({email: req.user.email.toLowerCase(), status: 100}).exec();
               winston.debug('signup found')
                   // qui dovresti cercare pu sul progetto con id di newUser se c'è
@@ -553,6 +555,7 @@ router.post('/signinWithCustomToken', [
 
 router.post('/signin',
 [
+  authRateLimit.signin,
   // check('email').notEmpty(),
   check('email').isEmail(),
   check('password').notEmpty(),
@@ -874,8 +877,7 @@ router.get(
 // VERIFY EMAIL
 router.put('/verifyemail/:userid/:code', async function (req, res) {
 
-
-  winston.debug('VERIFY EMAIL - REQ BODY ', req.body);
+  winston.debug('VERIFY EMAIL');
 
   let user_id = req.params.userid;
   let verify_email_code = req.params.code;
@@ -887,7 +889,7 @@ router.put('/verifyemail/:userid/:code', async function (req, res) {
   let redis_client = req.app.get('redis_client');
   let key = "emailverify:verify-" + verify_email_code;
   let value = await redis_client.get(key);
-  console.log("(Auth) verify value: ", value);
+  winston.debug("(Auth) verify redis lookup");
   if (!value) {
     return res.status(401).send({ success: false, error: "Unable to verify email: the verification code is expired or invalid.", error_code: errorCodes.AUTH.ERRORS.VERIFICATION_CODE_EXPIRED})
   }
@@ -897,22 +899,23 @@ router.put('/verifyemail/:userid/:code', async function (req, res) {
     return res.status(401).send({ success: false, error: "Trying to use a verification code from another user.", error_code: errorCodes.AUTH.ERRORS.VERIFICATION_CODE_OTHER_USER})
   }
 
-  User.findByIdAndUpdate(user_id, req.body, { new: true, upsert: true }, function (err, findUser) {
-    if (err) {
-      winston.error(err);
-      return res.status(500).send({ success: false, msg: err });
-    }
-    winston.debug(findUser);
+  try {
+    var findUser = await User.findByIdAndUpdate(
+      user_id,
+      { $set: { emailverified: true } },
+      { new: true }
+    ).exec();
     if (!findUser) {
       winston.warn('User not found for verifyemail' );
       return res.status(404).send({ success: false, msg: 'User not found', error_code: errorCodes.AUTH.ERRORS.USER_NOT_FOUND});
     }
+    await redis_client.del(key);
     winston.debug('VERIFY EMAIL - RETURNED USER ', findUser);
-
-
-
-    res.json(findUser);
-  });
+    return res.json(findUser);
+  } catch (err) {
+    winston.error(err);
+    return res.status(500).send({ success: false, msg: err });
+  }
 });
 
 
