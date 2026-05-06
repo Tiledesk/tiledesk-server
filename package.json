@@ -3,7 +3,7 @@
   "description": "The Tiledesk server module",
   "version": "2.18.5",
   "scripts": {
-    "start": "node ./bin/www",
+    "start": "node ./server.js",
     "pretest": "mongodb-runner start",
     "watchenv": "nodemon --watch .env --watch ./confenv/.env ./bin/www",
     "test": "mocha ./test/*.js ./pubmodules/**/test/*.js ./modules/**/test/*.js ./channels/*/test/*.js ./node_modules/@tiledesk-ent/**/test/*.js  --exit",
@@ -93,7 +93,7 @@
     "mix-hash": "^1.0.7",
     "moment": "^2.29.3",
     "moment-timezone": "^0.5.33",
-    "mongoose": "^5.13.14",
+    "mongoose": "^6.13.9",
     "mongoose-sequence": "^5.3.1",
     "morgan": "^1.10.0",
     "multer": "^1.4.4",
