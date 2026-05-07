@@ -12,7 +12,7 @@ const example_data = require('./fixtures/example-json-multiple-operation-mock');
 //Require the dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');
-let server = require('../app');
+let server = require('../server');
 let should = chai.should();
 var fs = require('fs');
 const path = require('path');

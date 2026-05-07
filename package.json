@@ -3,9 +3,9 @@
   "description": "The Tiledesk server module",
   "version": "2.18.5",
   "scripts": {
-    "start": "node ./bin/www",
+    "start": "node ./server.js",
     "pretest": "mongodb-runner start",
-    "watchenv": "nodemon --watch .env --watch ./confenv/.env ./bin/www",
+    "watchenv": "nodemon --watch .env --watch ./confenv/.env ./server.js",
     "test": "mocha ./test/*.js ./pubmodules/**/test/*.js ./modules/**/test/*.js ./channels/*/test/*.js ./node_modules/@tiledesk-ent/**/test/*.js  --exit",
     "test:int": "mocha ./test-int/*.js  ./pubmodules/**/test-int/*.js ./modules/**/test-int/*.js ./channels/**/test-int/*.js --exit",
     "posttest": "mongodb-runner stop",

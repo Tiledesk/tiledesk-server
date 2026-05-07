@@ -9,7 +9,7 @@ var userService = require('../services/userService');
 
 let chai = require('chai');
 let chaiHttp = require('chai-http');
-let server = require('../app');
+let server = require('../server');
 let should = chai.should();
 
 let expect = require('chai').expect;

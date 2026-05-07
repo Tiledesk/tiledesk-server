@@ -197,7 +197,7 @@ FaqSchema.index(
   { expireAfterSeconds: trashExpirationTime }
 );
 
-var faq = mongoose.model('faq', FaqSchema);
+var faq = mongoose.models.faq || mongoose.model('faq', FaqSchema);
 
 faq.on('index', function (error) {
   // "_id index cannot be sparse"

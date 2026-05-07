@@ -16,6 +16,8 @@ var jwt = require('jsonwebtoken');
 const uuidv4 = require('uuid/v4');
 const trainingService = require('../services/trainingService');
 var roleChecker = require('../middleware/has-role');
+var requirePermission = require('../middlewares/permission.middleware').requirePermission;
+var PERMS = require('../config/permissions');
 const roleConstants = require('../models/roleConstants');
 const errorCodes = require('../errorCodes');
 const faq_kb = require('../models/faq_kb');
@@ -34,7 +36,7 @@ if (MAX_UPLOAD_FILE_SIZE) {
 }
 var upload = multer({ limits: uploadlimits });
 
-
+//roleChecker.hasRole('admin'),
 router.post('/', roleChecker.hasRole('admin'), async function (req, res) {
   winston.debug('create BOT ', req.body);
 
@@ -59,6 +61,7 @@ router.post('/', roleChecker.hasRole('admin'), async function (req, res) {
 
 });
 
+//roleChecker.hasRole('admin'),
 router.post('/train', roleChecker.hasRole('admin'), function (req, res) {
 
   winston.info('train BOT ', req.body);
@@ -130,6 +133,7 @@ router.post('/train', roleChecker.hasRole('admin'), function (req, res) {
   });
 });
 
+//roleChecker.hasRole('admin'),
 router.post('/aitrain/', roleChecker.hasRole('admin'), async (req, res) => {
 
   const chatbot_id = req.body.id_faq_kb;
@@ -171,6 +175,7 @@ router.post('/aitrain/', roleChecker.hasRole('admin'), async (req, res) => {
   })
 })
 
+//roleChecker.hasRole('admin'),
 router.post('/askbot', roleChecker.hasRole('admin'), function (req, res) {
 
   winston.debug('ASK BOT ', req.body);
@@ -241,6 +246,7 @@ router.post('/askbot', roleChecker.hasRole('admin'), function (req, res) {
   });
 });
 
+//roleChecker.hasRole('admin'),
 router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) => {
 
   let id_faq_kb = req.params.faq_kbid;
@@ -302,6 +308,7 @@ router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) 
   }
 });
 
+//roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription'])
 router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), function (req, res) {
 
   winston.debug(req.body);
@@ -359,6 +366,7 @@ router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscripti
   });
 });
 
+//roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']),
 router.put('/:faq_kbid/language/:language', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), (req, res) => {
 
   winston.debug("update language: ", req.params);
@@ -392,6 +400,7 @@ router.put('/:faq_kbid/language/:language', roleChecker.hasRoleOrTypes('admin', 
 
 })
 
+//roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription'])
 router.patch('/:faq_kbid/attributes', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), function (req, res) {   //TODO add cache_bot_here
   var data = req.body;
 
@@ -441,6 +450,7 @@ router.patch('/:faq_kbid/attributes', roleChecker.hasRoleOrTypes('admin', ['bot'
 
 });
 
+//roleChecker.hasRole('admin'),
 router.delete('/:faq_kbid', roleChecker.hasRole('admin'), function (req, res) {
 
   winston.debug(req.body);
@@ -464,6 +474,7 @@ router.delete('/:faq_kbid', roleChecker.hasRole('admin'), function (req, res) {
   });
 });
 
+//roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), 
 router.get('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), function (req, res) {
 
   winston.debug(req.query);
@@ -512,6 +523,7 @@ router.get('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscripti
   });
 });
 
+//roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription'])
 router.get('/:faq_kbid/published', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), async function (req, res) {
 
   const id_project = req.projectid;
@@ -530,6 +542,7 @@ router.get('/:faq_kbid/published', roleChecker.hasRoleOrTypes('admin', ['bot', '
 
 })
 
+//roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription'])
 router.get('/:faq_kbid/jwt', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), function (req, res) {
 
   winston.debug(req.query);
@@ -574,7 +587,8 @@ router.get('/:faq_kbid/jwt', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscr
  * This endpoint should be the only one reachble with role agent.
  * If the role is agent the response must contain only _id, name, or other non relevant info.
  */
-router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription']), function (req, res) {
+// roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription'])
+router.get('/', requirePermission(PERMS.FLOWS_READ), function (req, res) {
 
   winston.debug("req.query", req.query);
 
@@ -637,6 +651,7 @@ router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription']), fu
   })
 });
 
+//roleChecker.hasRole('admin')
 router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) => {
 
   let id_faq_kb = req.params.id_faq_kb;
@@ -711,6 +726,7 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
 
 })
 
+//roleChecker.hasRole('admin')
 router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.single('uploadFile'), async (req, res) => {
 
   let chatbot_id = req.params.id_faq_kb;
@@ -959,6 +975,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
   }
 })
 
+//roleChecker.hasRole('admin')
 router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), (req, res) => {
 
   winston.debug("exporting bot...")
@@ -1038,6 +1055,7 @@ router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), (req, res) =>
   })
 })
 
+//roleChecker.hasRole('admin')
 router.post('/:faq_kbid/training', roleChecker.hasRole('admin'), function (req, res) {
 
   winston.debug(req.body);

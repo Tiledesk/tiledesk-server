@@ -5,6 +5,41 @@ var roleChecker = require('../middleware/has-role');
 var passport = require('passport');
 require('../middleware/passport')(passport);
 
+/**
+ * Optional channel connectors (apps, whatsapp, …) may fail at require/listen time
+ * (missing env vars, optional npm paths). Avoid passing Error as winston’s meta
+ * argument at info level — it serializes the full stack into one noisy JSON line.
+ */
+function logOptionalConnectorInitFailure(connectorName, err) {
+    if (!err) {
+        return;
+    }
+    if (err.code === 'MODULE_NOT_FOUND') {
+        winston.info('PubModulesManager: connector "' + connectorName + '" not installed');
+        return;
+    }
+    var msg = err.message || String(err);
+    if (/Missing variables/i.test(msg)) {
+        winston.info(
+            'PubModulesManager: connector "' + connectorName + '" skipped — ' + msg +
+            '. Set the required environment variables to enable it.'
+        );
+        return;
+    }
+    if (err.name === 'OverwriteModelError') {
+        winston.info(
+            'PubModulesManager: connector "' + connectorName + '" skipped — ' + msg +
+            ' (mongoose model already registered; main app model is reused).'
+        );
+        winston.debug('PubModulesManager: connector "' + connectorName + '" OverwriteModelError stack', err.stack);
+        return;
+    }
+    winston.warn(
+        'PubModulesManager: connector "' + connectorName + '" initialization failed: ' + msg
+    );
+    winston.debug('PubModulesManager: connector "' + connectorName + '" stack', err.stack);
+}
+
 class PubModulesManager {
 
     constructor() {
@@ -298,11 +333,7 @@ class PubModulesManager {
 
             winston.info("PubModulesManager initialized apps.");
         } catch(err) {
-            if (err.code == 'MODULE_NOT_FOUND') { 
-                winston.info("PubModulesManager init apps module not found");
-            }else {
-                winston.info("PubModulesManager error initializing init apps module", err);
-            }
+            logOptionalConnectorInitFailure('apps', err);
         }
 
         try {
@@ -312,13 +343,9 @@ class PubModulesManager {
 
             this.whatsappRoute = this.whatsapp.whatsappRoute;
 
-            winston.info("PubModulesManager initialized apps.");
+            winston.info("PubModulesManager initialized whatsapp.");
         } catch(err) {
-            if (err.code == 'MODULE_NOT_FOUND') { 
-                winston.info("PubModulesManager init apps module not found");
-            }else {
-                winston.info("PubModulesManager error initializing init apps module", err);
-            }
+            logOptionalConnectorInitFailure('whatsapp', err);
         }
 
         try {
@@ -328,13 +355,9 @@ class PubModulesManager {
 
             this.messengerRoute = this.messenger.messengerRoute;
 
-            winston.info("PubModulesManager initialized apps.");
+            winston.info("PubModulesManager initialized messenger.");
         } catch(err) {
-            if (err.code == 'MODULE_NOT_FOUND') { 
-                winston.info("PubModulesManager init apps module not found ");
-            }else {
-                winston.info("PubModulesManager error initializing init apps module", err);
-            }
+            logOptionalConnectorInitFailure('messenger', err);
         }
 
         try {
@@ -346,11 +369,7 @@ class PubModulesManager {
 
             winston.info("PubModulesManager initialized apps (telegram).")
         } catch(err) {
-            if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("PubModulesManager init apps module not found ");
-            } else {
-                winston.info("PubModulesManager error initializing init apps module", err);
-            }
+            logOptionalConnectorInitFailure('telegram', err);
         }
 
         if (process.env.VOICE_TOKEN === process.env.VOICE_SECRET) {
@@ -363,12 +382,8 @@ class PubModulesManager {
     
                 winston.info("PubModulesManager initialized apps (voice).")
             } catch(err) {
-                console.log("\n Unable to start voice connector: ", err);
-                if (err.code == 'MODULE_NOT_FOUND') {
-                    winston.info("PubModulesManager init apps module not found ");
-                } else {
-                    winston.info("PubModulesManager error initializing init apps module", err);
-                }
+                console.log("\n Unable to start voice connector: ", err.message || err);
+                logOptionalConnectorInitFailure('voice', err);
             }
         }
 
@@ -382,12 +397,8 @@ class PubModulesManager {
 
                 winston.info("PubModulesManager initialized apps (voiceTwilio).")
             } catch(err) {
-                console.log("\n Unable to start voiceTwilio connector: ", err);
-                if (err.code == 'MODULE_NOT_FOUND') {
-                    winston.info("PubModulesManager init apps module not found ");
-                } else {
-                    winston.info("PubModulesManager error initializing init apps module", err);
-                }
+                console.log("\n Unable to start voiceTwilio connector: ", err.message || err);
+                logOptionalConnectorInitFailure('voice-twilio', err);
             }
         }
 
@@ -400,11 +411,7 @@ class PubModulesManager {
 
             winston.info("PubModulesManager initialized apps (sms).")
         } catch(err) {
-            if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("PubModulesManager init apps module not found ");
-            } else {
-                winston.info("PubModulesManager error initializing init apps module", err);
-            }
+            logOptionalConnectorInitFailure('sms', err);
         }
 
         try {
@@ -416,11 +423,7 @@ class PubModulesManager {
 
             winston.info("PubModulesManager initialized apps (mqttTest).")
         } catch(err) {
-            if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("PubModulesManager init apps module not found ", err);
-            } else {
-                winston.info("PubModulesManager error initializing init apps module", err);
-            }
+            logOptionalConnectorInitFailure('mqttTest', err);
         }
 
         try {
@@ -432,11 +435,7 @@ class PubModulesManager {
 
             winston.info("PubModulesManager initialized apps (templates).")
         } catch(err) {
-            if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("PubModulesManager init apps module not found ");
-            } else {
-                winston.info("PubModulesManager error initializing init apps module", err);
-            }
+            logOptionalConnectorInitFailure('templates', err);
         }
         
         try {
@@ -446,13 +445,9 @@ class PubModulesManager {
 
             this.kaleyraRoute = this.kaleyra.kaleyraRoute;
 
-            winston.info("PubModulesManager initialized apps.");
+            winston.info("PubModulesManager initialized kaleyra.");
         } catch(err) {
-            if (err.code == 'MODULE_NOT_FOUND') { 
-                winston.info("PubModulesManager init apps module not found");
-            }else {
-                winston.info("PubModulesManager error initializing init apps module", err);
-            }
+            logOptionalConnectorInitFailure('kaleyra', err);
         }
 
         try {
@@ -525,11 +520,7 @@ class PubModulesManager {
 
             winston.info("PubModulesManager initialized tilebot.");
         } catch(err) {
-            if (err.code == 'MODULE_NOT_FOUND') { 
-                winston.info("PubModulesManager init tilebot module not found");
-            }else {
-                winston.info("PubModulesManager error initializing init tilebot module", err);
-            }
+            logOptionalConnectorInitFailure('tilebot', err);
         }
 
 
@@ -541,11 +532,7 @@ class PubModulesManager {
 
             winston.info("PubModulesManager initialized queue.");
         } catch(err) {
-            if (err.code == 'MODULE_NOT_FOUND') { 
-                winston.info("PubModulesManager init queue module not found");
-            }else {
-                winston.info("PubModulesManager error initializing init queue module", err);
-            }
+            logOptionalConnectorInitFailure('queue', err);
         }
 
 

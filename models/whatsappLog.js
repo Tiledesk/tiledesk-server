@@ -35,6 +35,8 @@ const MessageLogSchema = mongoose.Schema({
 })
 
 
-const MessageLog = mongoose.model("MessageLog", MessageLogSchema);  
+const MessageLog =
+  mongoose.models.MessageLog ||
+  mongoose.model("MessageLog", MessageLogSchema);
 
 module.exports = { MessageLog };

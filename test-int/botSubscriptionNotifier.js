@@ -5,7 +5,7 @@ process.env.NODE_ENV = 'test';
 //Require the dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');
-let server = require('../app');
+let server = require('../server');
 var projectService = require('../services/projectService');
 var userService = require('../services/userService');
 let should = chai.should();

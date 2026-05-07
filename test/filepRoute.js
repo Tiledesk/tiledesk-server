@@ -9,7 +9,7 @@ process.env.ENABLE_ATTACHMENT_RETENTION = "true"
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 chai.use(require('chai-string'));
-let server = require('../app');
+let server = require('../server');
 let should = chai.should();
 var fs = require('fs');
 let userService = require('../services/userService');

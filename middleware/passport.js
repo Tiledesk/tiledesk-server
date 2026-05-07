@@ -83,7 +83,11 @@ var jwthistory = undefined;
 try {
   jwthistory = require('@tiledesk-ent/tiledesk-server-jwthistory');
 } catch(err) {
-  winston.info("jwthistory not present", err);
+  if (err && err.code === 'MODULE_NOT_FOUND') {
+    winston.info("jwthistory not present (optional module @tiledesk-ent/tiledesk-server-jwthistory)");
+  } else {
+    winston.warn("jwthistory load failed", err);
+  }
 }
 
 let JWT_HISTORY_ENABLED = false;

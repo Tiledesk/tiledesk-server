@@ -3,7 +3,7 @@ process.env.LOG_LEVEL = 'critical'
 
 let chai = require('chai');
 let chaiHttp = require('chai-http');
-let server = require('../app');
+let server = require('../server');
 let should = chai.should();
 const userService = require('../services/userService');
 const projectService = require('../services/projectService');

@@ -5,6 +5,8 @@ module.exports = function(req, res, next) {
         // winston.debug("token", token);
         if (token) {
            next();
+        } else if (req.headers && req.headers["x-api-key"]) {
+           next();
         } else {
           return res.status(403).send({success: false, msg: 'Unauthorized.'});
         }

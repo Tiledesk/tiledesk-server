@@ -8,7 +8,7 @@ var userService = require('../services/userService');
 //Require the dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');
-let server = require('../app');
+let server = require('../server');
 let should = chai.should();
 var jwt = require('jsonwebtoken');
 

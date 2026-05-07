@@ -7,7 +7,7 @@ let chai = require('chai');
 let expect = require('chai').expect;
 
 let chaiHttp = require('chai-http');
-let server = require('../app');
+let server = require('../server');
 const projectService = require('../services/projectService');
 const userService = require('../services/userService');
 var RoleConstants = require("../models/roleConstants");

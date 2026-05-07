@@ -13,7 +13,7 @@ var winston = require('../config/winston');
 //Require the dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');
-let server = require('../app');
+let server = require('../server');
 let should = chai.should();
 var expect = chai.expect;
 var assert = chai.assert;
