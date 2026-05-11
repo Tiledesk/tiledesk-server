@@ -123,6 +123,8 @@ class AiManager {
           resolve({ result, schedule_json: resources });
           return;
         }
+
+        console.log("resource: ", resources[0]);
   
         this.scheduleScrape(resources, hybrid);
         resolve(result);
@@ -136,6 +138,8 @@ class AiManager {
 
   async scheduleSitemap(namespace, sitemap_content, options) {
     return new Promise((resolve, reject) => {
+
+      const situated_context_obj = this.normalizeSituatedContext(sitemap_content.situated_context);
 
       let kb = {
         id: sitemap_content._id,
@@ -252,6 +256,7 @@ class AiManager {
 
   async resolveLLMConfig(id_project, provider = 'openai', model) {
 
+    console.log("resolveLLMConfig...");
     if (provider === 'ollama' || provider === 'vllm') {
       try {
         const integration = await integrationService.getIntegration(id_project, provider);
@@ -275,6 +280,9 @@ class AiManager {
     try {
       let key = await integrationService.getKeyFromIntegration(id_project, provider)
 
+      console.log("key: ", key);
+
+      console.log("returning ", { provider, name: model, api_key: key });
       return {
         provider,
         name: model,
