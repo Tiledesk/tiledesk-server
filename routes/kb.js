@@ -363,8 +363,6 @@ router.post('/qa', async (req, res) => {
   let publicKey = false;
   let data = req.body;
 
-  let total_duration = Date.now();
-
   let namespace;
   try {
     namespace = await aiManager.checkNamespace(id_project, data.namespace);
@@ -608,7 +606,7 @@ router.post('/qa', async (req, res) => {
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
 
-    answer.duration = Date.now() - duration;
+    answer.duration = (Date.now() - duration) / 1000;
 
     if (publicKey === true) {
       let modelKey;
@@ -631,7 +629,6 @@ router.post('/qa', async (req, res) => {
       winston.verbose("incremented_key: ", incremented_key);
     }
   
-    answer.total_duration = Date.now() - total_duration;
     return res.status(200).send(answer);
 
   }).catch((err) => {
