@@ -7,6 +7,8 @@ var passport = require('passport');
 require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 var roleChecker = require('../middleware/has-role');
+const { requirePermission } = require('../middlewares/permission.middleware');
+let PERMS = require('../config/permissions');
 
 var winston = require('../config/winston');
 var cacheUtil = require('../utils/cacheUtil');
@@ -14,7 +16,8 @@ var cacheUtil = require('../utils/cacheUtil');
 var departmentEvent = require("../event/departmentEvent");
 
 
-router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+// roleChecker.hasRole('admin')
+router.post('/', requirePermission(PERMS.DEPARTMENT_CREATE), function (req, res) {
 
   winston.debug("DEPT REQ BODY ", req.body);
   var newDepartment = new Department({
@@ -48,8 +51,8 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
 });
 
 
-
-router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+// roleChecker.hasRole('admin')
+router.put('/:departmentid', requirePermission(PERMS.DEPARTMENT_UPDATE), function (req, res) {
 
   winston.debug(req.body);
 
@@ -95,55 +98,55 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
   });
   });
 
+//roleChecker.hasRole('admin')
+router.patch('/:departmentid', requirePermission(PERMS.DEPARTMENT_UPDATE), function (req, res) {
 
-  router.patch('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+  winston.debug(req.body);
 
-    winston.debug(req.body);
+  var update = {};
+
   
-    var update = {};
-  
-   
-    if (req.body.status!=undefined) {
-        update.status = req.body.status;
-    }
-    if (req.body.id_bot!=undefined) {
-      update.id_bot = req.body.id_bot;
-    }
-    if (req.body.bot_only!=undefined) {
-      update.bot_only = req.body.bot_only;
-    }
-    if (req.body.routing!=undefined) {
-        update.routing = req.body.routing;
-    }
-    if (req.body.name!=undefined) {
-        update.name = req.body.name;
-    }
-    if (req.body.description!=undefined) {
-        update.description = req.body.description;
-    }  
-    if (req.body.id_group!=undefined) {
-        update.id_group = req.body.id_group;
-    }    
-    if (req.body.groups!=undefined) {
-      update.groups = req.body.groups;
-    }      
-  
-  
-    Department.findByIdAndUpdate(req.params.departmentid, update, { new: true, upsert: true }, function (err, updatedDepartment) {
-        if (err) {
-        winston.error('Error patching the department ', err);
-        return res.status(500).send({ success: false, msg: 'Error patching object.' });
-        }
-        departmentEvent.emit('department.update', updatedDepartment);
-        res.json(updatedDepartment);
-    });
-    });
+  if (req.body.status!=undefined) {
+      update.status = req.body.status;
+  }
+  if (req.body.id_bot!=undefined) {
+    update.id_bot = req.body.id_bot;
+  }
+  if (req.body.bot_only!=undefined) {
+    update.bot_only = req.body.bot_only;
+  }
+  if (req.body.routing!=undefined) {
+      update.routing = req.body.routing;
+  }
+  if (req.body.name!=undefined) {
+      update.name = req.body.name;
+  }
+  if (req.body.description!=undefined) {
+      update.description = req.body.description;
+  }  
+  if (req.body.id_group!=undefined) {
+      update.id_group = req.body.id_group;
+  }    
+  if (req.body.groups!=undefined) {
+    update.groups = req.body.groups;
+  }      
 
 
-  // TODO aggiungere altro endpoint qui che calcola busy status come calculate di tiledesk-queue
+  Department.findByIdAndUpdate(req.params.departmentid, update, { new: true, upsert: true }, function (err, updatedDepartment) {
+      if (err) {
+      winston.error('Error patching the department ', err);
+      return res.status(500).send({ success: false, msg: 'Error patching object.' });
+      }
+      departmentEvent.emit('department.update', updatedDepartment);
+      res.json(updatedDepartment);
+  });
+  });
 
 
-router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], async (req, res) => {
+// TODO aggiungere altro endpoint qui che calcola busy status come calculate di tiledesk-queue
+
+//roleChecker.hasRoleOrTypes('agent', ['bot','subscription']
+router.get('/:departmentid/operators', requirePermission(PERMS.DEPARTMENT_READ), async (req, res) => {
   winston.debug("Getting department operators req.projectid: "+req.projectid);
   
   var disableWebHookCall = undefined;
@@ -169,7 +172,8 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
 // ======================== ./END - GET MY DEPTS ========================
 
 // GET ALL DEPTS (i.e. NOT FILTERED FOR STATUS and WITH AUTHENTICATION (USED BY THE DASHBOARD)
-router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], function (req, res) {
+//roleChecker.hasRoleOrTypes('agent', ['bot','subscription']
+router.get('/allstatus', requirePermission(PERMS.DEPARTMENT_LIST), function (req, res) {
 
   // winston.debug("## GET ALL DEPTS req.project.isActiveSubscription ", req.project.isActiveSubscription)
   // winston.debug("## GET ALL DEPTS req.project.trialExpired ", req.project.trialExpired)
@@ -305,7 +309,8 @@ router.get('/', function (req, res) {
   }
 });
 
-router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+// roleChecker.hasRole('admin')
+router.delete('/:departmentid', requirePermission(PERMS.DEPARTMENT_DELETE), function (req, res) {
 
   winston.debug(req.body);
   winston.debug("req.params.departmentid: "+req.params.departmentid);

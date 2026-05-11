@@ -2,7 +2,7 @@
 
 /**
  * Central permission identifiers for RBAC and route guards.
- * Legacy route stacks map to these constants via permission.middleware delegations.
+ * Used by permission.middleware.requirePermission against the per-role sets in config/roles.js.
  */
 
 module.exports = {
@@ -38,27 +38,41 @@ module.exports = {
   QUOTA_USAGE_READ: "quota_usage_read",
   AUTOMATIONSLOG_READ: "automationslog_read",
   AUTOMATIONSLOG_CREATE: "automationslog_create",
+  KB_PROXY_QA: "kb_proxy_qa",
+  KB_PROXY_INDEX: "kb_proxy_index",
+  KB_NAMESPACE_LIST: "kb_namespace_list",
+  KB_NAMESPACE_CREATE: "kb_namespace_add", //kb_namespace_create
+  KB_NAMESPACE_IMPORT: "kb_namespace_import",
+  KB_NAMESPACE_EXPORT: "kb_namespace_export",
+  KB_NAMESPACE_DELETE: "kb_namespace_delete",
   KB_READ: "kb_read",
-  KB_CONTENTS_ADD: "kb_contents_add",
+  KB_CONTENT_ADD: "kb_contents_add",
   KB_CONTENT_UPDATE: "kb_content_update",
+  KB_CONTENT_DELETE: "kb_content_delete",
   KB_CONTENT_REINDEX: "kb_content_reindex",
   KB_CONTENT_CHECK_STATUS: "kb_content_check_status",
-  KB_NAMESPACE_ADD: "kb_namespace_add",
   KB_SETTINGS_EDIT: "kb_settings_edit",
   KB_DELETE: "kb_delete",
   KB_CONTENTS_EXPORT: "kb_contents_export",
-  FLOWS_READ: "flows_read",
-  FLOW_ADD: "flow_add",
-  FLOW_EDIT: "flow_edit",
+  LLM_PREVIEW: "llm_preview",
+  LLM_TRANSCRIPTION: "llm_transcription",
+  FLOWS_LIST: "flows_read", // flows_list
+  FLOW_READ: "flow_read",
+  FLOW_READ_PUBLISHED: "flow_read_published",
+  FLOW_CREATE: "flow_add", // flow_create
+  FLOW_UPDATE: "flow_edit", // flow_update
   FLOW_TEST: "flow_test",
-  FLOW_DUPLICATE: "flow_duplicate",
-  FLOW_DELETE: "flow_delete",
-  FLOW_SHARE: "flow_share",
-  FLOW_EXPORT: "flow_export",
-  FLOW_WEBHOOK_COPY: "flow_webhook_copy",
-  FLOW_WEBHOOK_EDIT: "flow_webhook_edit",
-  FLOW_WEBHOOK_DELETE: "flow_webhook_delete",
-  LEADS_READ: "leads_read",
+  FLOW_PUBLISH: "flow_publish", 
+  FLOW_DUPLICATE: "flow_duplicate", // flow_duplicate
+  FLOW_DELETE: "flow_delete", // flow_delete
+  FLOW_SHARE: "flow_share", // flow_share
+  FLOW_EXPORT: "flow_export", // flow_export
+  FLOW_WEBHOOK_COPY: "flow_webhook_copy", // flow_webhook_copy
+  FLOW_WEBHOOK_EDIT: "flow_webhook_edit", // flow_webhook_edit
+  FLOW_WEBHOOK_DELETE: "flow_webhook_delete", // flow_webhook_delete
+  LEAD_CREATE: "lead_create",
+  LEAD_LIST: "leads_list",
+  LEAD_READ: "leads_read",
   LEAD_UPDATE: "lead_update",
   LEAD_RESTORE: "lead_restore",
   LEAD_TRASH: "lead_trash",
@@ -69,9 +83,14 @@ module.exports = {
   ANALYTICS_READ: "analytics_read",
   ACTIVITIES_READ: "activities_read",
   WIDGETSETUP_READ: "widgetsetup_read",
-  DEPARTMENT_LIST_READ: "department_list_read",
-  DEPARTMENT_DETAIL_READ: "department_detail_read",
-  DEPARTMENT_CREATE_READ: "department_create_read",
+  DEPARTMENT_LIST: "department_list",
+  DEPARTMENT_READ: "department_read",
+  DEPARTMENT_CREATE: "department_create",
+  DEPARTMENT_UPDATE: "department_update",
+  DEPARTMENT_DELETE: "department_delete",
+  DEPARTMENT_LIST_READ: "department_list_read",// ###
+  DEPARTMENT_DETAIL_READ: "department_detail_read",// ###
+  DEPARTMENT_CREATE_READ: "department_create_read",// ###
   TEAMMATES_READ: "teammates_read",
   TEAMMATE_UPDATE: "teammate_update",
   TEAMMATES_CREATE: "teammates_create",
@@ -97,8 +116,11 @@ module.exports = {
   HOURS_UPDATE: "hours_update",
   HOURS_DELETE: "hours_delete",
   HOURS_CREATE: "hours_create",
-  INTEGRATIONS_READ: "integrations_read",
-  INTEGRATIONS_UPDATE: "integrations_update",
+  INTEGRATIONS_LIST: "integrations_read", // integrations_list
+  INTEGRATION_CREATE: "integration_create",
+  INTEGRATION_READ: "integration_read",
+  INTEGRATION_UPDATE: "integrations_update",
+  INTEGRATION_DELETE: "integration_delete",
   APPS_READ: "apps_read",
   APPS_UPDATE: "apps_update",
   PROJECTSETTINGS_GENERAL_READ: "projectsettings_general_read",
@@ -111,4 +133,16 @@ module.exports = {
   PROJECTSETTINGS_SECURITY_READ: "projectsettings_security_read",
   PROJECTSETTINGS_BANNED_READ: "projectsettings_banned_read",
   PROJECTSETTINGS_ADVANCED_READ: "projectsettings_advanced_read",
+  PU_INVITE: "pu_invite",
+  PU_CREATE: "pu_create",
+  PU_UPDATE: "pu_update",
+  PU_UPDATE_MINE: "pu_update_mine",
+  PU_DELETE: "pu_delete",
+  PU_RESTORE: "pu_restore",
+  PU_READ: "pu_read",
+  APIKEY_READ: "apikey_read",
+  APIKEY_CREATE: "apikey_create",
+  APIKEY_UPDATE: "apikey_update",
+  APIKEY_DELETE: "apikey_delete",
+
 }

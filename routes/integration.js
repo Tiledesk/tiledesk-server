@@ -5,10 +5,12 @@ let Integration = require('../models/integrations');
 const cacheEnabler = require('../services/cacheEnabler');
 var cacheUtil = require('../utils/cacheUtil');
 const integrationEvent = require('../event/integrationEvent');
+const { requirePermission } = require('../middlewares/permission.middleware');
+let PERMS = require('../config/permissions');
 
 
 // Get all integration for a project id 
-router.get('/', async (req, res) => {
+router.get('/', requirePermission(PERMS.INTEGRATIONS_LIST), async (req, res) => {
 
     let id_project = req.projectid;
     winston.debug("Get all integration for the project " + id_project);
@@ -38,7 +40,7 @@ router.get('/', async (req, res) => {
 })
 
 // Get one integration
-router.get('/:integration_id', async (req, res) => {
+router.get('/:integration_id', requirePermission(PERMS.INTEGRATION_READ), async (req, res) => {
     
     let integration_id = req.params.integration_id;
     winston.debug("Get integration with id " + integration_id);
@@ -53,7 +55,7 @@ router.get('/:integration_id', async (req, res) => {
 
 })
 
-router.get('/name/:integration_name', async (req, res) => {
+router.get('/name/:integration_name', requirePermission(PERMS.INTEGRATION_READ), async (req, res) => {
 
     let id_project = req.projectid;
     winston.debug("Get all integration for the project " + id_project);
@@ -77,7 +79,7 @@ router.get('/name/:integration_name', async (req, res) => {
 })
 
 // Add new integration
-router.post('/', async (req, res) => {
+router.post('/', requirePermission(PERMS.INTEGRATION_CREATE), async (req, res) => {
 
     let id_project = req.projectid;
     winston.debug("Add new integration ", req.body);
@@ -140,7 +142,7 @@ router.post('/', async (req, res) => {
     
 })
 
-router.put('/:integration_id', async (req, res) => {
+router.put('/:integration_id', requirePermission(PERMS.INTEGRATION_UPDATE), async (req, res) => {
 
     let id_project = req.projectid;
     let integration_id = req.params.integration_id;
@@ -171,7 +173,7 @@ router.put('/:integration_id', async (req, res) => {
     })
 })
 
-router.delete('/:integration_id', async (req, res) => {
+router.delete('/:integration_id', requirePermission(PERMS.INTEGRATION_DELETE), async (req, res) => {
 
     let id_project = req.projectid;
     let integration_id = req.params.integration_id;

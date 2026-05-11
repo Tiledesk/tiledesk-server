@@ -6,6 +6,8 @@ const aiService = require('../services/aiService');
 const multer = require('multer');
 const fileUtils = require('../utils/fileUtils');
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
+const { requirePermission } = require('../middlewares/permission.middleware');
+const PERMS = require('../config/permissions');
 
 let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
 let uploadlimits = undefined;
@@ -18,7 +20,7 @@ if (MAX_UPLOAD_FILE_SIZE) {
 }
 var upload = multer({limits: uploadlimits});
 
-router.post('/preview', async (req, res) => {
+router.post('/preview', requirePermission(PERMS.LLM_PREVIEW), async (req, res) => {
 
     let id_project = req.projectid;
     let body = req.body;
@@ -118,7 +120,7 @@ router.post('/preview', async (req, res) => {
 
 })
 
-router.post('/transcription', upload.single('uploadFile'), async (req, res) => {
+router.post('/transcription', requirePermission(PERMS.LLM_TRANSCRIPTION), upload.single('uploadFile'), async (req, res) => {
 
     let id_project = req.projectid;
 

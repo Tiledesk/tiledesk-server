@@ -42,6 +42,7 @@ var publicAnalytics = require("./routes/public-analytics");
 var pendinginvitation = require("./routes/pending-invitation");
 var jwtroute = require("./routes/jwt");
 var key = require("./routes/key");
+var apikey = require("./routes/apikey");
 var widgets = require("./routes/widget");
 var widgetsLoader = require("./routes/widgetLoader");
 var openai = require("./routes/openai");
@@ -334,7 +335,14 @@ app.use(
   messagesRootRoute
 );
 
-app.use("/:projectid/departments", department);
+app.use("/:projectid/departments",
+  [
+    authMw.authenticateRequired,
+    projectMw.injectProjectUser,
+    validtoken,
+  ],
+  department
+);
 
 channelManager.useUnderProjects(app);
 
@@ -440,6 +448,16 @@ app.use(
     validtoken,
   ],
   key
+);
+
+app.use(
+  "/:projectid/apikeys",
+  [
+    authMw.authenticateRequired,
+    projectMw.injectProjectUser,
+    validtoken,
+  ],
+  apikey
 );
 
 app.use("/:projectid/jwt", jwtroute);

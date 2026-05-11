@@ -17,9 +17,11 @@ require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 var roleChecker = require('../middleware/has-role');
 const puEvent = require('../event/projectUserEvent');
+const PERMS = require('../config/permissions');
+const { requirePermission } = require('../middlewares/permission.middleware');
 
-
-router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+//roleChecker.hasRole('admin')
+router.post('/invite', requirePermission(PERMS.PU_INVITE), function (req, res) {
 
   winston.debug('Invite ProjectUser body ', req.body);
 
@@ -157,7 +159,8 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
   });
 });
 
-router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], function (req, res) {
+//roleChecker.hasRole('agent')
+router.post('/', requirePermission(PERMS.PU_CREATE), function (req, res) {
 
   var newProject_user = new Project_user({
     id_project: req.projectid, //il fullname????
@@ -181,7 +184,8 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
   });
 })
 
-router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], function (req, res) {
+//roleChecker.hasRole('agent')
+router.put('/', requirePermission(PERMS.PU_UPDATE_MINE), function (req, res) {
 
   winston.debug("projectuser patch", req.body);
 
@@ -234,7 +238,8 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   });
 });
 
-router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['subscription'])], function (req, res) {
+//roleChecker.hasRoleOrTypes('admin', ['subscription']
+router.put('/:project_userid', requirePermission(PERMS.PU_UPDATE), function (req, res) {
 
   winston.debug("project_userid update", req.body);
 
@@ -305,7 +310,8 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 
 // TODO fai servizio di patch degli attributi come request
 // TODO  blocca cancellazione owner?
-router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+// roleChecker.hasRole('admin')
+router.delete('/:project_userid', requirePermission(PERMS.PU_DELETE), function (req, res) {
 
   const { hard, soft } = req.query;
   const pu_id = req.params.project_userid;
@@ -379,7 +385,8 @@ router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { ses
 });
 
 // Restore a soft-deleted (trashed) project user. Fails if not found or not trashed.
-router.put('/:project_userid/restore', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+//roleChecker.hasRole('admin')
+router.put('/:project_userid/restore', requirePermission(PERMS.PU_RESTORE), function (req, res) {
   const pu_id = req.params.project_userid;
 
   Project_user.findOne({ _id: pu_id, id_project: req.projectid }, function (err, project_user) {
@@ -417,7 +424,8 @@ router.put('/:project_userid/restore', [passport.authenticate(['basic', 'jwt'], 
   });
 });
 
-router.get('/me', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res, next) {
+//roleChecker.hasRoleOrTypes('agent', ['subscription'])
+router.get('/me', function (req, res, next) {
   if (!req.project) {
     return res.status(404).send({ success: false, msg: 'Project not found.' });
   }
@@ -431,7 +439,8 @@ router.get('/me', [passport.authenticate(['basic', 'jwt'], { session: false }), 
 
 });
 
-router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res) {
+//roleChecker.hasRoleOrTypes('agent', ['subscription']
+router.get('/:project_userid', requirePermission(PERMS.PU_READ), function (req, res) {
   // router.get('/details/:project_userid', function (req, res) {
   // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
   Project_user.findOne({ _id: req.params.project_userid, id_project: req.projectid}).
@@ -452,7 +461,8 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 
 });
 
-router.get('/users/search', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('user', ['subscription'])], async (req, res, next) => { //changed for smtp 
+//roleChecker.hasRoleOrTypes('user', ['subscription']
+router.get('/users/search', requirePermission(PERMS.PU_READ), async (req, res, next) => { //changed for smtp 
   // router.get('/users/search', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], async (req, res, next) => {
   winston.debug("--> users search  ");
 
@@ -488,7 +498,8 @@ router.get('/users/search', [passport.authenticate(['basic', 'jwt'], { session: 
 /**
  * GET PROJECT-USER BY PROJECT ID AND CURRENT USER ID 
 //  */
-router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res, next) {
+//roleChecker.hasRoleOrTypes('agent', ['subscription']
+router.get('/users/:user_id', requirePermission(PERMS.PU_READ), function (req, res, next) {
   winston.debug("--> users USER ID ", req.params.user_id);
 
   if (!req.project) {
@@ -555,7 +566,8 @@ router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session
  * WF: 1. GET PROJECT-USER by the passed project ID
  *     2. POPULATE THE user_id OF THE PROJECT-USER object WITH THE USER OBJECT
  */                                                                                       
-router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription'])], function (req, res) {
+//roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription']
+router.get('/', requirePermission(PERMS.PU_READ), function (req, res) {
 
   // rolequery
   // var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];

@@ -17,6 +17,7 @@ const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
 const { parseStringArrayField } = require('../utils/arrayUtil');
 const { kbTypes } = require('../models/kbConstants');
 const Sitemapper = require('sitemapper');
+const PERMS = require('../config/permissions');
 
 const aiService = require('../services/aiService');
 const aiManager = require('../services/aiManager');
@@ -84,6 +85,7 @@ const default_engine_hybrid = require('../config/kb/engine.hybrid');
 const default_embedding = require('../config/kb/embedding');
 const PromptManager = require('../config/kb/prompt/rag/PromptManager');
 const situatedContext = require('../config/kb/situatedContext');
+const { requirePermission } = require('../middlewares/permission.middleware');
 
 const ragPromptManager = new PromptManager(path.join(__dirname, '../config/kb/prompt/rag'));
 
@@ -136,7 +138,7 @@ function normalizeSituatedContext(enable = false) {
 * Proxy Section - Start
 * ****************************************
 */
-router.post('/scrape/single', async (req, res) => {
+router.post('/scrape/single', requirePermission(PERMS.KB_PROXY_INDEX), async (req, res) => {
 
   let project_id = req.projectid;
 
@@ -293,7 +295,7 @@ router.post('/scrape/single', async (req, res) => {
 
 })
 
-router.post('/scrape/status', async (req, res) => {
+router.post('/scrape/status', requirePermission(PERMS.KB_CONTENT_CHECK_STATUS), async (req, res) => {
 
   let project_id = req.projectid;
   // (EXAMPLE) body: { id, namespace }
@@ -358,7 +360,7 @@ router.post('/scrape/status', async (req, res) => {
   })
 })
 
-router.post('/qa', async (req, res) => {
+router.post('/qa', requirePermission(PERMS.KB_PROXY_QA), async (req, res) => {
   let id_project = req.projectid;
   let publicKey = false;
   let data = req.body;
@@ -804,7 +806,7 @@ router.post('/qa', async (req, res) => {
 //   })
 // })
 
-router.delete('/delete', async (req, res) => {
+router.delete('/delete', requirePermission(PERMS.KB_PROXY_INDEX), async (req, res) => {
 
   let project_id = req.projectid;
   let data = req.body;
@@ -831,7 +833,7 @@ router.delete('/delete', async (req, res) => {
 
 })
 
-router.delete('/deleteall', async (req, res) => {
+router.delete('/deleteall', requirePermission(PERMS.KB_PROXY_INDEX), async (req, res) => {
 
   let project_id = req.projectid;
   let data = req.body;
@@ -873,7 +875,7 @@ router.delete('/deleteall', async (req, res) => {
  * Namespace Section - Start
  * ****************************************
  */
-router.get('/namespace/all', async (req, res) => {
+router.get('/namespace/all', requirePermission(PERMS.KB_NAMESPACE_LIST), async (req, res) => {
 
   let project_id = req.projectid;
 
@@ -933,7 +935,7 @@ router.get('/namespace/all', async (req, res) => {
   })
 })
 
-router.get('/namespace/:id/chunks/:content_id', async (req, res) => {
+router.get('/namespace/:id/chunks/:content_id', requirePermission(PERMS.KB_READ), async (req, res) => {
 
   let project_id = req.projectid;
   let namespace_id = req.params.id;
@@ -976,7 +978,7 @@ router.get('/namespace/:id/chunks/:content_id', async (req, res) => {
 
 })
 
-router.get('/namespace/:id/chatbots', async (req, res) => {
+router.get('/namespace/:id/chatbots', requirePermission(PERMS.KB_READ), async (req, res) => {
 
   let project_id = req.projectid;
   let namespace_id = req.params.id;
@@ -1026,7 +1028,7 @@ router.get('/namespace/:id/chatbots', async (req, res) => {
   res.status(200).send(chatbotsArray);
 })
 
-router.get('/namespace/export/:id', async (req, res) => {
+router.get('/namespace/export/:id', requirePermission(PERMS.KB_NAMESPACE_EXPORT), async (req, res) => {
   
   let id_project = req.projectid;
   let namespace_id = req.params.id;
@@ -1076,7 +1078,7 @@ router.get('/namespace/export/:id', async (req, res) => {
   
 })
 
-router.post('/namespace', async (req, res) => {
+router.post('/namespace', requirePermission(PERMS.KB_NAMESPACE_CREATE), async (req, res) => {
 
   let project_id = req.projectid;
   let body = req.body;
@@ -1140,7 +1142,7 @@ router.post('/namespace', async (req, res) => {
   })
 })
 
-router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, res) => {
+router.post('/namespace/import/:id', requirePermission(PERMS.KB_NAMESPACE_IMPORT), upload.single('uploadFile'), async (req, res) => {
 
   let id_project = req.projectid;
   let namespace_id = req.params.id;
@@ -1328,7 +1330,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   
 })
 
-router.put('/namespace/:id', async (req, res) => {
+router.put('/namespace/:id', requirePermission(PERMS.KB_NAMESPACE_CREATE), async (req, res) => {
 
   let namespace_id = req.params.id;
   let body = req.body;
@@ -1356,7 +1358,7 @@ router.put('/namespace/:id', async (req, res) => {
   })
 })
 
-router.delete('/namespace/:id', async (req, res) => {
+router.delete('/namespace/:id', requirePermission(PERMS.KB_NAMESPACE_DELETE), async (req, res) => {
 
   let project_id = req.projectid;
   let namespace_id = req.params.id;
@@ -1458,7 +1460,7 @@ router.delete('/namespace/:id', async (req, res) => {
 * Content Section - Start
 * ****************************************
 */
-router.get('/', async (req, res) => {
+router.get('/', requirePermission(PERMS.KB_READ), async (req, res) => {
 
   let project_id = req.projectid;
   let namespace = req.query.namespace;
@@ -1573,7 +1575,7 @@ router.get('/', async (req, res) => {
 
 })
 
-router.get('/:kb_id', async (req, res) => {
+router.get('/:kb_id', requirePermission(PERMS.KB_READ), async (req, res) => {
 
   let kb_id = req.params.kb_id;
 
@@ -1591,7 +1593,7 @@ router.get('/:kb_id', async (req, res) => {
   })
 })
 
-router.post('/', async (req, res) => {
+router.post('/', requirePermission(PERMS.KB_CONTENT_ADD), async (req, res) => {
 
   const id_project = req.projectid;
   const project = req.project
@@ -1702,7 +1704,7 @@ router.post('/', async (req, res) => {
 
 })
 
-router.post('/multi', upload.single('uploadFile'), async (req, res) => {
+router.post('/multi', requirePermission(PERMS.KB_CONTENT_ADD), upload.single('uploadFile'), async (req, res) => {
 
   let list;
   if (req.file) {
@@ -1771,7 +1773,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
 })
 
-router.post('/csv', upload.single('uploadFile'), async (req, res) => {
+router.post('/csv', requirePermission(PERMS.KB_CONTENT_ADD), upload.single('uploadFile'), async (req, res) => {
 
   let project_id = req.projectid;
   let namespace_id = req.query.namespace;
@@ -1885,7 +1887,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
 })
 
-router.post('/sitemap', async (req, res) => {
+router.post('/sitemap', requirePermission(PERMS.KB_CONTENT_ADD), async (req, res) => {
 
   let sitemap_url = req.body.sitemap;
 
@@ -1906,7 +1908,7 @@ router.post('/sitemap', async (req, res) => {
 
 })
 
-router.post('/sitemap/import', async (req, res) => {
+router.post('/sitemap/import', requirePermission(PERMS.KB_CONTENT_ADD), async (req, res) => {
 
   const id_project = req.projectid;
   const namespace_id = req.query.namespace;
@@ -2014,7 +2016,7 @@ router.post('/sitemap/import', async (req, res) => {
   
 })
 
-router.put('/:kb_id', async (req, res) => {
+router.put('/:kb_id', requirePermission(PERMS.KB_CONTENT_UPDATE), async (req, res) => {
 
   const id_project = req.projectid;
   const project = req.project;
@@ -2169,7 +2171,7 @@ router.put('/:kb_id', async (req, res) => {
 
 })
 
-router.delete('/:kb_id', async (req, res) => {
+router.delete('/:kb_id', requirePermission(PERMS.KB_CONTENT_DELETE), async (req, res) => {
 
   let project_id = req.projectid;
   let kb_id = req.params.kb_id;

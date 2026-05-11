@@ -50,9 +50,9 @@ const ADMIN = new Set([
   P.KB_SETTINGS_EDIT,
   P.KB_DELETE,
   P.KB_CONTENTS_EXPORT,
-  P.FLOWS_READ,
-  P.FLOW_ADD,
-  P.FLOW_EDIT,
+  P.FLOWS_LIST,
+  P.FLOW_CREATE,
+  P.FLOW_UPDATE,
   P.FLOW_TEST,
   P.FLOW_DUPLICATE,
   P.FLOW_DELETE,
@@ -100,8 +100,6 @@ const ADMIN = new Set([
   P.HOURS_UPDATE,
   P.HOURS_DELETE,
   P.HOURS_CREATE,
-  P.INTEGRATIONS_READ,
-  P.INTEGRATIONS_UPDATE,
   P.APPS_READ,
   P.APPS_UPDATE,
   P.PROJECTSETTINGS_GENERAL_READ,
@@ -114,6 +112,10 @@ const ADMIN = new Set([
   P.PROJECTSETTINGS_SECURITY_READ,
   P.PROJECTSETTINGS_BANNED_READ,
   P.PROJECTSETTINGS_ADVANCED_READ,
+  P.APIKEY_READ,
+  P.APIKEY_CREATE,
+  P.APIKEY_UPDATE,
+  P.APIKEY_DELETE,
 ]);
 
 const AGENT = new Set([
@@ -147,25 +149,9 @@ const AGENT = new Set([
   P.QUOTA_USAGE_READ,
   P.AUTOMATIONSLOG_READ,
   P.AUTOMATIONSLOG_CREATE,
-  P.KB_READ,
-  P.KB_CONTENTS_ADD,
-  P.KB_CONTENT_UPDATE,
-  P.KB_CONTENT_REINDEX,
-  P.KB_CONTENT_CHECK_STATUS,
-  P.KB_NAMESPACE_ADD,
-  P.KB_SETTINGS_EDIT,
-  P.KB_DELETE,
-  P.KB_CONTENTS_EXPORT,
   P.FLOWS_READ,
-  P.FLOW_ADD,
-  P.FLOW_EDIT,
   P.FLOW_TEST,
-  P.FLOW_DELETE,
   P.FLOW_SHARE,
-  P.FLOW_EXPORT,
-  P.FLOW_WEBHOOK_COPY,
-  P.FLOW_WEBHOOK_EDIT,
-  P.FLOW_WEBHOOK_DELETE,
   P.LEADS_READ,
   P.LEAD_UPDATE,
   P.LEAD_RESTORE,
@@ -174,12 +160,8 @@ const AGENT = new Set([
   P.LEADS_EXPORT,
   P.LEAD_BAN,
   P.LEAD_UNBAN,
-  P.ANALYTICS_READ,
-  P.ACTIVITIES_READ,
   P.WIDGETSETUP_READ,
   P.DEPARTMENT_LIST_READ,
-  P.DEPARTMENT_DETAIL_READ,
-  P.DEPARTMENT_CREATE_READ,
   P.TEAMMATES_READ,
   P.TEAMMATE_UPDATE,
   P.TEAMMATES_CREATE,
@@ -327,6 +309,22 @@ const GUEST = new Set([
   P.PROJECTSETTINGS_ADVANCED_READ,
 ]);
 
+/**
+ * Implicit permissions granted to non-human callers.
+ * Bot users (Faq_kb instances) and subscription users (Subscription instances)
+ * do not have a project_user document, so their permissions live here.
+ *
+ * Start minimal: add explicit entries only when an endpoint is migrated and
+ * needs to remain accessible to bots or subscriptions.
+ */
+const BOT_PERMISSIONS = new Set([
+  P.FLOWS_READ,
+]);
+
+const SUBSCRIPTION_PERMISSIONS = new Set([
+  P.FLOWS_READ,
+]);
+
 module.exports = {
   ROLE_PERMISSIONS: Object.freeze({
     owner: OWNER,
@@ -342,4 +340,7 @@ module.exports = {
    * Minimal permissions enforced when roleType === 2 (guest end-user).
    */
   GUEST_ROLETYPE_PERMISSIONS: GUEST,
+
+  BOT_PERMISSIONS: BOT_PERMISSIONS,
+  SUBSCRIPTION_PERMISSIONS: SUBSCRIPTION_PERMISSIONS,
 };

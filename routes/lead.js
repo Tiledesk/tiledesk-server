@@ -9,9 +9,11 @@ csv.separator = ';';
 const leadEvent = require('../event/leadEvent');
 var Segment = require("../models/segment");
 var Segment2MongoConverter = require("../utils/segment2mongoConverter");
+const { requirePermission } = require('../middlewares/permission.middleware');
+const PERMS = require('../config/permissions');
 
 
-router.post('/', function (req, res) {
+router.post('/', requirePermission(PERMS.LEAD_CREATE), function (req, res) {
 
   winston.debug(req.body);
   winston.debug("req.user", req.user);
@@ -22,7 +24,7 @@ router.post('/', function (req, res) {
 
 });
 
-router.put('/:leadid', function (req, res) {
+router.put('/:leadid', requirePermission(PERMS.LEAD_UPDATE), function (req, res) {
   winston.debug(req.body);
   var update = {};
   
@@ -100,7 +102,7 @@ router.put('/:leadid', function (req, res) {
 });
 
 
-router.put('/:leadid/tag', async (req, res) => {
+router.put('/:leadid/tag', requirePermission(PERMS.LEAD_UPDATE), async (req, res) => {
 
   let lead_id = req.params.leadid;
   let tags_list = req.body;
@@ -153,7 +155,7 @@ router.put('/:leadid/tag', async (req, res) => {
 })
 
 
-router.patch('/:leadid/attributes',  function (req, res) {
+router.patch('/:leadid/attributes', requirePermission(PERMS.LEAD_UPDATE), function (req, res) {
   var data = req.body;
 
   // TODO use service method
@@ -204,7 +206,7 @@ router.patch('/:leadid/attributes',  function (req, res) {
 
 //.post and .patch for /properties are equals
 
-router.post('/:leadid/properties',  function (req, res) {
+router.post('/:leadid/properties', requirePermission(PERMS.LEAD_UPDATE), function (req, res) {
   var data = req.body;
 
   // TODO use service method
@@ -253,7 +255,7 @@ router.post('/:leadid/properties',  function (req, res) {
 });
 
 
-router.patch('/:leadid/properties',  function (req, res) {
+router.patch('/:leadid/properties', requirePermission(PERMS.LEAD_UPDATE), function (req, res) {
   var data = req.body;
 
   // TODO use service method
@@ -326,7 +328,7 @@ router.patch('/:leadid/properties',  function (req, res) {
 //     res.json(updatedLead);
 //   });
 // });
-router.delete('/:leadid/tag/:tag', async (req, res) => {
+router.delete('/:leadid/tag/:tag', requirePermission(PERMS.LEAD_UPDATE), async (req, res) => {
 
   let lead_id = req.params.leadid;
   let tag = req.params.tag;
@@ -346,7 +348,7 @@ router.delete('/:leadid/tag/:tag', async (req, res) => {
 })
 
 
-router.delete('/:leadid', function (req, res) {
+router.delete('/:leadid', requirePermission(PERMS.LEAD_DELETE), function (req, res) {
   winston.debug(req.body);
 
   Lead.findByIdAndUpdate(req.params.leadid, {status: LeadConstants.DELETED}, { new: true, upsert: true }, function (err, updatedLead) {
@@ -362,7 +364,7 @@ router.delete('/:leadid', function (req, res) {
   });
 });
 
-router.delete('/:leadid/physical', function (req, res) {
+router.delete('/:leadid/physical', requirePermission(PERMS.LEAD_DELETE), function (req, res) {
   winston.debug(req.body);
 
   var projectuser = req.projectuser;
@@ -388,7 +390,7 @@ router.delete('/:leadid/physical', function (req, res) {
 
 
 // DOWNLOAD leads AS CSV
-router.get('/csv', function (req, res, next) {
+router.get('/csv', requirePermission(PERMS.LEADS_EXPORT), function (req, res, next) {
   var limit = 100000; // Number of leads per page
   var page = 0;
   if (req.query.page) {
@@ -446,7 +448,7 @@ router.get('/csv', function (req, res, next) {
     });
 });
 
-router.get('/:leadid', function (req, res) {
+router.get('/:leadid', requirePermission(PERMS.LEAD_READ), function (req, res) {
   winston.debug(req.body);
 
   Lead.findById(req.params.leadid, function (err, lead) {
@@ -461,7 +463,7 @@ router.get('/:leadid', function (req, res) {
 });
 
 
-router.get('/', async(req, res) => {
+router.get('/', requirePermission(PERMS.LEAD_LIST), async(req, res) => {
 
   var limit = 40; // Number of request per page
 
