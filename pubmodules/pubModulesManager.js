@@ -39,6 +39,9 @@ class PubModulesManager {
         this.voice = undefined;
         this.voiceRoute = undefined;
 
+        this.voiceEnghouse = undefined;
+        this.voiceEnghouseRoute = undefined;
+
         this.voiceTwilio = undefined;
         this.voiceTwilioRoute = undefined;
 
@@ -75,6 +78,7 @@ class PubModulesManager {
 
         this.dialogFlow = undefined;
 
+        this.analyticsPublisher = undefined;
         this.requestRetention = undefined;
     }
 
@@ -109,6 +113,10 @@ class PubModulesManager {
         if (this.voiceRoute) {
             app.use('/modules/voice', this.voiceRoute);
             winston.info("PubModulesManager voiceRoute controller loaded");
+        }
+        if (this.voiceEnghouseRoute) {
+            app.use('/modules/voice-enghouse', this.voiceEnghouseRoute);
+            winston.info("PubModulesManager voiceEnghouseRoute controller loaded");
         }
         if (this.voiceTwilioRoute) {
             app.use('/modules/voice-twilio', this.voiceTwilioRoute);
@@ -393,6 +401,25 @@ class PubModulesManager {
             }
         }
 
+        if (process.env.VOICE_ENGHOUSE_TOKEN === process.env.VOICE_ENGHOUSE_SECRET) {
+            try {
+                this.voiceEnghouse = require('./voice-enghouse');
+                winston.info("this.voiceEnghouse: " + this.voiceEnghouse);
+                this.voiceEnghouse.listener.listen(config);
+
+                this.voiceEnghouseRoute = this.voiceEnghouse.voiceEnghouseRoute;
+
+                winston.info("PubModulesManager initialized apps (voiceEnghouse).")
+            } catch(err) {
+                console.log("\n Unable to start voiceEnghouse connector: ", err);
+                if (err.code == 'MODULE_NOT_FOUND') {
+                    winston.info("PubModulesManager init apps module not found ");
+                } else {
+                    winston.info("PubModulesManager error initializing init apps module", err);
+                }
+            }   
+        }
+
         try {
             this.sms = require('./sms');
             winston.info("this.sms: " + this.sms);
@@ -599,13 +626,14 @@ class PubModulesManager {
         }
 
         try {
-            this.requestRetention = require('./retention').requestRetention;
-            winston.info("PubModulesManager requestRetention initialized");
+            this.analyticsPublisher = require('./analytics-publisher');
+            this.analyticsPublisher.listen();
+            winston.info("PubModulesManager analyticsPublisher initialized.");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("PubModulesManager init requestRetention module not found");
-            }else {
-                winston.error("PubModulesManager error initializing init requestRetention module", err);
+                winston.info("PubModulesManager init analyticsPublisher module not found");
+            } else {
+                winston.info("PubModulesManager error initializing analyticsPublisher module", err);
             }
         }
 

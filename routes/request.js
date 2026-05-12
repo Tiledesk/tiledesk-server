@@ -33,7 +33,9 @@ const RoleConstants = require('../models/roleConstants');
 const eventService = require('../pubmodules/events/eventService');
 const { Scheduler } = require('../services/Scheduler');
 const faq_kb = require('../models/faq_kb');
+
 const datesUtil = require('../utils/datesUtil');
+const JobManager = require('@tiledesk/tiledesk-multi-worker');
 //const JobManager = require('../utils/jobs-worker-queue-manager-v2/JobManagerV2');
 
 // var messageService = require('../services/messageService');
@@ -188,19 +190,7 @@ router.post('/',
         };
 
         return requestService.create(new_request).then(function (savedRequest) {
-          // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-          // return requestService.createWithIdAndRequester(request_id, req.projectuser._id, createdLead._id, req.projectid, 
-          //   req.body.text, req.body.departmentid, req.body.sourcePage, 
-          //   req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject).then(function (savedRequest) {
-
-
-          // return messageService.create(sender || req.user._id, fullname, request_id, req.body.text,
-          // req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata, req.body.language, undefined, req.body.channel).then(function(savedMessage){                    
-
-          // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
-          // return messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, request_id, req.body.text,
-          //   req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata).then(function(savedMessage){                    
-
+        
 
           winston.debug('res.json(savedRequest)');
           var endTimestamp = new Date();
@@ -325,6 +315,11 @@ router.patch('/:requestid', function (req, res) {
       requestEvent.emit("request.update", request);
       requestEvent.emit("request.update.comment", { comment: "PATCH", request: request }); //Deprecated
       requestEvent.emit("request.updated", { comment: "PATCH", request: request, patch: update });
+
+      if (update.rating != null) {
+        requestEvent.emit("request.satisfaction", { request: request, patch: update });
+      }
+
       return res.json(request);
     });
 
@@ -377,7 +372,7 @@ router.put('/:requestid/close', async function (req, res) {
 
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.put('/:requestid/reopen', function (req, res) {
-  winston.debug(req.body);
+  winston.debug(req.body); 
   // reopenRequestByRequestId(request_id, id_project) {
   return requestService.reopenRequestByRequestId(req.params.requestid, req.projectid).then(function (reopenRequest) {
 
@@ -399,12 +394,13 @@ router.put('/:requestid/assignee', function (req, res) {
   //TODO change assignee
 });
 
+// curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"member":"ciao"}' http://localhost:3000/68d4135a10e71f7bfa4dcf2f/requests/req123456/participants
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.post('/:requestid/participants',
   [
     check('member').notEmpty(),
   ],
-  function (req, res) {
+   async (req, res) => {
     winston.debug(req.body);
 
     const errors = validationResult(req);
@@ -432,7 +428,9 @@ error: uncaughtException: Cannot set property 'participants' of null
 2020-03-08T12:53:35.793660+00:00 app[web.1]:     at /app/services/requestService.js:672:30
 2020-03-08T12:53:35.793661+00:00 app[web.1]:     at /app/node_modules/mongoose/lib/model.js:4779:16
 */
-router.put('/:requestid/participants', function (req, res) {
+
+//  curl -v -X PUT -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"member":"ciao"}' http://localhost:3000/68d4135a10e71f7bfa4dcf2f/requests/req123456/participants
+router.put('/:requestid/participants', async (req, res) => {
   winston.debug("req.body", req.body);
 
   var participants = [];
@@ -443,13 +441,14 @@ router.put('/:requestid/participants', function (req, res) {
 
   //setParticipantsByRequestId(request_id, id_project, participants)
   return requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then(function (updatedRequest) {
-
     winston.debug("participant set", updatedRequest);
-
     return res.json(updatedRequest);
-  }).catch(function(err) {
-    winston.error("Error setting participants", err);
-    return res.status(500).send({ success: false, error: "Error setting participants" });
+
+  }).catch((err) => {
+    winston.error("Error setParticipantsByRequestId: ", err);
+    let error_code = err?.code || 500;
+    let error = err?.error || err || "General error";
+    return res.status(error_code).send({ success: false, error: error })
   });
 
 });
@@ -512,7 +511,7 @@ router.put('/:requestid/replace', async (req, res) => {
 })
 
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
-router.delete('/:requestid/participants/:participantid', function (req, res) {
+router.delete('/:requestid/participants/:participantid', async (req, res) => {
   winston.debug(req.body);
   //removeParticipantByRequestId(request_id, id_project, member)
   return requestService.removeParticipantByRequestId(req.params.requestid, req.projectid, req.params.participantid).then(function (updatedRequest) {
@@ -775,6 +774,7 @@ router.post('/:requestid/notes', async function (req, res) {
     }
 
     // Check if the user is a participant
+    // disable this check?
     if (!request.participantsAgents.includes(req.user.id)) {
       winston.verbose("Trying to add a note from a non participating agent");
       return res.status(403).send({ success: false, error: "You are not participating in the conversation"})
@@ -821,6 +821,7 @@ router.delete('/:requestid/notes/:noteid', async function (req, res) {
     }
   
     // Check if the user is a participant
+    // disable this check?
     if (!request.participantsAgents.includes(req.user.id)) {
       winston.verbose("Trying to delete a note from a non participating agent");
       return res.status(403).send({ success: false, error: "You are not participating in the conversation"})
@@ -967,7 +968,7 @@ router.put('/:requestid/tag', async (req, res) => {
   winston.debug("(Request) /tag tags_list: ", tags_list)
 
   if (tags_list.length == 0) {
-    winston.warn("(Request) /tag no tag specified")
+    winston.verbose("(Request) /tag no tag specified")
     return res.status(400).send({ success: false, message: "No tag specified" })
   }
 
@@ -1015,6 +1016,11 @@ router.put('/:requestid/tag', async (req, res) => {
           .execPopulate();
 
     requestEvent.emit("request.update", populatedRequest)
+
+    if (adding_tags.length > 0) {
+      requestEvent.emit("request.tag.update", { request: populatedRequest, tags: adding_tags });
+    }
+
     res.status(200).send(updatedRequest)
     
     if (process.env.NODE_ENV !== 'test') {
@@ -1052,8 +1058,8 @@ router.delete('/:requestid/tag/:tag_id', async (req, res) => {
   let id_project = req.projectid;
   let request_id = req.params.requestid;
   let tag_id = req.params.tag_id;
-
-
+  
+  
 
   Request.findOneAndUpdate({ id_project: id_project, request_id: request_id }, { $pull: { tags: { _id: tag_id } } }, { new: true }).then( async (updatedRequest) => {
     
@@ -1088,8 +1094,8 @@ router.delete('/:requestid', function (req, res) {
 
   var projectuser = req.projectuser;
 
-
-  if (projectuser.role != "owner") {
+  // request_role_check
+  if (!projectuser.hasPermissionOrRole('request_delete', 'owner')){
     return res.status(403).send({ success: false, msg: 'Unauthorized.' });
   }
 
@@ -1144,8 +1150,8 @@ router.delete('/id/:id', function (req, res) {
 
   var projectuser = req.projectuser;
 
-
-  if (projectuser.role != "owner") {
+  // request_role_check
+  if (!projectuser.hasPermissionOrRole('request_delete', 'owner')){
     return res.status(403).send({ success: false, msg: 'Unauthorized.' });
   }
 
@@ -1169,7 +1175,7 @@ router.delete('/id/:id', function (req, res) {
 });
 
 
-
+// curl -v -X GET -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 http://localhost:3000/68d4135a10e71f7bfa4dcf2f/requests
 
 router.get('/', function (req, res, next) {
 
@@ -1207,15 +1213,23 @@ router.get('/', function (req, res, next) {
 
   if (req.user instanceof Subscription) {
     // All request 
-  } else if (projectuser && (projectuser.role == "owner" || projectuser.role == "admin")) {
+    winston.debug("Subscription All request ");
+  } else if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
     // All request 
-    // Per uni mostrare solo quelle proprie quindi solo participants
-    if (req.query.mine) {
-      query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
-    }
-  } else {
+    winston.debug("hasPermissionOrRole All request ");
+  } else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
+
     query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
+
+  } 
+  // else if (projectuser.hasPermissionOrRole('request_read_mine', ["????"])) {
+  //   query["participants"] = req.user.id;
+  // }
+  else {
+     query["participants"] = req.user.id;
+    // generate empty requests response
   }
+
 
   if (req.query.dept_id) {
     query.department = req.query.dept_id;

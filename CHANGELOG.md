@@ -5,6 +5,58 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.18.5
+- Fixed bug on update url content on Knwoledge Base
+
+# 2.18.4
+- Added HyDE support for Knowledge Base Q&A
+- Introduced Cache (cRag) functionality in Knowledge Base Q&A
+- Enabled Situated Context for enhanced Knowledge Base content indexing
+- Bumped tybot-connector version to 2.0.48
+
+# 2.18.4-rc35
+- Disabled Authentication in URL Preview
+- Added Max 10 URLs per request — returns 422 if exceeded
+- Added SSRF Validation
+
+# 2.18.4-rc32
+- Updated maxContentLength limit
+
+# 2.18.4-rc31
+- Updated url-preview service
+
+# 2.18.4-rc27
+- Added url-preview service
+
+# 2.18.3
+- Added permissions logic
+- Added custom roles support
+
+# 2.17.5
+- Add answered questions functionality
+- Added AnsweredQuestion schema with TTL index for automatic deletion.
+- Updated UnansweredQuestion schema to include additional fields and improved query handling for searching and sorting.
+- Enhanced the deletion process for unanswered questions.
+
+# 2.17.4
+- Refactor error handling and code structure in webhook.js
+
+# 2.17.3
+- Added missing import path on kb route
+
+# 2.17.2
+- Added support for situated context in kb route
+- Added RAG context management to KB routes
+- Added support for scrape type 0 (alias: trafilatura)
+
+# 2.16.2
+- Improved multiplier retrieval for model types in quotes route
+
+# 2.16.1
+- Added stream option support to the KB /qa endpoint for real-time responses
+- Enhanced file upload route to correctly handle .webm files
+- Optimized token consumption and management in knowledge base operations
+
 # 2.16.0-hf
 - Fixed bug: issue on audio sent from widget
 
@@ -39,7 +91,7 @@
 - Added migration script to add the contact field in request object improving the search by phone number
 
 # 2.15.2
-- Updated GitHub actions
+- Updated GitHub actionsm
 
 # 2.15.1
 - Updated whatsapp-connector to 1.0.24

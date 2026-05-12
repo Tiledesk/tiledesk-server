@@ -24,6 +24,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
       default: req.body.default,
       status: req.body.status,
       id_group: req.body.id_group,
+      groups: req.body.groups,
       id_project: req.projectid,
       createdBy: req.user.id,
       updatedBy: req.user.id
@@ -79,7 +80,9 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
   if (req.body.status!=undefined) {
       update.status = req.body.status;
   }
-  
+  if (req.body.groups!=undefined) {
+    update.groups = req.body.groups;
+  }      
 
 
   Department.findByIdAndUpdate(req.params.departmentid, update, { new: true, upsert: true }, function (err, updatedDepartment) {
@@ -121,6 +124,9 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
     if (req.body.id_group!=undefined) {
         update.id_group = req.body.id_group;
     }    
+    if (req.body.groups!=undefined) {
+      update.groups = req.body.groups;
+    }      
   
   
     Department.findByIdAndUpdate(req.params.departmentid, update, { new: true, upsert: true }, function (err, updatedDepartment) {

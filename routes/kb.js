@@ -3,6 +3,7 @@ var router = express.Router();
 var winston = require('../config/winston');
 var multer = require('multer')
 var upload = multer()
+const path = require('path');
 const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 var configGlobal = require('../config/global');
 var mongoose = require('mongoose');
@@ -20,11 +21,13 @@ const Sitemapper = require('sitemapper');
 const aiService = require('../services/aiService');
 const aiManager = require('../services/aiManager');
 const integrationService = require('../services/integrationService');
+const kbEvent = require('../event/kbEvent');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
 const JOB_TOPIC_EXCHANGE_HYBRID = process.env.JOB_TOPIC_EXCHANGE_TRAIN_HYBRID || 'tiledesk-trainer-hybrid';
 const KB_WEBHOOK_TOKEN = process.env.KB_WEBHOOK_TOKEN || 'kbcustomtoken';
+const PINECONE_RERANKING = process.env.PINECONE_RERANKING === true || process.env.PINECONE_RERANKING === "true";
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 
 
@@ -80,6 +83,37 @@ let default_preview_settings = {
 const default_engine = require('../config/kb/engine');
 const default_engine_hybrid = require('../config/kb/engine.hybrid');
 const default_embedding = require('../config/kb/embedding');
+const PromptManager = require('../config/kb/prompt/rag/PromptManager');
+const situatedContext = require('../config/kb/situatedContext');
+
+const ragPromptManager = new PromptManager(path.join(__dirname, '../config/kb/prompt/rag'));
+
+const RAG_CONTEXT_ENV_OVERRIDES = {
+  "gpt-3.5-turbo":       process.env.GPT_3_5_CONTEXT,
+  "gpt-4":               process.env.GPT_4_CONTEXT,
+  "gpt-4-turbo-preview": process.env.GPT_4T_CONTEXT,
+  "gpt-4o":              process.env.GPT_4O_CONTEXT,
+  "gpt-4o-mini":         process.env.GPT_4O_MINI_CONTEXT,
+  "gpt-4.1":             process.env.GPT_4_1_CONTEXT,
+  "gpt-4.1-mini":        process.env.GPT_4_1_MINI_CONTEXT,
+  "gpt-4.1-nano":        process.env.GPT_4_1_NANO_CONTEXT,
+  "gpt-5":               process.env.GPT_5_CONTEXT,
+  "gpt-5-mini":          process.env.GPT_5_MINI_CONTEXT,
+  "gpt-5-nano":          process.env.GPT_5_NANO_CONTEXT,
+  "general":             process.env.GENERAL_CONTEXT
+};
+
+/** RAG system prompt per modello: file in config/kb/prompt/rag, sovrascrivibili via env (come prima). */
+function getRagContextTemplate(modelName) {
+  const envOverride = RAG_CONTEXT_ENV_OVERRIDES[modelName];
+  if (envOverride) {
+    return envOverride;
+  }
+  if (!PromptManager.modelMap[modelName] && process.env.GENERAL_CONTEXT) {
+    return process.env.GENERAL_CONTEXT;
+  }
+  return ragPromptManager.getPrompt(modelName);
+}
 
 function normalizeEmbedding(embedding) {
   const normalizedEmbedding = (embedding && typeof embedding.toObject === 'function')
@@ -88,19 +122,14 @@ function normalizeEmbedding(embedding) {
   return { ...normalizedEmbedding };
 }
 
-let contexts = {
-  "gpt-3.5-turbo":        process.env.GPT_3_5_CONTEXT       || "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### and the chat history to answer the question.\nIf you don't know the answer, just say: \"I don't know<NOANS>\"\n\n####{context}####",
-  "gpt-4":                process.env.GPT_4_CONTEXT         || "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### and the chat history to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf and only if none of the retrieved context is useful for your task, add this word to the end <NOANS>\n\n####{context}####",
-  "gpt-4-turbo-preview":  process.env.GPT_4T_CONTEXT        || "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### and the chat history to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf and only if none of the retrieved context is useful for your task, add this word to the end <NOANS>\n\n####{context}####",
-  "gpt-4o":               process.env.GPT_4O_CONTEXT        || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-4o-mini":          process.env.GPT_4O_MINI_CONTEXT   || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-4.1":              process.env.GPT_4_1_CONTEXT       || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-4.1-mini":         process.env.GPT_4_1_MINI_CONTEXT  || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-4.1-nano":         process.env.GPT_4_1_NANO_CONTEXT  || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-5":                process.env.GPT_5_CONTEXT         || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-5-mini":           process.env.GPT_5_MINI_CONTEXT    || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-5-nano":           process.env.GPT_5_NANO_CONTEXT    || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "general":              process.env.GENERAL_CONTEXT       || "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context and the chat history to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end=="
+function normalizeSituatedContext(enable = false) {
+  situatedContext.enable = enable;
+  return situatedContext.enable
+    ? {
+      ...situatedContext,
+      api_key: process.env.SITUATED_CONTEXT_API_KEY || process.env.GPTKEY
+    }
+    : undefined;
 }
 
 /**
@@ -172,6 +201,11 @@ router.post('/scrape/single', async (req, res) => {
       })
     }
 
+    let situated_context;
+    if (sitemapKb.situated_context && sitemapKb.situated_context === true && sitemapKb.scrape_type === 0) {
+      situated_context = normalizeSituatedContext(true);
+    }
+
     if (addedUrls.length > 0) {
       const options = {
         sitemap_origin_id: sitemapKb._id,
@@ -179,7 +213,8 @@ router.post('/scrape/single', async (req, res) => {
         scrape_type: sitemapKb.scrape_type,
         scrape_options: sitemapKb.scrape_options,
         refresh_rate: sitemapKb.refresh_rate,
-        tags: sitemapKb.tags
+        tags: sitemapKb.tags,
+        ...(situated_context && { situated_context: situated_context }),
       }
       aiManager.addMultipleUrls(namespace, addedUrls, options).catch((err) => {
         winston.error("(webhook) error adding multiple urls contents: ", err);
@@ -234,6 +269,10 @@ router.post('/scrape/single', async (req, res) => {
 
       if (namespace.hybrid === true) {
         json.hybrid = true;
+      }
+
+      if (json.situated_context && json.situated_context === true && json.scrape_type === 0) {
+        json.situated_context = normalizeSituatedContext(true);
       }
 
       winston.verbose("/scrape/single json: ", json);
@@ -342,7 +381,10 @@ router.post('/qa', async (req, res) => {
     return res.status(errorCode).send({ success: false, error: err.error });
   }
 
+  console.log("model returned from resolveLLMConfig: ", model);
+
   if (!model.api_key && model.provider === 'openai') {
+    console.log("Set shared GPTKEY as api_key");
     model.api_key = process.env.GPTKEY;
     publicKey = true;
   }
@@ -361,7 +403,7 @@ router.post('/qa', async (req, res) => {
 
   // Check if "Advanced Mode" is active. In such case the default_context must be not appended
   if (!data.advancedPrompt) {
-    const contextTemplate = contexts[data.model.name] || contexts["general"];
+    const contextTemplate = getRagContextTemplate(data.model.name);
     if (data.system_context) {
       data.system_context = data.system_context + " \n" + contextTemplate;
     } else {
@@ -377,7 +419,7 @@ router.post('/qa', async (req, res) => {
     data.search_type = 'hybrid';
     
     if (data.reranking === true) {
-      data.reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2";
+      data.reranker_model = process.env.RERANKING_MODEL || "cross-encoder/ms-marco-MiniLM-L-6-v2";
       
       if (!data.reranking_multiplier) {
         data.reranking_multiplier = 3;
@@ -391,27 +433,199 @@ router.post('/qa', async (req, res) => {
         data.reranking_multiplier = calculatedRerankingMultiplier;
       }
     }
+  } 
+
+  if (!namespace.hybrid && data.reranking === true && PINECONE_RERANKING) {
+    
+    data.reranking = {
+      "provider": "pinecone",
+      "api_key": process.env.PINECONE_API_KEY,
+      "model": process.env.PINECONE_RERANKING_MODEL || process.env.RERANKING_MODEL || "bge-reranker-v2-m3"
+    }
+
+    if (!data.reranking_multiplier) {
+      data.reranking_multiplier = 3;
+    }
+
+    if ((data.top_k * data.reranking_multiplier) > 100) {
+      let calculatedRerankingMultiplier = Math.floor(100 / data.top_k);
+      if (calculatedRerankingMultiplier < 1) {
+        calculatedRerankingMultiplier = 1;
+      }
+      data.reranking_multiplier = calculatedRerankingMultiplier;
+    }
   }
 
-  data.stream = false;
+  data.stream = data.stream === true;
+  data.use_hyde = data.use_hyde === true;
+  data.use_cache = data.use_cache === true;
   data.debug = true;
   delete data.advancedPrompt;
   winston.verbose("ask data: ", data);
-
   if (process.env.NODE_ENV === 'test') {
     return res.status(200).send({ success: true, message: "Question skipped in test environment", data: data });
   }
 
+  if (data.stream === true) {
+    // Streaming SSE: use askStream and forward only content as JSON SSE events
+    res.status(200);
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    const sendError = (message) => {
+      try {
+        res.write('data: ' + JSON.stringify({ error: message }) + '\n\n');
+      } catch (_) {}
+      res.end();
+    };
+
+    function extractContent(obj) {
+      if (obj.content != null) return obj.content;
+      if (obj.choices && obj.choices[0]) {
+        const c = obj.choices[0];
+        if (c.delta && c.delta.content != null) return c.delta.content;
+        if (c.message && c.message.content != null) return c.message.content;
+      }
+      return null;
+    }
+
+    /** Same JSON shape as non-stream /qa: stream may wrap it in model_used */
+    function normalizeKbQaPayload(obj) {
+      if (obj && typeof obj === 'object' && obj.model_used != null && typeof obj.model_used === 'object') {
+        return obj.model_used;
+      }
+      return obj;
+    }
+
+    /** Flat final payload like non-stream /qa (answer, prompt_token_size, …) */
+    function isMetadataPayload(obj, streamedContent) {
+      if (obj == null || typeof obj !== 'object') return false;
+      if (streamedContent != null && streamedContent !== '') return false;
+      if (typeof obj.prompt_token_size === 'number') return true;
+      if (obj.answer != null) return true;
+      if (obj.sources != null) return true;
+      if (obj.chunks != null) return true;
+      if (obj.content_chunks != null) return true;
+      return false;
+    }
+
+    /** KB stream summary: full_response + model_used (same info as non-stream body, plus envelope) */
+    function isKbStreamCompletedSummary(obj) {
+      if (obj == null || typeof obj !== 'object') return false;
+      if (obj.status === 'completed') return true;
+      if (obj.full_response != null && obj.model_used != null && typeof obj.model_used === 'object') return true;
+      return false;
+    }
+
+    function forwardSsePayload(payload) {
+      if (payload === '[DONE]') return;
+      let obj;
+      try {
+        obj = JSON.parse(payload);
+      } catch (_) {
+        return;
+      }
+
+      if (obj.status === 'started') {
+        return;
+      }
+      if (isKbStreamCompletedSummary(obj)) {
+        res.write('data: ' + JSON.stringify(normalizeKbQaPayload(obj)) + '\n\n');
+        return;
+      }
+
+      if (obj.type === 'metadata' || obj.event === 'metadata') {
+        res.write('data: ' + JSON.stringify(normalizeKbQaPayload(obj)) + '\n\n');
+        return;
+      }
+      const content = extractContent(obj);
+      if (content != null && content !== '') {
+        res.write('data: ' + JSON.stringify({ content }) + '\n\n');
+        return;
+      }
+      const normalized = normalizeKbQaPayload(obj);
+      if (isMetadataPayload(normalized, content)) {
+        res.write('data: ' + JSON.stringify(normalized) + '\n\n');
+      }
+    }
+
+    aiService.askStream(data).then((resp) => {
+      const stream = resp.data;
+      let buffer = '';
+
+      stream.on('data', (chunk) => {
+        buffer += chunk.toString();
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data: ')) continue;
+          const payload = trimmed.slice(6);
+          forwardSsePayload(payload);
+        }
+      });
+
+      stream.on('end', () => {
+        const tail = buffer.trim();
+        if (tail) {
+          for (const line of tail.split('\n')) {
+            const trimmed = line.trim();
+            if (!trimmed.startsWith('data: ')) continue;
+            forwardSsePayload(trimmed.slice(6));
+          }
+        }
+        res.write('data: [DONE]\n\n');
+        res.end();
+      });
+
+      stream.on('error', (err) => {
+        winston.error('qa stream err: ', err);
+        sendError(err.message || 'Stream error');
+      });
+
+      res.on('close', () => {
+        if (!res.writableEnded) {
+          stream.destroy();
+        }
+      });
+    }).catch((err) => {
+      winston.error('qa err: ', err);
+      winston.error('qa err.response: ', err.response);
+      const message = (err.response && err.response.data && typeof err.response.data.pipe !== 'function' && err.response.data.detail)
+        ? err.response.data.detail
+        : (err.response && err.response.statusText) || err.message || String(err);
+      if (!res.headersSent) {
+        res.status(err.response && err.response.status ? err.response.status : 500);
+      }
+      sendError(message);
+    });
+    return;
+  }
+
+  let duration = Date.now();
   aiService.askNamespace(data).then((resp) => {
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
 
+    answer.duration = (Date.now() - duration) / 1000;
+
     if (publicKey === true) {
-      let multiplier = MODELS_MULTIPLIER[data.model];
+      let modelKey;
+      if (typeof data.model === 'string') {
+        modelKey = data.model;
+      } else if (data.model && typeof data.model.name === 'string') {
+        modelKey = data.model.name;
+      }
+
+      let multiplier = MODELS_MULTIPLIER[modelKey];
       if (!multiplier) {
         multiplier = 1;
-        winston.info("No multiplier found for AI model (qa) " + data.model);
+        winston.info("No multiplier found for AI model (qa) " + modelKey);
       }
+
       obj.multiplier = multiplier;
       obj.tokens = answer.prompt_token_size;
 
@@ -510,7 +724,7 @@ router.post('/qa', async (req, res) => {
 
 //   // Check if "Advanced Mode" is active. In such case the default_context must be not appended
 //   if (!data.advancedPrompt) {
-//     const contextTemplate = contexts[data.model] || contexts["general"];
+//     const contextTemplate = getRagContextTemplate(data.model);
 //     if (data.system_context) {
 //       data.system_context = data.system_context + " \n" + contextTemplate;
 //     } else {
@@ -628,6 +842,7 @@ router.delete('/deleteall', async (req, res) => {
 
   let project_id = req.projectid;
   let data = req.body;
+  let namespace_id = data.namespace;
   winston.debug('/delete all data: ', data);
 
   let namespace;
@@ -644,6 +859,7 @@ router.delete('/deleteall', async (req, res) => {
 
   aiService.deleteNamespace(data).then((resp) => {
     winston.debug("delete namespace resp: ", resp.data);
+    kbEvent.emit('kb.contents.delete', { req, namespace_id, project_id });
     res.status(200).send(resp.data);
   }).catch((err) => {
     winston.error("delete namespace err: ", err);
@@ -926,6 +1142,8 @@ router.post('/namespace', async (req, res) => {
       return res.status(500).send({ success: false, error: err });
     }
 
+    kbEvent.emit('kb.namespace.create', { req, savedNamespace, body, namespace_id, project_id });
+
     let namespaceObj = savedNamespace.toObject();
     delete namespaceObj._id;
     delete namespaceObj.__v;
@@ -1039,6 +1257,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   let embedding = normalizeEmbedding(ns.embedding);
   embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
   let hybrid = ns.hybrid;
+  const situated_context = normalizeSituatedContext();
 
 
   if (process.env.NODE_ENV !== "test") {
@@ -1076,7 +1295,13 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
 
   let resources = new_contents.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
   resources = resources.map(({ _id, scrape_options, ...rest }) => {
-    return { id: _id, parameters_scrape_type_4: scrape_options, embedding: embedding, engine: engine, ...rest}
+    return { 
+      id: _id, 
+      parameters_scrape_type_4: scrape_options, 
+      embedding: embedding, 
+      engine: engine, 
+      ...(situated_context && { situated_context: situated_context }), 
+      ...rest}
   });
   
   winston.verbose("resources to be sent to worker: ", resources);
@@ -1174,6 +1399,8 @@ router.delete('/namespace/:id', async (req, res) => {
       })
       winston.debug("delete all contents response: ", deleteResponse);
 
+      kbEvent.emit('kb.contents.delete', { req, namespace_id, project_id, deletedCount: deleteResponse?.deletedCount });
+
       return res.status(200).send({ success: true, message: "All contents deleted successfully" })
 
     }).catch((err) => {
@@ -1213,6 +1440,8 @@ router.delete('/namespace/:id', async (req, res) => {
         return res.status(500).send({ success: false, error: err });
       })
       winston.debug("delete namespace response: ", deleteNamespaceResponse);
+
+      kbEvent.emit('kb.namespace.delete', { req, namespace_id, project_id, namespace, deletedCount: deleteResponse?.deletedCount });
 
       return res.status(200).send({ success: true, message: "Namespace deleted succesfully" })
 
@@ -1382,7 +1611,7 @@ router.post('/', async (req, res) => {
   const id_project = req.projectid;
   const project = req.project
 
-  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags } = req.body;
+  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags, situated_context } = req.body;
   const namespace_id = req.body?.namespace;
   
   if (!namespace_id) {
@@ -1420,18 +1649,26 @@ router.post('/', async (req, res) => {
   }
   if (type === 'url') {
     new_kb.refresh_rate = refresh_rate || 'never';
-    if (!scrape_type || scrape_type === 2) {
-      new_kb.scrape_type = 2;
-      new_kb.scrape_options = aiManager.setDefaultScrapeOptions();
-    } else {
+    if (scrape_type === 0 || scrape_type === 4) {
       new_kb.scrape_type = scrape_type;
       new_kb.scrape_options = scrape_options;
+    }
+    else {
+      new_kb.scrape_type = 2;
+      new_kb.scrape_options = aiManager.setDefaultScrapeOptions();
     }
   }
 
   if (tags && Array.isArray(tags) && tags.every(tag => typeof tag === "string")) {
     new_kb.tags = tags;
   }
+
+  console.log("situated_context: ", situated_context);
+  if (situated_context && situated_context === true && (type !== "url" || scrape_type === 0)) {
+    console.log("setting situated_context to true");
+    new_kb.situated_context = situated_context;
+  }
+  console.log("new_kb.situated_context: ", new_kb.situated_context);
 
   winston.debug("adding kb: ", new_kb);
 
@@ -1451,6 +1688,8 @@ router.post('/', async (req, res) => {
       const embedding = normalizeEmbedding(namespace.embedding);
       embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
+      const situated_context_obj = normalizeSituatedContext(saved_kb.situated_context);
+
       const json = {
         id: saved_kb._id,
         type: saved_kb.type,
@@ -1461,6 +1700,7 @@ router.post('/', async (req, res) => {
         hybrid: namespace.hybrid,
         engine: namespace.engine || default_engine,
         embedding: embedding,
+        ...(situated_context_obj && { situated_context: situated_context_obj }),
         ...(saved_kb.scrape_type && { scrape_type: saved_kb.scrape_type }),
         ...(saved_kb.scrape_options && { parameters_scrape_type_4: saved_kb.scrape_options }),
         ...(saved_kb.tags && { tags: saved_kb.tags }),
@@ -1492,7 +1732,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
   const id_project = req.projectid;
   const project = req.project;
-  let { refresh_rate = 'never', scrape_type = 2, scrape_options } = req.body;
+  let { refresh_rate = 'never', scrape_type = 2, scrape_options, situated_context } = req.body;
   let tags = parseStringArrayField(req.body.tags);
 
 
@@ -1535,6 +1775,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     scrape_type,
     scrape_options,
     refresh_rate,
+    ...(situated_context && situated_context === true && scrape_type === 0 ? { situated_context: true } : {}),
     ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
   }
 
@@ -1558,6 +1799,11 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
   const { delimiter = ';' } = req.body;
   let tags = parseStringArrayField(req.body.tags);
+
+  let situated_context = false;
+  if (req.body.situated_context) {
+    situated_context = req.body.situated_context === true || req.body.situated_context === "true";
+  }
 
 
   let namespace;
@@ -1586,6 +1832,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
         content: question + "\n" + answer,
         namespace: namespace_id,
         status: -1,
+        ...(situated_context && { situated_context: situated_context }),
         ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
       })
     })
@@ -1594,6 +1841,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
       const quoteManager = req.app.get('quote_manager');
       try {
+        let quoteManager = req.app.get('quote_manager');
         await aiManager.checkQuotaAvailability(quoteManager, req.project, kbs.length)
       } catch(err) {
         let errorCode = err?.errorCode ?? 500;
@@ -1618,9 +1866,21 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
         embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
         let hybrid = namespace.hybrid;
 
-        let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
+        let situated_context_obj;
+        if (situated_context) {
+          situated_context_obj = normalizeSituatedContext(situated_context);
+        }
+
+        let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, situated_context,  ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, ...rest}) => {
-          return { id: _id, webhook: webhook, embedding: embedding, engine: engine, ...rest };
+          return { 
+            id: _id, 
+            webhook: webhook, 
+            embedding: embedding, 
+            engine: engine, 
+            ...(situated_context_obj && { situated_context: situated_context_obj }), 
+            ...rest 
+          };
         })
         winston.verbose("resources to be sent to worker: ", resources);
 
@@ -1670,7 +1930,7 @@ router.post('/sitemap/import', async (req, res) => {
   const id_project = req.projectid;
   const namespace_id = req.query.namespace;
 
-  let { type, source, refresh_rate = 'never', scrape_type = 2, scrape_options, tags } = req.body;
+  let { type, source, refresh_rate = 'never', scrape_type = 2, scrape_options, tags, situated_context } = req.body;
   if (scrape_type === 2 && !scrape_options) {
     scrape_options = aiManager.setDefaultScrapeOptions();
   }
@@ -1736,6 +1996,7 @@ router.post('/sitemap/import', async (req, res) => {
     scrape_type,
     scrape_options,
     refresh_rate,
+    ...(situated_context && situated_context === true && scrape_type === 0 ? { situated_context: true } : {}),
     ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
   }
 
@@ -1753,7 +2014,8 @@ router.post('/sitemap/import', async (req, res) => {
     scrape_type,
     scrape_options,
     refresh_rate,
-    ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {})
+    ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {}),
+    ...(situated_context && situated_context === true && scrape_type === 0 ? { situated_context: true } : {}),
   }
   
   try {
@@ -1779,6 +2041,7 @@ router.put('/:kb_id', async (req, res) => {
   
   const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags } = req.body;
   const namespace_id = req.body.namespace;
+  let situated_context = req.body.situated_context;
 
   if (!namespace_id) {
     return res.status(400).send({ success: false, error: "Missing 'namespace' body parameter" })
@@ -1844,6 +2107,10 @@ router.put('/:kb_id', async (req, res) => {
     return res.status(500).send({ success: false, error: err });
   }
 
+  if (situated_context && situated_context === true && scrape_type === 0) {
+    situated_context = true;
+  }
+
   let new_content = {
     id_project,
     name,
@@ -1856,12 +2123,13 @@ router.put('/:kb_id', async (req, res) => {
 
   if (new_content.type === 'url') {
     new_content.refresh_rate = refresh_rate || 'never';
-    if (!scrape_type || scrape_type === 2) {
-      new_content.scrape_type = 2;
-      new_content.scrape_options = aiManager.setDefaultScrapeOptions();
-    } else {
+    if (scrape_type === 0 || scrape_type === 4) {
       new_content.scrape_type = scrape_type;
       new_content.scrape_options = scrape_options;
+    }
+    else {
+      new_content.scrape_type = 2;
+      new_content.scrape_options = aiManager.setDefaultScrapeOptions();
     }
   }
 
@@ -1872,6 +2140,10 @@ router.put('/:kb_id', async (req, res) => {
 
   if (tags && Array.isArray(tags) && tags.every(tag => typeof tag === "string")) {
     new_content.tags = tags;
+  }
+
+  if (situated_context && situated_context === true && scrape_type === 0) {
+    new_content.situated_context = situated_context;
   }
 
   winston.debug("Update content. New content: ", new_content);
@@ -1887,6 +2159,7 @@ router.put('/:kb_id', async (req, res) => {
   const embedding = normalizeEmbedding(namespace.embedding);
   embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
   let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
+  const situated_context_obj = normalizeSituatedContext(updated_content.situated_context);
 
   const json = {
     id: updated_content._id,
@@ -1898,6 +2171,7 @@ router.put('/:kb_id', async (req, res) => {
     hybrid: namespace.hybrid,
     engine: namespace.engine || default_engine,
     embedding: embedding,
+    ...(situated_context_obj && { situated_context: situated_context_obj }),
     ...(updated_content.scrape_type && { scrape_type: updated_content.scrape_type }),
     ...(updated_content.scrape_options && { parameters_scrape_type_4: updated_content.scrape_options }),
     ...(updated_content.tags && { tags: updated_content.tags }),
@@ -1913,40 +2187,6 @@ router.put('/:kb_id', async (req, res) => {
   return res.status(200).send(updated_content);
 
 })
-
-// router.put('/:kb_id', async (req, res) => {
-
-//   let kb_id = req.params.kb_id;
-//   winston.verbose("update kb_id " + kb_id);
-
-//   let update = {};
-
-//   if (req.body.name != undefined) {
-//     update.name = req.body.name;
-//   }
-
-//   if (req.body.status != undefined) {
-//     update.status = req.body.status;
-//   }
-
-//   winston.debug("kb update: ", update);
-
-//   KB.findByIdAndUpdate(kb_id, update, { new: true }, (err, savedKb) => {
-
-//     if (err) {
-//       winston.error("KB findByIdAndUpdate error: ", err);
-//       return res.status(500).send({ success: false, error: err });
-//     }
-
-//     if (!savedKb) {
-//       winston.debug("Try to updating a non-existing kb");
-//       return res.status(400).send({ success: false, message: "Content not found" })
-//     }
-
-//     res.status(200).send(savedKb)
-//   })
-
-// })
 
 router.delete('/:kb_id', async (req, res) => {
 
@@ -1986,6 +2226,16 @@ router.delete('/:kb_id', async (req, res) => {
   data.engine = namespace.engine || default_engine;
   winston.verbose("/:delete_id data: ", data);
 
+  const emitKbContentDelete = (deletedKb) => {
+    console.log("emitKbContentDelete calling event");
+    kbEvent.emit('kb.content.delete', { req, kb_id, namespace_id, project_id, kb: deletedKb || kb });
+  };
+
+  if (process.env.NODE_ENV === 'test') {
+    emitKbContentDelete(kb);
+    return res.status(200).send({ success: true, message: "Content deleted successfully" });
+  }
+
   aiService.deleteIndex(data).then((resp) => {
     winston.debug("delete resp: ", resp.data);
     if (resp.data.success === true) {
@@ -1995,6 +2245,7 @@ router.delete('/:kb_id', async (req, res) => {
           winston.error("Delete kb error: ", err);
           return res.status(500).send({ success: false, error: err });
         }
+        emitKbContentDelete(deletedKb);
         res.status(200).send(deletedKb);
       })
 
@@ -2010,6 +2261,7 @@ router.delete('/:kb_id', async (req, res) => {
           winston.verbose("Unable to delete the content in indexing status")
           return res.status(500).send({ success: false, error: "Unable to delete the content in indexing status" })
         } else {
+          emitKbContentDelete(deletedKb);
           res.status(200).send(deletedKb);
         }
       })

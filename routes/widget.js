@@ -82,7 +82,9 @@ router.get('/', async (req, res, next) => {
       operatingHoursService.projectIsOpenNow(req.projectid, function (isOpen, err) {    
           winston.debug('isOpen:'+ isOpen);
           if (isOpen) {            
-            Project_user.find({ id_project: req.projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" }).
+            // rolequery
+            Project_user.find({ id_project: req.projectid, user_available: true, roleType: RoleConstants.TYPE_AGENTS, status: "active" }).
+            // Project_user.find({ id_project: req.projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" }).
               populate('id_user').
               exec(function (err, project_users) {
                 winston.debug('project_users:'+ project_users);

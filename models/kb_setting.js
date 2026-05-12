@@ -1,7 +1,25 @@
 let mongoose = require('mongoose');
 let Schema = mongoose.Schema;
 let winston = require('../config/winston');
-let expireAfterSeconds = process.env.UNANSWERED_QUESTION_EXPIRATION_TIME || 7 * 24 * 60 * 60; // 7 days
+
+const DEFAULT_UNANSWERED_TTL_SEC = 7 * 24 * 60 * 60; // 7 days
+const DEFAULT_ANSWERED_TTL_SEC = 7 * 24 * 60 * 60; // 7 days
+
+function ttlSecondsFromEnv(raw, fallbackSec) {
+  if (raw == null || String(raw).trim() === '') return fallbackSec;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? n : fallbackSec;
+}
+
+let expireAfterSeconds = ttlSecondsFromEnv(
+  process.env.UNANSWERED_QUESTION_EXPIRATION_TIME,
+  DEFAULT_UNANSWERED_TTL_SEC
+);
+let expireAnsweredAfterSeconds = ttlSecondsFromEnv(
+  process.env.ANSWERED_QUESTION_EXPIRATION_TIME,
+  DEFAULT_ANSWERED_TTL_SEC
+);
+
 
 const EngineSchema = new Schema({
   name: {
@@ -180,6 +198,11 @@ var KBSchema = new Schema({
     type: Array,
     default: undefined,
     required: false
+  },
+  situated_context: {
+    type: Boolean,
+    default: false,
+    required: false
   }
 }, {
   timestamps: true
@@ -199,13 +222,63 @@ const UnansweredQuestionSchema = new Schema({
   question: {
     type: String,
     required: true
+  },
+  request_id: {
+    type: String,
+    required: false,
+  },
+  sender: {
+    type: String,
+    required: false,
   }
 },{
   timestamps: true
 });
 
-// Add TTL index to automatically delete documents after 30 days
-UnansweredQuestionSchema.index({ created_at: 1 }, { expireAfterSeconds: expireAfterSeconds }); // 30 days
+const AnsweredQuestionSchema = new Schema({
+  id_project: {
+    type: String,
+    required: true,
+    index: true
+  },
+  namespace: {
+    type: String,
+    required: true,
+    index: true
+  },
+  question: {
+    type: String,
+    required: true
+  },
+  answer: {
+    type: String,
+    required: true
+  },
+  tokens: {
+    type: Number,
+    required: false
+  },
+  request_id: {
+    type: String,
+    required: false
+  }
+}, {
+  timestamps: true
+});
+
+// Add TTL index to automatically delete documents
+UnansweredQuestionSchema.index({ createdAt: 1 }, { expireAfterSeconds: expireAfterSeconds }); 
+UnansweredQuestionSchema.index({ id_project: 1, namespace: 1, createdAt: -1 });
+UnansweredQuestionSchema.index({ question: "text" });
+
+AnsweredQuestionSchema.index({ createdAt: 1 }, { expireAfterSeconds: expireAnsweredAfterSeconds });
+AnsweredQuestionSchema.index({ id_project: 1, namespace: 1, createdAt: -1 });
+AnsweredQuestionSchema.index(
+  { question: "text", answer: "text" },
+  { weights: { question: 3, answer: 1 } }
+);
+
+
 
 // DEPRECATED !! - Start
 const KBSettingSchema = new Schema({
@@ -242,6 +315,7 @@ const Engine = mongoose.model('Engine', EngineSchema)
 const Namespace = mongoose.model('Namespace', NamespaceSchema)
 const KB = mongoose.model('KB', KBSchema)
 const UnansweredQuestion = mongoose.model('UnansweredQuestion', UnansweredQuestionSchema)
+const AnsweredQuestion = mongoose.model('AnsweredQuestion', AnsweredQuestionSchema)
 
 
 module.exports = {
@@ -249,5 +323,6 @@ module.exports = {
   Namespace: Namespace,
   Engine: Engine,
   KB: KB,
-  UnansweredQuestion: UnansweredQuestion
+  UnansweredQuestion: UnansweredQuestion,
+  AnsweredQuestion: AnsweredQuestion
 }
