@@ -253,7 +253,7 @@ router.get('/count/:namespace', async (req, res) => {
     }
 });
 
-router.get('/namespace/:namespace/export', async (req, res) => {
+router.get('/:namespace/export', async (req, res) => {
     try {
         const { namespace } = req.params;
         const id_project = req.projectid;
@@ -262,7 +262,7 @@ router.get('/namespace/:namespace/export', async (req, res) => {
         if (mode !== 'csv' && mode !== 'json') {
             return res.status(400).json({
                 success: false,
-                error: 'Invalid format. Use format=json or format=csv'
+                error: 'Invalid format. Use mode=json or mode=csv'
             });
         }
 
@@ -281,11 +281,15 @@ router.get('/namespace/:namespace/export', async (req, res) => {
         const safeFilename = String(namespace).replace(/[^\w.-]+/g, '_') || 'export';
 
         if (mode === 'json') {
+            const questionsJson = questions.map((q) => {
+                const { __v, updatedAt, ...doc } = q;
+                return doc;
+            });
             const payload = {
                 namespace,
                 exportedAt: new Date().toISOString(),
-                count: questions.length,
-                questions
+                count: questionsJson.length,
+                questions: questionsJson
             };
             res.setHeader('Content-Type', 'application/json; charset=utf-8');
             res.setHeader('Content-Disposition', `attachment; filename="unanswered-${safeFilename}.json"`);
@@ -304,9 +308,7 @@ router.get('/namespace/:namespace/export', async (req, res) => {
                 namespace: q.namespace,
                 question: q.question,
                 request_id: q.request_id || '',
-                sender: q.sender || '',
-                createdAt: q.createdAt ? new Date(q.createdAt).toISOString() : '',
-                updatedAt: q.updatedAt ? new Date(q.updatedAt).toISOString() : ''
+                createdAt: q.createdAt ? new Date(q.createdAt).toISOString() : ''
             });
         }
         csvStream.end();
