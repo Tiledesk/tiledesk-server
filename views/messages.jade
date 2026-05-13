@@ -1,27 +1,30 @@
-extends layout
+extends messages-layout
 
 block content
-  div(class="transcript-container")
+  div.transcript-page
+    header.transcript-header
+      if brandLogo
+        img.transcript-brand-logo(src=brandLogo alt=(brandName || 'Brand') + ' logo')
+      else if !brandLogo && !brandName
+        img.transcript-brand-logo(src="https://tiledesk.com/wp-content/uploads/2022/07/tiledesk_v2.png" alt="Tiledesk logo")
 
-    if brandLogo
-      img.className#IdName(src=brandLogo alt="brand logo")
-    else if !brandLogo && !brandName
-      img.className#IdName(src="https://tiledesk.com/wp-content/uploads/2022/07/tiledesk_v2.png" alt="tiledesk logo") 
-      
-    div(class="transcript-wrapper")
-      h1(class="transcript-title") Chat Transcript
+    header.transcript-title-container
+      h1.transcript-title Chat transcript
 
+    main.transcript-wrapper
+      ol.transcript-thread(role="list")
+        each message in messages
+          li.transcript-msg
+            div.transcript-msg-sender #{message.senderFullname || 'Unknown'}
+            div.transcript-msg-body #{message.text}
+            div.transcript-msg-meta
+              time.transcript-msg-time(datetime=message.createdAt ? message.createdAt.toISOString() : '') #{message.createdAt.toLocaleString('en', { timeZone: 'UTC' })}
+            //-   span.transcript-msg-sender #{message.senderFullname || 'Unknown'}
 
-      each message in messages
-        p(class="transcript-p") 
-          span(class="transcript-chat-date") [#{message.createdAt.toLocaleString('en', { timeZone: 'UTC' })}] 
-          span(class="transcript-chat-sender") #{message.senderFullname}: 
-          span(class="transcript-chat-msg") #{message.text}
-    
-    if brandName
-      p(class="transcript-powered-by") Powered by #{brandName}
-    else
-      p(class="transcript-powered-by") Powered by  
-        a(href="https://tiledesk.com/", target="_blank") Tiledesk
-
-
+    footer.transcript-footer
+      if brandName
+        p.transcript-powered-by Powered by #{brandName}
+      else
+        p.transcript-powered-by
+          | Powered by
+          a(href="https://tiledesk.com/", target="_blank", rel="noopener noreferrer") Tiledesk

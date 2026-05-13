@@ -19,338 +19,370 @@ var printer = new PdfPrinter(fonts);
 // var fs = require('fs');
 
 
+router.get('/:requestid/messages', function(req, res) {
 
+  winston.debug(req.params);
+  winston.debug("here");    
+  return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
+    if (err) {
+      return res.status(500).send({success: false, msg: 'Error getting object.'});
+    }
 
+    if(!messages){
+      return res.status(404).send({success: false, msg: 'Object not found.'});
+    }
 
-
-  router.get('/:requestid/messages', function(req, res) {
-  
-    winston.debug(req.params);
-    winston.debug("here");    
-    return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
-      if (err) {
-        return res.status(500).send({success: false, msg: 'Error getting object.'});
-      }
-
-      if(!messages){
-        return res.status(404).send({success: false, msg: 'Object not found.'});
-      }
-
-      return res.json(messages);
-    });
-
+    return res.json(messages);
   });
 
+});
 
-  router.get('/:requestid/messages.html', function(req, res) {
+
+router.get('/:requestid/messages.html', async (req, res) => {
+
+  winston.debug(req.params);
+  winston.debug("here");
   
-    winston.debug(req.params);
-    winston.debug("here");    
-    return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
-      if (err) {
-        return res.status(500).send({success: false, msg: 'Error getting object.'});
-      }
+  try {
+    let messages = await Message.find({ "recipient": req.params.requestid }).sort({createdAt: 'asc'}).exec();
 
-      if(!messages){
-        return res.status(404).send({success: false, msg: 'Object not found.'});
-      }
+    let filteredMessages = await filterMessages(messages);
 
-      return res.render('messages', 
-        { title: 'Tiledesk', 
-          messages: messages,
-          brandName: process.env.BRAND_NAME || null,
-          brandLogo: process.env.BRAND_LOGO || null
-        });
-    });
-
-  });
-
-
-  router.get('/:requestid/messages.csv', function(req, res) {
-  
-    winston.debug(req.params);
-    winston.debug("here");    
-    return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).lean().exec(function(err, messages) { 
-      if (err) {
-        return res.status(500).send({success: false, msg: 'Error getting object.'});
-      }
-
-      if(!messages){
-        return res.status(404).send({success: false, msg: 'Object not found.'});
-      }
-
-      messages.forEach(function(element) {
-
-        var channel_name = "";
-        if (element.channel && element.channel.name) {
-          channel_name = element.channel.name;
-        }
-        delete element.channel;
-        element.channel_name = channel_name;
-
-        delete element.attributes;
+    return res.render('messages', 
+      { 
+        title: 'Tiledesk', 
+        messages: filteredMessages,
+        brandName: process.env.BRAND_NAME || null,
+        brandLogo: process.env.BRAND_LOGO || null
       });
 
-      res.setHeader('Content-Type', 'applictext/csv');
-      res.setHeader('Content-Disposition', 'attachment; filename=transcript.csv');
-
-      return res.csv(messages, true);
+  } catch (error) {
+    winston.error("Error getting messages: ", error);
+    
+    return res.status(500).render('error', {
+      title: 'Tiledesk',
+      error: "An error occurred while getting the messages"
     });
 
+  }
+  
+
+
+
+  return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
+    if (err) {
+      return res.status(500).send({success: false, msg: 'Error getting object.'});
+    }
+
+    if(!messages){
+      return res.status(404).send({success: false, msg: 'Object not found.'});
+    }
+
+    return res.render('messages', 
+      { title: 'Tiledesk', 
+        messages: messages,
+        brandName: process.env.BRAND_NAME || null,
+        brandLogo: process.env.BRAND_LOGO || null
+      });
   });
 
+});
 
-  router.get('/:requestid/messages.txt', function(req, res) {
-  
-    winston.debug(req.params);
-    winston.debug("here");    
-    return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
-      if (err) {
-        return res.status(500).send({success: false, msg: 'Error getting object.'});
+
+router.get('/:requestid/messages.csv', function(req, res) {
+
+  winston.debug(req.params);
+  winston.debug("here");    
+  return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).lean().exec(function(err, messages) { 
+    if (err) {
+      return res.status(500).send({success: false, msg: 'Error getting object.'});
+    }
+
+    if(!messages){
+      return res.status(404).send({success: false, msg: 'Object not found.'});
+    }
+
+    messages.forEach(function(element) {
+
+      var channel_name = "";
+      if (element.channel && element.channel.name) {
+        channel_name = element.channel.name;
       }
+      delete element.channel;
+      element.channel_name = channel_name;
 
-      if(!messages){
-        return res.status(404).send({success: false, msg: 'Object not found.'});
-      }
-      
+      delete element.attributes;
+    });
 
-      var text = "Chat transcript:\n" //+ req.project.name;
-      
-      messages.forEach(function(element) {
-        text = text + "[ " + element.createdAt.toLocaleString('en', { timeZone: 'UTC' })+ "] " + element.senderFullname + ": " + element.text + "\n";
-      });
+    res.setHeader('Content-Type', 'applictext/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=transcript.csv');
+
+    return res.csv(messages, true);
+  });
+
+});
+
+
+router.get('/:requestid/messages.txt', function(req, res) {
+
+  winston.debug(req.params);
+  winston.debug("here");    
+  return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
+    if (err) {
+      return res.status(500).send({success: false, msg: 'Error getting object.'});
+    }
+
+    if(!messages){
+      return res.status(404).send({success: false, msg: 'Object not found.'});
+    }
     
 
-      res.set({"Content-Disposition":"attachment; filename=\"transcript.txt\""});
-      res.send(text);
+    var text = "Chat transcript:\n" //+ req.project.name;
+    
+    messages.forEach(function(element) {
+      text = text + "[ " + element.createdAt.toLocaleString('en', { timeZone: 'UTC' })+ "] " + element.senderFullname + ": " + element.text + "\n";
     });
+  
 
+    res.set({"Content-Disposition":"attachment; filename=\"transcript.txt\""});
+    res.send(text);
   });
 
+});
 
 
-  router.get('/:requestid/messages.pdf', function(req, res) {
+
+router.get('/:requestid/messages.pdf', function(req, res) {
 
 
-    winston.debug(req.params);
-    winston.debug("here");    
-    return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
-      if (err) {
-        return res.status(500).send({success: false, msg: 'Error getting object.'});
-      }
+  winston.debug(req.params);
+  winston.debug("here");    
+  return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
+    if (err) {
+      return res.status(500).send({success: false, msg: 'Error getting object.'});
+    }
 
 
-      if(!messages){
-        return res.status(404).send({success: false, msg: 'Object not found.'});
-      }
+    if(!messages){
+      return res.status(404).send({success: false, msg: 'Object not found.'});
+    }
 
 
-      var docDefinition = {
-        content: [
-          { text: 'Chat Transcript', style: 'header' },
-          {
-            ul: [
-              // 'item 1',
-              // 'item 2',
-              // 'item 3'
-            ]
-          },
-          
-        ],
-        styles: {
-          header: {
-            bold: true,
-            fontSize: 15
-          }
+    var docDefinition = {
+      content: [
+        { text: 'Chat Transcript', style: 'header' },
+        {
+          ul: [
+            // 'item 1',
+            // 'item 2',
+            // 'item 3'
+          ]
         },
-        defaultStyle: {
-          fontSize: 12
+        
+      ],
+      styles: {
+        header: {
+          bold: true,
+          fontSize: 15
         }
-      };
-
-      
-
-      messages.forEach(function(element) {
-        docDefinition.content[1].ul.push("[ " + element.createdAt.toLocaleString('en', { timeZone: 'UTC' })+ "] " + element.senderFullname + ": " + element.text );
-      });
-
-      console.log(docDefinition);
-   
-    var pdfDoc = printer.createPdfKitDocument(docDefinition);
-    // pdfDoc.pipe(fs.createWriteStream('lists.pdf'));
-
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename=transcript.pdf');
-            
-
-    pdfDoc.pipe(res);
-    pdfDoc.end();
-
-
-      
-    });
-
-  });
-
-
-
-  router.get('/:requestid/messages-user.html', function(req, res) {
-  
-    winston.debug(req.params);
-    winston.debug("here");    
-    return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
-      if (err) {
-        return res.status(500).send({success: false, msg: 'Error getting object.'});
+      },
+      defaultStyle: {
+        fontSize: 12
       }
+    };
 
-      var messages = messages.filter(m => m.sender != "system" );
-
-
-      //skip info message
-      if(!messages){
-        return res.status(404).send({success: false, msg: 'Object not found.'});
-      }
-
-      return res.render('messages', { title: 'Tiledesk', messages: messages});
-    });
-
-  });
-
-
-
-  router.get('/:requestid/messages-user.txt', function(req, res) {
-  
-    winston.debug(req.params);
-    winston.debug("here");    
-    return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
-      if (err) {
-        return res.status(500).send({success: false, msg: 'Error getting object.'});
-      }
-
-      if(!messages){
-        return res.status(404).send({success: false, msg: 'Object not found.'});
-      }
-      
-
-      var messages = messages.filter(m => m.sender != "system" );
-
-      var text = "Chat transcript:\n" //+ req.project.name;
-
-      messages.forEach(function(element) {
-        text = text + "[ " + element.createdAt.toLocaleString('en', { timeZone: 'UTC' })+ "] " + element.senderFullname + ": " + element.text + "\n";
-      });
     
 
-      res.set({"Content-Disposition":"attachment; filename=\"transcript.txt\""});
-      res.send(text);
+    messages.forEach(function(element) {
+      docDefinition.content[1].ul.push("[ " + element.createdAt.toLocaleString('en', { timeZone: 'UTC' })+ "] " + element.senderFullname + ": " + element.text );
     });
 
-  });
+    console.log(docDefinition);
+  
+  var pdfDoc = printer.createPdfKitDocument(docDefinition);
+  // pdfDoc.pipe(fs.createWriteStream('lists.pdf'));
 
-
-  router.get('/:requestid/messages-user.pdf', function(req, res) {
-
-
-    winston.debug(req.params);
-    winston.debug("here");    
-    return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
-      if (err) {
-        return res.status(500).send({success: false, msg: 'Error getting object.'});
-      }
-
-      var messages = messages.filter(m => m.sender != "system" );
-
-
-      //skip info message
-      if(!messages){
-        return res.status(404).send({success: false, msg: 'Object not found.'});
-      }
-
-
-      var docDefinition = {
-        content: [
-          { text: 'Chat Transcript', style: 'header' },
-          {
-            ul: [
-              // 'item 1',
-              // 'item 2',
-              // 'item 3'
-            ]
-          },
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', 'attachment; filename=transcript.pdf');
           
-        ],
-        styles: {
-          header: {
-            bold: true,
-            fontSize: 15
-          }
-        },
-        defaultStyle: {
-          fontSize: 12
-        }
-      };
 
-      
+  pdfDoc.pipe(res);
+  pdfDoc.end();
 
-      messages.forEach(function(element) {
-        docDefinition.content[1].ul.push("[ " + element.createdAt.toLocaleString('en', { timeZone: 'UTC' })+ "] " + element.senderFullname + ": " + element.text );
-      });
 
-      console.log(docDefinition);
-   
-    var pdfDoc = printer.createPdfKitDocument(docDefinition);
-    // pdfDoc.pipe(fs.createWriteStream('lists.pdf'));
-
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename=transcript.pdf');
     
-    pdfDoc.pipe(res);
-    pdfDoc.end();
-
-
-      
-    });
-
   });
 
+});
 
-  router.get('/:requestid/messages-user.csv', function(req, res) {
+
+
+router.get('/:requestid/messages-user.html', function(req, res) {
+
+  winston.debug(req.params);
+  winston.debug("here");    
+  return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
+    if (err) {
+      return res.status(500).send({success: false, msg: 'Error getting object.'});
+    }
+
+    var messages = messages.filter(m => m.sender != "system" );
+
+
+    //skip info message
+    if(!messages){
+      return res.status(404).send({success: false, msg: 'Object not found.'});
+    }
+
+    return res.render('messages', { title: 'Tiledesk', messages: messages});
+  });
+
+});
+
+
+
+router.get('/:requestid/messages-user.txt', function(req, res) {
+
+  winston.debug(req.params);
+  winston.debug("here");    
+  return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
+    if (err) {
+      return res.status(500).send({success: false, msg: 'Error getting object.'});
+    }
+
+    if(!messages){
+      return res.status(404).send({success: false, msg: 'Object not found.'});
+    }
+    
+
+    var messages = messages.filter(m => m.sender != "system" );
+
+    var text = "Chat transcript:\n" //+ req.project.name;
+
+    messages.forEach(function(element) {
+      text = text + "[ " + element.createdAt.toLocaleString('en', { timeZone: 'UTC' })+ "] " + element.senderFullname + ": " + element.text + "\n";
+    });
   
-    winston.debug(req.params);
-    winston.debug("here");    
-    return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).lean().exec(function(err, messages) { 
-      if (err) {
-        return res.status(500).send({success: false, msg: 'Error getting object.'});
-      }
 
-      var messages = messages.filter(m => m.sender != "system" );
+    res.set({"Content-Disposition":"attachment; filename=\"transcript.txt\""});
+    res.send(text);
+  });
+
+});
 
 
-      //skip info message
-      if(!messages){
-        return res.status(404).send({success: false, msg: 'Object not found.'});
-      }
+router.get('/:requestid/messages-user.pdf', function(req, res) {
 
 
-      messages.forEach(function(element) {
+  winston.debug(req.params);
+  winston.debug("here");    
+  return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
+    if (err) {
+      return res.status(500).send({success: false, msg: 'Error getting object.'});
+    }
 
-        var channel_name = "";
-        if (element.channel && element.channel.name) {
-          channel_name = element.channel.name;
+    var messages = messages.filter(m => m.sender != "system" );
+
+
+    //skip info message
+    if(!messages){
+      return res.status(404).send({success: false, msg: 'Object not found.'});
+    }
+
+
+    var docDefinition = {
+      content: [
+        { text: 'Chat Transcript', style: 'header' },
+        {
+          ul: [
+            // 'item 1',
+            // 'item 2',
+            // 'item 3'
+          ]
+        },
+        
+      ],
+      styles: {
+        header: {
+          bold: true,
+          fontSize: 15
         }
-        delete element.channel;
-        element.channel_name = channel_name;
+      },
+      defaultStyle: {
+        fontSize: 12
+      }
+    };
 
-        delete element.attributes;
-      });
+    
 
-
-      res.setHeader('Content-Type', 'applictext/csv');
-      res.setHeader('Content-Disposition', 'attachment; filename=transcript.csv');
-
-      return res.csv(messages, true);
+    messages.forEach(function(element) {
+      docDefinition.content[1].ul.push("[ " + element.createdAt.toLocaleString('en', { timeZone: 'UTC' })+ "] " + element.senderFullname + ": " + element.text );
     });
 
+    console.log(docDefinition);
+  
+  var pdfDoc = printer.createPdfKitDocument(docDefinition);
+  // pdfDoc.pipe(fs.createWriteStream('lists.pdf'));
+
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', 'attachment; filename=transcript.pdf');
+  
+  pdfDoc.pipe(res);
+  pdfDoc.end();
+
+
+    
   });
+
+});
+
+
+router.get('/:requestid/messages-user.csv', function(req, res) {
+
+  winston.debug(req.params);
+  winston.debug("here");    
+  return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).lean().exec(function(err, messages) { 
+    if (err) {
+      return res.status(500).send({success: false, msg: 'Error getting object.'});
+    }
+
+    var messages = messages.filter(m => m.sender != "system" );
+
+
+    //skip info message
+    if(!messages){
+      return res.status(404).send({success: false, msg: 'Object not found.'});
+    }
+
+
+    messages.forEach(function(element) {
+
+      var channel_name = "";
+      if (element.channel && element.channel.name) {
+        channel_name = element.channel.name;
+      }
+      delete element.channel;
+      element.channel_name = channel_name;
+
+      delete element.attributes;
+    });
+
+
+    res.setHeader('Content-Type', 'applictext/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=transcript.csv');
+
+    return res.csv(messages, true);
+  });
+
+});
+
+async function filterMessages(messages) {
+
+  if (messages[0].text === "welcome") {
+    messages = messages.slice(1);
+  }
+  return messages.filter(m => m.sender !== "system" );
+
+}
 
 module.exports = router;
