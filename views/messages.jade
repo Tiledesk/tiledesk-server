@@ -18,7 +18,7 @@ block content
             div.transcript-msg-sender #{message.senderFullname || 'Unknown'}
             div.transcript-msg-body #{message.text}
             div.transcript-msg-meta
-              time.transcript-msg-time(datetime=message.createdAt ? message.createdAt.toISOString() : '') #{message.createdAt.toLocaleString('en', { timeZone: 'UTC' })}
+              time.transcript-msg-time(datetime=message.createdAt ? message.createdAt.toISOString() : '') #{message.transcriptDisplayTime}
             //-   span.transcript-msg-sender #{message.senderFullname || 'Unknown'}
 
     footer.transcript-footer

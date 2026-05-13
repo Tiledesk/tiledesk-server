@@ -1,9 +1,11 @@
 var express = require('express');
 var router = express.Router();
+var csvExpress = require('csv-express');
 var Message = require("../models/message");
 var Request = require("../models/request");
 var User = require("../models/user");
 var winston = require('../config/winston');
+var transcriptTz = require('../utils/transcriptTimezone');
 
 var fonts = {
 	Roboto: {
@@ -18,6 +20,14 @@ var PdfPrinter = require('pdfmake');
 var printer = new PdfPrinter(fonts);
 // var fs = require('fs');
 
+router.get('/:requestid/test/error', async (req, res) => {
+  
+    return res.status(500).render('error', {
+      title: 'Tiledesk',
+      error: "An error occurred while getting the request"
+    });
+
+});
 
 router.get('/:requestid/messages', function(req, res) {
 
@@ -48,10 +58,14 @@ router.get('/:requestid/messages.html', async (req, res) => {
 
     let filteredMessages = await filterMessages(messages);
 
+    let idProject = filteredMessages[0] && filteredMessages[0].id_project ? String(filteredMessages[0].id_project) : undefined;
+    let tz = await transcriptTz.resolveTranscriptTimezone(req, idProject);
+    let messagesForView = attachTranscriptDisplayTimes(filteredMessages, tz);
+
     return res.render('messages', 
       { 
         title: 'Tiledesk', 
-        messages: filteredMessages,
+        messages: messagesForView,
         brandName: process.env.BRAND_NAME || null,
         brandLogo: process.env.BRAND_LOGO || null
       });
@@ -66,59 +80,46 @@ router.get('/:requestid/messages.html', async (req, res) => {
 
   }
   
-
-
-
-  return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
-    if (err) {
-      return res.status(500).send({success: false, msg: 'Error getting object.'});
-    }
-
-    if(!messages){
-      return res.status(404).send({success: false, msg: 'Object not found.'});
-    }
-
-    return res.render('messages', 
-      { title: 'Tiledesk', 
-        messages: messages,
-        brandName: process.env.BRAND_NAME || null,
-        brandLogo: process.env.BRAND_LOGO || null
-      });
-  });
-
 });
 
 
-router.get('/:requestid/messages.csv', function(req, res) {
 
-  winston.debug(req.params);
-  winston.debug("here");    
-  return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).lean().exec(function(err, messages) { 
-    if (err) {
-      return res.status(500).send({success: false, msg: 'Error getting object.'});
-    }
 
-    if(!messages){
+router.get('/:requestid/messages.csv', async function(req, res) {
+
+  var requestid = req.params.requestid;
+  var csvFilename = requestid.replace(/["\\\r\n]/g, '_') + '.csv';
+
+  try {
+    let messages = await Message.find({"recipient": requestid}).sort({createdAt: 'asc'}).lean().exec();
+
+    if (!messages) {
       return res.status(404).send({success: false, msg: 'Object not found.'});
     }
 
-    messages.forEach(function(element) {
+    let tz = await transcriptTz.resolveTranscriptTimezone(req, firstMessageProjectId(messages));
 
-      var channel_name = "";
-      if (element.channel && element.channel.name) {
-        channel_name = element.channel.name;
-      }
-      delete element.channel;
-      element.channel_name = channel_name;
-
-      delete element.attributes;
+    let rows = messages.map(function(m) {
+      return {
+        createdAt: transcriptTz.formatTranscriptInstant(m.createdAt, tz),
+        senderFullname: m.senderFullname != null ? String(m.senderFullname) : '',
+        text: m.text != null ? String(m.text) : ''
+      };
     });
 
-    res.setHeader('Content-Type', 'applictext/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename=transcript.csv');
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="' + csvFilename + '"');
 
-    return res.csv(messages, true);
-  });
+    if (rows.length === 0) {
+      return res.send(['createdAt', 'senderFullname', 'text'].join(csvExpress.separator) + '\r\n');
+    }
+
+    return res.csv(rows, true);
+
+  } catch (err) {
+    winston.error('public-request messages.csv', err);
+    return res.status(500).send({success: false, msg: 'Error getting object.'});
+  }
 
 });
 
@@ -126,116 +127,88 @@ router.get('/:requestid/messages.csv', function(req, res) {
 router.get('/:requestid/messages.txt', function(req, res) {
 
   winston.debug(req.params);
-  winston.debug("here");    
-  return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
-    if (err) {
-      return res.status(500).send({success: false, msg: 'Error getting object.'});
-    }
-
-    if(!messages){
-      return res.status(404).send({success: false, msg: 'Object not found.'});
-    }
-    
-
-    var text = "Chat transcript:\n" //+ req.project.name;
-    
-    messages.forEach(function(element) {
-      text = text + "[ " + element.createdAt.toLocaleString('en', { timeZone: 'UTC' })+ "] " + element.senderFullname + ": " + element.text + "\n";
-    });
-  
-
-    res.set({"Content-Disposition":"attachment; filename=\"transcript.txt\""});
-    res.send(text);
-  });
-
-});
-
-
-
-router.get('/:requestid/messages.pdf', function(req, res) {
-
-
-  winston.debug(req.params);
-  winston.debug("here");    
-  return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
-    if (err) {
-      return res.status(500).send({success: false, msg: 'Error getting object.'});
-    }
-
-
-    if(!messages){
-      return res.status(404).send({success: false, msg: 'Object not found.'});
-    }
-
-
-    var docDefinition = {
-      content: [
-        { text: 'Chat Transcript', style: 'header' },
-        {
-          ul: [
-            // 'item 1',
-            // 'item 2',
-            // 'item 3'
-          ]
-        },
-        
-      ],
-      styles: {
-        header: {
-          bold: true,
-          fontSize: 15
-        }
-      },
-      defaultStyle: {
-        fontSize: 12
+  winston.debug("here");
+  Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec()
+    .then(function (messages) {
+      if (!messages) {
+        return res.status(404).send({success: false, msg: 'Object not found.'});
       }
-    };
-
-    
-
-    messages.forEach(function(element) {
-      docDefinition.content[1].ul.push("[ " + element.createdAt.toLocaleString('en', { timeZone: 'UTC' })+ "] " + element.senderFullname + ": " + element.text );
+      return transcriptTz.resolveTranscriptTimezone(req, firstMessageProjectId(messages))
+        .then(function (tz) {
+          var text = "Chat transcript:\n";
+          messages.forEach(function(element) {
+            text = text + "[ " + transcriptTz.formatTranscriptInstant(element.createdAt, tz) + "] " + element.senderFullname + ": " + element.text + "\n";
+          });
+          res.set({"Content-Disposition":"attachment; filename=\"transcript.txt\""});
+          res.send(text);
+        });
+    })
+    .catch(function (err) {
+      winston.error('public-request messages.txt', err);
+      return res.status(500).send({success: false, msg: 'Error getting object.'});
     });
-
-    console.log(docDefinition);
-  
-  var pdfDoc = printer.createPdfKitDocument(docDefinition);
-  // pdfDoc.pipe(fs.createWriteStream('lists.pdf'));
-
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', 'attachment; filename=transcript.pdf');
-          
-
-  pdfDoc.pipe(res);
-  pdfDoc.end();
-
-
-    
-  });
 
 });
 
 
 
-router.get('/:requestid/messages-user.html', function(req, res) {
+router.get('/:requestid/messages.pdf', async function(req, res) {
+
+  var requestid = req.params.requestid;
+  var pdfFilename = requestid.replace(/["\\\r\n]/g, '_') + '.pdf';
 
   winston.debug(req.params);
-  winston.debug("here");    
-  return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
-    if (err) {
-      return res.status(500).send({success: false, msg: 'Error getting object.'});
-    }
+  winston.debug("here");
 
-    var messages = messages.filter(m => m.sender != "system" );
+  try {
+    let messages = await Message.find({"recipient": requestid}).sort({createdAt: 'asc'}).exec();
 
-
-    //skip info message
-    if(!messages){
+    if (!messages) {
       return res.status(404).send({success: false, msg: 'Object not found.'});
     }
 
-    return res.render('messages', { title: 'Tiledesk', messages: messages});
-  });
+    let tz = await transcriptTz.resolveTranscriptTimezone(req, firstMessageProjectId(messages));
+    let docDefinition = buildTranscriptPdfDocDefinition(messages, tz);
+    let pdfDoc = printer.createPdfKitDocument(docDefinition);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="' + pdfFilename + '"');
+
+    pdfDoc.pipe(res);
+    pdfDoc.end();
+  } catch (err) {
+    winston.error('public-request messages.pdf', err);
+    return res.status(500).send({success: false, msg: 'Error getting object.'});
+  }
+
+});
+
+
+
+router.get('/:requestid/messages-user.html', async function(req, res) {
+
+  winston.debug(req.params);
+  winston.debug("here");
+  try {
+    let messages = await Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec();
+    messages = messages.filter(m => m.sender != "system" );
+
+    if (!messages || messages.length === 0) {
+      return res.status(404).send({success: false, msg: 'Object not found.'});
+    }
+
+    var idProject = messages[0] && messages[0].id_project ? String(messages[0].id_project) : undefined;
+    var tz = await transcriptTz.resolveTranscriptTimezone(req, idProject);
+    var messagesForView = attachTranscriptDisplayTimes(messages, tz);
+
+    return res.render('messages', { title: 'Tiledesk', messages: messagesForView,
+      brandName: process.env.BRAND_NAME || null,
+      brandLogo: process.env.BRAND_LOGO || null
+    });
+  } catch (err) {
+    winston.error('public-request messages-user.html', err);
+    return res.status(500).send({success: false, msg: 'Error getting object.'});
+  }
 
 });
 
@@ -244,145 +217,210 @@ router.get('/:requestid/messages-user.html', function(req, res) {
 router.get('/:requestid/messages-user.txt', function(req, res) {
 
   winston.debug(req.params);
-  winston.debug("here");    
-  return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
-    if (err) {
+  winston.debug("here");
+  Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec()
+    .then(function (messages) {
+      if (!messages || messages.length === 0) {
+        return res.status(404).send({success: false, msg: 'Object not found.'});
+      }
+      messages = messages.filter(m => m.sender != "system" );
+      if (messages.length === 0) {
+        return res.status(404).send({success: false, msg: 'Object not found.'});
+      }
+      return transcriptTz.resolveTranscriptTimezone(req, firstMessageProjectId(messages))
+        .then(function (tz) {
+          var text = "Chat transcript:\n";
+          messages.forEach(function(element) {
+            text = text + "[ " + transcriptTz.formatTranscriptInstant(element.createdAt, tz) + "] " + element.senderFullname + ": " + element.text + "\n";
+          });
+          res.set({"Content-Disposition":"attachment; filename=\"transcript.txt\""});
+          res.send(text);
+        });
+    })
+    .catch(function (err) {
+      winston.error('public-request messages-user.txt', err);
       return res.status(500).send({success: false, msg: 'Error getting object.'});
-    }
-
-    if(!messages){
-      return res.status(404).send({success: false, msg: 'Object not found.'});
-    }
-    
-
-    var messages = messages.filter(m => m.sender != "system" );
-
-    var text = "Chat transcript:\n" //+ req.project.name;
-
-    messages.forEach(function(element) {
-      text = text + "[ " + element.createdAt.toLocaleString('en', { timeZone: 'UTC' })+ "] " + element.senderFullname + ": " + element.text + "\n";
     });
-  
-
-    res.set({"Content-Disposition":"attachment; filename=\"transcript.txt\""});
-    res.send(text);
-  });
 
 });
 
 
-router.get('/:requestid/messages-user.pdf', function(req, res) {
+router.get('/:requestid/messages-user.pdf', async function(req, res) {
 
+  var requestid = req.params.requestid;
+  var pdfFilename = requestid.replace(/["\\\r\n]/g, '_') + '.pdf';
 
   winston.debug(req.params);
-  winston.debug("here");    
-  return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
-    if (err) {
-      return res.status(500).send({success: false, msg: 'Error getting object.'});
-    }
+  winston.debug("here");
 
-    var messages = messages.filter(m => m.sender != "system" );
+  try {
+    let messages = await Message.find({"recipient": requestid}).sort({createdAt: 'asc'}).exec();
 
-
-    //skip info message
-    if(!messages){
+    if (!messages || messages.length === 0) {
       return res.status(404).send({success: false, msg: 'Object not found.'});
     }
 
+    messages = messages.filter(m => m.sender != "system" );
 
-    var docDefinition = {
-      content: [
-        { text: 'Chat Transcript', style: 'header' },
-        {
-          ul: [
-            // 'item 1',
-            // 'item 2',
-            // 'item 3'
-          ]
-        },
-        
-      ],
-      styles: {
-        header: {
-          bold: true,
-          fontSize: 15
-        }
-      },
-      defaultStyle: {
-        fontSize: 12
-      }
-    };
+    if (messages.length === 0) {
+      return res.status(404).send({success: false, msg: 'Object not found.'});
+    }
 
-    
+    let tz = await transcriptTz.resolveTranscriptTimezone(req, firstMessageProjectId(messages));
+    let docDefinition = buildTranscriptPdfDocDefinition(messages, tz);
+    let pdfDoc = printer.createPdfKitDocument(docDefinition);
 
-    messages.forEach(function(element) {
-      docDefinition.content[1].ul.push("[ " + element.createdAt.toLocaleString('en', { timeZone: 'UTC' })+ "] " + element.senderFullname + ": " + element.text );
-    });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="' + pdfFilename + '"');
 
-    console.log(docDefinition);
-  
-  var pdfDoc = printer.createPdfKitDocument(docDefinition);
-  // pdfDoc.pipe(fs.createWriteStream('lists.pdf'));
-
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', 'attachment; filename=transcript.pdf');
-  
-  pdfDoc.pipe(res);
-  pdfDoc.end();
-
-
-    
-  });
+    pdfDoc.pipe(res);
+    pdfDoc.end();
+  } catch (err) {
+    winston.error('public-request messages-user.pdf', err);
+    return res.status(500).send({success: false, msg: 'Error getting object.'});
+  }
 
 });
 
 
 router.get('/:requestid/messages-user.csv', function(req, res) {
 
+  var requestid = req.params.requestid;
+  var csvFilename = requestid.replace(/["\\\r\n]/g, '_') + '.csv';
+
   winston.debug(req.params);
-  winston.debug("here");    
-  return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).lean().exec(function(err, messages) { 
-    if (err) {
-      return res.status(500).send({success: false, msg: 'Error getting object.'});
-    }
-
-    var messages = messages.filter(m => m.sender != "system" );
-
-
-    //skip info message
-    if(!messages){
-      return res.status(404).send({success: false, msg: 'Object not found.'});
-    }
-
-
-    messages.forEach(function(element) {
-
-      var channel_name = "";
-      if (element.channel && element.channel.name) {
-        channel_name = element.channel.name;
+  winston.debug("here");
+  Message.find({"recipient": requestid}).sort({createdAt: 'asc'}).lean().exec()
+    .then(function (messages) {
+      if (!messages || messages.length === 0) {
+        return res.status(404).send({success: false, msg: 'Object not found.'});
       }
-      delete element.channel;
-      element.channel_name = channel_name;
+      messages = messages.filter(m => m.sender != "system" );
+      if (messages.length === 0) {
+        return res.status(404).send({success: false, msg: 'Object not found.'});
+      }
+      return transcriptTz.resolveTranscriptTimezone(req, firstMessageProjectId(messages))
+        .then(function (tz) {
+          var rows = messages.map(function(m) {
+            return {
+              createdAt: transcriptTz.formatTranscriptInstant(m.createdAt, tz),
+              senderFullname: m.senderFullname != null ? String(m.senderFullname) : '',
+              text: m.text != null ? String(m.text) : ''
+            };
+          });
 
-      delete element.attributes;
+          res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+          res.setHeader('Content-Disposition', 'attachment; filename="' + csvFilename + '"');
+
+          if (rows.length === 0) {
+            return res.send(['createdAt', 'senderFullname', 'text'].join(csvExpress.separator) + '\r\n');
+          }
+
+          return res.csv(rows, true);
+        });
+    })
+    .catch(function (err) {
+      winston.error('public-request messages-user.csv', err);
+      return res.status(500).send({success: false, msg: 'Error getting object.'});
     });
-
-
-    res.setHeader('Content-Type', 'applictext/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename=transcript.csv');
-
-    return res.csv(messages, true);
-  });
 
 });
 
-async function filterMessages(messages) {
+function filterMessages(messages) {
 
-  if (messages[0].text === "welcome") {
+  if (messages[0].text === "welcome" || messages[0].text === "/start") {
     messages = messages.slice(1);
   }
   return messages.filter(m => m.sender !== "system" );
 
+}
+
+function firstMessageProjectId(messages) {
+  return messages && messages[0] && messages[0].id_project ? String(messages[0].id_project) : undefined;
+}
+
+function attachTranscriptDisplayTimes(messages, timeZone) {
+  return messages.map(function (m) {
+    var o = typeof m.toObject === 'function' ? m.toObject() : m;
+    return Object.assign({}, o, {
+      transcriptDisplayTime: transcriptTz.formatTranscriptInstant(m.createdAt, timeZone)
+    });
+  });
+}
+
+/** Footer line aligned with views/messages.jade (Powered by …). */
+function transcriptPdfFooterLine() {
+  var brand = process.env.BRAND_NAME;
+  if (brand) {
+    return 'Powered by ' + brand;
+  }
+  return 'Powered by Tiledesk';
+}
+
+/**
+ * pdfmake document for a chat transcript: title, message blocks (sender, body, time), footer.
+ * Simplified layout inspired by messages.jade / messages-layout.jade.
+ */
+function buildTranscriptPdfDocDefinition(messages, tz) {
+  var innerWidthPt = 515;
+  var content = [
+    { text: 'Chat transcript', style: 'pdfTitle', alignment: 'center', margin: [0, 0, 0, 18] }
+  ];
+
+  messages.forEach(function (element, index) {
+    if (index > 0) {
+      content.push({
+        canvas: [
+          { type: 'line', x1: 0, y1: 0, x2: innerWidthPt, y2: 0, lineWidth: 0.5, lineColor: '#e2e8f0' }
+        ],
+        margin: [0, 4, 0, 12]
+      });
+    }
+
+    var sender = element.senderFullname || 'Unknown';
+    var body = element.text != null ? String(element.text) : '';
+    var timeStr = transcriptTz.formatTranscriptInstant(element.createdAt, tz);
+
+    content.push({
+      stack: [
+        { text: sender, style: 'pdfSender' },
+        { text: body, style: 'pdfBody', margin: [0, 6, 0, 2] },
+        {
+          columns: [
+            { width: '*', text: '' },
+            { width: 'auto', text: timeStr, style: 'pdfMeta' }
+          ],
+          columnGap: 0
+        }
+      ],
+      margin: [0, 0, 0, 2]
+    });
+  });
+
+  content.push({
+    text: transcriptPdfFooterLine(),
+    style: 'pdfFooter',
+    alignment: 'center',
+    margin: [0, 24, 0, 0]
+  });
+
+  return {
+    pageSize: 'A4',
+    pageMargins: [40, 44, 40, 44],
+    content: content,
+    styles: {
+      pdfTitle: { fontSize: 20, bold: true, color: '#0f172a' },
+      pdfSender: { fontSize: 11, bold: true, color: '#0f172a' },
+      pdfBody: { fontSize: 10, color: '#334155' },
+      pdfMeta: { fontSize: 8, color: '#64748b', alignment: 'right' },
+      pdfFooter: { fontSize: 9, color: '#64748b' }
+    },
+    defaultStyle: {
+      font: 'Roboto',
+      fontSize: 10,
+      lineHeight: 1.4
+    }
+  };
 }
 
 module.exports = router;
