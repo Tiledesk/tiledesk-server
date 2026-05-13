@@ -114,6 +114,7 @@ class AiManager {
             engine: engine, 
             hybrid: hybrid, 
             ...(situated_context && { situated_context }),
+            ...(options.request_id && { request_id: options.request_id }),
             ...rest}
         });
 
