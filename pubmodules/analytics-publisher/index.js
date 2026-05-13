@@ -202,14 +202,14 @@ function listen() {
     });
   });
 
-  // ── 5. handover_to_agent ──────────────────────────────────────────────────
-  // Contract: packages/contracts/src/payloads/handover-to-agent.ts
+  // ── 5. handover_to_human ──────────────────────────────────────────────────
+  // Contract: packages/contracts/src/payloads/handover-to-human.ts
   //   id_request           string   (required)
-  //   agent_id             string|null
+  //   human_id             string|null
   //   reason               string|null
   //   department_id        string|null
   //   waiting_time_seconds number int>=0 | null
-  //   bot_id               string|null (optional)
+  //   agent_id             string|null (optional)
   //   trigger_intent       string|null (optional)
   requestEvent.on("request.participants.update", function (data) {
     var request = data.request || {};
@@ -228,7 +228,7 @@ function listen() {
       removedParticipants.find(function (p) {
         return p.startsWith("bot_");
       }) || null;
-    var agentId =
+    var humanId =
       addedParticipants.find(function (p) {
         return !p.startsWith("bot_");
       }) || null;
@@ -238,13 +238,13 @@ function listen() {
       waitingTimeSecs = Math.round(request.waiting_time / 1000);
     }
 
-    track("handover_to_agent", request.id_project, {
+    track("handover_to_human", request.id_project, {
       id_request: request.request_id || toStringId(request),
-      agent_id: agentId,
+      human_id: humanId,
       reason: null,
       department_id: departmentId(request.department),
       waiting_time_seconds: waitingTimeSecs,
-      bot_id: botId,
+      agent_id: null,
       trigger_intent: null,
     });
   });
@@ -277,9 +277,9 @@ function listen() {
     });
   });
 
-  // ── 7. agent.status_changed ───────────────────────────────────────────────
-  // Contract: packages/contracts/src/payloads/agent-status-changed.ts
-  //   agent_id        string   (required)
+  // ── 7. human.status_changed ───────────────────────────────────────────────
+  // Contract: packages/contracts/src/payloads/human-status-changed.ts
+  //   human_id        string   (required)
   //   previous_status 'available'|'unavailable'|'busy'
   //   new_status      'available'|'unavailable'|'busy'
   authEvent.on("project_user.update.agent", function (event) {
@@ -287,20 +287,20 @@ function listen() {
     if (!pu) return;
     if (pu.user_available === undefined) return; // not a status-change update
 
-    // var prevBool = event.previousUserAvailable;
-    // if (prevBool === pu.user_available) return; // no actual change
+    var prevBool = event.previousUserAvailable;
+    if (prevBool === pu.user_available) return; // no actual change
 
-    var prevStatus = availabilityLabel(false);
+    var prevStatus = availabilityLabel(prevBool);
     var newStatus = availabilityLabel(pu.user_available);
 
     // Both statuses must be valid enum members — skip if either resolves to null.
-    // if (!prevStatus || !newStatus) return;
+    if (!prevStatus || !newStatus) return;
 
-    var agentId = toStringId(pu.id_user);
-    if (!agentId) return;
+    var humanId = toStringId(pu.id_user);
+    if (!humanId) return;
 
-    track("agent.status_changed", pu.id_project, {
-      agent_id: agentId,
+    track("human.status_changed", pu.id_project, {
+      human_id: humanId,
       previous_status: prevStatus,
       new_status: newStatus,
     });
@@ -348,7 +348,7 @@ function listen() {
   // Emitted by routes/webhook.js when a chatbot automation is triggered via
   // the public webhook URL (production runs only — dev-mode runs are excluded).
   //   webhook_id  string   (required)
-  //   chatbot_id  string   (required)
+  //   agent_id    string   (required)
   //   block_id    string   (required)
   //   async       boolean
   //   request_id  string|null  — synthetic automation-request-... identifier
@@ -357,10 +357,12 @@ function listen() {
 
     track("webhook.triggered", webhook.id_project, {
       webhook_id: webhook.webhook_id,
-      chatbot_id: webhook.chatbot_id,
+      agent_id: webhook.chatbot_id,
       block_id:   webhook.block_id,
       async:      webhook.async,
-      request_id: (payload && payload.preloaded_request_id) || null,
+      request_id:
+        (payload && (payload.preloaded_request_id || payload.request_id)) ||
+        null,
     });
   });
 }
