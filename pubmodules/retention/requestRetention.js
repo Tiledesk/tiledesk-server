@@ -2,6 +2,7 @@ const winston = require("../../config/winston");
 const requestEvent = require("../../event/requestEvent");
 const projectService = require("../../services/projectService");
 const Request = require("../../models/request");
+const { getRetentionMsFromProjectLike } = require("./retentionMsFromProject");
 
 const EVENTS = [
     'request.create',
@@ -12,11 +13,6 @@ const QUEUED_EVENTS = [
     'request.create.queue',
     'request.update.queue'
 ]
-
-const defaultRetentionDays = parseInt(process.env.DEFAULT_RETENTION_DAYS, 10) || 90;
-/** Test-only: if set to a positive integer, default retention uses seconds instead of days (ignored when project.settings.retentionDays is set). */
-const defaultRetentionSeconds = parseInt(process.env.DEFAULT_RETENTION_SECONDS, 10);
-const useDefaultRetentionSeconds = !isNaN(defaultRetentionSeconds) && defaultRetentionSeconds > 0;
 
 class RequestRetention {
 
@@ -69,27 +65,41 @@ class RequestRetention {
             return;
         }
 
-        const retentionFromProject = project.settings
-            && typeof project.settings.retentionDays === 'number'
-            && !isNaN(project.settings.retentionDays)
-            && project.settings.retentionDays > 0;
-        const retentionDays = retentionFromProject
-            ? project.settings.retentionDays
-            : defaultRetentionDays;
-
-        if (!retentionFromProject && !useDefaultRetentionSeconds && (retentionDays == null || retentionDays <= 0)) {
+        const retentionInfo = getRetentionMsFromProjectLike(project);
+        if (!retentionInfo) {
+            return;
+        }
+        // Retention infinita: nessuna scadenza (rimuove il campo usato dal TTL)
+        if (retentionInfo.infinite) {
+            try {
+                await Request.findOneAndUpdate(
+                    { request_id: request.request_id, id_project: request.id_project },
+                    { $unset: { expiresAt: "" } },
+                    { new: true });
+            } catch (err) {
+                winston.error("RequestRetention error unsetting expiresAt (infinite retention)", err);
+            }
             return;
         }
 
-        const updatedAt = request.updatedAt;
-        if (!updatedAt) {
+        const retentionMs = retentionInfo.retentionMs;
+
+        const updatedAtRaw = request.updatedAt;
+        if (updatedAtRaw == null || updatedAtRaw === "") {
             winston.warn("RequestRetention request.update without updatedAt. Skip updateExpiresAt");
             return;
         }
 
-        const retentionMs = !retentionFromProject && useDefaultRetentionSeconds
-            ? defaultRetentionSeconds * 1000
-            : retentionDays * 24 * 60 * 60 * 1000;
+        const updatedAt =
+            updatedAtRaw instanceof Date ? updatedAtRaw : new Date(updatedAtRaw);
+        if (Number.isNaN(updatedAt.getTime())) {
+            winston.warn(
+                "RequestRetention request.update with invalid updatedAt. Skip updateExpiresAt",
+                { updatedAt: updatedAtRaw }
+            );
+            return;
+        }
+
         let expiresAt = new Date(updatedAt.getTime() + retentionMs);
         if (expiresAt.getTime() < Date.now()) {
             expiresAt = undefined;

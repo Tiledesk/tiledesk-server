@@ -304,7 +304,10 @@ class MessageService {
                     resolve("This is a mock trancripted audio")
                 }
 
+                let t1 = Date.now();
                 let file = await fileUtils.downloadFromUrl(audio_url);
+                let t2 = Date.now();
+                console.log("(getAudioTranscription) downloadFromUrl time: ", t2 - t1, "ms");
                 let key;
                 let integration = await Integration.findOne({ id_project: id_project, name: 'openai' }).catch((err) => {
                     winston.error("Error finding integration for openai");
@@ -328,7 +331,10 @@ class MessageService {
                     resolve(null)
                 }
 
+                let t3 = Date.now();
                 aiService.transcription(file, { key: key, language: language }).then((response) => {
+                    let t4 = Date.now();
+                    console.log("(getAudioTranscription) transcription time: ", t4 - t3, "ms");
                     resolve(response.data.text);
                 }).catch((err) => {
                     winston.error("Error getting audio transcription: ", err?.response?.data);

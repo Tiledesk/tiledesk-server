@@ -636,6 +636,17 @@ class PubModulesManager {
                 winston.info("PubModulesManager error initializing analyticsPublisher module", err);
             }
         }
+
+        try {
+            this.projectRequestsExpiresRecalc = require('./retention').projectRequestsExpiresRecalc;
+            winston.info("PubModulesManager projectRequestsExpiresRecalc initialized");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("PubModulesManager init projectRequestsExpiresRecalc module not found");
+            } else {
+                winston.error("PubModulesManager error initializing projectRequestsExpiresRecalc module", err);
+            }
+        }
     }
 
 
@@ -731,6 +742,15 @@ class PubModulesManager {
                 winston.info("PubModulesManager requestRetention started");
             } catch(err) {
                 winston.info("PubModulesManager error starting requestRetention module", err);            
+            }
+        }
+
+        if (this.projectRequestsExpiresRecalc) {
+            try {
+                this.jobsManager.listenProjectRequestsExpiresRecalc(this.projectRequestsExpiresRecalc);
+                winston.info("PubModulesManager projectRequestsExpiresRecalc started");
+            } catch(err) {
+                winston.info("PubModulesManager error starting projectRequestsExpiresRecalc module", err);
             }
         }
 

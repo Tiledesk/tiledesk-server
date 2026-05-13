@@ -1071,6 +1071,7 @@ describe('KbRoute', () => {
                                 .auth(email, pwd)
                                 //.set('Content-Type', 'text/csv')
                                 .field('delimiter', ';')
+                                .field('situated_context', true)
                                 .field('tags', JSON.stringify(['tag1', 'tag2']))
                                 .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './fixtures/example-kb-faqs.csv')), 'example-kb-faqs.csv')
                                 .end((err, res) => {

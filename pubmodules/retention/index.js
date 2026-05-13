@@ -1,4 +1,7 @@
 const RequestRetention = require("./requestRetention");
-const requestRetention = new RequestRetention();
+const ProjectRequestsExpiresRecalc = require("./projectRequestsExpiresRecalc");
 
-module.exports = { requestRetention };
+const requestRetention = new RequestRetention();
+const projectRequestsExpiresRecalc = new ProjectRequestsExpiresRecalc();
+
+module.exports = { requestRetention, projectRequestsExpiresRecalc };
