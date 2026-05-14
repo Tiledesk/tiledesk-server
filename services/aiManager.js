@@ -412,6 +412,36 @@ class AiManager {
     })
   }
 
+  async deleteSitemap(sitemapContent, namespace) {
+
+    const sitemapContentId = sitemapContent._id;
+    const relatedContents = await KB.find({ id_project: sitemapContent.id_project, namespace: sitemapContent.namespace, sitemap_origin_id: sitemapContentId }).lean().exec();
+
+    if (!relatedContents.length) {
+      return;
+    }
+
+    const engine = namespace.engine || default_engine;
+    const scheduler = new Scheduler({ jobManager: jobManager });
+
+    await Promise.all(relatedContents.map((kb) => { 
+      return new Promise((resolve) => {
+        const data = {
+          id: kb._id,
+          namespace: kb.namespace,
+          engine: engine
+        };
+        scheduler.deleteSchedule(data, (err, result) => {
+          if (err) {
+            winston.error("deleteSitemap: deleteSchedule error for kb " + kb._id, err);
+          }
+          console.log("deleteSitemap: deleteSchedule result for kb " + kb._id, result);
+          resolve(result);
+        });
+      });
+    }));
+  }
+
   async saveBulk(operations, kbs, project_id, namespace) {
 
     return new Promise((resolve, reject) => {
