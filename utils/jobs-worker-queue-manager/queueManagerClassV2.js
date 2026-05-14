@@ -1,8 +1,5 @@
 var amqp = require('amqplib/callback_api');
 const winston = require('../../config/winston');
-const { TiledeskWorker } = require('../tiledesk/TiledeskWorker')
-const { StatusManager } = require('../tiledesk/StatusManager');
-const { ContentManager } = require('../tiledesk/ContentManager');
 
 var listeners = [];
 
@@ -237,87 +234,94 @@ class QueueManager {
     });
   }
 
-  /**
-   * Removes indexed content for the payload. Messages are consumed from the dedicated delete queue
-   * (deleteTopic / TRAIN_DELETE_QUEUE); publish to the same exchange with routing key deleteRoutingKey.
-   */
-  async processDeleteMsg(msg, ch) {
+  processMsg2(msg) {
 
+    // console.log("processMsg2:", msg);
+  
     const message_string = msg.content.toString();
-    let fdata = JSON.parse(message_string);
-    let source = fdata.payload;
-
-    winston.debug("Delete job payload: ", source);
-
-    const tiledesk_worker = new TiledeskWorker({ gptkey: null, interval: null });
-    const status_manager = new StatusManager();
-    const content_manager = new ContentManager();
-
-    await status_manager.changeStatus(source.id, 500);
-
-    tiledesk_worker.deleteFromIndex(source, async (err, response) => {
-      if (err) {
-        winston.error("Error on delete from index: " + err);
-        let error_message = err.response?.data?.error || "An unexpected error occurred";
-        status_manager.changeStatus(source.id, 300, error_message).then((updateResponse) => {
-          winston.verbose("changeStatus response: ", updateResponse);
-          ch.ack(msg);
-        }).catch((err) => {
-          winston.error("changeStatus error: ", err);
-          ch.ack(msg);
-        });
-      } else {
-        content_manager.deleteContent(source.id).then((deleteResponse) => {
-          winston.verbose("deleteContent response: ", deleteResponse);
-          ch.ack(msg);
-        }).catch((err) => {
-          winston.error("deleteContent error: ", err);
-          ch.ack(msg);
-        });
+    // console.log("processMsg2.1:", msg);
+  
+    const topic = msg.fields.routingKey //.replace(/[.]/g, '/');
+    // console.log("processMsg2.2:", msg);
+  
+    // if (this.debug) {console.log("Got msg topic:" + topic);} //this is undefined in this method
+    // console.log("Got msg topic:" + topic);
+  
+    // if (this.debug) {console.log("Got msg1:"+ message_string +  " topic:" + topic);}
+    // console.log("Got msg1:"+ message_string +  " topic:" + topic);
+  
+    if (topic === 'functions') {
+      // if (this.debug) {console.log("Got msg2:"+ JSON.stringify(message_string) +  " topic:" + topic);}
+      // console.log("Got msg2:"+ JSON.stringify(message_string) +  " topic:" + topic);
+  
+      var fdata = JSON.parse(message_string)
+  
+      // if (this.debug) {console.log("Got msg3:"+ fdata.function +  " fdata.function:",  fdata.payload);}
+  
+  
+  
+      /*
+  
+      // var fields = Object.keys(fdata.payload).map((key) => [key, fdata.payload[key]]);
+      
+      // var fields = Object.keys(fdata.payload)
+  
+      // if (this.debug) {console.log("Got fields:"+ fields );
+  
+      // eval(fdata.function)
+  
+      */
+     
+      if (fdata.function) {
+        var fn = new Function("payload", fdata.function);
+  
+        // if (this.debug) {console.log("Got fn:"+ fn);}
+  
+      /*  
+        // var fn = new Function(fields, fdata.function);
+        
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function
+        // var fn = new Function("name",'if (this.debug) {console.log("ciao: " + name);');
+        // fn("andrea")
+  
+        // var dataArray = Object.keys(fdata.payload).map(function(k){return fdata.payload[k]});
+        // if (this.debug) {console.log("Got dataArray:", dataArray );
+  
+        // fn(dataArray);
+      */
+  
+  
+        var ret = fn(fdata.payload)
+        // if (this.debug) {console.log("Got ret:"+ ret);}
+        // console.log("Got ret:"+ ret);
+  
       }
-    });
-
-  }
-
-  /**
-   * Specific processMsg function for Scrape operation
-   */
-  async processMsg3(msg, ch) {
-
-    const message_string = msg.content.toString();
-    let fdata = JSON.parse(message_string);
-    let source = fdata.payload
-
-    winston.debug("Source: ", source)
-    // console.log("fdata.payload.resources[0]: ", fdata.payload.resources[0]);
-
-    const tiledesk_worker = new TiledeskWorker({ gptkey: null, interval: null });
-    const status_manager = new StatusManager();
-
-    await status_manager.changeStatus(source.id, 200);
-
-    tiledesk_worker.train(source, async (err, response) => {
-      if (err) {
-        winston.error("Error on train: " + err)
-        let error_message = err.response?.data?.error || "An unexpected error occurred";
-        status_manager.changeStatus(source.id, 400, error_message).then((updateResponse) => {
-          winston.verbose("changeStatus response: ", updateResponse)
-          ch.ack(msg);
-        }).catch((err) => {
-          winston.error("changeStatus error: ", err)
-          ch.ack(msg);
-        })
-      } else {
-        status_manager.changeStatus(response.id, response.status).then((updateResponse) => {
-          winston.verbose("changeStatus response: ", updateResponse)
-          ch.ack(msg);
-        }).catch((err) => {
-          winston.error("changeStatus error: ", err)
-          ch.ack(msg);
-        })
+  
+      // else {
+      //   console.log("no function found");
+      // }
+      
+  
+    }
+  
+    // if (topic === 'subscription_run') {
+    //   if (this.debug) {console.log("here topic:" + topic);
+    //   // requestEvent.emit('request.create.queue', msg.content);
+    //   subscriptionEvent.emit('subscription.run.queue', JSON.parse(message_string));
+    // } 
+    
+  
+    // serve?
+    // if (this.debug) {console.log("listeners.length:" + listeners.length);}
+  
+    if (listeners && listeners.length>0) {
+      for( var i = 0; i< listeners.length; i++) {
+        // if (this.debug) {console.log("listeners[i]:" + listeners[i]);}
+        listeners[i](fdata);
       }
-    });
-
+    }
+  
+    // if (this.debug) {console.log("listeners", this.listeners);
   }
 
   closeOnErr(err) {
