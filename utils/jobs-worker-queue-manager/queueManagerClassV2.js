@@ -1,5 +1,5 @@
 var amqp = require('amqplib/callback_api');
-const winston = require('../winston');
+const winston = require('../../config/winston');
 const { TiledeskWorker } = require('../tiledesk/TiledeskWorker')
 const { StatusManager } = require('../tiledesk/StatusManager');
 const { ContentManager } = require('../tiledesk/ContentManager');
