@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.18.7
+- Added possibility to export Answered and Unanswered questions
+
 # 2.18.6
 - Modified sitemap deletion behavior to also remove all associated URLs.
 
