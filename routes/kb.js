@@ -41,7 +41,6 @@ if (MAX_UPLOAD_FILE_SIZE) {
 }
 var upload = multer({limits: uploadlimits});
 
-
 let jobManager = new JobManager(AMQP_MANAGER_URL, {
   debug: false,
   topic: JOB_TOPIC_EXCHANGE,
@@ -2193,6 +2192,17 @@ router.delete('/:kb_id', async (req, res) => {
   } catch (err) {
     let errorCode = err?.errorCode ?? 500;
     return res.status(errorCode).send({ success: false, error: err.error });
+  }
+
+  if (kb.type === 'sitemap') {
+    try {
+      await aiManager.deleteSitemap(kb, namespace);
+      console.log("Scheduled jobs for deleting sitemap");
+      //return res.status(200).send({ success: true, message: "Scheduled jobs for deleting sitemap" });
+    } catch (err) {
+      winston.error("Error deleting sitemap: ", err);
+      return res.status(500).send({ success: false, error: err });
+    }
   }
 
   let data = {
