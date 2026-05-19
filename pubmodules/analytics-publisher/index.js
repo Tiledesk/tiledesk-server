@@ -18,6 +18,8 @@ var requestEvent = require("../../event/requestEvent");
 var messageEvent = require("../../event/messageEvent");
 var authEvent = require("../../event/authEvent");
 var webhookEvent = require("../../event/webhookEvent");
+var kbEvent = require("../../event/kbEvent");
+var departmentEvent = require("../../event/departmentEvent");
 var { track } = require("../../lib/analyticsClient");
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -202,54 +204,7 @@ function listen() {
     });
   });
 
-  // ── 5. handover_to_human ──────────────────────────────────────────────────
-  // Contract: packages/contracts/src/payloads/handover-to-human.ts
-  //   id_request           string   (required)
-  //   human_id             string|null
-  //   reason               string|null
-  //   department_id        string|null
-  //   waiting_time_seconds number int>=0 | null
-  //   agent_id             string|null (optional)
-  //   trigger_intent       string|null (optional)
-  requestEvent.on("request.participants.update", function (data) {
-    var request = data.request || {};
-    var removedParticipants = data.removedParticipants || [];
-    var addedParticipants = data.addedParticipants || [];
-
-    var botRemoved = removedParticipants.some(function (p) {
-      return p.startsWith("bot_");
-    });
-    var humanAdded = addedParticipants.some(function (p) {
-      return !p.startsWith("bot_");
-    });
-    if (!botRemoved || !humanAdded) return;
-
-    var botId =
-      removedParticipants.find(function (p) {
-        return p.startsWith("bot_");
-      }) || null;
-    var humanId =
-      addedParticipants.find(function (p) {
-        return !p.startsWith("bot_");
-      }) || null;
-
-    var waitingTimeSecs = null;
-    if (request.waiting_time != null) {
-      waitingTimeSecs = Math.round(request.waiting_time / 1000);
-    }
-
-    track("handover_to_human", request.id_project, {
-      id_request: request.request_id || toStringId(request),
-      human_id: humanId,
-      reason: null,
-      department_id: departmentId(request.department),
-      waiting_time_seconds: waitingTimeSecs,
-      agent_id: null,
-      trigger_intent: null,
-    });
-  });
-
-  // ── 6. project_user.activated ─────────────────────────────────────────────
+  // ── 5. project_user.activated ─────────────────────────────────────────────
   // Contract: packages/contracts/src/payloads/project-user-activated.ts
   //   id_user    string   (required)
   //   user_email string   (required, email format — skip if unavailable)
@@ -363,6 +318,50 @@ function listen() {
       request_id:
         (payload && (payload.preloaded_request_id || payload.request_id)) ||
         null,
+    });
+  });
+
+  // ── 11. kb.metadata_updated ───────────────────────────────────────────────
+  // Emitted by routes/kb.js on namespace create and update (rename).
+  // kb_id   = Namespace.id  (logical string key, NOT the ObjectId _id)
+  // kb_name = Namespace.name
+  // The consumer writes these into the kb_dimensions ReplacingMergeTree table
+  // so that dashboard queries always resolve the current KB name.
+  kbEvent.on("kb.namespace.create", function ({ savedNamespace, project_id }) {
+    if (!savedNamespace || !project_id) return;
+    track("kb.metadata_updated", project_id, {
+      kb_id:   savedNamespace.id,
+      kb_name: savedNamespace.name,
+    });
+  });
+
+  kbEvent.on("kb.namespace.update", function ({ updatedNamespace }) {
+    if (!updatedNamespace || !updatedNamespace.id_project) return;
+    track("kb.metadata_updated", updatedNamespace.id_project, {
+      kb_id:   updatedNamespace.id,
+      kb_name: updatedNamespace.name,
+    });
+  });
+
+  // ── 12. department.metadata_updated ──────────────────────────────────────
+  // Emitted by routes/department.js on department create, PUT, and PATCH.
+  // department_id   = Department._id.toString()
+  // department_name = Department.name
+  // The consumer writes these into the department_dimensions table so that
+  // dashboard queries always resolve the current department name.
+  departmentEvent.on("department.create", function (savedDepartment) {
+    if (!savedDepartment || !savedDepartment.id_project) return;
+    track("department.metadata_updated", savedDepartment.id_project, {
+      department_id:   savedDepartment._id.toString(),
+      department_name: savedDepartment.name,
+    });
+  });
+
+  departmentEvent.on("department.update", function (updatedDepartment) {
+    if (!updatedDepartment || !updatedDepartment.id_project) return;
+    track("department.metadata_updated", updatedDepartment.id_project, {
+      department_id:   updatedDepartment._id.toString(),
+      department_name: updatedDepartment.name,
     });
   });
 }

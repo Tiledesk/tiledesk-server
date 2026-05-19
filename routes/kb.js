@@ -1366,6 +1366,8 @@ router.put('/namespace/:id', async (req, res) => {
       return res.status(500).send({ success: false, error: err });
     }
 
+    kbEvent.emit('kb.namespace.update', { updatedNamespace, namespace_id });
+
     let namespaceObj = updatedNamespace.toObject();
     delete namespaceObj._id;
     delete namespaceObj.__v;
