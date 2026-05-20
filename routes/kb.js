@@ -21,6 +21,7 @@ const Sitemapper = require('sitemapper');
 const aiService = require('../services/aiService');
 const aiManager = require('../services/aiManager');
 const integrationService = require('../services/integrationService');
+const kbEvent = require('../event/kbEvent');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
@@ -40,7 +41,6 @@ if (MAX_UPLOAD_FILE_SIZE) {
   winston.debug("Max upload file size is infinity");
 }
 var upload = multer({limits: uploadlimits});
-
 
 let jobManager = new JobManager(AMQP_MANAGER_URL, {
   debug: false,
@@ -213,6 +213,7 @@ router.post('/scrape/single', async (req, res) => {
         scrape_options: sitemapKb.scrape_options,
         refresh_rate: sitemapKb.refresh_rate,
         tags: sitemapKb.tags,
+        request_id: data.request_id || null,
         ...(situated_context && { situated_context: situated_context }),
       }
       aiManager.addMultipleUrls(namespace, addedUrls, options).catch((err) => {
@@ -275,6 +276,10 @@ router.post('/scrape/single', async (req, res) => {
       }
 
       winston.verbose("/scrape/single json: ", json);
+
+      json.id_project = project_id;
+      if (data.request_id) json.request_id = data.request_id;
+      // agent_id: not accepted by ItemSingle, intentionally omitted
 
       if (process.env.NODE_ENV === "test") {
         res.status(200).send({ success: true, message: "Skip indexing in test environment", data: json })
@@ -362,6 +367,8 @@ router.post('/qa', async (req, res) => {
   let id_project = req.projectid;
   let publicKey = false;
   let data = req.body;
+  data.id_project = id_project;
+  // request_id and agent_id pass through automatically from req.body
 
   let namespace;
   try {
@@ -380,7 +387,10 @@ router.post('/qa', async (req, res) => {
     return res.status(errorCode).send({ success: false, error: err.error });
   }
 
+  console.log("model returned from resolveLLMConfig: ", model);
+
   if (!model.api_key && model.provider === 'openai') {
+    console.log("Set shared GPTKEY as api_key");
     model.api_key = process.env.GPTKEY;
     publicKey = true;
   }
@@ -601,9 +611,12 @@ router.post('/qa', async (req, res) => {
     return;
   }
 
+  let duration = Date.now();
   aiService.askNamespace(data).then((resp) => {
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
+
+    answer.duration = (Date.now() - duration) / 1000;
 
     if (publicKey === true) {
       let modelKey;
@@ -717,7 +730,7 @@ router.post('/qa', async (req, res) => {
 
 //   // Check if "Advanced Mode" is active. In such case the default_context must be not appended
 //   if (!data.advancedPrompt) {
-//     const contextTemplate = contexts[data.model] || contexts["general"];
+//     const contextTemplate = getRagContextTemplate(data.model);
 //     if (data.system_context) {
 //       data.system_context = data.system_context + " \n" + contextTemplate;
 //     } else {
@@ -835,6 +848,7 @@ router.delete('/deleteall', async (req, res) => {
 
   let project_id = req.projectid;
   let data = req.body;
+  let namespace_id = data.namespace;
   winston.debug('/delete all data: ', data);
 
   let namespace;
@@ -851,6 +865,7 @@ router.delete('/deleteall', async (req, res) => {
 
   aiService.deleteNamespace(data).then((resp) => {
     winston.debug("delete namespace resp: ", resp.data);
+    kbEvent.emit('kb.contents.delete', { req, namespace_id, project_id });
     res.status(200).send(resp.data);
   }).catch((err) => {
     winston.error("delete namespace err: ", err);
@@ -1133,6 +1148,8 @@ router.post('/namespace', async (req, res) => {
       return res.status(500).send({ success: false, error: err });
     }
 
+    kbEvent.emit('kb.namespace.create', { req, savedNamespace, body, namespace_id, project_id });
+
     let namespaceObj = savedNamespace.toObject();
     delete namespaceObj._id;
     delete namespaceObj.__v;
@@ -1349,6 +1366,8 @@ router.put('/namespace/:id', async (req, res) => {
       return res.status(500).send({ success: false, error: err });
     }
 
+    kbEvent.emit('kb.namespace.update', { updatedNamespace, namespace_id });
+
     let namespaceObj = updatedNamespace.toObject();
     delete namespaceObj._id;
     delete namespaceObj.__v;
@@ -1387,6 +1406,8 @@ router.delete('/namespace/:id', async (req, res) => {
         return res.status(500).send({ success: false, error: err });
       })
       winston.debug("delete all contents response: ", deleteResponse);
+
+      kbEvent.emit('kb.contents.delete', { req, namespace_id, project_id, deletedCount: deleteResponse?.deletedCount });
 
       return res.status(200).send({ success: true, message: "All contents deleted successfully" })
 
@@ -1427,6 +1448,8 @@ router.delete('/namespace/:id', async (req, res) => {
         return res.status(500).send({ success: false, error: err });
       })
       winston.debug("delete namespace response: ", deleteNamespaceResponse);
+
+      kbEvent.emit('kb.namespace.delete', { req, namespace_id, project_id, namespace, deletedCount: deleteResponse?.deletedCount });
 
       return res.status(200).send({ success: true, message: "Namespace deleted succesfully" })
 
@@ -1648,9 +1671,12 @@ router.post('/', async (req, res) => {
     new_kb.tags = tags;
   }
 
+  console.log("situated_context: ", situated_context);
   if (situated_context && situated_context === true && (type !== "url" || scrape_type === 0)) {
+    console.log("setting situated_context to true");
     new_kb.situated_context = situated_context;
   }
+  console.log("new_kb.situated_context: ", new_kb.situated_context);
 
   winston.debug("adding kb: ", new_kb);
 
@@ -1823,6 +1849,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
       const quoteManager = req.app.get('quote_manager');
       try {
+        let quoteManager = req.app.get('quote_manager');
         await aiManager.checkQuotaAvailability(quoteManager, req.project, kbs.length)
       } catch(err) {
         let errorCode = err?.errorCode ?? 500;
@@ -2195,6 +2222,17 @@ router.delete('/:kb_id', async (req, res) => {
     return res.status(errorCode).send({ success: false, error: err.error });
   }
 
+  if (kb.type === 'sitemap') {
+    try {
+      await aiManager.deleteSitemap(kb, namespace);
+      console.log("Scheduled jobs for deleting sitemap");
+      //return res.status(200).send({ success: true, message: "Scheduled jobs for deleting sitemap" });
+    } catch (err) {
+      winston.error("Error deleting sitemap: ", err);
+      return res.status(500).send({ success: false, error: err });
+    }
+  }
+
   let data = {
     id: kb_id,
     namespace: namespace_id
@@ -2207,6 +2245,16 @@ router.delete('/:kb_id', async (req, res) => {
   data.engine = namespace.engine || default_engine;
   winston.verbose("/:delete_id data: ", data);
 
+  const emitKbContentDelete = (deletedKb) => {
+    console.log("emitKbContentDelete calling event");
+    kbEvent.emit('kb.content.delete', { req, kb_id, namespace_id, project_id, kb: deletedKb || kb });
+  };
+
+  if (process.env.NODE_ENV === 'test') {
+    emitKbContentDelete(kb);
+    return res.status(200).send({ success: true, message: "Content deleted successfully" });
+  }
+
   aiService.deleteIndex(data).then((resp) => {
     winston.debug("delete resp: ", resp.data);
     if (resp.data.success === true) {
@@ -2216,6 +2264,7 @@ router.delete('/:kb_id', async (req, res) => {
           winston.error("Delete kb error: ", err);
           return res.status(500).send({ success: false, error: err });
         }
+        emitKbContentDelete(deletedKb);
         res.status(200).send(deletedKb);
       })
 
@@ -2231,6 +2280,7 @@ router.delete('/:kb_id', async (req, res) => {
           winston.verbose("Unable to delete the content in indexing status")
           return res.status(500).send({ success: false, error: "Unable to delete the content in indexing status" })
         } else {
+          emitKbContentDelete(deletedKb);
           res.status(200).send(deletedKb);
         }
       })
