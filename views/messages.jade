@@ -5,8 +5,8 @@ block content
     header.transcript-header
       if brandLogo
         img.transcript-brand-logo(src=brandLogo alt=(brandName || 'Brand') + ' logo')
-      else if !brandLogo && !brandName
-        img.transcript-brand-logo(src="https://tiledesk.com/wp-content/uploads/2022/07/tiledesk_v2.png" alt="Tiledesk logo")
+      //- else if !brandLogo && !brandName
+      //-   img.transcript-brand-logo(src="https://tiledesk.com/wp-content/uploads/2022/07/tiledesk_v2.png" alt="Tiledesk logo")
 
     header.transcript-title-container
       h1.transcript-title Chat transcript
@@ -25,6 +25,4 @@ block content
       if brandName
         p.transcript-powered-by Powered by #{brandName}
       else
-        p.transcript-powered-by
-          | Powered by
-          a(href="https://tiledesk.com/", target="_blank", rel="noopener noreferrer") Tiledesk
+        p.transcript-powered-by Powered by #[a(href="https://tiledesk.com/", target="_blank", rel="noopener noreferrer") Tiledesk]
