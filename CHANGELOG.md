@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.18.8
+- Refactored transcript templates
+
 # 2.18.7
 - Added possibility to export Answered and Unanswered questions
 
