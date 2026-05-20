@@ -112,7 +112,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
 
             updatedPuser.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedPuserPopulated){
               var pu = updatedPuserPopulated.toJSON();
-              pu.isBusy = ProjectUserUtil.isBusy(savedProject_userPopulated, req.project.settings && req.project.settings.max_agent_assigned_chat);
+              pu.isBusy = ProjectUserUtil.isBusy(pu, req.project.settings && req.project.settings.max_agent_assigned_chat);
               var eventData = {req:req, updatedPuserPopulated: pu};
               winston.debug("eventData",eventData);
               authEvent.emit('project_user.invite', eventData);
@@ -566,7 +566,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     winston.debug("role", role);
     query =  {id_project: req.projectid, role: { $in : role } };
   } else {
-     query =  {id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS };
+    query =  {id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS };
   }
 
   if (!req.query.trashed || req.query.trashed === 'false' || req.query.trashed === false) {

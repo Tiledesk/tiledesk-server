@@ -104,7 +104,7 @@ router.post('/kb/reindex', async (req, res) => {
     let errorCode = err?.errorCode ?? 500;
     return res.status(errorCode).send({ success: false, error: err.error });
   }
-
+  
   if (kb.type === 'sitemap') {
 
     const urls = await aiManager.fetchSitemap(kb.source).catch((err) => {
