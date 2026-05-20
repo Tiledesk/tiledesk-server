@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Namespace, AnsweredQuestion } = require('../models/kb_setting');
 const winston = require('../config/winston');
+var fastCsv = require('fast-csv');
 
 // Add a new unanswerd question
 router.post('/', async (req, res) => {
@@ -209,6 +210,78 @@ router.get('/count/:namespace', async (req, res) => {
         });
     }
 })
+
+router.get('/:namespace/export', async (req, res) => {
+    try {
+        const { namespace } = req.params;
+        const id_project = req.projectid;
+        const mode = String(req.query.mode || 'csv').toLowerCase();
+
+        if (mode !== 'csv' && mode !== 'json') {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid format. Use mode=json or mode=csv'
+            });
+        }
+
+        const isValidNamespace = await validateNamespace(id_project, namespace);
+        if (!isValidNamespace) {
+            return res.status(403).json({
+                success: false,
+                error: "Not allowed. The namespace does not belong to the current project."
+            });
+        }
+
+        const questions = await AnsweredQuestion.find({ id_project, namespace })
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const safeFilename = String(namespace).replace(/[^\w.-]+/g, '_') || 'export';
+
+        if (mode === 'json') {
+            const questionsJson = questions.map((q) => {
+                const { __v, updatedAt, ...doc } = q;
+                return doc;
+            });
+            const payload = {
+                namespace,
+                exportedAt: new Date().toISOString(),
+                count: questionsJson.length,
+                questions: questionsJson
+            };
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.setHeader('Content-Disposition', `attachment; filename="answered-${safeFilename}.json"`);
+            return res.send(JSON.stringify(payload, null, 2));
+        }
+
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="answered-${safeFilename}.csv"`);
+
+        const csvStream = fastCsv.format({ headers: true });
+        csvStream.pipe(res);
+
+        for (const q of questions) {
+            csvStream.write({
+                id: String(q._id),
+                namespace: q.namespace,
+                question: q.question,
+                answer: q.answer,
+                tokens: q.tokens != null ? q.tokens : '',
+                request_id: q.request_id || '',
+                createdAt: q.createdAt ? new Date(q.createdAt).toISOString() : ''
+            });
+        }
+        csvStream.end();
+    } catch (error) {
+        winston.error('Error exporting answered questions:', error);
+        if (!res.headersSent) {
+            res.status(500).json({
+                success: false,
+                error: "Error exporting answered questions"
+            });
+        }
+    }
+});
 
 // Helper function to validate namespace
 async function validateNamespace(id_project, namespace_id) {
