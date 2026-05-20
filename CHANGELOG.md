@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.18.11
+- Added endpoint to recovery urls preview
+
 # 2.18.10
 - Updated tybot-connector to 2.0.51
 
