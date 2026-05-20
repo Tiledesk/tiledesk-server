@@ -52,6 +52,7 @@ jobManagerHybrid.connectAndStartPublisher((status, error) => {
   }
 });
 
+
 class AiManager {
 
   constructor() { }
@@ -74,6 +75,7 @@ class AiManager {
           ...(options.sitemap_origin_id && { sitemap_origin_id: options.sitemap_origin_id }),
           ...(options.sitemap_origin && { sitemap_origin: options.sitemap_origin }),
           ...(options.tags && { tags: options.tags }),
+          ...(options.situated_context && { situated_context: options.situated_context }),
         }
         return kb;
       })
@@ -95,11 +97,14 @@ class AiManager {
         let embedding = namespace.embedding || default_embedding;
         embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
-        let situated_context = this.normalizeSituatedContext();
+        let situated_context;
+        if (options.situated_context) {
+          situated_context = this.normalizeSituatedContext(options.situated_context);
+        }
 
         let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
 
-        let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
+        let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, situated_context, ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, scrape_options, ...rest }) => {
           return { 
             id: _id, 
@@ -132,8 +137,6 @@ class AiManager {
   async scheduleSitemap(namespace, sitemap_content, options) {
     return new Promise((resolve, reject) => {
 
-      const situated_context = this.normalizeSituatedContext();
-
       let kb = {
         id: sitemap_content._id,
         source: sitemap_content.source,
@@ -144,7 +147,7 @@ class AiManager {
         engine: namespace.engine,
         embedding: namespace.embedding,
         hybrid: namespace.hybrid,
-        ...(situated_context && { situated_context }),
+        ...(options.situated_context && { situated_context: options.situated_context }),
       }
 
       if (process.env.NODE_ENV === 'test') {
@@ -189,6 +192,8 @@ class AiManager {
       winston.error("Error removing multiple contents: ", err);
       throw err;
     }
+
+
 
     // Recreate all url contents with sitemap_origin_id
     let result;
@@ -407,6 +412,36 @@ class AiManager {
     })
   }
 
+  async deleteSitemap(sitemapContent, namespace) {
+
+    const sitemapContentId = sitemapContent._id;
+    const relatedContents = await KB.find({ id_project: sitemapContent.id_project, namespace: sitemapContent.namespace, sitemap_origin_id: sitemapContentId }).lean().exec();
+
+    if (!relatedContents.length) {
+      return;
+    }
+
+    const engine = namespace.engine || default_engine;
+    const scheduler = new Scheduler({ jobManager: jobManager });
+
+    await Promise.all(relatedContents.map((kb) => { 
+      return new Promise((resolve) => {
+        const data = {
+          id: kb._id,
+          namespace: kb.namespace,
+          engine: engine
+        };
+        scheduler.deleteSchedule(data, (err, result) => {
+          if (err) {
+            winston.error("deleteSitemap: deleteSchedule error for kb " + kb._id, err);
+          }
+          console.log("deleteSitemap: deleteSchedule result for kb " + kb._id, result);
+          resolve(result);
+        });
+      });
+    }));
+  }
+
   async saveBulk(operations, kbs, project_id, namespace) {
 
     return new Promise((resolve, reject) => {
@@ -567,7 +602,8 @@ class AiManager {
     })
   }
 
-  normalizeSituatedContext() {
+  normalizeSituatedContext(enable = false) {
+    situatedContext.enable = enable;
     return situatedContext.enable
       ? {
         ...situatedContext,

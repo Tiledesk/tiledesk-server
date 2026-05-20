@@ -198,6 +198,11 @@ var KBSchema = new Schema({
     type: Array,
     default: undefined,
     required: false
+  },
+  situated_context: {
+    type: Boolean,
+    default: false,
+    required: false
   }
 }, {
   timestamps: true

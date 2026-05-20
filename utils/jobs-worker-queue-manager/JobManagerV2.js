@@ -21,15 +21,7 @@ class JobManager {
         var that = this;
         if (this.info) {console.log("[JobWorker] JobManager publisher started");}
         
-        this.queueManager.connect(function(status, err) {
-
-            if (err) {
-                console.log("[JobWorker] - connectAndStartPublisher - connection error: ", err);
-                if (callback) {
-                    callback(null, err)
-                    return;
-                }
-            }
+        this.queueManager.connect(function() {
             if (that.debug) {console.log("[JobWorker] Queue started");}
             that.queuePublisherConnected = true;
 
@@ -49,8 +41,7 @@ class JobManager {
                 } 
 
                 if (callback) {
-                    callback(status, null);
-                    return;
+                    callback();
                 }
             });
         });
@@ -108,8 +99,28 @@ class JobManager {
         //     this.connectAndStartPublisher();
         //     this.sendingJobs.push(packet);
 
-        // }
+        //         }
        
+    }
+
+    publishDelete(payload, callback) {
+
+        var packet = { payload: payload };
+        const routingKey = this.queueManager.deleteRoutingKey;
+
+        if (this.queuePublisherConnected == true) {
+
+            if (this.debug) { console.log("[JobWorker] JobManager publishDelete routingKey: " + routingKey); }
+            this.queueManager.sendJson(packet, routingKey, (err, ok) => {
+                if (err) {
+                    console.error("sendJson (delete) error: ", err);
+                } else {
+                    if (this.debug) { console.log("sendJson (delete) ok"); }
+                }
+                callback(err, ok);
+            });
+
+        }
     }
 
 

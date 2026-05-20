@@ -46,6 +46,19 @@ class Scheduler {
         }
     
     }
+
+    deleteSchedule(data, callback) {
+        winston.debug("(deleteScheduler) data: ", data);
+        this.jobManager.publishDelete(data, (err, ok) => {
+            let response_data = { success: true, message: "Scheduled" };
+            if (err) {
+                response_data = { success: false, message: "Task not scheduled" };
+            }
+            if (callback) {
+                callback(err, response_data);
+            }
+        });
+    }
     
 }
 
