@@ -93,13 +93,11 @@ router.get('/:requestid/messages.csv', async function(req, res) {
   try {
     let messages = await Message.find({"recipient": requestid}).sort({createdAt: 'asc'}).lean().exec();
 
-    if (!messages) {
-      return res.status(404).send({success: false, msg: 'Object not found.'});
-    }
+    let filteredMessages = await filterMessages(messages);
 
-    let tz = await transcriptTz.resolveTranscriptTimezone(req, firstMessageProjectId(messages));
+    let tz = await transcriptTz.resolveTranscriptTimezone(req, firstMessageProjectId(filteredMessages));
 
-    let rows = messages.map(function(m) {
+    let rows = filteredMessages.map(function(m) {
       return {
         createdAt: transcriptTz.formatTranscriptInstant(m.createdAt, tz),
         senderFullname: m.senderFullname != null ? String(m.senderFullname) : '',
@@ -163,12 +161,10 @@ router.get('/:requestid/messages.pdf', async function(req, res) {
   try {
     let messages = await Message.find({"recipient": requestid}).sort({createdAt: 'asc'}).exec();
 
-    if (!messages) {
-      return res.status(404).send({success: false, msg: 'Object not found.'});
-    }
+    let filteredMessages = await filterMessages(messages);
 
-    let tz = await transcriptTz.resolveTranscriptTimezone(req, firstMessageProjectId(messages));
-    let docDefinition = buildTranscriptPdfDocDefinition(messages, tz);
+    let tz = await transcriptTz.resolveTranscriptTimezone(req, firstMessageProjectId(filteredMessages));
+    let docDefinition = buildTranscriptPdfDocDefinition(filteredMessages, tz);
     let pdfDoc = printer.createPdfKitDocument(docDefinition);
 
     res.setHeader('Content-Type', 'application/pdf');
