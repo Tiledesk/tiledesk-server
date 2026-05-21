@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.18.12
+- Added messages filtering on download transcript via csv and pdf
+
 # 2.18.11
 - Added endpoint to recovery urls preview
 
