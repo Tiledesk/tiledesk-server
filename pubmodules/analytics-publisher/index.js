@@ -124,7 +124,7 @@ function listen() {
     track("conversation.created", request.id_project, {
       id_request: request.request_id || toStringId(request),
       request_id: request.request_id || toStringId(request),
-      department: departmentName(dept) || departmentId(dept),
+      department: departmentId(dept),
       channel: (request.channel && request.channel.name) || "web",
       first_response_time: null,
       with_bot: request.hasBot || false,
