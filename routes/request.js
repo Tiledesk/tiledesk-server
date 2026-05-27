@@ -314,6 +314,11 @@ router.patch('/:requestid', function (req, res) {
       requestEvent.emit("request.update", request);
       requestEvent.emit("request.update.comment", { comment: "PATCH", request: request }); //Deprecated
       requestEvent.emit("request.updated", { comment: "PATCH", request: request, patch: update });
+
+      if (update.rating != null) {
+        requestEvent.emit("request.satisfaction", { request: request, patch: update });
+      }
+
       return res.json(request);
     });
 
@@ -1009,8 +1014,13 @@ router.put('/:requestid/tag', async (req, res) => {
           .execPopulate();
 
     requestEvent.emit("request.update", populatedRequest)
+
+    if (adding_tags.length > 0) {
+      requestEvent.emit("request.tag.update", { request: populatedRequest, tags: adding_tags });
+    }
+
     res.status(200).send(updatedRequest)
-    
+
     if (process.env.NODE_ENV !== 'test') {
       scheduleTags(id_project, adding_tags);
     }

@@ -21,6 +21,7 @@ const Sitemapper = require('sitemapper');
 const aiService = require('../services/aiService');
 const aiManager = require('../services/aiManager');
 const integrationService = require('../services/integrationService');
+const kbEvent = require('../event/kbEvent');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
@@ -834,6 +835,7 @@ router.delete('/deleteall', async (req, res) => {
 
   let project_id = req.projectid;
   let data = req.body;
+  let namespace_id = data.namespace;
   winston.debug('/delete all data: ', data);
 
   let namespace;
@@ -850,6 +852,7 @@ router.delete('/deleteall', async (req, res) => {
 
   aiService.deleteNamespace(data).then((resp) => {
     winston.debug("delete namespace resp: ", resp.data);
+    kbEvent.emit('kb.contents.delete', { req, namespace_id, project_id });
     res.status(200).send(resp.data);
   }).catch((err) => {
     winston.error("delete namespace err: ", err);
@@ -1132,6 +1135,8 @@ router.post('/namespace', async (req, res) => {
       return res.status(500).send({ success: false, error: err });
     }
 
+    kbEvent.emit('kb.namespace.create', { req, savedNamespace, body, namespace_id, project_id });
+
     let namespaceObj = savedNamespace.toObject();
     delete namespaceObj._id;
     delete namespaceObj.__v;
@@ -1348,6 +1353,8 @@ router.put('/namespace/:id', async (req, res) => {
       return res.status(500).send({ success: false, error: err });
     }
 
+    kbEvent.emit('kb.namespace.update', { updatedNamespace, namespace_id });
+
     let namespaceObj = updatedNamespace.toObject();
     delete namespaceObj._id;
     delete namespaceObj.__v;
@@ -1386,6 +1393,8 @@ router.delete('/namespace/:id', async (req, res) => {
         return res.status(500).send({ success: false, error: err });
       })
       winston.debug("delete all contents response: ", deleteResponse);
+
+      kbEvent.emit('kb.contents.delete', { req, namespace_id, project_id, deletedCount: deleteResponse?.deletedCount });
 
       return res.status(200).send({ success: true, message: "All contents deleted successfully" })
 
