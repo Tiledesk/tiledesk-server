@@ -111,6 +111,8 @@ function listen() {
   //   with_bot            boolean  (default false)
   //   visitor_id          string|null (optional)
   requestEvent.on("request.create", function (request) {
+    if (request.preflight === true) return;
+
     var dept = request.department;
 
     track("conversation.created", request.id_project, {
