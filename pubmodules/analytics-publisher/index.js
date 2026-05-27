@@ -110,7 +110,8 @@ function listen() {
   //   tag                 string|null (optional)
   //   with_bot            boolean  (default false)
   //   visitor_id          string|null (optional)
-  requestEvent.on("request.create", function (request) {
+
+  function trackConversation(request) {
     if (request.preflight === true) return;
 
     var dept = request.department;
@@ -124,6 +125,14 @@ function listen() {
       with_bot: request.hasBot || false,
       visitor_id: firstVisitorId(request.participants),
     });
+  }
+
+  requestEvent.on("request.update.preflight", function (request) {
+    trackConversation(request);
+  })
+
+  requestEvent.on("request.create", function (request) {
+    trackConversation(request);
   });
 
   // ── 2. conversation.closed ─────────────────────────────────────────────────
