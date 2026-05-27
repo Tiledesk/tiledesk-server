@@ -706,6 +706,7 @@ class RequestService {
       snapshot.agents = agents; 
       console.log('[WELCOME_MSG_FLOW] requestService.create: emitting request.create.simple', { request_id: savedRequest.request_id, id_project: savedRequest.id_project, first_text: savedRequest.first_text, status: savedRequest.status });
       requestEvent.emit("request.create.simple", savedRequest, snapshot);
+      console.log("EVENT request.create.simple EMITTED");
 
       if (isStandardConversation) {
         requestEvent.emit("request.create.quote", payload);

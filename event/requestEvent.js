@@ -53,6 +53,7 @@ requestEvent.on('request.create.simple', function(request, snapshot) {
 
             requestEvent.emit("request.snapshot.update", { request: request, snapshot: snapshot });
             requestEvent.emit('request.create', requestComplete);
+            console.log("EVENT request.create EMITTED");
 
             //with request.create no messages are sent. So don't load messages
         // Message.find({recipient:  request.request_id, id_project: request.id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) {                  
