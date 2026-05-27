@@ -20,6 +20,7 @@ var authEvent = require("../../event/authEvent");
 var webhookEvent = require("../../event/webhookEvent");
 var kbEvent = require("../../event/kbEvent");
 var departmentEvent = require("../../event/departmentEvent");
+var botEvent = require("../../event/botEvent");
 var { track } = require("../../lib/analyticsClient");
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -362,6 +363,29 @@ function listen() {
     track("department.metadata_updated", updatedDepartment.id_project, {
       department_id:   updatedDepartment._id.toString(),
       department_name: updatedDepartment.name,
+    });
+  });
+
+  // ── 13. agent.metadata_updated ────────────────────────────────────────────
+  // Emitted by routes/faq_kb.js on bot create and update (rename, attribute
+  // changes, language, etc.).
+  // agent_id   = Faq_kb._id.toString()
+  // agent_name = Faq_kb.name
+  // The consumer writes these into the agent_dimensions ReplacingMergeTree so
+  // that dashboard queries always resolve the current bot name.
+  botEvent.on("faqbot.create", function (savedBot) {
+    if (!savedBot || !savedBot.id_project || !savedBot.name) return;
+    track("agent.metadata_updated", savedBot.id_project, {
+      agent_id:   savedBot._id.toString(),
+      agent_name: savedBot.name,
+    });
+  });
+
+  botEvent.on("faqbot.update", function (updatedBot) {
+    if (!updatedBot || !updatedBot.id_project || !updatedBot.name) return;
+    track("agent.metadata_updated", updatedBot.id_project, {
+      agent_id:   updatedBot._id.toString(),
+      agent_name: updatedBot.name,
     });
   });
 }
