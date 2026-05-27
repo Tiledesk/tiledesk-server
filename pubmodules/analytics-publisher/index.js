@@ -46,13 +46,18 @@ function availabilityLabel(boolVal) {
  * to 'user', misclassifying agent messages.
  */
 function senderType(sender, request) {
-  if (!sender) return "user";
-  if (sender.startsWith("bot_")) return "bot";
-  if (sender === "system") return "agent";
-  // Use the visitor (lead) ID to distinguish visitor from agent.
-  var leadId = request && request.lead && request.lead.lead_id;
-  if (leadId) return sender === leadId ? "user" : "agent";
-  return "user"; // conservative fallback when no lead context available
+  let bot, agent = undefined;
+  if(request.participantsBots)
+   bot = request.participantsBots.find(participant => participant.includes(sender));
+  if(request.participantsAgents)
+    agent = request.participantsAgents.find(participant => participant.includes(sender));
+
+  if(bot)
+    return "bot";
+  if(agent)
+    return "agent";
+
+  return "user";
 }
 
 /**
@@ -186,6 +191,8 @@ function listen() {
   //   language      string|null
   messageEvent.on("message.create", function (messageJson) {
     var sender = messageJson.sender;
+
+    if(sender === 'system') return; // skip system messages
 
     // recipient is the room/request ID (chat21 convention)
     var idRequest = messageJson.recipient || null;
