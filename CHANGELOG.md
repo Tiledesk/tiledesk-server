@@ -5,7 +5,7 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.18.13
+# 2.19.0
 - Added Analytics tracking
 
 # 2.18.12
