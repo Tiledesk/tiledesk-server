@@ -420,7 +420,7 @@ function listen() {
   botEvent.on("faqbot.create", function (savedBot) {
     if (!savedBot || !savedBot.id_project || !savedBot.name) return;
     track("agent.metadata_updated", savedBot.id_project, {
-      agent_id:   savedBot._id.toString(),
+      agent_id:   savedBot.root_id || savedBot._id.toString(),
       agent_name: savedBot.name,
     });
   });
@@ -428,7 +428,7 @@ function listen() {
   botEvent.on("faqbot.update", function (updatedBot) {
     if (!updatedBot || !updatedBot.id_project || !updatedBot.name) return;
     track("agent.metadata_updated", updatedBot.id_project, {
-      agent_id:   updatedBot._id.toString(),
+      agent_id:   updatedBot.root_id || updatedBot._id.toString(),
       agent_name: updatedBot.name,
     });
   });
