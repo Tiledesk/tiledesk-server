@@ -35,6 +35,7 @@ const { Scheduler } = require('../services/Scheduler');
 const faq_kb = require('../models/faq_kb');
 
 const datesUtil = require('../utils/datesUtil');
+const JobManager = require('@tiledesk/tiledesk-multi-worker');
 //const JobManager = require('../utils/jobs-worker-queue-manager-v2/JobManagerV2');
 
 // var messageService = require('../services/messageService');
@@ -314,6 +315,11 @@ router.patch('/:requestid', function (req, res) {
       requestEvent.emit("request.update", request);
       requestEvent.emit("request.update.comment", { comment: "PATCH", request: request }); //Deprecated
       requestEvent.emit("request.updated", { comment: "PATCH", request: request, patch: update });
+
+      if (update.rating != null) {
+        requestEvent.emit("request.satisfaction", { request: request, patch: update });
+      }
+
       return res.json(request);
     });
 
@@ -435,13 +441,14 @@ router.put('/:requestid/participants', async (req, res) => {
 
   //setParticipantsByRequestId(request_id, id_project, participants)
   return requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then(function (updatedRequest) {
-
     winston.debug("participant set", updatedRequest);
-
     return res.json(updatedRequest);
-  }).catch(function(err) {
-    winston.error("Error setting participants", err);
-    return res.status(500).send({ success: false, error: "Error setting participants" });
+
+  }).catch((err) => {
+    winston.error("Error setParticipantsByRequestId: ", err);
+    let error_code = err?.code || 500;
+    let error = err?.error || err || "General error";
+    return res.status(error_code).send({ success: false, error: error })
   });
 
 });
@@ -961,7 +968,7 @@ router.put('/:requestid/tag', async (req, res) => {
   winston.debug("(Request) /tag tags_list: ", tags_list)
 
   if (tags_list.length == 0) {
-    winston.warn("(Request) /tag no tag specified")
+    winston.verbose("(Request) /tag no tag specified")
     return res.status(400).send({ success: false, message: "No tag specified" })
   }
 
@@ -1009,6 +1016,11 @@ router.put('/:requestid/tag', async (req, res) => {
           .execPopulate();
 
     requestEvent.emit("request.update", populatedRequest)
+
+    if (adding_tags.length > 0) {
+      requestEvent.emit("request.tag.update", { request: populatedRequest, tags: adding_tags });
+    }
+
     res.status(200).send(updatedRequest)
     
     if (process.env.NODE_ENV !== 'test') {
