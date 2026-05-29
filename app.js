@@ -154,6 +154,7 @@ var webhooks = require('./routes/webhooks');
 var roles = require('./routes/roles');
 var copilot = require('./routes/copilot');
 var mcp = require('./routes/mcp');
+var tables = require('./routes/tables');
 
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
@@ -656,6 +657,7 @@ app.use('/:projectid/copilot', [passport.authenticate(['basic', 'jwt'], { sessio
 app.use('/:projectid/roles', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], roles);
 
 app.use('/:projectid/files', filesp);
+app.use('/:projectid/tables', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], tables);
 
 if (pubModulesManager) {
   pubModulesManager.useUnderProjects(app);
