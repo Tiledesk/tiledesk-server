@@ -78,7 +78,10 @@ router.put('/:id', async (req, res) => {
   const { name, schema } = req.body;
 
   try {
-    const table = await Table.findOneAndUpdate({ id_project, id_table }, { name, schema }, { new: true });
+    const table = await Table.findOneAndUpdate({ id_project, _id: id_table }, { name, schema }, { new: true });
+    if (!table) {
+      return res.status(404).send({ success: false, error: 'Table not found with id: ' + id_table });
+    }
     return res.status(200).send(table);
   }
   catch (error) {
