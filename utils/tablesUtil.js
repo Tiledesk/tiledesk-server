@@ -1,3 +1,13 @@
+const {
+  getAllowedColumnNames,
+  getTableSchema,
+  getTableColumns,
+  resolveColumnId,
+  resolveColumnRef,
+  resolveDataKeys,
+  getColumnIdToNameMap,
+} = require('./tablesColumnResolver');
+
 const FORBIDDEN_COLUMN_NAMES = new Set([
   '__proto__',
   'constructor',
@@ -34,11 +44,15 @@ function isSafeColumnName(column) {
   return true;
 }
 
-function getAllowedColumns(schema) {
-  if (!schema || typeof schema !== 'object' || Array.isArray(schema)) {
+/** @deprecated use getAllowedColumnNames(columns) */
+function getAllowedColumns(schemaOrColumns) {
+  if (Array.isArray(schemaOrColumns)) {
+    return getAllowedColumnNames(schemaOrColumns);
+  }
+  if (!schemaOrColumns || typeof schemaOrColumns !== 'object' || Array.isArray(schemaOrColumns)) {
     return [];
   }
-  return Object.keys(schema);
+  return Object.keys(schemaOrColumns);
 }
 
 function assertColumnAllowed(column, allowedColumns) {
@@ -50,21 +64,8 @@ function assertColumnAllowed(column, allowedColumns) {
   }
 }
 
-function validateUpdateColumns(data, allowedColumns) {
-  if (!data || typeof data !== 'object' || Array.isArray(data)) {
-    throw new Error('data must be a non-empty object');
-  }
-  const keys = Object.keys(data);
-  if (keys.length === 0) {
-    throw new Error('data must contain at least one field to update');
-  }
-  for (const column of keys) {
-    assertColumnAllowed(column, allowedColumns);
-  }
-}
-
-function buildSingleCondition(column, condition, value) {
-  const field = `data.${column}`;
+function buildSingleCondition(columnName, condition, value) {
+  const field = `data.${columnName}`;
   const operator = CONDITION_OPERATORS[condition];
 
   if (!operator) {
@@ -82,19 +83,21 @@ function buildSingleCondition(column, condition, value) {
   return { [field]: { [operator]: value } };
 }
 
-function parseConditions(conditions, allowedColumns) {
+function parseConditions(conditions, columns, logDeprecation) {
   if (!Array.isArray(conditions) || conditions.length === 0) {
     throw new Error('conditions must be a non-empty array');
   }
+
+  const allowedNames = getAllowedColumnNames(columns);
 
   return conditions.map((item, index) => {
     if (!item || typeof item !== 'object') {
       throw new Error(`Invalid condition at index ${index}`);
     }
 
-    const { column, condition, value } = item;
+    const { condition, value, columnId, column } = item;
 
-    if (typeof column !== 'string' || typeof condition !== 'string') {
+    if (typeof condition !== 'string') {
       throw new Error(`Invalid condition at index ${index}`);
     }
 
@@ -102,33 +105,45 @@ function parseConditions(conditions, allowedColumns) {
       throw new Error(`Missing value for condition at index ${index}`);
     }
 
-    assertColumnAllowed(column, allowedColumns);
+    let columnName;
+    try {
+      columnName = resolveColumnRef(columns, { columnId, column }, logDeprecation);
+    } catch (err) {
+      throw new Error(err.message);
+    }
+
+    assertColumnAllowed(columnName, allowedNames);
 
     if (!SUPPORTED_CONDITIONS.includes(condition)) {
       throw new Error(`Unsupported condition: ${condition}`);
     }
 
-    return buildSingleCondition(column, condition, value);
+    return buildSingleCondition(columnName, condition, value);
   });
 }
 
-function buildConditionsQuery(conditions, mustMatch, allowedColumns) {
+function buildConditionsQuery(conditions, mustMatch, columns, logDeprecation) {
   const matchMode = mustMatch || 'all';
   if (matchMode !== 'all' && matchMode !== 'any') {
     throw new Error('must_match must be "all" or "any"');
   }
 
-  const clauses = parseConditions(conditions, allowedColumns);
+  const clauses = parseConditions(conditions, columns, logDeprecation);
   const logicalOperator = matchMode === 'any' ? '$or' : '$and';
 
   return { [logicalOperator]: clauses };
 }
 
-function buildUpdateSet(data, allowedColumns) {
-  validateUpdateColumns(data, allowedColumns);
+function buildUpdateSet(data, columns, logDeprecation) {
+  const resolvedData = resolveDataKeys(data, columns, logDeprecation);
+  const allowedNames = getAllowedColumnNames(columns);
+
+  for (const column of Object.keys(resolvedData)) {
+    assertColumnAllowed(column, allowedNames);
+  }
 
   const $set = {};
-  for (const [column, value] of Object.entries(data)) {
+  for (const [column, value] of Object.entries(resolvedData)) {
     $set[`data.${column}`] = value;
   }
 
@@ -141,8 +156,13 @@ module.exports = {
   SUPPORTED_CONDITIONS,
   isSafeColumnName,
   getAllowedColumns,
+  getTableSchema,
+  getTableColumns,
+  resolveColumnId,
+  resolveColumnRef,
+  resolveDataKeys,
+  getColumnIdToNameMap,
   assertColumnAllowed,
-  validateUpdateColumns,
   buildSingleCondition,
   parseConditions,
   buildConditionsQuery,

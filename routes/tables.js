@@ -1,11 +1,94 @@
 const express = require('express');
 const router = express.Router();
+const winston = require('../config/winston');
 const { Table, TableRow } = require('../models/tables');
 const {
-  getAllowedColumns,
   buildConditionsQuery,
   buildUpdateSet,
 } = require('../utils/tablesUtil');
+const {
+  generateColumnId,
+  getColumnStorageKey,
+  schemaFromLegacyMap,
+  isLegacySchemaMap,
+  isSchemaMetadataArray,
+  getTableSchema,
+  findColumnById,
+  resolveColumnId,
+  resolveDataKeys,
+  ensureTableSchemaPersisted,
+} = require('../utils/tablesColumnResolver');
+const { ensureRowColumnIndex } = require('../utils/tablesIndex');
+
+
+function deprecationWarn(message) {
+  winston.warn(`[tables] ${message}`);
+}
+
+function resolveRowPayload(data, schema) {
+  return resolveDataKeys(data, schema, deprecationWarn);
+}
+
+function normalizeInputSchema(inputSchema) {
+  if (!Array.isArray(inputSchema) || inputSchema.length === 0) {
+    throw new Error('schema must be a non-empty array');
+  }
+  return inputSchema.map((col, index) => {
+    if (!col || typeof col !== 'object') {
+      throw new Error(`Invalid column at index ${index}`);
+    }
+    const name = col.name;
+    const type = col.type || 'string';
+    if (typeof name !== 'string' || name.length === 0) {
+      throw new Error(`Invalid column name at index ${index}`);
+    }
+    const key = typeof col.key === 'string' && col.key.length > 0 ? col.key : name;
+    return {
+      id: typeof col.id === 'string' && col.id.length > 0 ? col.id : generateColumnId(),
+      name,
+      key,
+      type,
+      index: typeof col.index === 'number' ? col.index : index,
+      indexed: Boolean(col.indexed),
+    };
+  });
+}
+
+function resolveSchemaInput(schema) {
+  if (isSchemaMetadataArray(schema)) {
+    return normalizeInputSchema(schema);
+  }
+  if (isLegacySchemaMap(schema)) {
+    return schemaFromLegacyMap(schema);
+  }
+  throw new Error('schema must be a column metadata array or a legacy name-to-type map');
+}
+
+function buildTablePayload({ name, schema }) {
+  if (!schema) {
+    throw new Error('schema is required');
+  }
+  return {
+    name,
+    schema: resolveSchemaInput(schema),
+  };
+}
+
+async function loadTableWithSchema(id_project, id_table) {
+  let table = await Table.findOne({ id_project, _id: id_table });
+  if (!table) {
+    return null;
+  }
+  table = await ensureTableSchemaPersisted(table, Table);
+  return table;
+}
+
+function tableResponse(table) {
+  const obj = table.toObject ? table.toObject() : table;
+  obj.schema = getTableSchema(table);
+  delete obj.columns;
+  return obj;
+}
 
 
 // ######## TABLES ENDPOINTS ########
@@ -18,7 +101,7 @@ router.get('/', async (req, res) => {
 
   try {
     const tables = await Table.find({ id_project });
-    return res.status(200).send(tables);
+    return res.status(200).send(tables.map(tableResponse));
   } catch (error) {
     winston.error('Error finding tables: ', error);
     return res.status(500).send({ success: false, error: 'Error finding tables' });
@@ -33,13 +116,13 @@ router.get('/:id', async (req, res) => {
   const id_table = req.params.id;
 
   try {
-    const table = await Table.findOne({ id_project, _id: id_table });
+    const table = await loadTableWithSchema(id_project, id_table);
     if (!table) {
       return res.status(404).send({ success: false, error: 'Table not found' });
     }
 
     const tableRows = await TableRow.find({ id_project, id_table });
-    const tableObj = table.toObject();
+    const tableObj = tableResponse(table);
     tableObj.rows = tableRows.map(row => row.data);
 
     return res.status(200).send(tableObj);
@@ -57,11 +140,29 @@ router.post('/', async (req, res) => {
   const id_project = req.projectid;
   const { name, schema } = req.body;
 
-  let table = new Table({ id_project, name, schema, createdBy: req.user.id });
+  let payload;
+  try {
+    payload = buildTablePayload({ name, schema });
+  } catch (validationError) {
+    return res.status(400).send({ success: false, error: validationError.message });
+  }
+
+  const table = new Table({
+    id_project,
+    name,
+    schema: payload.schema,
+    createdBy: req.user.id,
+  });
 
   try {
     const savedTable = await table.save();
-    return res.status(200).send(savedTable);
+    const schemaCols = getTableSchema(savedTable);
+    for (const col of schemaCols) {
+      if (col.indexed) {
+        await ensureRowColumnIndex(TableRow.collection, id_project, savedTable._id.toString(), getColumnStorageKey(col));
+      }
+    }
+    return res.status(200).send(tableResponse(savedTable));
   }
   catch (error) {
     winston.error('Error creating table: ', error);
@@ -77,16 +178,90 @@ router.put('/:id', async (req, res) => {
   const id_table = req.params.id;
   const { name, schema } = req.body;
 
+  const update = {};
+  if (name !== undefined) {
+    update.name = name;
+  }
+  if (schema !== undefined) {
+    try {
+      update.schema = resolveSchemaInput(schema);
+    } catch (validationError) {
+      return res.status(400).send({ success: false, error: validationError.message });
+    }
+  }
+
   try {
-    const table = await Table.findOneAndUpdate({ id_project, _id: id_table }, { name, schema }, { new: true });
+    const table = await Table.findOneAndUpdate(
+      { id_project, _id: id_table },
+      { ...update, $unset: { columns: 1 } },
+      { new: true }
+    );
     if (!table) {
       return res.status(404).send({ success: false, error: 'Table not found with id: ' + id_table });
     }
-    return res.status(200).send(table);
+    return res.status(200).send(tableResponse(table));
   }
   catch (error) {
     winston.error('Error updating table: ', error);
     return res.status(500).send({ success: false, error: 'Error updating table' });
+  }
+});
+
+/**
+ * Rename column metadata only (no row updates).
+ * PATCH /:id/columns/:columnId  body: { name }
+ */
+router.patch('/:id/columns/:columnId', async (req, res) => {
+  const id_project = req.projectid;
+  const id_table = req.params.id;
+  const columnId = req.params.columnId;
+  const { name: newName } = req.body;
+
+  if (typeof newName !== 'string' || newName.trim().length === 0) {
+    return res.status(400).send({ success: false, error: 'name is required' });
+  }
+  const trimmedName = newName.trim();
+
+  try {
+    const table = await loadTableWithSchema(id_project, id_table);
+    if (!table) {
+      return res.status(404).send({ success: false, error: 'Table not found' });
+    }
+
+    const schema = getTableSchema(table);
+    const col = findColumnById(schema, columnId);
+    if (!col) {
+      return res.status(404).send({ success: false, error: 'Column not found' });
+    }
+
+    if (col.name === trimmedName) {
+      return res.status(200).send(tableResponse(table));
+    }
+
+    const duplicate = schema.some(c => c.id !== columnId && c.name === trimmedName);
+    if (duplicate) {
+      return res.status(409).send({ success: false, error: 'Column name already exists' });
+    }
+
+    const storageKey = getColumnStorageKey(col);
+
+    const updatedSchema = schema.map(c => {
+      if (c.id === columnId) {
+        return { ...c, name: trimmedName, key: storageKey };
+      }
+      return c;
+    });
+
+    const updatedTable = await Table.findOneAndUpdate(
+      { id_project, _id: id_table },
+      { schema: updatedSchema, $unset: { columns: 1 } },
+      { new: true }
+    );
+
+    return res.status(200).send(tableResponse(updatedTable));
+  } catch (error) {
+    winston.error('Error renaming column: ', error);
+    return res.status(500).send({ success: false, error: 'Error renaming column' });
   }
 });
 
@@ -98,10 +273,11 @@ router.delete('/:id/delete', async (req, res) => {
   const id_table = req.params.id;
 
   try {
-    const table = await Table.findOneAndDelete({ id_project, id_table });
+    const table = await Table.findOneAndDelete({ id_project, _id: id_table });
     if (!table) {
       return res.status(404).send({ success: false, error: 'Table not found' });
     }
+    await TableRow.deleteMany({ id_project, id_table });
     return res.status(200).send({ success: true, message: 'Table deleted successfully' });
   }
   catch (error) {
@@ -147,8 +323,21 @@ router.put('/:id/insert', async (req, res) => {
   const { data } = req.body;
 
   try {
-    const table = await TableRow.create({ id_project, id_table, data });
-    return res.status(200).send(table);
+    const table = await loadTableWithSchema(id_project, id_table);
+    if (!table) {
+      return res.status(404).send({ success: false, error: 'Table not found' });
+    }
+
+    const schema = getTableSchema(table);
+    let rowData;
+    try {
+      rowData = resolveRowPayload(data, schema);
+    } catch (validationError) {
+      return res.status(400).send({ success: false, error: validationError.message });
+    }
+
+    const tableRow = await TableRow.create({ id_project, id_table, data: rowData });
+    return res.status(200).send(tableRow);
   }
   catch (error) {
     winston.error('Error inserting row: ', error);
@@ -166,16 +355,16 @@ router.put('/:id/update', async (req, res) => {
   const data = req.body.data;
 
   try {
-    const table = await Table.findOne({ id_project, _id: id_table });
+    const table = await loadTableWithSchema(id_project, id_table);
     if (!table) {
       return res.status(404).send({ success: false, error: 'Table not found' });
     }
 
-    const allowedColumns = getAllowedColumns(table.schema);
+    const schema = getTableSchema(table);
     let update;
 
     try {
-      update = buildUpdateSet(data, allowedColumns);
+      update = buildUpdateSet(data, schema, deprecationWarn);
     } catch (validationError) {
       return res.status(400).send({ success: false, error: validationError.message });
     }
@@ -198,7 +387,7 @@ router.put('/:id/update', async (req, res) => {
 
     let conditionsQuery;
     try {
-      conditionsQuery = buildConditionsQuery(conditions, must_match, allowedColumns);
+      conditionsQuery = buildConditionsQuery(conditions, must_match, schema, deprecationWarn);
     } catch (validationError) {
       return res.status(400).send({ success: false, error: validationError.message });
     }
@@ -225,16 +414,18 @@ router.put('/:id/upsert', async (req, res) => {
   const data = req.body.data;
 
   try {
-    const table = await Table.findOne({ id_project, _id: id_table });
+    const table = await loadTableWithSchema(id_project, id_table);
     if (!table) {
       return res.status(404).send({ success: false, error: 'Table not found' });
     }
 
-    const allowedColumns = getAllowedColumns(table.schema);
+    const schema = getTableSchema(table);
     let update;
+    let rowData;
 
     try {
-      update = buildUpdateSet(data, allowedColumns);
+      update = buildUpdateSet(data, schema, deprecationWarn);
+      rowData = resolveRowPayload(data, schema);
     } catch (validationError) {
       return res.status(400).send({ success: false, error: validationError.message });
     }
@@ -249,7 +440,7 @@ router.put('/:id/upsert', async (req, res) => {
       }
 
       try {
-        const row = await TableRow.create({ _id: id_row, id_project, id_table, data });
+        const row = await TableRow.create({ _id: id_row, id_project, id_table, data: rowData });
         return res.status(200).send(row);
       } catch (createError) {
         if (createError.code === 11000) {
@@ -268,7 +459,7 @@ router.put('/:id/upsert', async (req, res) => {
 
     let conditionsQuery;
     try {
-      conditionsQuery = buildConditionsQuery(conditions, must_match, allowedColumns);
+      conditionsQuery = buildConditionsQuery(conditions, must_match, schema, deprecationWarn);
     } catch (validationError) {
       return res.status(400).send({ success: false, error: validationError.message });
     }
@@ -278,7 +469,7 @@ router.put('/:id/upsert', async (req, res) => {
 
     if (multi === true) {
       if (matches.length === 0) {
-        const row = await TableRow.create({ id_project, id_table, data });
+        const row = await TableRow.create({ id_project, id_table, data: rowData });
         return res.status(200).send([row]);
       }
 
@@ -296,7 +487,7 @@ router.put('/:id/upsert', async (req, res) => {
       return res.status(200).send(row);
     }
 
-    const row = await TableRow.create({ id_project, id_table, data });
+    const row = await TableRow.create({ id_project, id_table, data: rowData });
     return res.status(200).send(row);
   } catch (error) {
     winston.error('Error upserting row: ', error);
@@ -322,7 +513,11 @@ router.put('/:id/delete', async (req, res) => {
   }
 });
 
-
-
-
 module.exports = router;
+module.exports.resolveColumnIdForTable = async (id_project, id_table, columnId) => {
+  const table = await loadTableWithSchema(id_project, id_table);
+  if (!table) {
+    throw new Error('Table not found');
+  }
+  return resolveColumnId(getTableSchema(table), columnId);
+};

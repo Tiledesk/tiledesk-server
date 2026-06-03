@@ -6,8 +6,18 @@ const {
   buildUpdateSet,
   isSafeColumnName,
 } = require('../utils/tablesUtil');
+const {
+  resolveColumnId,
+  resolveDataKeys,
+} = require('../utils/tablesColumnResolver');
 
-const SCHEMA_COLUMNS = ['email', 'age', 'token', 'fullname', 'code'];
+const COLUMNS = [
+  { id: 'col_email', name: 'email', type: 'string', index: 0 },
+  { id: 'col_age', name: 'age', type: 'number', index: 1 },
+  { id: 'col_token', name: 'token', type: 'string', index: 2 },
+  { id: 'col_fullname', name: 'fullname', type: 'string', index: 3 },
+  { id: 'col_code', name: 'code', type: 'string', index: 4 },
+];
 
 describe('tablesUtil', () => {
 
@@ -20,9 +30,53 @@ describe('tablesUtil', () => {
     });
   });
 
+  describe('resolveColumnId', () => {
+    it('maps columnId to storage key in row data', () => {
+      expect(resolveColumnId(COLUMNS, 'col_email')).to.equal('email');
+    });
+
+    it('uses key not display name after rename', () => {
+      const schema = [
+        { id: 'col_email', name: 'email_address', key: 'email', type: 'string', index: 0 },
+      ];
+      expect(resolveColumnId(schema, 'col_email')).to.equal('email');
+    });
+
+    it('throws for unknown columnId', () => {
+      expect(() => resolveColumnId(COLUMNS, 'col_missing')).to.throw('Unknown columnId');
+    });
+  });
+
+  describe('resolveDataKeys', () => {
+    it('accepts columnId keys', () => {
+      const resolved = resolveDataKeys({ col_token: 'abc', col_code: 'x' }, COLUMNS);
+      expect(resolved).to.deep.equal({ token: 'abc', code: 'x' });
+    });
+
+    it('accepts legacy column name keys with deprecation callback', () => {
+      const warnings = [];
+      const resolved = resolveDataKeys({ token: 'abc' }, COLUMNS, msg => warnings.push(msg));
+      expect(resolved).to.deep.equal({ token: 'abc' });
+      expect(warnings.length).to.be.equal(1);
+    });
+  });
+
   describe('buildUpdateSet', () => {
-    it('builds dot-notation $set paths', () => {
-      const result = buildUpdateSet({ token: 'abc', plan: 'pro' }, ['token', 'plan']);
+    it('builds dot-notation $set paths from columnId keys', () => {
+      const result = buildUpdateSet({ col_token: 'abc', col_code: 'pro' }, COLUMNS);
+      expect(result).to.deep.equal({
+        $set: {
+          'data.token': 'abc',
+          'data.code': 'pro',
+        },
+      });
+    });
+
+    it('builds dot-notation $set paths from legacy column names', () => {
+      const result = buildUpdateSet({ token: 'abc', plan: 'pro' }, [
+        ...COLUMNS,
+        { id: 'col_plan', name: 'plan', type: 'string', index: 5 },
+      ]);
       expect(result).to.deep.equal({
         $set: {
           'data.token': 'abc',
@@ -32,19 +86,37 @@ describe('tablesUtil', () => {
     });
 
     it('rejects columns not in schema', () => {
-      expect(() => buildUpdateSet({ hacker: 'x' }, SCHEMA_COLUMNS)).to.throw('Column not allowed');
+      expect(() => buildUpdateSet({ hacker: 'x' }, COLUMNS)).to.throw('Column not allowed');
     });
   });
 
   describe('buildConditionsQuery', () => {
-    it('builds $and query when must_match is all', () => {
+    it('builds $and query from columnId when must_match is all', () => {
+      const result = buildConditionsQuery(
+        [
+          { columnId: 'col_email', condition: 'Equal', value: 'mario@test.it' },
+          { columnId: 'col_age', condition: 'Greater than', value: 18 },
+        ],
+        'all',
+        COLUMNS
+      );
+
+      expect(result).to.deep.equal({
+        $and: [
+          { 'data.email': 'mario@test.it' },
+          { 'data.age': { $gt: 18 } },
+        ],
+      });
+    });
+
+    it('builds $and query when must_match is all (legacy column names)', () => {
       const result = buildConditionsQuery(
         [
           { column: 'email', condition: 'Equal', value: 'mario@test.it' },
           { column: 'age', condition: 'Greater than', value: 18 },
         ],
         'all',
-        SCHEMA_COLUMNS
+        COLUMNS
       );
 
       expect(result).to.deep.equal({
@@ -58,11 +130,11 @@ describe('tablesUtil', () => {
     it('builds $or query when must_match is any', () => {
       const result = buildConditionsQuery(
         [
-          { column: 'email', condition: 'Equal', value: 'a@test.it' },
-          { column: 'email', condition: 'Equal', value: 'b@test.it' },
+          { columnId: 'col_email', condition: 'Equal', value: 'a@test.it' },
+          { columnId: 'col_email', condition: 'Equal', value: 'b@test.it' },
         ],
         'any',
-        SCHEMA_COLUMNS
+        COLUMNS
       );
 
       expect(result.$or).to.have.length(2);
@@ -70,9 +142,9 @@ describe('tablesUtil', () => {
 
     it('maps Contains to escaped regex', () => {
       const result = buildConditionsQuery(
-        [{ column: 'email', condition: 'Contains', value: 'test+special' }],
+        [{ columnId: 'col_email', condition: 'Contains', value: 'test+special' }],
         'all',
-        SCHEMA_COLUMNS
+        COLUMNS
       );
 
       expect(result.$and[0]['data.email'].$regex).to.equal('test\\+special');
@@ -82,7 +154,7 @@ describe('tablesUtil', () => {
       expect(() => buildConditionsQuery(
         [{ column: '__proto__', condition: 'Equal', value: 'x' }],
         'all',
-        SCHEMA_COLUMNS
+        COLUMNS
       )).to.throw('Invalid column');
     });
   });

@@ -10,8 +10,9 @@ const TableSchema = new Schema({
     type: String,
     required: true
   },
+  /** Column metadata: [{ id, name, type, index, indexed? }] or legacy map on read */
   schema: {
-    type: Object,
+    type: Schema.Types.Mixed,
     required: true
   },
   createdBy: {
@@ -35,6 +36,7 @@ const TableRowSchema = new Schema({
   }
 }, { timestamps: true });
 
+TableRowSchema.index({ id_project: 1, id_table: 1 });
 
 const Table = mongoose.model('Table', TableSchema);
 const TableRow = mongoose.model('TableRow', TableRowSchema);

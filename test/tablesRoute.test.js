@@ -36,9 +36,10 @@ describe('TablesRoute', () => {
 
             expect(res.status).to.be.equal(200);
             expect(res.body.name).to.be.equal('users');
-            expect(res.body.schema.fullname).to.be.equal('string');
-            expect(res.body.schema.email).to.be.equal('string');
-            expect(res.body.schema.code).to.be.equal('string');
+            expect(res.body.schema).to.be.an('array');
+            expect(res.body.schema.length).to.be.equal(3);
+            expect(res.body.schema.find(c => c.name === 'email')).to.have.property('id');
+            expect(res.body.schema.find(c => c.name === 'fullname').type).to.be.equal('string');
 
             done();
           });
@@ -434,6 +435,68 @@ describe('TablesRoute', () => {
                         expect(res.body[0].data.code).to.be.equal('bulk-updated');
                         expect(res.body[1].data.code).to.be.equal('bulk-updated');
                         done();
+                      });
+                  });
+              });
+          });
+      });
+    });
+  });
+
+  it('rename-column-metadata-only', (done) => {
+    let email = "test-signup-tablesroute-rename" + Date.now() + "@email.com";
+    let pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(savedUser => {
+      projectService.create("test-tablesroute-rename", savedUser._id).then(savedProject => {
+        chai.request(server)
+          .post('/' + savedProject._id + '/tables')
+          .auth(email, pwd)
+          .send({ name: 'users', schema: { email: 'string', code: 'string' } })
+          .end((err, res) => {
+            expect(res.status).to.be.equal(200);
+            const tableId = res.body._id;
+            const emailCol = res.body.schema.find(c => c.name === 'email');
+            const emailColId = emailCol.id;
+
+            chai.request(server)
+              .put('/' + savedProject._id + '/tables/' + tableId + '/insert')
+              .auth(email, pwd)
+              .send({ data: { email: 'keep@test.it', code: '111' } })
+              .end((err, res) => {
+                expect(res.status).to.be.equal(200);
+
+                chai.request(server)
+                  .patch('/' + savedProject._id + '/tables/' + tableId + '/columns/' + emailColId)
+                  .auth(email, pwd)
+                  .send({ name: 'email_address' })
+                  .end((err, res) => {
+                    expect(res.status).to.be.equal(200);
+                    expect(res.body.schema.find(c => c.id === emailColId).name).to.be.equal('email_address');
+                    expect(res.body.schema.find(c => c.name === 'email_address').type).to.be.equal('string');
+                    expect(res.body.schema.find(c => c.name === 'email')).to.be.undefined;
+
+                    chai.request(server)
+                      .put('/' + savedProject._id + '/tables/' + tableId + '/update')
+                      .auth(email, pwd)
+                      .send({
+                        must_match: 'all',
+                        conditions: [{ columnId: emailColId, condition: 'Equal', value: 'keep@test.it' }],
+                        data: { code: 'renamed-col' },
+                      })
+                      .end((err, res) => {
+                        expect(res.status).to.be.equal(200);
+                        expect(res.body.data.email).to.be.equal('keep@test.it');
+                        expect(res.body.data.code).to.be.equal('renamed-col');
+
+                        chai.request(server)
+                          .get('/' + savedProject._id + '/tables/' + tableId)
+                          .auth(email, pwd)
+                          .end((err, res) => {
+                            expect(res.status).to.be.equal(200);
+                            expect(res.body.rows[0].email).to.be.equal('keep@test.it');
+                            done();
+                          });
                       });
                   });
               });
