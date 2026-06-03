@@ -1164,7 +1164,6 @@ class RulesTrigger {
                       lead: createdLead, requester: puser
                     };
       
-
                     return requestService.create(new_request).then(function (savedRequest) {                   
 
                         if (attributes) {

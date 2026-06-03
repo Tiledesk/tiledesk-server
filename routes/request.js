@@ -440,13 +440,14 @@ router.put('/:requestid/participants', async (req, res) => {
 
   //setParticipantsByRequestId(request_id, id_project, participants)
   return requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then(function (updatedRequest) {
-
     winston.debug("participant set", updatedRequest);
-
     return res.json(updatedRequest);
-  }).catch(function(err) {
-    winston.error("Error setting participants", err);
-    return res.status(500).send({ success: false, error: "Error setting participants" });
+
+  }).catch((err) => {
+    winston.error("Error setParticipantsByRequestId: ", err);
+    let error_code = err?.code || 500;
+    let error = err?.error || err || "General error";
+    return res.status(error_code).send({ success: false, error: error })
   });
 
 });
@@ -584,7 +585,6 @@ router.put('/:requestid/assign', function (req, res) {
         return res.json(updatedRequest);
       }).catch(function (error) {
         // TODO: error log removed due to attempt to reduces logs when no department is found
-        console.log('Error changing the department.', error)
         winston.verbose('Error changing the department.', error)
         return res.status(500).send({ success: false, msg: 'Error changing the department.' });
       })
@@ -602,7 +602,6 @@ router.put('/:requestid/departments', function (req, res) {
     return res.json(updatedRequest);
   }).catch(function (error) {
     // TODO: error log removed due to attempt to reduces logs when no department is found
-    console.log('Error changing the department.', error)
     winston.verbose('Error changing the department.', error)
     return res.status(500).send({ success: false, msg: 'Error changing the department.' });
   })
@@ -638,7 +637,6 @@ router.put('/:requestid/agent', async (req, res) => {
     return res.json(updatedRequest);
   }).catch(function (error) {
     // TODO: error log removed due to attempt to reduces logs when no department is found
-    console.log('Error changing the department.', error)
     winston.verbose('Error changing the department.', error)
     return res.status(500).send({ success: false, msg: 'Error changing the department.' });
   })
