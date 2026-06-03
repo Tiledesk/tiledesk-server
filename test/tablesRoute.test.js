@@ -47,6 +47,61 @@ describe('TablesRoute', () => {
     });
   });
 
+  it('create-table-with-schema-array-without-client-ids', (done) => {
+    let email = "test-signup-tablesroute-schema-array" + Date.now() + "@email.com";
+    let pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(savedUser => {
+      projectService.create("test-tablesroute-schema-array", savedUser._id).then(savedProject => {
+        chai.request(server)
+          .post('/' + savedProject._id + '/tables')
+          .auth(email, pwd)
+          .send({
+            name: 'users',
+            schema: [
+              { name: 'email', type: 'string', index: 0 },
+              { name: 'code', type: 'string', index: 1 },
+            ],
+          })
+          .end((err, res) => {
+            if (err) { console.error("err: ", err); }
+            expect(res.status).to.be.equal(200);
+            expect(res.body.schema).to.be.an('array');
+            expect(res.body.schema.length).to.be.equal(2);
+            res.body.schema.forEach(col => {
+              expect(col.id).to.be.a('string').and.match(/^col_[0-9a-f]{16}$/);
+            });
+            expect(res.body.schema.find(c => c.name === 'email').type).to.be.equal('string');
+            done();
+          });
+      });
+    });
+  });
+
+  it('create-table-rejects-client-provided-column-ids', (done) => {
+    let email = "test-signup-tablesroute-reject-id" + Date.now() + "@email.com";
+    let pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(savedUser => {
+      projectService.create("test-tablesroute-reject-id", savedUser._id).then(savedProject => {
+        chai.request(server)
+          .post('/' + savedProject._id + '/tables')
+          .auth(email, pwd)
+          .send({
+            name: 'users',
+            schema: [
+              { id: 'col_client_provided', name: 'email', type: 'string' },
+            ],
+          })
+          .end((err, res) => {
+            expect(res.status).to.be.equal(400);
+            expect(res.body.error).to.include('Column id must not be provided');
+            done();
+          });
+      });
+    });
+  });
+
   it('get-all-tables', (done) => {
 
     let email = "test-signup-tablesroute" + Date.now() + "@email.com";

@@ -18,9 +18,14 @@ function withStorageKeys(schema) {
   }));
 }
 
-function isSchemaMetadataArray(schema) {
+function isColumnDefinitionArray(schema) {
   return Array.isArray(schema) && schema.length > 0
-    && schema.every(c => c && typeof c === 'object' && typeof c.id === 'string' && typeof c.name === 'string');
+    && schema.every(c => c && typeof c === 'object' && typeof c.name === 'string' && c.name.length > 0);
+}
+
+function isSchemaMetadataArray(schema) {
+  return isColumnDefinitionArray(schema)
+    && schema.every(c => typeof c.id === 'string' && c.id.length > 0);
 }
 
 function isLegacySchemaMap(schema) {
@@ -214,6 +219,7 @@ module.exports = {
   COLUMN_ID_PREFIX,
   generateColumnId,
   getColumnStorageKey,
+  isColumnDefinitionArray,
   isSchemaMetadataArray,
   isLegacySchemaMap,
   schemaFromLegacyMap,
