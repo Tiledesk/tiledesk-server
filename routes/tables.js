@@ -360,10 +360,11 @@ router.put('/:id/insert', async (req, res) => {
 /**
  * Update a row in a table
  */
-router.put('/:id/update', async (req, res) => {
+router.put('/:id/update/:id_row', async (req, res) => {
   const id_project = req.projectid;
   const id_table = req.params.id;
-  const { id_row, must_match, conditions } = req.body;
+  const id_row = req.params.id_row;
+  const { must_match, conditions } = req.body;
   const data = req.body.data;
 
   try {
