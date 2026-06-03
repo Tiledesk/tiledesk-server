@@ -200,6 +200,8 @@ describe('TablesRoute', () => {
                         expect(res.status).to.be.equal(200);
                         expect(res.body.name).to.be.equal('users');
                         expect(res.body.rows.length).to.be.equal(2);
+                        expect(res.body.rows[0]._id).to.exist;
+                        expect(res.body.rows[1]._id).to.exist;
                         expect(res.body.rows[0].fullname).to.be.equal('John Doe');
                         expect(res.body.rows[0].email).to.be.equal('john.doe@example.com');
                         expect(res.body.rows[0].code).to.be.equal('123456');

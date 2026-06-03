@@ -97,6 +97,11 @@ function tableResponse(table) {
   return obj;
 }
 
+function rowResponse(row) {
+  const obj = row.toObject ? row.toObject() : row;
+  return { _id: obj._id, ...(obj.data || {}) };
+}
+
 
 // ######## TABLES ENDPOINTS ########
 
@@ -130,7 +135,7 @@ router.get('/:id', async (req, res) => {
 
     const tableRows = await TableRow.find({ id_project, id_table });
     const tableObj = tableResponse(table);
-    tableObj.rows = tableRows.map(row => row.data);
+    tableObj.rows = tableRows.map(rowResponse);
 
     return res.status(200).send(tableObj);
   }
@@ -305,7 +310,7 @@ router.get('/:id/rows', async (req, res) => {
 
   try {
     const rows = await TableRow.find({ id_project, id_table });
-    const rowObj = rows.map(row => row.data);
+    const rowObj = rows.map(rowResponse);
     return res.status(200).send(rowObj);
   }
   catch (error) {
