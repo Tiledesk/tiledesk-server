@@ -562,6 +562,147 @@ describe('TablesRoute', () => {
     });
   });
 
+  it('delete-row-by-id', (done) => {
+    let email = "test-signup-tablesroute" + Date.now() + "@email.com";
+    let pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(savedUser => {
+      projectService.create("test-tablesroute-delete", savedUser._id).then(savedProject => {
+        chai.request(server)
+          .post('/' + savedProject._id + '/tables')
+          .auth(email, pwd)
+          .send({ name: 'users', schema: { fullname: 'string', email: 'string', code: 'string' } })
+          .end((err, res) => {
+            expect(res.status).to.be.equal(200);
+            const tableId = res.body._id;
+
+            chai.request(server)
+              .put('/' + savedProject._id + '/tables/' + tableId + '/insert')
+              .auth(email, pwd)
+              .send({ data: { fullname: 'John Doe', email: 'john.doe@example.com', code: '123456' } })
+              .end((err, res) => {
+                expect(res.status).to.be.equal(200);
+                const rowId = res.body._id;
+
+                chai.request(server)
+                  .put('/' + savedProject._id + '/tables/' + tableId + '/insert')
+                  .auth(email, pwd)
+                  .send({ data: { fullname: 'Jane Baker', email: 'jane.baker@example.com', code: '654321' } })
+                  .end((err, res) => {
+                    expect(res.status).to.be.equal(200);
+
+                    chai.request(server)
+                      .put('/' + savedProject._id + '/tables/' + tableId + '/delete')
+                      .auth(email, pwd)
+                      .send({ id_row: rowId })
+                      .end((err, res) => {
+                        expect(res.status).to.be.equal(200);
+                        expect(res.body._id).to.be.equal(rowId);
+                        expect(res.body.data.fullname).to.be.equal('John Doe');
+
+                        chai.request(server)
+                          .get('/' + savedProject._id + '/tables/' + tableId)
+                          .auth(email, pwd)
+                          .end((err, res) => {
+                            expect(res.status).to.be.equal(200);
+                            expect(res.body.rows.length).to.be.equal(1);
+                            expect(res.body.rows[0].fullname).to.be.equal('Jane Baker');
+                            done();
+                          });
+                      });
+                  });
+              });
+          });
+      });
+    });
+  });
+
+  it('delete-row-by-conditions-must-match-all', (done) => {
+    let email = "test-signup-tablesroute" + Date.now() + "@email.com";
+    let pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(savedUser => {
+      projectService.create("test-tablesroute-delete-cond", savedUser._id).then(savedProject => {
+        chai.request(server)
+          .post('/' + savedProject._id + '/tables')
+          .auth(email, pwd)
+          .send({ name: 'users', schema: { fullname: 'string', email: 'string', code: 'string' } })
+          .end((err, res) => {
+            expect(res.status).to.be.equal(200);
+            const tableId = res.body._id;
+
+            chai.request(server)
+              .put('/' + savedProject._id + '/tables/' + tableId + '/insert')
+              .auth(email, pwd)
+              .send({ data: { fullname: 'Mario Rossi', email: 'mario@test.it', code: '111' } })
+              .end((err, res) => {
+                expect(res.status).to.be.equal(200);
+
+                chai.request(server)
+                  .put('/' + savedProject._id + '/tables/' + tableId + '/insert')
+                  .auth(email, pwd)
+                  .send({ data: { fullname: 'Luigi Verdi', email: 'mario@test.it', code: '222' } })
+                  .end((err, res) => {
+                    expect(res.status).to.be.equal(200);
+
+                    chai.request(server)
+                      .put('/' + savedProject._id + '/tables/' + tableId + '/delete')
+                      .auth(email, pwd)
+                      .send({
+                        must_match: 'all',
+                        conditions: [
+                          { column: 'email', condition: 'Equal', value: 'mario@test.it' },
+                          { column: 'code', condition: 'Equal', value: '111' },
+                        ],
+                      })
+                      .end((err, res) => {
+                        expect(res.status).to.be.equal(200);
+                        expect(res.body.data.fullname).to.be.equal('Mario Rossi');
+
+                        chai.request(server)
+                          .get('/' + savedProject._id + '/tables/' + tableId)
+                          .auth(email, pwd)
+                          .end((err, res) => {
+                            expect(res.status).to.be.equal(200);
+                            expect(res.body.rows.length).to.be.equal(1);
+                            expect(res.body.rows[0].fullname).to.be.equal('Luigi Verdi');
+                            done();
+                          });
+                      });
+                  });
+              });
+          });
+      });
+    });
+  });
+
+  it('delete-row-rejects-missing-id-row-and-conditions', (done) => {
+    let email = "test-signup-tablesroute" + Date.now() + "@email.com";
+    let pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(savedUser => {
+      projectService.create("test-tablesroute-delete-missing", savedUser._id).then(savedProject => {
+        chai.request(server)
+          .post('/' + savedProject._id + '/tables')
+          .auth(email, pwd)
+          .send({ name: 'users', schema: { email: 'string' } })
+          .end((err, res) => {
+            const tableId = res.body._id;
+
+            chai.request(server)
+              .put('/' + savedProject._id + '/tables/' + tableId + '/delete')
+              .auth(email, pwd)
+              .send({})
+              .end((err, res) => {
+                expect(res.status).to.be.equal(400);
+                expect(res.body.error).to.include('id_row or conditions is required');
+                done();
+              });
+          });
+      });
+    });
+  });
+
   it('update-row-rejects-invalid-column', (done) => {
     let email = "test-signup-tablesroute" + Date.now() + "@email.com";
     let pwd = "pwd";

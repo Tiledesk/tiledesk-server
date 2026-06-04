@@ -513,13 +513,44 @@ router.put('/:id/upsert', async (req, res) => {
 router.put('/:id/delete', async (req, res) => {
   const id_project = req.projectid;
   const id_table = req.params.id;
-  const { data } = req.body;
+  const { id_row, must_match, conditions } = req.body;
 
   try {
-    const table = await TableRow.findOneAndDelete({ id_project, id_table, data });
-    return res.status(200).send(table);
-  }
-  catch (error) {
+    const table = await loadTableWithSchema(id_project, id_table);
+    if (!table) {
+      return res.status(404).send({ success: false, error: 'Table not found' });
+    }
+
+    const schema = getTableSchema(table);
+
+    if (id_row) {
+      const row = await TableRow.findOneAndDelete(
+        { id_project, id_table, _id: id_row }
+      );
+      if (!row) {
+        return res.status(404).send({ success: false, error: 'Row not found' });
+      }
+      return res.status(200).send(row);
+    }
+
+    if (!conditions) {
+      return res.status(400).send({ success: false, error: 'id_row or conditions is required' });
+    }
+
+    let conditionsQuery;
+    try {
+      conditionsQuery = buildConditionsQuery(conditions, must_match, schema, deprecationWarn);
+    } catch (validationError) {
+      return res.status(400).send({ success: false, error: validationError.message });
+    }
+
+    const filter = { id_project, id_table, ...conditionsQuery };
+    const row = await TableRow.findOneAndDelete(filter);
+    if (!row) {
+      return res.status(404).send({ success: false, error: 'Row not found' });
+    }
+    return res.status(200).send(row);
+  } catch (error) {
     winston.error('Error deleting row: ', error);
     return res.status(500).send({ success: false, error: 'Error deleting row' });
   }
