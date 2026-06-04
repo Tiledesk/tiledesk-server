@@ -677,7 +677,7 @@ app.use('/:projectid/voice', [passport.authenticate(['basic', 'jwt'], { session:
 app.use('/:projectid/roles', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], roles);
 
 app.use('/:projectid/files', filesp);
-app.use('/:projectid/tables', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], tables);
+//app.use('/:projectid/tables', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], tables);
 
 if (pubModulesManager) {
   pubModulesManager.useUnderProjects(app);
