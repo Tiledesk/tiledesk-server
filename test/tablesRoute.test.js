@@ -16,6 +16,27 @@ let log = false;
 
 chai.use(chaiHttp);
 
+const USERS_SCHEMA = [
+  { name: 'fullname', type: 'string', index: 0 },
+  { name: 'email', type: 'string', index: 1 },
+  { name: 'code', type: 'string', index: 2 },
+];
+
+const EMAIL_ONLY_SCHEMA = [
+  { name: 'email', type: 'string', index: 0 },
+];
+
+const EMAIL_CODE_SCHEMA = [
+  { name: 'email', type: 'string', index: 0 },
+  { name: 'code', type: 'string', index: 1 },
+];
+
+const COMPANIES_SCHEMA = [
+  { name: 'name', type: 'string', index: 0 },
+  { name: 'country', type: 'string', index: 1 },
+  { name: 'city', type: 'string', index: 2 },
+];
+
 describe('TablesRoute', () => {
 
   it('create-new-table', (done) => {
@@ -29,7 +50,7 @@ describe('TablesRoute', () => {
         chai.request(server)
           .post('/' + savedProject._id + '/tables')
           .auth(email, pwd)
-          .send({ name: 'users', schema: { fullname: 'string', email: 'string', code: 'string' } })
+          .send({ name: 'users', schema: USERS_SCHEMA })
           .end((err, res) => {
             if (err) { console.error("err: ", err); }
             if (log) { console.log("res.body: ", res.body); }
@@ -78,6 +99,25 @@ describe('TablesRoute', () => {
     });
   });
 
+  it('create-table-rejects-legacy-schema-map', (done) => {
+    let email = "test-signup-tablesroute-reject-legacy" + Date.now() + "@email.com";
+    let pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(savedUser => {
+      projectService.create("test-tablesroute-reject-legacy", savedUser._id).then(savedProject => {
+        chai.request(server)
+          .post('/' + savedProject._id + '/tables')
+          .auth(email, pwd)
+          .send({ name: 'users', schema: { email: 'string', code: 'string' } })
+          .end((err, res) => {
+            expect(res.status).to.be.equal(400);
+            expect(res.body.error).to.include('column metadata array');
+            done();
+          });
+      });
+    });
+  });
+
   it('create-table-rejects-client-provided-column-ids', (done) => {
     let email = "test-signup-tablesroute-reject-id" + Date.now() + "@email.com";
     let pwd = "pwd";
@@ -113,7 +153,7 @@ describe('TablesRoute', () => {
         chai.request(server)
           .post('/' + savedProject._id + '/tables')
           .auth(email, pwd)
-          .send({ name: 'users', schema: { fullname: 'string', email: 'string', code: 'string' } })
+          .send({ name: 'users', schema: USERS_SCHEMA })
           .end((err, res) => {
             if (err) { console.error("err: ", err); }
             if (log) { console.log("res.body: ", res.body); }
@@ -123,7 +163,7 @@ describe('TablesRoute', () => {
             chai.request(server)
               .post('/' + savedProject._id + '/tables')
               .auth(email, pwd)
-              .send({ name: 'companies', schema: { name: 'string', country: 'string', city: 'string' } })
+              .send({ name: 'companies', schema: COMPANIES_SCHEMA })
               .end((err, res) => {
                 if (err) { console.error("err: ", err); }
                 if (log) { console.log("res.body: ", res.body); }
@@ -150,6 +190,182 @@ describe('TablesRoute', () => {
     });
   });
 
+  it('update-table-name-only', (done) => {
+    let email = "test-signup-tablesroute-update-table" + Date.now() + "@email.com";
+    let pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(savedUser => {
+      projectService.create("test-tablesroute-update-table", savedUser._id).then(savedProject => {
+        chai.request(server)
+          .post('/' + savedProject._id + '/tables')
+          .auth(email, pwd)
+          .send({ name: 'users', schema: EMAIL_ONLY_SCHEMA })
+          .end((err, res) => {
+            expect(res.status).to.be.equal(200);
+            const tableId = res.body._id;
+
+            chai.request(server)
+              .put('/' + savedProject._id + '/tables/' + tableId)
+              .auth(email, pwd)
+              .send({ name: 'customers' })
+              .end((err, res) => {
+                expect(res.status).to.be.equal(200);
+                expect(res.body.name).to.be.equal('customers');
+                expect(res.body.schema).to.be.an('array');
+                expect(res.body.schema.find(c => c.name === 'email')).to.exist;
+                expect(res.body.columns).to.be.undefined;
+
+                chai.request(server)
+                  .get('/' + savedProject._id + '/tables/' + tableId)
+                  .auth(email, pwd)
+                  .end((err, res) => {
+                    expect(res.status).to.be.equal(200);
+                    expect(res.body.name).to.be.equal('customers');
+                    done();
+                  });
+              });
+          });
+      });
+    });
+  });
+
+  it('update-table-schema-array-preserves-column-ids', (done) => {
+    let email = "test-signup-tablesroute-update-schema" + Date.now() + "@email.com";
+    let pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(savedUser => {
+      projectService.create("test-tablesroute-update-schema", savedUser._id).then(savedProject => {
+        chai.request(server)
+          .post('/' + savedProject._id + '/tables')
+          .auth(email, pwd)
+          .send({ name: 'users', schema: EMAIL_CODE_SCHEMA })
+          .end((err, res) => {
+            expect(res.status).to.be.equal(200);
+            const tableId = res.body._id;
+            const emailCol = res.body.schema.find(c => c.name === 'email');
+            const codeCol = res.body.schema.find(c => c.name === 'code');
+
+            chai.request(server)
+              .put('/' + savedProject._id + '/tables/' + tableId + '/insert')
+              .auth(email, pwd)
+              .send({ data: { [emailCol.id]: 'user@test.it', [codeCol.id]: '111' } })
+              .end((err, res) => {
+                expect(res.status).to.be.equal(200);
+                const rowId = res.body._id;
+
+                chai.request(server)
+                  .put('/' + savedProject._id + '/tables/' + tableId)
+                  .auth(email, pwd)
+                  .send({
+                    schema: [
+                      { id: emailCol.id, name: 'email', type: 'string', index: 0 },
+                      { id: codeCol.id, name: 'code', type: 'string', index: 1 },
+                      { name: 'phone', type: 'string', index: 2 },
+                    ],
+                  })
+                  .end((err, res) => {
+                    expect(res.status).to.be.equal(200);
+                    expect(res.body.schema.length).to.be.equal(3);
+
+                    const emailAfter = res.body.schema.find(c => c.id === emailCol.id);
+                    const codeAfter = res.body.schema.find(c => c.id === codeCol.id);
+                    const phoneCol = res.body.schema.find(c => c.name === 'phone');
+
+                    expect(emailAfter.name).to.be.equal('email');
+                    expect(codeAfter.name).to.be.equal('code');
+                    expect(phoneCol.id).to.match(/^col_[0-9a-f]{16}$/);
+                    expect(phoneCol.id).to.not.equal(emailCol.id);
+                    expect(phoneCol.type).to.be.equal('string');
+
+                    chai.request(server)
+                      .get('/' + savedProject._id + '/tables/' + tableId)
+                      .auth(email, pwd)
+                      .end((err, res) => {
+                        expect(res.status).to.be.equal(200);
+                        const row = res.body.rows.find(r => r._id === rowId);
+                        expect(row.email).to.be.equal('user@test.it');
+                        expect(row.code).to.be.equal('111');
+                        done();
+                      });
+                  });
+              });
+          });
+      });
+    });
+  });
+
+  it('update-table-rejects-legacy-schema-map', (done) => {
+    let email = "test-signup-tablesroute-update-reject-legacy" + Date.now() + "@email.com";
+    let pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(savedUser => {
+      projectService.create("test-tablesroute-update-reject-legacy", savedUser._id).then(savedProject => {
+        chai.request(server)
+          .post('/' + savedProject._id + '/tables')
+          .auth(email, pwd)
+          .send({ name: 'users', schema: EMAIL_ONLY_SCHEMA })
+          .end((err, res) => {
+            const tableId = res.body._id;
+
+            chai.request(server)
+              .put('/' + savedProject._id + '/tables/' + tableId)
+              .auth(email, pwd)
+              .send({ schema: { email: 'string', phone: 'string' } })
+              .end((err, res) => {
+                expect(res.status).to.be.equal(400);
+                expect(res.body.error).to.include('column metadata array');
+                done();
+              });
+          });
+      });
+    });
+  });
+
+  it('update-table-rejects-invalid-schema', (done) => {
+    let email = "test-signup-tablesroute-update-invalid-schema" + Date.now() + "@email.com";
+    let pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(savedUser => {
+      projectService.create("test-tablesroute-update-invalid-schema", savedUser._id).then(savedProject => {
+        chai.request(server)
+          .post('/' + savedProject._id + '/tables')
+          .auth(email, pwd)
+          .send({ name: 'users', schema: EMAIL_ONLY_SCHEMA })
+          .end((err, res) => {
+            const tableId = res.body._id;
+
+            chai.request(server)
+              .put('/' + savedProject._id + '/tables/' + tableId)
+              .auth(email, pwd)
+              .send({ schema: [] })
+              .end((err, res) => {
+                expect(res.status).to.be.equal(400);
+                done();
+              });
+          });
+      });
+    });
+  });
+
+  it('update-table-not-found', (done) => {
+    let email = "test-signup-tablesroute-update-notfound" + Date.now() + "@email.com";
+    let pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(savedUser => {
+      projectService.create("test-tablesroute-update-notfound", savedUser._id).then(savedProject => {
+        chai.request(server)
+          .put('/' + savedProject._id + '/tables/000000000000000000000001')
+          .auth(email, pwd)
+          .send({ name: 'ghost' })
+          .end((err, res) => {
+            expect(res.status).to.be.equal(404);
+            expect(res.body.error).to.include('Table not found');
+            done();
+          });
+      });
+    });
+  });
+
   it('insert-row-into-table', (done) => {
 
     let email = "test-signup-tablesroute" + Date.now() + "@email.com";
@@ -160,7 +376,7 @@ describe('TablesRoute', () => {
         chai.request(server)
           .post('/' + savedProject._id + '/tables')
           .auth(email, pwd)
-          .send({ name: 'users', schema: { fullname: 'string', email: 'string', code: 'string' } })
+          .send({ name: 'users', schema: USERS_SCHEMA })
           .end((err, res) => {
 
             if (err) { console.error("err: ", err); }
@@ -232,7 +448,7 @@ describe('TablesRoute', () => {
         chai.request(server)
           .post('/' + savedProject._id + '/tables')
           .auth(email, pwd)
-          .send({ name: 'users', schema: { fullname: 'string', email: 'string', code: 'string' } })
+          .send({ name: 'users', schema: USERS_SCHEMA })
           .end((err, res) => {
             expect(res.status).to.be.equal(200);
             const tableId = res.body._id;
@@ -271,7 +487,7 @@ describe('TablesRoute', () => {
         chai.request(server)
           .post('/' + savedProject._id + '/tables')
           .auth(email, pwd)
-          .send({ name: 'users', schema: { fullname: 'string', email: 'string', code: 'string' } })
+          .send({ name: 'users', schema: USERS_SCHEMA })
           .end((err, res) => {
             expect(res.status).to.be.equal(200);
             const tableId = res.body._id;
@@ -334,7 +550,7 @@ describe('TablesRoute', () => {
         chai.request(server)
           .post('/' + savedProject._id + '/tables')
           .auth(email, pwd)
-          .send({ name: 'users', schema: { fullname: 'string', email: 'string', code: 'string' } })
+          .send({ name: 'users', schema: USERS_SCHEMA })
           .end((err, res) => {
             if (err) { return done(err); }
             const tableId = res.body._id;
@@ -381,7 +597,7 @@ describe('TablesRoute', () => {
         chai.request(server)
           .post('/' + savedProject._id + '/tables')
           .auth(email, pwd)
-          .send({ name: 'users', schema: { fullname: 'string', email: 'string', code: 'string' } })
+          .send({ name: 'users', schema: USERS_SCHEMA })
           .end((err, res) => {
             const tableId = res.body._id;
 
@@ -419,7 +635,7 @@ describe('TablesRoute', () => {
         chai.request(server)
           .post('/' + savedProject._id + '/tables')
           .auth(email, pwd)
-          .send({ name: 'users', schema: { fullname: 'string', email: 'string', code: 'string' } })
+          .send({ name: 'users', schema: USERS_SCHEMA })
           .end((err, res) => {
             const tableId = res.body._id;
 
@@ -462,7 +678,7 @@ describe('TablesRoute', () => {
         chai.request(server)
           .post('/' + savedProject._id + '/tables')
           .auth(email, pwd)
-          .send({ name: 'users', schema: { fullname: 'string', email: 'string', code: 'string' } })
+          .send({ name: 'users', schema: USERS_SCHEMA })
           .end((err, res) => {
             const tableId = res.body._id;
 
@@ -500,6 +716,89 @@ describe('TablesRoute', () => {
     });
   });
 
+  it('rename-column-rejects-missing-name', (done) => {
+    let email = "test-signup-tablesroute-rename-missing" + Date.now() + "@email.com";
+    let pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(savedUser => {
+      projectService.create("test-tablesroute-rename-missing", savedUser._id).then(savedProject => {
+        chai.request(server)
+          .post('/' + savedProject._id + '/tables')
+          .auth(email, pwd)
+          .send({ name: 'users', schema: EMAIL_ONLY_SCHEMA })
+          .end((err, res) => {
+            const tableId = res.body._id;
+            const emailColId = res.body.schema.find(c => c.name === 'email').id;
+
+            chai.request(server)
+              .patch('/' + savedProject._id + '/tables/' + tableId + '/columns/' + emailColId)
+              .auth(email, pwd)
+              .send({})
+              .end((err, res) => {
+                expect(res.status).to.be.equal(400);
+                expect(res.body.error).to.include('name is required');
+                done();
+              });
+          });
+      });
+    });
+  });
+
+  it('rename-column-rejects-duplicate-name', (done) => {
+    let email = "test-signup-tablesroute-rename-dup" + Date.now() + "@email.com";
+    let pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(savedUser => {
+      projectService.create("test-tablesroute-rename-dup", savedUser._id).then(savedProject => {
+        chai.request(server)
+          .post('/' + savedProject._id + '/tables')
+          .auth(email, pwd)
+          .send({ name: 'users', schema: EMAIL_CODE_SCHEMA })
+          .end((err, res) => {
+            const tableId = res.body._id;
+            const codeColId = res.body.schema.find(c => c.name === 'code').id;
+
+            chai.request(server)
+              .patch('/' + savedProject._id + '/tables/' + tableId + '/columns/' + codeColId)
+              .auth(email, pwd)
+              .send({ name: 'email' })
+              .end((err, res) => {
+                expect(res.status).to.be.equal(409);
+                expect(res.body.error).to.include('Column name already exists');
+                done();
+              });
+          });
+      });
+    });
+  });
+
+  it('rename-column-not-found', (done) => {
+    let email = "test-signup-tablesroute-rename-col-notfound" + Date.now() + "@email.com";
+    let pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(savedUser => {
+      projectService.create("test-tablesroute-rename-col-notfound", savedUser._id).then(savedProject => {
+        chai.request(server)
+          .post('/' + savedProject._id + '/tables')
+          .auth(email, pwd)
+          .send({ name: 'users', schema: EMAIL_ONLY_SCHEMA })
+          .end((err, res) => {
+            const tableId = res.body._id;
+
+            chai.request(server)
+              .patch('/' + savedProject._id + '/tables/' + tableId + '/columns/col_nonexistent0000')
+              .auth(email, pwd)
+              .send({ name: 'new_label' })
+              .end((err, res) => {
+                expect(res.status).to.be.equal(404);
+                expect(res.body.error).to.include('Column not found');
+                done();
+              });
+          });
+      });
+    });
+  });
+
   it('rename-column-metadata-only', (done) => {
     let email = "test-signup-tablesroute-rename" + Date.now() + "@email.com";
     let pwd = "pwd";
@@ -509,7 +808,7 @@ describe('TablesRoute', () => {
         chai.request(server)
           .post('/' + savedProject._id + '/tables')
           .auth(email, pwd)
-          .send({ name: 'users', schema: { email: 'string', code: 'string' } })
+          .send({ name: 'users', schema: EMAIL_CODE_SCHEMA })
           .end((err, res) => {
             expect(res.status).to.be.equal(200);
             const tableId = res.body._id;
@@ -571,7 +870,7 @@ describe('TablesRoute', () => {
         chai.request(server)
           .post('/' + savedProject._id + '/tables')
           .auth(email, pwd)
-          .send({ name: 'users', schema: { fullname: 'string', email: 'string', code: 'string' } })
+          .send({ name: 'users', schema: USERS_SCHEMA })
           .end((err, res) => {
             expect(res.status).to.be.equal(200);
             const tableId = res.body._id;
@@ -626,7 +925,7 @@ describe('TablesRoute', () => {
         chai.request(server)
           .post('/' + savedProject._id + '/tables')
           .auth(email, pwd)
-          .send({ name: 'users', schema: { fullname: 'string', email: 'string', code: 'string' } })
+          .send({ name: 'users', schema: USERS_SCHEMA })
           .end((err, res) => {
             expect(res.status).to.be.equal(200);
             const tableId = res.body._id;
@@ -685,7 +984,7 @@ describe('TablesRoute', () => {
         chai.request(server)
           .post('/' + savedProject._id + '/tables')
           .auth(email, pwd)
-          .send({ name: 'users', schema: { email: 'string' } })
+          .send({ name: 'users', schema: EMAIL_ONLY_SCHEMA })
           .end((err, res) => {
             const tableId = res.body._id;
 
@@ -712,7 +1011,7 @@ describe('TablesRoute', () => {
         chai.request(server)
           .post('/' + savedProject._id + '/tables')
           .auth(email, pwd)
-          .send({ name: 'users', schema: { email: 'string' } })
+          .send({ name: 'users', schema: EMAIL_ONLY_SCHEMA })
           .end((err, res) => {
             const tableId = res.body._id;
 

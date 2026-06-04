@@ -9,8 +9,6 @@ const {
 const {
   generateColumnId,
   getColumnStorageKey,
-  schemaFromLegacyMap,
-  isLegacySchemaMap,
   isColumnDefinitionArray,
   isSchemaMetadataArray,
   getTableSchema,
@@ -65,10 +63,7 @@ function resolveSchemaInput(schema, options = {}) {
   if (isColumnDefinitionArray(schema)) {
     return normalizeInputSchema(schema, options);
   }
-  if (isLegacySchemaMap(schema)) {
-    return schemaFromLegacyMap(schema);
-  }
-  throw new Error('schema must be a column metadata array or a legacy name-to-type map');
+  throw new Error('schema must be a non-empty column metadata array');
 }
 
 function buildTablePayload({ name, schema }) {
