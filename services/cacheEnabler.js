@@ -51,6 +51,26 @@ class CacheEnabler {
         if (process.env.CACHE_ROLE_ENABLED=="false" || process.env.CACHE_ROLE_ENABLED==false) {
             this.role = false;
         }
+        
+        this.lead = true;
+        if (process.env.CACHE_LEAD_ENABLED=="false" || process.env.CACHE_LEAD_ENABLED==false) {
+            this.lead = false;
+        }
+
+        this.department = true;
+        if (process.env.CACHE_DEPARTMENT_ENABLED=="false" || process.env.CACHE_DEPARTMENT_ENABLED==false) {
+            this.department = false;
+        }
+
+        this.label = true;
+       if (process.env.CACHE_LABEL_ENABLED=="false" || process.env.CACHE_LABEL_ENABLED==false) {
+            this.label = false;
+        }
+
+        this.user = true; //user_cache_here
+        if (process.env.CACHE_USER_ENABLED=="false" || process.env.CACHE_USER_ENABLED==false) {
+            this.user = false;
+        }
 
        
     }
