@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const winston = require('../config/winston');
-const { Table, TableRow } = require('../models/tables');
+// const { Table, TableRow } = require('../models/tables'); // removed: use models/dataTable via routes/dataTable
 const {
   buildConditionsQuery,
   buildUpdateSet,

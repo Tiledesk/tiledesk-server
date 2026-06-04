@@ -161,7 +161,7 @@ var webhooks = require('./routes/webhooks');
 var roles = require('./routes/roles');
 var copilot = require('./routes/copilot');
 var mcp = require('./routes/mcp');
-var tables = require('./routes/tables');
+// var tables = require('./routes/tables'); // deprecated: models/tables removed, use routes/dataTable + models/dataTable
 var scheduler = require('./routes/scheduledJobs');
 var voice = require('./routes/voice');
 
