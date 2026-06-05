@@ -265,7 +265,7 @@ function listen() {
   //   invited_by string|null
   // TODO: check
   authEvent.on("project_user.invite", function (event) {
-    console.log("project_user.invite", event);
+    // console.log("project_user.invite", event);
     var pu = event.savedProject_userPopulated || event.updatedPuserPopulated;
     if (!pu) return;
 
@@ -294,7 +294,7 @@ function listen() {
   //   new_status      'available'|'unavailable'|'busy'
   // TODO: check
   authEvent.on("project_user.update.agent", function (event) {
-    console.log("project_user.update.agent", event);
+    // console.log("project_user.update.agent", event);
     var pu = event.updatedProject_userPopulated;
     if (!pu) return;
     if (pu.user_available === undefined) return; // not a status-change update
@@ -326,7 +326,7 @@ function listen() {
   //   assigned_by     string|null
   //   routing_type    string
   requestEvent.on("request.department.update", function (requestComplete) {
-    console.log("request.department.update", requestComplete);
+    // console.log("request.department.update", requestComplete);
     var dept = requestComplete.department;
 
     var deptId = departmentId(dept);
