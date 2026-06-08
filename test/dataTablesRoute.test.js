@@ -632,7 +632,8 @@ describe('Data Tables Route', () => {
                     if (log) { console.log("res.body: ", res.body); }
 
                     res.should.have.status(200);
-                    expect(res.body.data.repo).to.equal(99);
+                    expect(res.body).to.be.an('array').that.has.lengthOf(1);
+                    expect(res.body[0].data.repo).to.equal(99);
                     done();
                   });
               });
@@ -688,7 +689,8 @@ describe('Data Tables Route', () => {
                     if (log) { console.log("res.body: ", res.body); }
 
                     res.should.have.status(200);
-                    expect(res.body.data.name).to.equal("To Delete");
+                    expect(res.body).to.be.an('array').that.has.lengthOf(1);
+                    expect(res.body[0].data.name).to.equal("To Delete");
 
                     chai.request(server)
                       .get('/' + savedProject._id + '/tables/' + id_table + '/rows/list')
@@ -706,6 +708,134 @@ describe('Data Tables Route', () => {
                       });
                   });
               });
+          });
+      });
+    });
+  }).timeout(5000);
+
+  it('delete-row-by-conditions-any', (done) => {
+
+    let email = "test-signup-" + Date.now() + "@email.com";
+    let pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test lastname").then(savedUser => {
+      projectService.create("test-delete-multi-any", savedUser._id).then(savedProject => {
+
+        chai.request(server)
+          .post('/' + savedProject._id + '/tables')
+          .auth(email, pwd)
+          .send({ name: "users", schema: [{ name: "name", type: "string" }, { name: "country", type: "string" }] })
+          .end((err, res) => {
+
+            if (err) { console.error("err: ", err); }
+
+            res.should.have.status(200);
+            const id_table = res.body._id;
+
+            const inserts = [
+              { data: { name: "Alice", country: "IT" } },
+              { data: { name: "Bob", country: "US" } },
+              { data: { name: "Charlie", country: "IT" } },
+            ];
+
+            let pending = inserts.length;
+            inserts.forEach(function (payload) {
+              chai.request(server)
+                .post('/' + savedProject._id + '/tables/' + id_table + '/row/insert')
+                .auth(email, pwd)
+                .send(payload)
+                .end(function () {
+                  pending -= 1;
+                  if (pending > 0) return;
+
+                  chai.request(server)
+                    .put('/' + savedProject._id + '/tables/' + id_table + '/row/delete')
+                    .auth(email, pwd)
+                    .send({
+                      must_match: 'any',
+                      conditions: [
+                        { column: 'country', operator: 'equal', value: 'IT' },
+                        { column: 'name', operator: 'equal', value: 'Bob' },
+                      ],
+                    })
+                    .end((err, res) => {
+
+                      if (err) { console.error("err: ", err); }
+
+                      res.should.have.status(200);
+                      expect(res.body).to.be.an('array').that.has.lengthOf(3);
+
+                      chai.request(server)
+                        .get('/' + savedProject._id + '/tables/' + id_table + '/rows/list')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+
+                          if (err) { console.error("err: ", err); }
+
+                          res.should.have.status(200);
+                          expect(res.body).to.be.an('array').that.has.lengthOf(0);
+                          done();
+                        });
+                    });
+                });
+            });
+          });
+      });
+    });
+  }).timeout(5000);
+
+  it('upsert-row-by-conditions-rejects-multiple-matches', (done) => {
+
+    let email = "test-signup-" + Date.now() + "@email.com";
+    let pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test lastname").then(savedUser => {
+      projectService.create("test-upsert-409", savedUser._id).then(savedProject => {
+
+        chai.request(server)
+          .post('/' + savedProject._id + '/tables')
+          .auth(email, pwd)
+          .send({ name: "users", schema: [{ name: "country", type: "string" }, { name: "status", type: "string" }] })
+          .end((err, res) => {
+
+            if (err) { console.error("err: ", err); }
+
+            res.should.have.status(200);
+            const id_table = res.body._id;
+
+            const inserts = [
+              { data: { country: "IT", status: "old" } },
+              { data: { country: "IT", status: "old" } },
+            ];
+
+            let pending = inserts.length;
+            inserts.forEach(function (payload) {
+              chai.request(server)
+                .post('/' + savedProject._id + '/tables/' + id_table + '/row/insert')
+                .auth(email, pwd)
+                .send(payload)
+                .end(function () {
+                  pending -= 1;
+                  if (pending > 0) return;
+
+                  chai.request(server)
+                    .put('/' + savedProject._id + '/tables/' + id_table + '/row/upsert')
+                    .auth(email, pwd)
+                    .send({
+                      must_match: 'all',
+                      conditions: [{ column: 'country', operator: 'equal', value: 'IT' }],
+                      data: { status: 'active' },
+                    })
+                    .end((err, res) => {
+
+                      if (err) { console.error("err: ", err); }
+
+                      res.should.have.status(409);
+                      expect(res.body.message).to.equal('Multiple rows match the conditions');
+                      done();
+                    });
+                });
+            });
           });
       });
     });

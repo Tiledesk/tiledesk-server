@@ -32,6 +32,10 @@ function formatRowForList(row, schema) {
   );
 }
 
+function hasConditions(body) {
+  return !!(body.conditions && body.conditions.length && !body.id_row);
+}
+
 class DataTableService {
 
   async listTables(id_project) {
@@ -282,6 +286,14 @@ class DataTableService {
     var filter = { id_project: id_project, id_table: id_table };
     Object.assign(filter, rowFilter);
 
+    if (hasConditions(body)) {
+      var matches = await TableRow.find(filter).sort({ createdAt: 1 });
+      if (matches.length === 0) return undefined;
+      await TableRow.updateMany(filter, update);
+      var updatedRows = await TableRow.find(filter).sort({ createdAt: 1 });
+      return updatedRows.map(function (r) { return formatRow(r, schema); });
+    }
+
     var row = await TableRow.findOneAndUpdate(filter, update, { new: true });
     if (!row) return undefined;
     return formatRow(row, schema);
@@ -326,28 +338,19 @@ class DataTableService {
     var rowFilter = dataTableUtiles.buildRowQueryFilter(body, schema);
     var filter = { id_project: id_project, id_table: id_table };
     Object.assign(filter, rowFilter);
-    var matches = await TableRow.find(filter);
+    var matches = await TableRow.find(filter).sort({ createdAt: 1 });
 
-    if (body.multi === true) {
-      if (matches.length === 0) {
-        var inserted = await TableRow.create({ id_project: id_project, id_table: id_table, data: rowData });
-        return [formatRow(inserted, schema)];
-      }
-      await TableRow.updateMany(filter, update);
-      var updatedRows = await TableRow.find(filter).sort({ createdAt: 1 });
-      return updatedRows.map(function (r) { return formatRow(r, schema); });
+    if (matches.length === 0) {
+      var inserted = await TableRow.create({ id_project: id_project, id_table: id_table, data: rowData });
+      return formatRow(inserted, schema);
     }
 
     if (matches.length > 1) {
       throw new Error('Multiple rows match the conditions');
     }
-    if (matches.length === 1) {
-      var one = await TableRow.findOneAndUpdate(filter, update, { new: true });
-      return formatRow(one, schema);
-    }
 
-    var newRow = await TableRow.create({ id_project: id_project, id_table: id_table, data: rowData });
-    return formatRow(newRow, schema);
+    var updated = await TableRow.findOneAndUpdate(filter, update, { new: true });
+    return formatRow(updated, schema);
   }
 
   async deleteRow(id_project, id_table, id_row) {
@@ -363,6 +366,15 @@ class DataTableService {
     Object.assign(filter, rowFilter);
 
     var schema = table.schema || [];
+
+    if (hasConditions(body)) {
+      var rows = await TableRow.find(filter).sort({ createdAt: 1 });
+      if (rows.length === 0) return undefined;
+      var formatted = rows.map(function (r) { return formatRow(r, schema); });
+      await TableRow.deleteMany(filter);
+      return formatted;
+    }
+
     var row = await TableRow.findOneAndDelete(filter);
     if (!row) return undefined;
     return formatRow(row, schema);
