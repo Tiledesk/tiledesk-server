@@ -19,6 +19,16 @@ const TableSchema = new Schema({
   createdBy: { 
     type: String, 
     required: true 
+  },
+  stats: {
+    rows: {
+      type: Number,
+      default: 0
+    },
+    sizeBytes: {
+      type: Number,
+      default: 0
+    }
   }
 }, { 
   timestamps: true 

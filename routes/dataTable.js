@@ -27,6 +27,9 @@ function isValidationError(err) {
 }
 
 function handleError(res, err, action) {
+  if (err && err.message === 'TABLE_SIZE_LIMIT_EXCEEDED') {
+    return res.status(413).send({ success: false, message: 'TABLE_SIZE_LIMIT_EXCEEDED' });
+  }
   if (isValidationError(err)) {
     const status = err.message.indexOf('already exists') !== -1 ? 409 : 400;
     return res.status(status).send({ success: false, message: err.message });
