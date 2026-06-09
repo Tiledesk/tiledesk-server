@@ -7,8 +7,10 @@ data
 .env*
 copyfiles
 logs
+.idea
+**/.DS_Store
 CLAUDE.md
 .claude
 .idea
 **/.DS_Store
-docs/
+docs/openapi/*
