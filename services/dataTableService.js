@@ -12,7 +12,16 @@ function getTableMaxSizeBytes() {
 }
 
 function getTableStats(table) {
-  const stats = table.stats || {};
+  if (!table) {
+    return { rows: 0, sizeBytes: 0 };
+  }
+  let stats;
+  if (typeof table.get === 'function') {
+    stats = table.get('stats');
+  } else {
+    stats = table.stats;
+  }
+  stats = stats || {};
   return {
     rows: stats.rows || 0,
     sizeBytes: stats.sizeBytes || 0,
