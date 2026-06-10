@@ -114,6 +114,7 @@ class AiManager {
             engine: engine, 
             hybrid: hybrid, 
             ...(situated_context && { situated_context }),
+            ...(options.request_id && { request_id: options.request_id }),
             ...rest}
         });
 
@@ -123,6 +124,8 @@ class AiManager {
           resolve({ result, schedule_json: resources });
           return;
         }
+
+        console.log("resource: ", resources[0]);
   
         this.scheduleScrape(resources, hybrid);
         resolve(result);
@@ -136,6 +139,8 @@ class AiManager {
 
   async scheduleSitemap(namespace, sitemap_content, options) {
     return new Promise((resolve, reject) => {
+
+      const situated_context_obj = this.normalizeSituatedContext(sitemap_content.situated_context);
 
       let kb = {
         id: sitemap_content._id,
@@ -250,41 +255,58 @@ class AiManager {
     })
   }
 
-  async resolveLLMConfig(id_project, provider = 'openai', model) {
+  async resolveLLMConfig(id_project, provider = 'openai', model, vllmServer = undefined) {
 
+    console.log("resolveLLMConfig...");
     if (provider === 'ollama' || provider === 'vllm') {
-      try {
-        const integration = await integrationService.getIntegration(id_project, provider);
-        
-        if (!integration?.value?.url) {
-          throw { code: 422, error: `Server url for ${provider} is empty or invalid`}
-        }
+      const integration = await integrationService.getIntegration(id_project, provider);
+      if (!integration?.value) {
+        throw { code: 422, error: `${provider} integration not found` };
+      }
 
+      const value = integration.value;
+
+      if (provider === 'vllm' && Array.isArray(value.servers)) {
+        if (!vllmServer) {
+          throw { code: 422, error: "vllmServer attribute is undefined" };
+        }
+        const server = value.servers.find(s => s.name === vllmServer);
+        if (!server) {
+          throw { code: 422, error: `vllm server '${vllmServer}' not found` };
+        }
+        if (!server.url) {
+          throw { code: 422, error: "Server url for vllm is empty or invalid" };
+        }
         return {
           provider,
           name: model,
-          url: integration.value.url,
-          api_key: integration.value.apikey || ""
-        }
-
-      } catch (err) {
-        throw { code: err.code, error: err.error }
+          url: server.url,
+          api_key: server.apikey || ""
+        };
       }
-    }
 
-    try {
-      let key = await integrationService.getKeyFromIntegration(id_project, provider)
+      if (!value.url) {
+        throw { code: 422, error: `Server url for ${provider} is empty or invalid` };
+      }
 
+      console.log("key: ", key);
+
+      console.log("returning ", { provider, name: model, api_key: key });
       return {
         provider,
         name: model,
-        api_key: key
-      }
-
-    } catch (err) {
-      throw { code: err.code, error: err.error }
+        url: value.url,
+        api_key: value.apikey || ""
+      };
     }
 
+    const key = await integrationService.getKeyFromIntegration(id_project, provider);
+
+    return {
+      provider,
+      name: model,
+      api_key: key
+    };
   }
 
   async checkQuotaAvailability(quoteManager, project, ncontents) {
