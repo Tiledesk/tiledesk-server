@@ -1698,6 +1698,7 @@ router.post('/', async (req, res) => {
         ...(saved_kb.scrape_type && { scrape_type: saved_kb.scrape_type }),
         ...(saved_kb.scrape_options && { parameters_scrape_type_4: saved_kb.scrape_options }),
         ...(saved_kb.tags && { tags: saved_kb.tags }),
+        ...(saved_kb.chunk_regex && { chunk_regex: saved_kb.chunk_regex })
       }
 
       winston.debug("json: ", json);
