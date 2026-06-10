@@ -203,6 +203,10 @@ var KBSchema = new Schema({
     type: Boolean,
     default: false,
     required: false
+  },
+  chunk_regex: {
+    type: String,
+    required: false
   }
 }, {
   timestamps: true
