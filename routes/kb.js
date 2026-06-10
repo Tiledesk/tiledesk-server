@@ -374,7 +374,7 @@ router.post('/qa', async (req, res) => {
 
   let model;
   try {
-    model = await aiManager.resolveLLMConfig(id_project, data.llm, data.model);
+    model = await aiManager.resolveLLMConfig(id_project, data.llm, data.model, data.vllmServer);
   } catch (err) {
     let errorCode = err?.code ?? 500;
     return res.status(errorCode).send({ success: false, error: err.error });
