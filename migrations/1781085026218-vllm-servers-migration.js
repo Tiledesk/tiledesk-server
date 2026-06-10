@@ -40,6 +40,11 @@ async function up() {
             models: integration.value.models || []
         }];
 
+        delete integration.value.url;
+        delete integration.value.apikey;
+        delete integration.value.models;
+        delete integration.value.token;
+
         integration.markModified('value');
 
         await integration.save();
