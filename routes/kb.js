@@ -1605,7 +1605,7 @@ router.post('/', async (req, res) => {
   const id_project = req.projectid;
   const project = req.project
 
-  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags, situated_context } = req.body;
+  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags, situated_context, chunk_regex } = req.body;
   const namespace_id = req.body?.namespace;
   
   if (!namespace_id) {
@@ -1651,6 +1651,9 @@ router.post('/', async (req, res) => {
       new_kb.scrape_type = 2;
       new_kb.scrape_options = aiManager.setDefaultScrapeOptions();
     }
+  }
+  if (type === 'regex_custom') {
+    new_kb.chunk_regex = chunk_regex;
   }
 
   if (tags && Array.isArray(tags) && tags.every(tag => typeof tag === "string")) {
