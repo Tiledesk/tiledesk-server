@@ -7,7 +7,7 @@ const Project = require('../models/project');
 /**
  * POST /mcp/connect
  * Initializes a connection to an MCP server
- * Body: { url: string, auth?: { type: 'bearer'|'api_key'|'basic', token?: string, key?: string, username?: string, password?: string } }
+ * Body: { url: string, auth?: { type: 'bearer'|'api_key'|'mcp_api_key'|'basic', token?: string, key?: string, username?: string, password?: string } }
  */
 router.post('/connect', async (req, res) => {
   try {
