@@ -7,7 +7,7 @@ const Project = require('../models/project');
 /**
  * POST /mcp/connect
  * Initializes a connection to an MCP server
- * Body: { url: string, auth?: { type: 'bearer'|'api_key'|'mcp_api_key'|'basic', token?: string, key?: string, username?: string, password?: string } }
+ * Body: { url: string, auth?: { type: 'bearer'|'api_key'|'mcp_api_key'|'X-MCP-API-Key'|'basic', token?: string, key?: string, username?: string, password?: string } }
  */
 router.post('/connect', async (req, res) => {
   try {
@@ -48,6 +48,8 @@ router.post('/tools', async (req, res) => {
   try {
     const id_project = req.projectid;
     const { url, auth } = req.body;
+
+    winston.info(`MCP /tools called for project ${id_project}, url: ${url}`);
 
     if (!url) {
       return res.status(400).send({ success: false, error: "Missing required parameter 'url' in body" });

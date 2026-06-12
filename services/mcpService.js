@@ -18,24 +18,47 @@ class MCPService {
   }
 
   /**
+   * Normalizes auth.type to a canonical value
+   * Accepts: mcp_api_key, X-MCP-API-Key, x-mcp-api-key, etc.
+   * @param {String} type - Auth type from request body
+   * @returns {String} - Normalized auth type
+   */
+  normalizeAuthType(type) {
+    return (type || '').toLowerCase().replace(/_/g, '-');
+  }
+
+  /**
    * Applies authentication headers to an HTTP request config
    * @param {Object} headers - HTTP headers object
    * @param {Object} auth - Authentication configuration (optional)
+   * @returns {Boolean} - Whether auth headers were applied
    */
   applyAuthHeaders(headers, auth) {
     if (!auth) {
-      return;
+      return false;
     }
-    if (auth.type === 'bearer' && auth.token) {
+    const authType = this.normalizeAuthType(auth.type);
+
+    if (authType === 'bearer' && auth.token) {
       headers['Authorization'] = `Bearer ${auth.token}`;
-    } else if (auth.type === 'mcp_api_key' && auth.key) {
+      return true;
+    }
+    if ((authType === 'mcp-api-key' || authType === 'x-mcp-api-key') && auth.key) {
       headers['X-MCP-API-Key'] = auth.key;
-    } else if (auth.type === 'api_key' && auth.key) {
+      return true;
+    }
+    if (authType === 'api-key' && auth.key) {
       headers['X-API-Key'] = auth.key;
-    } else if (auth.type === 'basic' && auth.username && auth.password) {
+      return true;
+    }
+    if (authType === 'basic' && auth.username && auth.password) {
       const credentials = Buffer.from(`${auth.username}:${auth.password}`).toString('base64');
       headers['Authorization'] = `Basic ${credentials}`;
+      return true;
     }
+
+    winston.warn(`MCP auth type not recognized or incomplete: "${auth.type}"`);
+    return false;
   }
 
   /**
@@ -150,6 +173,11 @@ class MCPService {
     try {
       const response = await axios(config);
 
+      if (response.status >= 400) {
+        const details = response.data ? ` - ${JSON.stringify(response.data)}` : '';
+        throw new Error(`HTTP Error ${response.status}: ${response.statusText}${details}`);
+      }
+
       // Capture session ID from response headers (if present)
       const sessionIdFromHeader = response.headers['mcp-session-id'] ||
                                   response.headers['x-mcp-session-id'];
@@ -249,15 +277,15 @@ class MCPService {
         initializeResponse = response;
 
         if (sessionId) {
-          winston.debug(`MCP Server ${serverId} session initialized with ID: ${sessionId}`);
+          winston.info(`MCP Server ${serverId} session initialized with ID: ${sessionId}`);
           // Session-based servers (Streamable HTTP) require this notification before any other request
           await this.sendInitializedNotification(serverConfig.url, serverConfig.auth, sessionId);
-          winston.debug(`MCP Server ${serverId} sent notifications/initialized`);
+          winston.info(`MCP Server ${serverId} sent notifications/initialized`);
         } else {
-          winston.debug(`MCP Server ${serverId} initialized (stateless, no session ID required)`);
+          winston.info(`MCP Server ${serverId} initialized (stateless, no session ID required)`);
         }
       } catch (initError) {
-        winston.debug(`MCP Server ${serverId} initialization failed: ${initError.message}`);
+        winston.error(`MCP Server ${serverId} initialization failed: ${initError.message}`);
         throw initError;
       }
 
@@ -266,10 +294,11 @@ class MCPService {
         config: serverConfig,
         sessionId: sessionId,
         initialized: true,
+        sessionReady: true,
         capabilities: initializeResponse.result?.capabilities || {}
       });
 
-      winston.info(`MCP Server initialized: ${serverId}${sessionId ? ` (session: ${sessionId})` : ' (stateless)'}`);
+      winston.info(`MCP Server ready: ${serverId}${sessionId ? ` (session: ${sessionId})` : ' (stateless)'}`);
       return initializeResponse.result;
     } catch (error) {
       winston.error(`Error initializing MCP server ${serverId}:`, error);
@@ -290,9 +319,11 @@ class MCPService {
     const serverId = this.getCacheKey(serverConfig.url, serverConfig.projectId);
 
     try {
+      winston.info(`MCP listTools request for ${serverId}`);
+
       // Check if server is already initialized
       let connection = this.connections.get(serverId);
-      if (!connection) {
+      if (!connection || (connection.sessionId && !connection.sessionReady)) {
         await this.initializeServer(serverConfig);
         connection = this.connections.get(serverId);
       }
@@ -325,7 +356,7 @@ class MCPService {
       }
 
       const tools = response.result?.tools || [];
-      winston.debug(`MCP Server ${serverId} returned ${tools.length} tools`);
+      winston.info(`MCP Server ${serverId} returned ${tools.length} tools`);
       return tools;
     } catch (error) {
       winston.error(`Error listing tools from MCP server ${serverId}:`, error);
