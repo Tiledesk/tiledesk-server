@@ -114,6 +114,7 @@ class AiManager {
             engine: engine, 
             hybrid: hybrid, 
             ...(situated_context && { situated_context }),
+            ...(options.request_id && { request_id: options.request_id }),
             ...rest}
         });
 
@@ -123,6 +124,8 @@ class AiManager {
           resolve({ result, schedule_json: resources });
           return;
         }
+
+        console.log("resource: ", resources[0]);
   
         this.scheduleScrape(resources, hybrid);
         resolve(result);
@@ -136,6 +139,8 @@ class AiManager {
 
   async scheduleSitemap(namespace, sitemap_content, options) {
     return new Promise((resolve, reject) => {
+
+      const situated_context_obj = this.normalizeSituatedContext(sitemap_content.situated_context);
 
       let kb = {
         id: sitemap_content._id,
@@ -252,6 +257,7 @@ class AiManager {
 
   async resolveLLMConfig(id_project, provider = 'openai', model, vllmServer = undefined) {
 
+    console.log("resolveLLMConfig...");
     if (provider === 'ollama' || provider === 'vllm') {
       const integration = await integrationService.getIntegration(id_project, provider);
       if (!integration?.value) {
@@ -283,6 +289,9 @@ class AiManager {
         throw { code: 422, error: `Server url for ${provider} is empty or invalid` };
       }
 
+      console.log("key: ", key);
+
+      console.log("returning ", { provider, name: model, api_key: key });
       return {
         provider,
         name: model,
