@@ -1583,20 +1583,21 @@ router.get('/', async (req, res) => {
 
 router.get('/:kb_id', async (req, res) => {
 
+  let project_id = req.projectid;
   let kb_id = req.params.kb_id;
 
-  KB.findById(kb_id, (err, kb) => {
-    if (err) {
-      winston.error("Find kb by id error: ", err);
-      return res.status(500).send({ success: false, error: err });
+  try {
+    let content = await KB.findOne({ id_project: project_id, _id: kb_id })
+    if (!content) {
+      return res.status(404).send({ success: false, error: "Content not found with id " + kb_id + " for project " + project_id });
     }
+    return res.status(200).send(content);
 
-    if (!kb) {
-      return res.status(404).send({ success: false, error: "Content not found with id " + kb_id });
-    }
+  } catch (err) {
+    winston.error("Find kb by id error: ", err);
+    return res.status(500).send({ success: false, error: "An error occurred retrieving the content" });
+  }
 
-    return res.status(200).send(kb);
-  })
 })
 
 router.post('/', async (req, res) => {
