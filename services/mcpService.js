@@ -37,6 +37,12 @@ class MCPService {
     if (!auth) {
       return false;
     }
+
+    const hasCredentials = !!(auth.token || auth.key || auth.username || auth.password);
+    if (!auth.type && !hasCredentials) {
+      return false;
+    }
+
     const authType = this.normalizeAuthType(auth.type);
 
     if (authType === 'bearer' && auth.token) {
@@ -57,7 +63,9 @@ class MCPService {
       return true;
     }
 
-    winston.warn(`MCP auth type not recognized or incomplete: "${auth.type}"`);
+    if (auth.type || hasCredentials) {
+      winston.warn(`MCP auth type not recognized or incomplete: "${auth.type}"`);
+    }
     return false;
   }
 
@@ -100,11 +108,53 @@ class MCPService {
   }
 
   /**
-   * Sends the MCP initialized notification required by session-based servers
-   * (Streamable HTTP transport). Skipped for stateless servers with no session ID.
+   * Sends an initialize request, retrying with an older protocol version if needed
    * @param {String} url - MCP server URL
    * @param {Object} auth - Authentication configuration (optional)
-   * @param {String} sessionId - Session ID from the initialize response
+   * @returns {Promise<Object>} - Initialize response
+   */
+  async sendInitializeRequest(url, auth) {
+    const protocolVersions = ['2025-03-26', '2024-11-05'];
+    let lastError = null;
+
+    for (const protocolVersion of protocolVersions) {
+      try {
+        return await this.sendJSONRPCRequest(url, {
+          jsonrpc: '2.0',
+          id: Date.now(),
+          method: 'initialize',
+          params: {
+            protocolVersion,
+            capabilities: {
+              tools: {}
+            },
+            clientInfo: {
+              name: 'tiledesk-server',
+              version: '1.0.0'
+            }
+          }
+        }, auth, null);
+      } catch (error) {
+        lastError = error;
+        const isProtocolError = error.message && (
+          error.message.includes('protocol version') ||
+          error.message.includes('Unsupported protocol') ||
+          error.message.includes('code: -32602')
+        );
+        if (!isProtocolError) {
+          throw error;
+        }
+        winston.debug(`MCP initialize failed with protocolVersion ${protocolVersion}, trying fallback`);
+      }
+    }
+
+    throw lastError;
+  }
+
+  /**
+   * Sends notifications/initialized when the server uses sessions.
+   * Best-effort: some servers require it (Streamable HTTP), others ignore or reject it.
+   * @returns {Promise<Boolean>} - true if notification was accepted
    */
   async sendInitializedNotification(url, auth, sessionId) {
     const config = {
@@ -127,16 +177,22 @@ class MCPService {
 
     this.applyAuthHeaders(config.headers, auth);
 
-    const response = await axios(config);
+    try {
+      const response = await axios(config);
 
-    if (response.status >= 400) {
-      const details = response.data ? ` - ${JSON.stringify(response.data)}` : '';
-      throw new Error(`MCP initialized notification failed: HTTP ${response.status}${details}`);
-    }
+      if (response.status >= 400) {
+        return false;
+      }
 
-    const responseData = this.parseResponseBody(response.data);
-    if (responseData?.error) {
-      throw new Error(`MCP Error: ${responseData.error.message || 'Unknown error'} (code: ${responseData.error.code})`);
+      const responseData = this.parseResponseBody(response.data);
+      if (responseData?.error) {
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      winston.debug(`MCP notifications/initialized failed: ${error.message}`);
+      return false;
     }
   }
 
@@ -255,22 +311,7 @@ class MCPService {
       let initializeResponse = null;
 
       try {
-        // JSON-RPC call to initialize the server
-        const response = await this.sendJSONRPCRequest(serverConfig.url, {
-          jsonrpc: '2.0',
-          id: Date.now(),
-          method: 'initialize',
-          params: {
-            protocolVersion: '2025-03-26',
-            capabilities: {
-              tools: {}
-            },
-            clientInfo: {
-              name: 'tiledesk-server',
-              version: '1.0.0'
-            }
-          }
-        }, serverConfig.auth, null);
+        const response = await this.sendInitializeRequest(serverConfig.url, serverConfig.auth);
 
         // Session ID is returned in 'mcp-session-id' header from response
         sessionId = response.sessionId || null;
@@ -278,9 +319,16 @@ class MCPService {
 
         if (sessionId) {
           winston.info(`MCP Server ${serverId} session initialized with ID: ${sessionId}`);
-          // Session-based servers (Streamable HTTP) require this notification before any other request
-          await this.sendInitializedNotification(serverConfig.url, serverConfig.auth, sessionId);
-          winston.info(`MCP Server ${serverId} sent notifications/initialized`);
+          const notificationAccepted = await this.sendInitializedNotification(
+            serverConfig.url,
+            serverConfig.auth,
+            sessionId
+          );
+          if (notificationAccepted) {
+            winston.info(`MCP Server ${serverId} sent notifications/initialized`);
+          } else {
+            winston.warn(`MCP Server ${serverId} notifications/initialized not accepted (continuing)`);
+          }
         } else {
           winston.info(`MCP Server ${serverId} initialized (stateless, no session ID required)`);
         }
@@ -294,7 +342,6 @@ class MCPService {
         config: serverConfig,
         sessionId: sessionId,
         initialized: true,
-        sessionReady: true,
         capabilities: initializeResponse.result?.capabilities || {}
       });
 
@@ -323,7 +370,7 @@ class MCPService {
 
       // Check if server is already initialized
       let connection = this.connections.get(serverId);
-      if (!connection || (connection.sessionId && !connection.sessionReady)) {
+      if (!connection) {
         await this.initializeServer(serverConfig);
         connection = this.connections.get(serverId);
       }
