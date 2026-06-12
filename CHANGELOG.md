@@ -5,9 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.19.1
+# 2.19.2
 - Improved vLLM integration in order to support multiple servers
 - Added custom_regex option for .txt and .md file uploaded in a Knowledge Base
+- Improved extension management in order to support markdown files
 - Updated tybot-connector to 2.1.1
 
 # 2.19.0
