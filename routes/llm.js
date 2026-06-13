@@ -548,6 +548,7 @@ router.post('/preview', async (req, res) => {
     }
 
     winston.debug("Preview LLM json: ", json);
+    console.log("Preview LLM json: ", json);
 
     aiService.askllm(json).then((response) => {
         winston.verbose("Askllm response: ", response);
