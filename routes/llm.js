@@ -106,6 +106,7 @@ router.post('/preview', async (req, res) => {
         json.model = {
             name: body.model,
             url: vllmConfig.url,
+            api_key: key || "",
             provider: 'vllm'
         };
         json.stream = false;
