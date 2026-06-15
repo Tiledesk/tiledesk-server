@@ -94,7 +94,10 @@ class AiManager {
       this.saveBulk(operations, kbs, namespace.id_project, namespace.id).then( async (result) => {
         let hybrid = namespace.hybrid;
         let engine = namespace.engine || default_engine;
+        engine = (engine && typeof engine.toObject === 'function') ? { ...engine.toObject() } : { ...engine };
+        engine.apikey = process.env.VECTOR_STORE_APIKEY || '';
         let embedding = namespace.embedding || default_embedding;
+        embedding = (embedding && typeof embedding.toObject === 'function') ? { ...embedding.toObject() } : { ...embedding };
         embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
         let situated_context;

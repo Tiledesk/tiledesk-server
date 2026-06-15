@@ -197,9 +197,12 @@ router.post('/kb/reindex', async (req, res) => {
     }
   
     json.engine = namespace.engine || (namespace.hybrid ? default_engine_hybrid : default_engine);
+    json.engine = (json.engine && typeof json.engine.toObject === 'function') ? { ...json.engine.toObject() } : { ...json.engine };
+    json.engine.apikey = process.env.VECTOR_STORE_APIKEY || '';
     json.hybrid = namespace.hybrid;
-    
+
     let embedding = namespace.embedding || default_embedding;
+    embedding = (embedding && typeof embedding.toObject === 'function') ? { ...embedding.toObject() } : { ...embedding };
     embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
     json.embedding = embedding;
 

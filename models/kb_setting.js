@@ -32,7 +32,8 @@ const EngineSchema = new Schema({
   },
   apikey: {
     type: String,
-    required: false
+    required: false,
+    select: false
   },
   vector_size: {
     type: Number,
@@ -77,7 +78,8 @@ const EmbeddingSchema = new Schema({
   },
   api_key: {
     type: String,
-    required: false
+    required: false,
+    select: false
   }
 }, {
   _id: false  // This is schema is always used as an embedded object inside NamespaceSchema
