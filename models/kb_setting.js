@@ -20,6 +20,67 @@ let expireAnsweredAfterSeconds = ttlSecondsFromEnv(
   DEFAULT_ANSWERED_TTL_SEC
 );
 
+const EMPTY_EMBEDDING_API_KEY = '';
+
+function logEmbeddingApiKeyWriteAttempt(source, attemptedValue, meta = {}) {
+  if (attemptedValue === EMPTY_EMBEDDING_API_KEY || attemptedValue == null) {
+    return;
+  }
+  winston.warn('[Namespace.embedding.api_key] non-empty value blocked on ' + source, {
+    ...meta,
+    attemptedValue,
+    stack: new Error().stack
+  });
+}
+
+function sanitizeEmbeddingApiKeyObject(embedding, source, meta = {}) {
+  if (!embedding || typeof embedding !== 'object') {
+    return false;
+  }
+  if (!Object.prototype.hasOwnProperty.call(embedding, 'api_key')) {
+    return false;
+  }
+  if (embedding.api_key === EMPTY_EMBEDDING_API_KEY || embedding.api_key == null) {
+    embedding.api_key = EMPTY_EMBEDDING_API_KEY;
+    return false;
+  }
+  logEmbeddingApiKeyWriteAttempt(source, embedding.api_key, meta);
+  embedding.api_key = EMPTY_EMBEDDING_API_KEY;
+  return true;
+}
+
+function sanitizeEmbeddingApiKeyUpdate(update, source, meta = {}) {
+  if (!update || typeof update !== 'object') {
+    return false;
+  }
+
+  let changed = false;
+
+  const sanitizeContainer = (container) => {
+    if (!container || typeof container !== 'object') {
+      return;
+    }
+    if (sanitizeEmbeddingApiKeyObject(container.embedding, source, meta)) {
+      changed = true;
+    }
+    if (Object.prototype.hasOwnProperty.call(container, 'embedding.api_key')
+      && container['embedding.api_key'] !== EMPTY_EMBEDDING_API_KEY) {
+      logEmbeddingApiKeyWriteAttempt(source, container['embedding.api_key'], meta);
+      container['embedding.api_key'] = EMPTY_EMBEDDING_API_KEY;
+      changed = true;
+    }
+  };
+
+  sanitizeContainer(update);
+  ['$set', '$setOnInsert'].forEach((key) => {
+    if (update[key]) {
+      sanitizeContainer(update[key]);
+    }
+  });
+
+  return changed;
+}
+
 
 const EngineSchema = new Schema({
   name: {
@@ -77,7 +138,12 @@ const EmbeddingSchema = new Schema({
   },
   api_key: {
     type: String,
-    required: false
+    required: false,
+    default: EMPTY_EMBEDDING_API_KEY,
+    set: function (value) {
+      logEmbeddingApiKeyWriteAttempt('embedding.api_key setter', value);
+      return EMPTY_EMBEDDING_API_KEY;
+    }
   }
 }, {
   _id: false  // This is schema is always used as an embedded object inside NamespaceSchema
@@ -119,6 +185,40 @@ const NamespaceSchema = new Schema({
 }, {
   timestamps: true
 })
+
+NamespaceSchema.pre('save', function (next) {
+  if (this.isModified('embedding.api_key')) {
+    const attemptedValue = this.get('embedding.api_key');
+    logEmbeddingApiKeyWriteAttempt('save', attemptedValue, {
+      namespaceId: this.id,
+      id_project: this.id_project
+    });
+    this.set('embedding.api_key', EMPTY_EMBEDDING_API_KEY);
+  }
+  next();
+});
+
+['updateOne', 'updateMany', 'findOneAndUpdate'].forEach((hook) => {
+  NamespaceSchema.pre(hook, function (next) {
+    const update = this.getUpdate();
+    if (sanitizeEmbeddingApiKeyUpdate(update, hook, { query: this.getQuery() })) {
+      this.setUpdate(update);
+    }
+    next();
+  });
+});
+
+NamespaceSchema.pre('insertMany', function (next, docs) {
+  if (Array.isArray(docs)) {
+    docs.forEach((doc) => {
+      sanitizeEmbeddingApiKeyObject(doc.embedding, 'insertMany', {
+        namespaceId: doc.id,
+        id_project: doc.id_project
+      });
+    });
+  }
+  next();
+});
 
 var KBSchema = new Schema({
   id_project: {
