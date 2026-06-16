@@ -199,7 +199,7 @@ router.post('/kb/reindex', async (req, res) => {
     json.engine = namespace.engine || (namespace.hybrid ? default_engine_hybrid : default_engine);
     json.hybrid = namespace.hybrid;
     
-    let embedding = namespace.embedding || default_embedding;
+    let embedding = namespace.embedding || Object.assign({}, default_embedding);
     embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
     json.embedding = embedding;
 

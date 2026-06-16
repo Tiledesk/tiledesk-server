@@ -94,7 +94,7 @@ class AiManager {
       this.saveBulk(operations, kbs, namespace.id_project, namespace.id).then( async (result) => {
         let hybrid = namespace.hybrid;
         let engine = namespace.engine || default_engine;
-        let embedding = namespace.embedding || default_embedding;
+        let embedding = namespace.embedding || Object.assign({}, default_embedding);
         embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
 
         let situated_context;
