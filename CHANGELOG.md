@@ -5,7 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.19.2
+# 2.19.4
+- Added missing id_project in data sent for qa and single scrape
+
+# 2.19.3
 - Fixed bug on AiPrompt action with vllm models
 - Updated tybot-connector to 2.1.2
 
