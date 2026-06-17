@@ -514,25 +514,6 @@ class AiManager {
     return true;
   }
 
-  // from webhook
-  // async scheduleScrape(resources) {
-
-  //   let scheduler = new Scheduler({ jobManager: jobManager });
-  
-  //   resources.forEach(r => {
-  //     winston.debug("(Webhook) Schedule job with following data: ", r);
-  //     scheduler.trainSchedule(r, async (err, result) => {
-  //       if (err) {
-  //         winston.error("Scheduling error: ", err);
-  //       } else {
-  //         winston.info("Scheduling result: ", result);
-  //       }
-  //     });
-  //   })
-  
-  //   return true;
-  // }
-
   async startScrape(data) {
 
     if (!data.gptkey) {
@@ -623,6 +604,29 @@ class AiManager {
         api_key: process.env.SITUATED_CONTEXT_API_KEY || process.env.GPTKEY
       }
       : undefined;
+  }
+
+  async getTrackingTokens(qaResult) {
+    if (publicKey !== true) {
+      return qaResult.prompt_token_size;
+    }
+    let modelKey;
+    if (typeof data.model === 'string') {
+      modelKey = data.model;
+    } else if (data.model && typeof data.model.name === 'string') {
+      modelKey = data.model.name;
+    }
+    let multiplier = MODELS_MULTIPLIER[modelKey];
+    if (!multiplier) {
+      multiplier = 1;
+      winston.info("No multiplier found for AI model (qa) " + modelKey);
+    }
+    obj.multiplier = multiplier;
+    obj.tokens = qaResult.prompt_token_size;
+    let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
+    winston.verbose("incremented_key: ", incremented_key);
+    obj.tokens = obj.tokens * obj.multiplier;
+    return obj.tokens;
   }
 
 }

@@ -73,6 +73,25 @@ class KbQuestionService {
     }
   }
 
+  async trackKbQaResult(id_project, { namespace, question }, answer, tokens) {
+    try {
+      if (answer.success === true) {
+        await this.createAnsweredQuestion(id_project, {
+          namespace,
+          question,
+          answer: answer.answer,
+          tokens,
+        });
+      } else if (answer.success === false) {
+        await this.createUnansweredQuestion(id_project, { namespace, question });
+      } else {
+        winston.warn('qa answer.success is not true or false: ', answer.success);
+      }
+    } catch (error) {
+      winston.error('qa err: ', error);
+    }
+  }
+
 }
 
 const kbQuestionService = new KbQuestionService();

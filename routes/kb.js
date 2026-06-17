@@ -516,6 +516,15 @@ router.post('/qa', async (req, res) => {
       return false;
     }
 
+    let streamQaResult = null;
+
+    function captureStreamQaResult(obj) {
+      const normalized = normalizeKbQaPayload(obj);
+      if (normalized && typeof normalized === 'object' && typeof normalized.success === 'boolean') {
+        streamQaResult = normalized;
+      }
+    }
+
     function forwardSsePayload(payload) {
       if (payload === '[DONE]') return;
       let obj;
@@ -524,6 +533,8 @@ router.post('/qa', async (req, res) => {
       } catch (_) {
         return;
       }
+
+      captureStreamQaResult(obj);
 
       if (obj.status === 'started') {
         return;
@@ -574,6 +585,15 @@ router.post('/qa', async (req, res) => {
             forwardSsePayload(trimmed.slice(6));
           }
         }
+        if (streamQaResult) {
+          aiManager.getTrackingTokens(streamQaResult);
+          kbQuestionService.trackKbQaResult(
+            id_project,
+            { namespace: data.namespace, question: data.question },
+            streamQaResult,
+            tokens
+          );
+        }
         res.write('data: [DONE]\n\n');
         res.end();
       });
@@ -606,56 +626,13 @@ router.post('/qa', async (req, res) => {
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
 
-    if (publicKey === true) {
-      let modelKey;
-      if (typeof data.model === 'string') {
-        modelKey = data.model;
-      } else if (data.model && typeof data.model.name === 'string') {
-        modelKey = data.model.name;
-      }
-
-      let multiplier = MODELS_MULTIPLIER[modelKey];
-      if (!multiplier) {
-        multiplier = 1;
-        winston.info("No multiplier found for AI model (qa) " + modelKey);
-      }
-
-      obj.multiplier = multiplier;
-      obj.tokens = answer.prompt_token_size;
-
-      let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
-      winston.verbose("incremented_key: ", incremented_key);
-
-      if (answer.success === true) {
-        try {
-          kbQuestionService.createAnsweredQuestion(
-            id_project,
-            {
-              namespace: data.namespace,
-              question: data.question,
-              answer: answer.answer,
-              tokens: obj.tokens
-            }
-          );
-        } catch (error) {
-          winston.error("qa err: ", error);
-        }
-      } else if (answer.success === false) {
-        try {
-          kbQuestionService.createUnansweredQuestion(
-            id_project,
-            {
-              namespace: data.namespace,
-              question: data.question
-            }
-          );
-        } catch (error) {
-          winston.error("qa err: ", error);
-        }
-      } else {
-        winston.warn("qa answer.success is not true or false: ", answer.success);
-      }
-    }
+    aiManager.getTrackingTokens(answer);
+    kbQuestionService.trackKbQaResult(
+      id_project,
+      { namespace: data.namespace, question: data.question },
+      answer,
+      tokens
+    );
 
     return res.status(200).send(answer);
 
