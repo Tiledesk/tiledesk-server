@@ -626,8 +626,12 @@ class AiManager {
     obj.tokens = qaResult.prompt_token_size;
     const incremented_key = await quoteManager.incrementTokenCount(project, obj);
     winston.verbose("incremented_key: ", incremented_key);
-    obj.tokens = obj.tokens * obj.multiplier;
-    return obj.tokens;
+    const trackingTokens = obj.tokens * obj.multiplier;
+    if (qaResult != null && typeof qaResult.prompt_token_size === 'number') {
+      qaResult.legacy_prompt_token_size = qaResult.prompt_token_size;
+      qaResult.prompt_token_size = trackingTokens;
+    }
+    return trackingTokens;
   }
 
 }

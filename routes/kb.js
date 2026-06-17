@@ -600,6 +600,9 @@ router.post('/qa', async (req, res) => {
             streamQaResult,
             tokens
           );
+          if (publicKey === true && typeof streamQaResult.legacy_prompt_token_size === 'number') {
+            res.write('data: ' + JSON.stringify(streamQaResult) + '\n\n');
+          }
         }
         res.write('data: [DONE]\n\n');
         res.end();
