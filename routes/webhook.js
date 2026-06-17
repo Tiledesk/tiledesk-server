@@ -166,6 +166,7 @@ router.post('/kb/reindex', async (req, res) => {
 
     let json = {
       id: kb._id,
+      id_project: kb.id_project,
       type: kb.type,
       source: kb.source,
       content: "",

@@ -1337,7 +1337,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
     return res.status(500).send({ success: false, error: "Unable to get new content" });
   }
 
-  let resources = new_contents.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
+  let resources = new_contents.map(({ name, status, __v, createdAt, updatedAt, ...keepAttrs }) => keepAttrs)
   resources = resources.map(({ _id, scrape_options, ...rest }) => {
     return {
       id: _id,
@@ -1738,6 +1738,7 @@ router.post('/', async (req, res) => {
 
       const json = {
         id: saved_kb._id,
+        id_project: saved_kb.id_project,
         type: saved_kb.type,
         source: saved_kb.source,
         content: saved_kb.content || "",
@@ -1917,7 +1918,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
           situated_context_obj = normalizeSituatedContext(situated_context);
         }
 
-        let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, situated_context, ...keepAttrs }) => keepAttrs)
+        let resources = result.map(({ name, status, __v, createdAt, updatedAt, situated_context, ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, ...rest }) => {
           return {
             id: _id,
@@ -2209,6 +2210,7 @@ router.put('/:kb_id', async (req, res) => {
 
   const json = {
     id: updated_content._id,
+    id_project: updated_content.id_project,
     type: updated_content.type,
     source: updated_content.source,
     content: updated_content.content || "",
