@@ -517,6 +517,23 @@ router.post('/qa', async (req, res) => {
     }
 
     let streamQaResult = null;
+    const qaStartedAt = Date.now();
+    let streamDurationSeconds = null;
+
+    function captureStreamDurationFromFirstChunk(obj) {
+      if (streamDurationSeconds != null) return;
+      const content = extractContent(obj);
+      if (content != null && content !== '') {
+        streamDurationSeconds = (Date.now() - qaStartedAt) / 1000;
+      }
+    }
+
+    function withMeasuredDuration(payload) {
+      if (streamDurationSeconds != null && payload && typeof payload === 'object') {
+        payload.duration = streamDurationSeconds;
+      }
+      return payload;
+    }
 
     function captureStreamQaResult(obj) {
       const normalized = normalizeKbQaPayload(obj);
@@ -535,17 +552,18 @@ router.post('/qa', async (req, res) => {
       }
 
       captureStreamQaResult(obj);
+      captureStreamDurationFromFirstChunk(obj);
 
       if (obj.status === 'started') {
         return;
       }
       if (isKbStreamCompletedSummary(obj)) {
-        res.write('data: ' + JSON.stringify(normalizeKbQaPayload(obj)) + '\n\n');
+        res.write('data: ' + JSON.stringify(withMeasuredDuration(normalizeKbQaPayload(obj))) + '\n\n');
         return;
       }
 
       if (obj.type === 'metadata' || obj.event === 'metadata') {
-        res.write('data: ' + JSON.stringify(normalizeKbQaPayload(obj)) + '\n\n');
+        res.write('data: ' + JSON.stringify(withMeasuredDuration(normalizeKbQaPayload(obj))) + '\n\n');
         return;
       }
       const content = extractContent(obj);
@@ -555,7 +573,7 @@ router.post('/qa', async (req, res) => {
       }
       const normalized = normalizeKbQaPayload(obj);
       if (isMetadataPayload(normalized, content)) {
-        res.write('data: ' + JSON.stringify(normalized) + '\n\n');
+        res.write('data: ' + JSON.stringify(withMeasuredDuration(normalized)) + '\n\n');
       }
     }
 
@@ -586,6 +604,7 @@ router.post('/qa', async (req, res) => {
           }
         }
         if (streamQaResult) {
+          withMeasuredDuration(streamQaResult);
           const tokens = await aiManager.getTrackingTokens({
             qaResult: streamQaResult,
             publicKey,
@@ -632,9 +651,13 @@ router.post('/qa', async (req, res) => {
     return;
   }
 
+  const qaStartedAt = Date.now();
+
   aiService.askNamespace(data).then(async (resp) => {
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
+
+    answer.duration = (Date.now() - qaStartedAt) / 1000;
 
     const tokens = await aiManager.getTrackingTokens({
       qaResult: answer,
