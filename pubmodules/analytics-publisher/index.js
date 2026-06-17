@@ -46,6 +46,7 @@ function availabilityLabel(boolVal) {
  * to 'user', misclassifying agent messages.
  */
 function senderType(sender, request) {
+  if (!request) return "user"; // direct/group messages carry no request
   let bot, agent = undefined;
   if(request.participantsBots)
    bot = request.participantsBots.find(participant => participant.includes(sender));
@@ -101,6 +102,18 @@ function toStringId(doc) {
   return (doc._id || doc.id || doc).toString() || null;
 }
 
+/**
+ * Extract the tag string from a request.updated TAG_ADD patch.
+ * The tag may be a bare string or a { tag: "..." } sub-document — the shape
+ * varies by call site (see requestService.addTagByRequestId).
+ */
+function tagString(t) {
+  if (!t) return null;
+  if (typeof t === "string") return t;
+  if (typeof t.tag === "string") return t.tag;
+  return null;
+}
+
 // ─── listeners ──────────────────────────────────────────────────────────────
 
 function listen() {
@@ -149,6 +162,10 @@ function listen() {
   //   duration_seconds     number
   //   waiting_time_seconds number|null
   //   satisfaction_rating  number 1-5 | null
+  // Satisfaction is intentionally NOT included here: ratings are submitted
+  // asynchronously (after close) and emitted as a separate conversation.satisfaction
+  // event below. The conversation-closed contract has no satisfaction field, so
+  // any rating sent here would be stripped by the ingest validator anyway.
   requestEvent.on("request.close", function (request) {
     var createdAt = new Date(request.createdAt);
     var closedAt = request.closed_at ? new Date(request.closed_at) : new Date();
@@ -157,15 +174,6 @@ function listen() {
         ? Math.round(request.duration / 1000)
         : Math.round((closedAt - createdAt) / 1000);
 
-    // Normalise rating: must be an integer 1–5 or null.
-    var rawRating = request.rating;
-    var satisfactionRating = null;
-    if (rawRating != null) {
-      var r = parseInt(rawRating, 10);
-      satisfactionRating = r >= 1 && r <= 5 ? r : null;
-    }
-
-    // TODO: da splittare rispetto al rating
     track("conversation.closed", request.id_project, {
       id_request: request.request_id || toStringId(request),
       request_id: request.request_id || toStringId(request),
@@ -176,7 +184,50 @@ function listen() {
         request.waiting_time != null
           ? Math.round(request.waiting_time / 1000)
           : null,
-      satisfaction_rating: satisfactionRating,
+    });
+  });
+
+  // ── conversation.satisfaction ─────────────────────────────────────────────
+  // Emitted by routes/request.js ("request.satisfaction") when a visitor submits
+  // a rating — asynchronously, after the conversation is already closed.
+  // Contract: packages/contracts/src/payloads/conversation-satisfaction.ts
+  //   id_request     string  (required)
+  //   request_id     string  (required)
+  //   rating         number  (required, integer 1-5)
+  //   rating_message string|null
+  requestEvent.on("request.satisfaction", function (data) {
+    var request = (data && data.request) || {};
+    if (request.rating == null) return;
+
+    var r = parseInt(request.rating, 10);
+    if (!(r >= 1 && r <= 5)) return; // contract requires an integer 1-5
+
+    var requestId = request.request_id || toStringId(request);
+    track("conversation.satisfaction", request.id_project, {
+      id_request: requestId,
+      request_id: requestId,
+      rating: r,
+      rating_message: request.rating_message || null,
+    });
+  });
+
+  // ── conversation.tag_added ────────────────────────────────────────────────
+  // Tags are added via requestService.addTagByRequestId, which emits the generic
+  // "request.updated" event with comment === "TAG_ADD" and the added tag in
+  // patch.tags. One analytics event per added tag.
+  // Contract: packages/contracts/src/payloads/conversation-tag-added.ts
+  //   id_request string (required)
+  //   tag        string (required)
+  requestEvent.on("request.updated", function (data) {
+    if (!data || data.comment !== "TAG_ADD") return;
+
+    var request = data.request || {};
+    var tag = tagString(data.patch && data.patch.tags);
+    if (!tag) return; // nothing usable to record
+
+    track("conversation.tag_added", request.id_project, {
+      id_request: request.request_id || toStringId(request),
+      tag: tag,
     });
   });
 
@@ -198,14 +249,26 @@ function listen() {
     var idRequest = messageJson.recipient || null;
     if (!idRequest) return; // cannot emit without a conversation reference
 
+    // Denormalise department (id) and channel (name) from the parent request so
+    // the messages MVs can filter without a query-time join. Mirrors the
+    // backfill message mapper (department = id, channel = name). Optional in the
+    // contract, so null is fine when the message carries no populated request.
+    var msgRequest = messageJson.request || null;
+    var msgChannel =
+      (msgRequest && msgRequest.channel && msgRequest.channel.name) ||
+      (messageJson.channel && messageJson.channel.name) ||
+      null;
+
     track("message.sent", messageJson.id_project, {
       id_message: (messageJson._id || messageJson.id || "").toString(),
       id_request: idRequest,
       sender_id: sender || "unknown", // required non-null — fallback to 'unknown'
-      sender_type: senderType(sender, messageJson.request),
+      sender_type: senderType(sender, msgRequest),
       message_type: messageJson.type || "text", // required non-null — fallback to 'text'
       has_attachment: !!(messageJson.metadata && messageJson.metadata.src),
       language: messageJson.language || null,
+      department: departmentId(msgRequest && msgRequest.department),
+      channel: msgChannel,
     });
   });
 
