@@ -7,10 +7,14 @@ const { expect } = require('chai');
 // reference destructured inside the module body is our spy. No DB or broker
 // is touched: the publisher's listeners are pure (event in -> track() out).
 const analyticsClient = require('../../../lib/analyticsClient');
+const uuidv5 = require('uuid/v5');
+
+// Must match apps/backfill BACKFILL_UUID_NAMESPACE.
+const NS = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
 
 const calls = [];
-analyticsClient.track = function (eventType, idProject, payload) {
-  calls.push({ eventType: eventType, idProject: idProject, payload: payload });
+analyticsClient.track = function (eventType, idProject, payload, eventId) {
+  calls.push({ eventType: eventType, idProject: idProject, payload: payload, eventId: eventId });
 };
 
 // Fresh require so the module captures the patched track().
@@ -19,6 +23,7 @@ const publisher = require('../index');
 
 const requestEvent = require('../../../event/requestEvent');
 const messageEvent = require('../../../event/messageEvent');
+const authEvent = require('../../../event/authEvent');
 
 function callsFor(type) {
   return calls.filter((c) => c.eventType === type);
@@ -157,6 +162,70 @@ describe('analytics-publisher', function () {
         patch: { status: 200 },
       });
       expect(callsFor('conversation.tag_added')).to.have.length(0);
+    });
+  });
+
+  // Deterministic event_ids let live + backfill events for the same entity
+  // collapse to one row (idempotency). Keys must match the backfill mappers.
+  describe('deterministic event_ids', function () {
+    it('conversation.created -> uuidv5(request_id)', function () {
+      requestEvent.emit('request.create', {
+        request_id: 'req-c1', id_project: 'proj-1', participants: [], hasBot: false,
+        channel: { name: 'web' },
+      });
+      const c = callsFor('conversation.created');
+      expect(c).to.have.length(1);
+      expect(c[0].eventId).to.equal(uuidv5('req-c1', NS));
+    });
+
+    it('conversation.closed -> uuidv5(request_id:closed)', function () {
+      requestEvent.emit('request.close', {
+        request_id: 'req-c2', id_project: 'proj-1',
+        createdAt: new Date(Date.now() - 1000), closed_at: new Date(),
+      });
+      const c = callsFor('conversation.closed');
+      expect(c).to.have.length(1);
+      expect(c[0].eventId).to.equal(uuidv5('req-c2:closed', NS));
+    });
+
+    it('conversation.satisfaction -> uuidv5(request_id:satisfaction)', function () {
+      requestEvent.emit('request.satisfaction', {
+        request: { request_id: 'req-c3', id_project: 'proj-1', rating: 5 },
+      });
+      const c = callsFor('conversation.satisfaction');
+      expect(c).to.have.length(1);
+      expect(c[0].eventId).to.equal(uuidv5('req-c3:satisfaction', NS));
+    });
+
+    it('conversation.tag_added -> uuidv5(request_id:tag)', function () {
+      requestEvent.emit('request.updated', {
+        comment: 'TAG_ADD', request: { request_id: 'req-c4', id_project: 'proj-1' },
+        patch: { tags: { tag: 'vip' } },
+      });
+      const c = callsFor('conversation.tag_added');
+      expect(c).to.have.length(1);
+      expect(c[0].eventId).to.equal(uuidv5('req-c4:vip', NS));
+    });
+
+    it('message.sent -> uuidv5(id_message)', function () {
+      messageEvent.emit('message.create', {
+        _id: 'msg-c5', id_project: 'proj-1', recipient: 'req-c5', sender: 'u1', type: 'text',
+      });
+      const c = callsFor('message.sent');
+      expect(c).to.have.length(1);
+      expect(c[0].eventId).to.equal(uuidv5('msg-c5', NS));
+    });
+
+    it('project_user.activated -> uuidv5(id_project:pu_id:activated)', function () {
+      authEvent.emit('project_user.invite', {
+        savedProject_userPopulated: {
+          _id: 'pu-c6', id_project: 'proj-1', role: 'agent',
+          id_user: { _id: 'user-c6', email: 'a@b.com' },
+        },
+      });
+      const c = callsFor('project_user.activated');
+      expect(c).to.have.length(1);
+      expect(c[0].eventId).to.equal(uuidv5('proj-1:pu-c6:activated', NS));
     });
   });
 });

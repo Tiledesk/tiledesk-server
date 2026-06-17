@@ -22,6 +22,17 @@ var kbEvent = require("../../event/kbEvent");
 var departmentEvent = require("../../event/departmentEvent");
 var botEvent = require("../../event/botEvent");
 var { track } = require("../../lib/analyticsClient");
+var uuidv5 = require("uuid/v5");
+
+// Deterministic event_id namespace — MUST match apps/backfill
+// BACKFILL_UUID_NAMESPACE so a live event and its backfilled twin collapse to a
+// single row (idempotency / no double-count). Applied only to the event types
+// the backfill also produces.
+var ANALYTICS_UUID_NAMESPACE = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
+
+function eventIdFor(key) {
+  return uuidv5(String(key), ANALYTICS_UUID_NAMESPACE);
+}
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -133,16 +144,17 @@ function listen() {
     if (request.preflight === true) return;
 
     var dept = request.department;
+    var requestId = request.request_id || toStringId(request);
 
     track("conversation.created", request.id_project, {
-      id_request: request.request_id || toStringId(request),
-      request_id: request.request_id || toStringId(request),
+      id_request: requestId,
+      request_id: requestId,
       department: departmentId(dept),
       channel: (request.channel && request.channel.name) || "web",
       first_response_time: null,
       with_bot: request.hasBot || false,
       visitor_id: firstVisitorId(request.participants),
-    });
+    }, eventIdFor(requestId));
   }
 
   requestEvent.on("request.update.preflight", function (request) {
@@ -174,9 +186,10 @@ function listen() {
         ? Math.round(request.duration / 1000)
         : Math.round((closedAt - createdAt) / 1000);
 
+    var requestId = request.request_id || toStringId(request);
     track("conversation.closed", request.id_project, {
-      id_request: request.request_id || toStringId(request),
-      request_id: request.request_id || toStringId(request),
+      id_request: requestId,
+      request_id: requestId,
       closed_by: request.closed_by || "system",
       close_reason: null,
       duration_seconds: durationSeconds,
@@ -184,7 +197,7 @@ function listen() {
         request.waiting_time != null
           ? Math.round(request.waiting_time / 1000)
           : null,
-    });
+    }, eventIdFor(requestId + ":closed"));
   });
 
   // ── conversation.satisfaction ─────────────────────────────────────────────
@@ -208,7 +221,7 @@ function listen() {
       request_id: requestId,
       rating: r,
       rating_message: request.rating_message || null,
-    });
+    }, eventIdFor(requestId + ":satisfaction"));
   });
 
   // ── conversation.tag_added ────────────────────────────────────────────────
@@ -225,10 +238,11 @@ function listen() {
     var tag = tagString(data.patch && data.patch.tags);
     if (!tag) return; // nothing usable to record
 
+    var requestId = request.request_id || toStringId(request);
     track("conversation.tag_added", request.id_project, {
-      id_request: request.request_id || toStringId(request),
+      id_request: requestId,
       tag: tag,
-    });
+    }, eventIdFor(requestId + ":" + tag));
   });
 
   // ── 3. message.sent ────────────────────────────────────────────────────────
@@ -259,8 +273,9 @@ function listen() {
       (messageJson.channel && messageJson.channel.name) ||
       null;
 
+    var idMessage = (messageJson._id || messageJson.id || "").toString();
     track("message.sent", messageJson.id_project, {
-      id_message: (messageJson._id || messageJson.id || "").toString(),
+      id_message: idMessage,
       id_request: idRequest,
       sender_id: sender || "unknown", // required non-null — fallback to 'unknown'
       sender_type: senderType(sender, msgRequest),
@@ -269,7 +284,7 @@ function listen() {
       language: messageJson.language || null,
       department: departmentId(msgRequest && msgRequest.department),
       channel: msgChannel,
-    });
+    }, eventIdFor(idMessage));
   });
 
   // ── 5. handover_to_human ──────────────────────────────────────────────────
@@ -347,7 +362,7 @@ function listen() {
       user_email: email,
       role: pu.role || "agent",
       invited_by: (event.req && event.req.user && event.req.user.id) || null,
-    });
+    }, eventIdFor(pu.id_project + ":" + toStringId(pu) + ":activated"));
   });
 
   // ── 7. human.status_changed ───────────────────────────────────────────────
