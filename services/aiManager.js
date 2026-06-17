@@ -21,6 +21,7 @@ const default_engine_hybrid = require('../config/kb/engine.hybrid');
 const default_embedding = require('../config/kb/embedding');
 const integrationService = require('./integrationService');
 const situatedContext = require('../config/kb/situatedContext');
+const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
 
 // Job managers
 let jobManager = new JobManager(AMQP_MANAGER_URL, {
@@ -606,15 +607,15 @@ class AiManager {
       : undefined;
   }
 
-  async getTrackingTokens(qaResult) {
+  async getTrackingTokens({ qaResult, publicKey, model, obj, quoteManager, project }) {
     if (publicKey !== true) {
       return qaResult.prompt_token_size;
     }
     let modelKey;
-    if (typeof data.model === 'string') {
-      modelKey = data.model;
-    } else if (data.model && typeof data.model.name === 'string') {
-      modelKey = data.model.name;
+    if (typeof model === 'string') {
+      modelKey = model;
+    } else if (model && typeof model.name === 'string') {
+      modelKey = model.name;
     }
     let multiplier = MODELS_MULTIPLIER[modelKey];
     if (!multiplier) {
@@ -623,7 +624,7 @@ class AiManager {
     }
     obj.multiplier = multiplier;
     obj.tokens = qaResult.prompt_token_size;
-    let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
+    const incremented_key = await quoteManager.incrementTokenCount(project, obj);
     winston.verbose("incremented_key: ", incremented_key);
     obj.tokens = obj.tokens * obj.multiplier;
     return obj.tokens;

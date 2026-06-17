@@ -576,7 +576,7 @@ router.post('/qa', async (req, res) => {
         }
       });
 
-      stream.on('end', () => {
+      stream.on('end', async () => {
         const tail = buffer.trim();
         if (tail) {
           for (const line of tail.split('\n')) {
@@ -586,7 +586,14 @@ router.post('/qa', async (req, res) => {
           }
         }
         if (streamQaResult) {
-          aiManager.getTrackingTokens(streamQaResult);
+          const tokens = await aiManager.getTrackingTokens({
+            qaResult: streamQaResult,
+            publicKey,
+            model: data.model,
+            obj,
+            quoteManager,
+            project: req.project,
+          });
           kbQuestionService.trackKbQaResult(
             id_project,
             { namespace: data.namespace, question: data.question },
@@ -622,11 +629,18 @@ router.post('/qa', async (req, res) => {
     return;
   }
 
-  aiService.askNamespace(data).then((resp) => {
+  aiService.askNamespace(data).then(async (resp) => {
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
 
-    aiManager.getTrackingTokens(answer);
+    const tokens = await aiManager.getTrackingTokens({
+      qaResult: answer,
+      publicKey,
+      model: data.model,
+      obj,
+      quoteManager,
+      project: req.project,
+    });
     kbQuestionService.trackKbQaResult(
       id_project,
       { namespace: data.namespace, question: data.question },
