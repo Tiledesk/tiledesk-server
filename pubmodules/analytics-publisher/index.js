@@ -287,53 +287,13 @@ function listen() {
     }, eventIdFor(idMessage));
   });
 
-  // ── 5. handover_to_human ──────────────────────────────────────────────────
-  // Contract: packages/contracts/src/payloads/handover-to-human.ts
-  //   id_request           string   (required)
-  //   human_id             string|null
-  //   reason               string|null
-  //   department_id        string|null
-  //   waiting_time_seconds number int>=0 | null
-  //   agent_id             string|null (optional)
-  //   trigger_intent       string|null (optional)
-  requestEvent.on("request.participants.update", function (data) {
-    var request = data.request || {};
-    var removedParticipants = data.removedParticipants || [];
-    var addedParticipants = data.addedParticipants || [];
-
-    var botRemoved = removedParticipants.some(function (p) {
-      return p.startsWith("bot_");
-    });
-    var humanAdded = addedParticipants.some(function (p) {
-      return !p.startsWith("bot_");
-    });
-    if (!botRemoved || !humanAdded) return;
-
-    var botId =
-      removedParticipants.find(function (p) {
-        return p.startsWith("bot_");
-      }) || null;
-    var humanId =
-      addedParticipants.find(function (p) {
-        return !p.startsWith("bot_");
-      }) || null;
-
-    var waitingTimeSecs = null;
-    if (request.waiting_time != null) {
-      waitingTimeSecs = Math.round(request.waiting_time / 1000);
-    }
-
-    track("handover_to_human", request.id_project, {
-      id_request: request.request_id || toStringId(request),
-      human_id: humanId,
-      reason: null,
-      department_id: departmentId(request.department),
-      waiting_time_seconds: waitingTimeSecs,
-      agent_id: null,
-      trigger_intent: null,
-    });
-  });
-
+  // ── handover_to_human: intentionally NOT emitted here ─────────────────────
+  // Owned by tiledesk-chatbot (DirMoveToAgent), which fires it reliably at
+  // handover time with full context (reason / agent_id / trigger_intent). The
+  // participants-diff signal that used to live here was routing-dependent — it
+  // required the bot to be removed and a human added in the SAME update, so
+  // queue/pool handovers (bot removed first, agent assigned later) were missed —
+  // and it double-counted bot escalations the chatbot already records.
 
   // ── 5. project_user.activated ─────────────────────────────────────────────
   // Contract: packages/contracts/src/payloads/project-user-activated.ts

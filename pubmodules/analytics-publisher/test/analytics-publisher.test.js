@@ -165,6 +165,22 @@ describe('analytics-publisher', function () {
     });
   });
 
+  // handover_to_human is owned by tiledesk-chatbot (DirMoveToAgent), which emits
+  // it reliably with full context (reason / agent_id / trigger_intent). The
+  // server's participants-diff signal was routing-dependent (missed queue/pool
+  // handovers) and double-counted bot escalations, so it is intentionally NOT
+  // emitted here.
+  describe('handover_to_human (owned by tiledesk-chatbot)', function () {
+    it('does not emit handover_to_human on a bot->human participants update', function () {
+      requestEvent.emit('request.participants.update', {
+        request: { request_id: 'req-h1', id_project: 'proj-1', department: 'dept-1' },
+        removedParticipants: ['bot_5e9d'],
+        addedParticipants: ['agent_7f2a'],
+      });
+      expect(callsFor('handover_to_human')).to.have.length(0);
+    });
+  });
+
   // Deterministic event_ids let live + backfill events for the same entity
   // collapse to one row (idempotency). Keys must match the backfill mappers.
   describe('deterministic event_ids', function () {
