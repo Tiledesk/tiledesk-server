@@ -277,6 +277,8 @@ router.post('/scrape/single', async (req, res) => {
 
       winston.verbose("/scrape/single json: ", json);
 
+      json.id_project = project_id;
+
       if (process.env.NODE_ENV === "test") {
         res.status(200).send({ success: true, message: "Skip indexing in test environment", data: json })
       }
@@ -363,6 +365,7 @@ router.post('/qa', async (req, res) => {
   let id_project = req.projectid;
   let publicKey = false;
   let data = req.body;
+  data.id_project = id_project;
 
   let namespace;
   try {
