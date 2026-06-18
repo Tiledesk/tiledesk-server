@@ -115,13 +115,6 @@ function getRagContextTemplate(modelName) {
   return ragPromptManager.getPrompt(modelName);
 }
 
-function normalizeEmbedding(embedding) {
-  const normalizedEmbedding = (embedding && typeof embedding.toObject === 'function')
-    ? embedding.toObject()
-    : (embedding || default_embedding);
-  return { ...normalizedEmbedding };
-}
-
 function normalizeSituatedContext(enable = false) {
   situatedContext.enable = enable;
   return situatedContext.enable
@@ -264,8 +257,7 @@ router.post('/scrape/single', async (req, res) => {
       }
 
       json.engine = namespace.engine || default_engine;
-      json.embedding = normalizeEmbedding(namespace.embedding);
-      json.embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+      json.embedding = aiManager.normalizeEmbedding(namespace.embedding);
 
       if (namespace.hybrid === true) {
         json.hybrid = true;
@@ -412,8 +404,7 @@ router.post('/qa', async (req, res) => {
   }
 
   data.engine = namespace.engine || default_engine;
-  data.embedding = normalizeEmbedding(namespace.embedding);
-  data.embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+  data.embedding = aiManager.normalizeEmbedding(namespace.embedding);
 
   if (namespace.hybrid === true) {
     data.search_type = 'hybrid';
@@ -1298,8 +1289,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   //          import operation the content's limit is respected
   let ns = namespaces.find(n => n.id === namespace_id);
   let engine = ns.engine || default_engine;
-  let embedding = normalizeEmbedding(ns.embedding);
-  embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+  let embedding = aiManager.normalizeEmbedding(ns.embedding);
   let hybrid = ns.hybrid;
   const situated_context = normalizeSituatedContext();
 
@@ -1353,6 +1343,10 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
 
   if (process.env.NODE_ENV !== "test") {
     aiManager.scheduleScrape(resources, hybrid);
+  }
+
+  if (process.env.NODE_ENV === "test") {
+    return res.status(200).send({ success: true, message: "Contents imported successfully", schedule_json: resources });
   }
 
   res.status(200).send({ success: true, message: "Contents imported successfully" });
@@ -1731,8 +1725,7 @@ router.post('/', async (req, res) => {
 
       const saved_kb = raw_content.value;
       const webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
-      const embedding = normalizeEmbedding(namespace.embedding);
-      embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+      const embedding = aiManager.normalizeEmbedding(namespace.embedding);
 
       const situated_context_obj = normalizeSituatedContext(saved_kb.situated_context);
 
@@ -1909,8 +1902,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
       aiManager.saveBulk(operations, kbs, project_id, namespace_id).then((result) => {
 
         let engine = namespace.engine || default_engine;
-        let embedding = normalizeEmbedding(namespace.embedding);
-        embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+        let embedding = aiManager.normalizeEmbedding(namespace.embedding);
         let hybrid = namespace.hybrid;
 
         let situated_context_obj;
@@ -1966,7 +1958,7 @@ router.post('/sitemap', async (req, res) => {
     winston.debug("data: ", data);
     res.status(200).send(data);
   }).catch((err) => {
-    console.error("err ", err)
+    winston.error("Error fetching sitemap: ", err)
     res.status(500).send({ success: false, error: err });
   })
 
@@ -2203,8 +2195,7 @@ router.put('/:kb_id', async (req, res) => {
     return res.status(500).send({ success: false, error: err });
   }
 
-  const embedding = normalizeEmbedding(namespace.embedding);
-  embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+  const embedding = aiManager.normalizeEmbedding(namespace.embedding);
   let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
   const situated_context_obj = normalizeSituatedContext(updated_content.situated_context);
 
@@ -2265,7 +2256,7 @@ router.delete('/:kb_id', async (req, res) => {
   if (kb.type === 'sitemap') {
     try {
       await aiManager.deleteSitemap(kb, namespace);
-      console.log("Scheduled jobs for deleting sitemap");
+      winston.info("Scheduled jobs for deleting sitemap");
       //return res.status(200).send({ success: true, message: "Scheduled jobs for deleting sitemap" });
     } catch (err) {
       winston.error("Error deleting sitemap: ", err);

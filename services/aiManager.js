@@ -95,8 +95,7 @@ class AiManager {
       this.saveBulk(operations, kbs, namespace.id_project, namespace.id).then( async (result) => {
         let hybrid = namespace.hybrid;
         let engine = namespace.engine || default_engine;
-        let embedding = namespace.embedding || Object.assign({}, default_embedding);
-        embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+        let embedding = this.normalizeEmbedding(namespace.embedding);
 
         let situated_context;
         if (options.situated_context) {
@@ -147,7 +146,7 @@ class AiManager {
         namespace: namespace.id,
         refresh_rate: options.refresh_rate,
         engine: namespace.engine,
-        embedding: namespace.embedding,
+        embedding: this.normalizeEmbedding(namespace.embedding),
         hybrid: namespace.hybrid,
         ...(options.situated_context && { situated_context: options.situated_context }),
       }
@@ -450,7 +449,7 @@ class AiManager {
           if (err) {
             winston.error("deleteSitemap: deleteSchedule error for kb " + kb._id, err);
           }
-          console.log("deleteSitemap: deleteSchedule result for kb " + kb._id, result);
+          winston.info("deleteSitemap: deleteSchedule result for kb " + kb._id, result);
           resolve(result);
         });
       });
@@ -596,6 +595,16 @@ class AiManager {
         }
       })
     })
+  }
+
+  normalizeEmbedding(embedding) {
+    const normalizedEmbedding = (embedding && typeof embedding.toObject === 'function')
+      ? embedding.toObject()
+      : (embedding || default_embedding);
+    return {
+      ...normalizedEmbedding,
+      api_key: process.env.EMBEDDING_API_KEY || process.env.GPTKEY
+    };
   }
 
   normalizeSituatedContext(enable = false) {
