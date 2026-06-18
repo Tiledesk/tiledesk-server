@@ -8,6 +8,7 @@ process.env.PINECONE_TYPE = "serverless";
 process.env.PINECONE_INDEX_HYBRID = "test-index-hybrid";
 process.env.PINECONE_TYPE_HYBRID = "serverless";
 process.env.ADMIN_EMAIL = "admin@tiledesk.com";
+process.env.KB_ENDPOINT_TRAIN = "http://kb-train.test";
 
 var userService = require('../services/userService');
 var projectService = require('../services/projectService');
@@ -27,6 +28,8 @@ const path = require('path');
 const mongoose = require('mongoose');
 const nock = require('nock');
 const faq = require('../models/faq');
+const { Namespace } = require('../models/kb_setting');
+const default_engine = require('../config/kb/engine');
 
 
 // chai.config.includeStack = true;
@@ -85,6 +88,7 @@ describe('KbRoute', () => {
                             expect(res.body[0].embedding.provider).to.equal('openai')
                             expect(res.body[0].embedding.name).to.equal('text-embedding-ada-002')
                             expect(res.body[0].embedding.dimension).to.equal(1536)
+                            expect(res.body[0].embedding.api_key).to.equal('')
 
                             done();
                         })
@@ -125,6 +129,7 @@ describe('KbRoute', () => {
                             expect(res.body.embedding.provider).to.equal('openai')
                             expect(res.body.embedding.name).to.equal('text-embedding-ada-002')
                             expect(res.body.embedding.dimension).to.equal(1536)
+                            expect(res.body.embedding.api_key).to.equal('')
 
                             // Get again all namespace. A new default namespace should not be created.
                             chai.request(server)
@@ -140,6 +145,7 @@ describe('KbRoute', () => {
                                     expect(res.body.length).to.equal(1);
                                     should.not.exist(res.body[0]._id);
                                     should.exist(res.body[0].id);
+                                    expect(res.body[0].embedding.api_key).to.equal('');
 
                                     done();
                                 })
@@ -237,6 +243,7 @@ describe('KbRoute', () => {
                                             expect(res.body.embedding.provider).to.equal('openai')
                                             expect(res.body.embedding.name).to.equal('text-embedding-ada-002')
                                             expect(res.body.embedding.dimension).to.equal(1536)
+                                            expect(res.body.embedding.api_key).to.equal('')
                 
                                             done();
                                         })
@@ -284,6 +291,9 @@ describe('KbRoute', () => {
                                     res.body.should.be.a('object');
                                     expect(res.body.success).to.equal(true);
                                     expect(res.body.message).to.equal("Contents imported successfully");
+                                    res.body.schedule_json.should.be.a('array');
+                                    expect(res.body.schedule_json.length).to.equal(3);
+                                    expect(res.body.schedule_json[0].embedding.api_key).to.equal('fakegptkey');
 
                                     chai.request(server)
                                         .get('/' + savedProject._id + '/kb/?namespace=' + namespace_id)
@@ -305,7 +315,22 @@ describe('KbRoute', () => {
                                             let content_without_tags = res.body.kbs.find(kb => kb.source !== 'Example content');
                                             expect(content_without_tags.tags).to.equal(undefined);
                                             
-                                            done();
+                                            chai.request(server)
+                                                .get('/' + savedProject._id + '/kb/namespace/all')
+                                                .auth(email, pwd)
+                                                .end((err, res) => {
+                                                    if (err) { console.error("err: ", err); }
+                                                    if (log) { console.log("get all namespaces res.body: ", res.body); }
+                                                    
+                                                    res.should.have.status(200);
+                                                    res.body.should.be.a('array');
+                                                    expect(res.body.length).to.equal(1);
+                                                    expect(res.body[0].id).to.equal(namespace_id);
+                                                    expect(res.body[0].name).to.equal("Default");
+                                                    expect(res.body[0].embedding.api_key).to.equal('');
+
+                                                    done();
+                                                })
                                         })
 
                                 })
@@ -370,6 +395,7 @@ describe('KbRoute', () => {
                                     expect(res.body.preview_settings.max_tokens).to.equal(256)
                                     expect(res.body.preview_settings.temperature).to.equal(0.3)
                                     expect(res.body.preview_settings.top_k).to.equal(6)
+                                    expect(res.body.embedding.api_key).to.equal('')
 
                                     done();
 
@@ -377,6 +403,43 @@ describe('KbRoute', () => {
                         })
                 });
             });
+        })
+
+        it('embedding-api-key-never-persisted', (done) => {
+            const namespaceId = new mongoose.Types.ObjectId().toString();
+            const projectId = new mongoose.Types.ObjectId().toString();
+
+            const ns = new Namespace({
+                id_project: projectId,
+                id: namespaceId,
+                name: 'ApiKeyTest',
+                preview_settings: {
+                    model: 'gpt-4o',
+                    max_tokens: 256,
+                    temperature: 0.7,
+                    top_k: 4,
+                    context: null
+                },
+                engine: default_engine,
+                embedding: {
+                    provider: 'openai',
+                    name: 'text-embedding-ada-002',
+                    dimension: 1536,
+                    api_key: 'must-not-persist'
+                }
+            });
+
+            ns.save()
+                .then((saved) => {
+                    expect(saved.embedding.api_key).to.equal('');
+                    return Namespace.findOne({ id: namespaceId }).lean();
+                })
+                .then((doc) => {
+                    expect(doc.embedding.api_key).to.equal('');
+                    return Namespace.deleteOne({ _id: doc._id });
+                })
+                .then(() => done())
+                .catch(done);
         })
 
         /**
@@ -515,7 +578,6 @@ describe('KbRoute', () => {
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
-
                     chai.request(server)
                         .get('/' + savedProject._id + '/kb/namespace/all')
                         .auth(email, pwd)
@@ -579,6 +641,7 @@ describe('KbRoute', () => {
                                     expect(scheduleJson.tags[1]).to.equal("example");
                                     should.exist(scheduleJson.engine)
                                     should.exist(scheduleJson.embedding)
+                                    expect(scheduleJson.embedding.api_key).to.equal('fakegptkey');
 
                                     done();
                                 })
@@ -632,7 +695,6 @@ describe('KbRoute', () => {
                                     res.body.should.be.a('object');
 
                                     let realResponse = res.body.data;
-                                    console.log("realResponse: ", realResponse);
                                     expect(realResponse.value.id_project).to.equal(namespace_id)
                                     expect(realResponse.value.name).to.equal("example_text1")
                                     expect(realResponse.value.type).to.equal("text")
@@ -651,6 +713,83 @@ describe('KbRoute', () => {
             });
 
         })
+
+        it('update-content', (done) => {
+            const kbTrainUrl = process.env.KB_ENDPOINT_TRAIN;
+
+            const deleteScope = nock(kbTrainUrl)
+                .post('/delete/id')
+                .reply(200, { success: true });
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+                            if (err) { console.error("err: ", err); }
+
+                            res.should.have.status(200);
+                            let namespace_id = res.body[0].id;
+
+                            let kb = {
+                                name: "example_text_update",
+                                type: "text",
+                                source: "example_text_update",
+                                content: "Original text",
+                                namespace: namespace_id
+                            };
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb')
+                                .auth(email, pwd)
+                                .send(kb)
+                                .end((err, res) => {
+                                    if (err) { console.error("err: ", err); }
+
+                                    res.should.have.status(200);
+                                    let kb_id = res.body.data.value._id;
+
+                                    chai.request(server)
+                                        .put('/' + savedProject._id + '/kb/' + kb_id)
+                                        .auth(email, pwd)
+                                        .send({
+                                            name: "example_text_update",
+                                            type: "text",
+                                            source: "example_text_update",
+                                            content: "Updated text",
+                                            namespace: namespace_id
+                                        })
+                                        .end((err, res) => {
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("update content res.body: ", res.body); }
+
+                                            res.should.have.status(200);
+                                            expect(res.body.success).to.equal(true);
+                                            expect(res.body.message).to.equal("Schedule scrape skipped in test environment");
+                                            expect(res.body.data.content).to.equal("Updated text");
+                                            should.exist(res.body.schedule_json.embedding);
+                                            expect(res.body.schedule_json.embedding.api_key).to.equal('fakegptkey');
+
+                                            chai.request(server)
+                                                .get('/' + savedProject._id + '/kb/namespace/all')
+                                                .auth(email, pwd)
+                                                .end((err, res) => {
+                                                    expect(res.body[0].embedding.api_key).to.equal('');
+                                                    expect(deleteScope.isDone()).to.equal(true);
+                                                    nock.cleanAll();
+                                                    done();
+                                                });
+                                        });
+                                });
+                        });
+                });
+            });
+        }).timeout(10000)
 
         it('get-content-chunks', (done) => {
 
@@ -1018,7 +1157,6 @@ describe('KbRoute', () => {
 
                                     if (err) { console.error("err: ", err); }
                                     if (log) { console.log("res.body: ", res.body) }
-                                    console.log("res.body: ", res.body)
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
                                     expect(res.body.success).to.equal(true);
@@ -1026,7 +1164,6 @@ describe('KbRoute', () => {
 
                                     let realResponse = res.body.data;
                                     realResponse.should.be.a('array');
-                                    console.log("realResponse: ", realResponse[0]);
                                     expect(realResponse.length).to.equal(2);
                                     expect(realResponse[0].namespace).to.equal(namespace_id);
                                     expect(realResponse[0].type).to.equal('faq');
@@ -1050,6 +1187,7 @@ describe('KbRoute', () => {
                                     expect(scheduleJson[0].engine.index_name).to.equal(namespace.engine.index_name);
                                     expect(scheduleJson[0].embedding.provider).to.equal(namespace.embedding.provider);
                                     expect(scheduleJson[0].embedding.name).to.equal(namespace.embedding.name);
+                                    expect(scheduleJson[0].embedding.api_key).to.equal('fakegptkey');
 
                                     expect(scheduleJson[1].namespace).to.equal(namespace_id);
                                     expect(scheduleJson[1].type).to.equal('faq');
@@ -1215,6 +1353,7 @@ describe('KbRoute', () => {
                                     expect(scheduleJson[0].engine.index_name).to.equal(namespace.engine.index_name);
                                     expect(scheduleJson[0].embedding.provider).to.equal(namespace.embedding.provider);
                                     expect(scheduleJson[0].embedding.name).to.equal(namespace.embedding.name);
+                                    expect(scheduleJson[0].embedding.api_key).to.equal('fakegptkey');
 
                                     expect(scheduleJson[1].namespace).to.equal(namespace_id);
                                     expect(scheduleJson[1].source).to.equal('https://gethelp.tiledesk.com/articles/article2');
@@ -1407,6 +1546,7 @@ describe('KbRoute', () => {
                                     scheduleJson.should.be.a('array');
                                     should.exist(scheduleJson[0].engine)
                                     should.exist(scheduleJson[0].embedding)
+                                    expect(scheduleJson[0].embedding.api_key).to.equal('fakegptkey');
 
                                     done();
                                 })
@@ -1485,6 +1625,7 @@ describe('KbRoute', () => {
                                             expect(res.body.data.embedding.provider).to.equal("openai");
                                             expect(res.body.data.embedding.name).to.equal("text-embedding-ada-002");
                                             expect(res.body.data.embedding.dimension).to.equal(1536);
+                                            expect(res.body.data.embedding.api_key).to.equal('fakegptkey');
 
                                             done();
 
@@ -1759,7 +1900,7 @@ describe('KbRoute', () => {
                         .get('/' + savedProject._id + '/kb/namespace/all')
                         .auth(email, pwd)
                         .end((err, res) => {
-                            
+
                             if (err) { console.error("err: ", err); }
                             if (log) { console.log("get namespaces res.body: ", res.body); }
 
@@ -1778,7 +1919,7 @@ describe('KbRoute', () => {
                                 .auth(email, pwd)
                                 .send(data)
                                 .end((err, res) => {
-                                    
+
                                     if (err) { console.error("err: ", err); }
                                     if (log) { console.log("create unanswered question res.body: ", res.body); }
 
