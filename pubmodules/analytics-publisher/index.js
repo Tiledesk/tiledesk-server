@@ -451,22 +451,30 @@ function listen() {
   // ── 13. agent.metadata_updated ────────────────────────────────────────────
   // Emitted by routes/faq_kb.js on bot create and update (rename, attribute
   // changes, language, etc.).
-  // agent_id   = Faq_kb._id.toString()
+  // agent_id   = Faq_kb.root_id  (the canonical/root agent id)
   // agent_name = Faq_kb.name
   // The consumer writes these into the agent_dimensions ReplacingMergeTree so
   // that dashboard queries always resolve the current bot name.
+  //
+  // Only PUBLISHED chatbots are tracked. Publishing forks the chatbot into a
+  // trashed faq_kb that carries root_id (-> the editable draft); the draft/root
+  // copy never has root_id. Gating on root_id therefore: (a) excludes drafts
+  // that were never published, (b) keys the dimension on the canonical root id
+  // — the same id the chatbot stamps on its runtime events — and (c) makes the
+  // name reflect the *published* name (a draft rename only lands here on the
+  // next publish, when a fresh fork fires faqbot.update).
   botEvent.on("faqbot.create", function (savedBot) {
-    if (!savedBot || !savedBot.id_project || !savedBot.name) return;
+    if (!savedBot || !savedBot.id_project || !savedBot.name || !savedBot.root_id) return;
     track("agent.metadata_updated", savedBot.id_project, {
-      agent_id:   savedBot.root_id || savedBot._id.toString(),
+      agent_id:   savedBot.root_id,
       agent_name: savedBot.name,
     });
   });
 
   botEvent.on("faqbot.update", function (updatedBot) {
-    if (!updatedBot || !updatedBot.id_project || !updatedBot.name) return;
+    if (!updatedBot || !updatedBot.id_project || !updatedBot.name || !updatedBot.root_id) return;
     track("agent.metadata_updated", updatedBot.id_project, {
-      agent_id:   updatedBot.root_id || updatedBot._id.toString(),
+      agent_id:   updatedBot.root_id,
       agent_name: updatedBot.name,
     });
   });
