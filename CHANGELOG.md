@@ -5,7 +5,7 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.19.6
+# 2.19.7
 - Added TTL for events collection
 
 # 2.19.6
