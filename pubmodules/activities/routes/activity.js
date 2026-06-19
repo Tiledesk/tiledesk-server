@@ -105,7 +105,7 @@ router.get('/', function (req, res) {
   if (req.query.agent_id) {
     winston.debug('req.query.agent', req.query.agent_id);
     query["$or"] = [
-      { "target.object.id_user._id": new ObjectId(req.query.agent_id) },
+      { "target.object.id_user._id": req.query.agent_id },
       { "actor.id": req.query.agent_id }
     ];
 

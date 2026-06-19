@@ -9,3 +9,5 @@ copyfiles
 logs
 CLAUDE.md
 .claude
+
+docs/openapi/*
