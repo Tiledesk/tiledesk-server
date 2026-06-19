@@ -6,6 +6,9 @@
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
 # 2.19.6
+- Added TTL for events collection
+
+# 2.19.6
 - Improved management of answered and unanswered questions, duration and token consumption
 - Improved namespace embedding management
 
