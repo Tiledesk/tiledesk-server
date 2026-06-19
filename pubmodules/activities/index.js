@@ -1,3 +1,4 @@
 const activityRoute = require("./routes/activity");
 const activityArchiver = require("./activityArchiver");
-module.exports = {activityArchiver:activityArchiver,activityRoute:activityRoute};
+const activityArchiverV2 = require("./activityArchiverV2");
+module.exports = { activityArchiver, activityArchiverV2, activityRoute };
