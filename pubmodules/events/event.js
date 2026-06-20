@@ -2,6 +2,17 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var winston = require('../../config/winston');
 
+const DEFAULT_EVENTS_TTL_SEC = 3600;
+
+function ttlSecondsFromEnv(raw, fallbackSec) {
+  if (raw == null || String(raw).trim() === '') return fallbackSec;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? n : fallbackSec;
+}
+
+const eventsTtlSeconds = ttlSecondsFromEnv(process.env.EVENTS_TTL_SECONDS, DEFAULT_EVENTS_TTL_SEC);
+winston.info('Events TTL seconds: ' + eventsTtlSeconds);
+
 
 var EventSchema = new Schema({
   
@@ -47,6 +58,7 @@ var EventSchema = new Schema({
 );
 
 EventSchema.index({ id_project: 1, name: 1, createdAt: -1 });
+EventSchema.index({ createdAt: 1 }, { expireAfterSeconds: eventsTtlSeconds });
 
 var event = mongoose.model('event', EventSchema);
 
