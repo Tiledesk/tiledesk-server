@@ -114,6 +114,17 @@ async function main()
     let multiWorkerQueue = require('@tiledesk/tiledesk-multi-worker');
     jobsManager.listenMultiWorker(multiWorkerQueue);
 
+    try {
+        this.analyticsPublisher = require('./pubmodules/analytics-publisher');
+        this.analyticsPublisher.listen();
+        winston.info("AnalyticsPublisher initialized.");
+    } catch(err) {
+        if (err.code === 'MODULE_NOT_FOUND') {
+            winston.info("PubModulesManager init analyticsPublisher module not found");
+        } else {
+            winston.info("PubModulesManager error initializing analyticsPublisher module", err);
+        }
+    }
 
     winston.info("Jobs started"); 
 

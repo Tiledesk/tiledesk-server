@@ -6,6 +6,7 @@ const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 const { AiReindexService } = require('../services/aiReindexService');
 const { Webhook } = require('../models/webhook');
 const webhookService = require('../services/webhookService');
+const webhookEvent = require('../event/webhookEvent');
 const errorCodes = require('../errorCodes');
 const aiManager = require('../services/aiManager');
 var ObjectId = require('mongoose').Types.ObjectId;
@@ -165,6 +166,7 @@ router.post('/kb/reindex', async (req, res) => {
 
     let json = {
       id: kb._id,
+      id_project: kb.id_project,
       type: kb.type,
       source: kb.source,
       content: "",
@@ -198,8 +200,7 @@ router.post('/kb/reindex', async (req, res) => {
     json.engine = namespace.engine || (namespace.hybrid ? default_engine_hybrid : default_engine);
     json.hybrid = namespace.hybrid;
     
-    let embedding = namespace.embedding || default_embedding;
-    embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+    let embedding = aiManager.normalizeEmbedding(namespace.embedding);
     json.embedding = embedding;
 
     const situated_context_obj = aiManager.normalizeSituatedContext(kb.situated_context);
@@ -311,6 +312,11 @@ router.all('/:webhook_id', async (req, res) => {
   //webhookService.run(webhook, payload)
   // To delete - End
   webhookService.run(webhook, payload, dev, redis_client).then((response) => {
+    // Only count production runs: a dev/test invocation (?dev=true here, or the
+    // dedicated /:webhook_id/dev route below) must not emit analytics.
+    if (dev !== true && dev !== 'true') {
+      webhookEvent.emit("webhook.triggered", { webhook: webhook, payload: payload });
+    }
     return res.status(200).send(response);
   }).catch((err) => {
     if (err.code === errorCodes.WEBHOOK.ERRORS.NO_PRELOADED_DEV_REQUEST) {
@@ -320,7 +326,7 @@ router.all('/:webhook_id', async (req, res) => {
       return res.status(status).send(err.data);
     }
   })
-  
+
 })
 
 router.all('/:webhook_id/dev', async (req, res) => {

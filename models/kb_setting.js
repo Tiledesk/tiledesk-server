@@ -76,7 +76,9 @@ const EmbeddingSchema = new Schema({
   },
   api_key: {
     type: String,
-    required: false
+    required: false,
+    default: '',
+    set: () => ''
   }
 }, {
   _id: false  // This is schema is always used as an embedded object inside NamespaceSchema
@@ -118,6 +120,7 @@ const NamespaceSchema = new Schema({
 }, {
   timestamps: true
 })
+
 
 var KBSchema = new Schema({
   id_project: {
@@ -201,6 +204,10 @@ var KBSchema = new Schema({
   situated_context: {
     type: Boolean,
     default: false,
+    required: false
+  },
+  chunk_regex: {
+    type: String,
     required: false
   }
 }, {

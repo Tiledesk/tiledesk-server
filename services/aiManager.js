@@ -21,6 +21,7 @@ const default_engine_hybrid = require('../config/kb/engine.hybrid');
 const default_embedding = require('../config/kb/embedding');
 const integrationService = require('./integrationService');
 const situatedContext = require('../config/kb/situatedContext');
+const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
 
 // Job managers
 let jobManager = new JobManager(AMQP_MANAGER_URL, {
@@ -94,8 +95,7 @@ class AiManager {
       this.saveBulk(operations, kbs, namespace.id_project, namespace.id).then( async (result) => {
         let hybrid = namespace.hybrid;
         let engine = namespace.engine || default_engine;
-        let embedding = namespace.embedding || default_embedding;
-        embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+        let embedding = this.normalizeEmbedding(namespace.embedding);
 
         let situated_context;
         if (options.situated_context) {
@@ -104,7 +104,7 @@ class AiManager {
 
         let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
 
-        let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, situated_context, ...keepAttrs }) => keepAttrs)
+        let resources = result.map(({ name, status, __v, createdAt, updatedAt, situated_context, ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, scrape_options, ...rest }) => {
           return { 
             id: _id, 
@@ -139,13 +139,14 @@ class AiManager {
 
       let kb = {
         id: sitemap_content._id,
+        id_project: namespace.id_project,
         source: sitemap_content.source,
         type: 'sitemap',
         content: "",
         namespace: namespace.id,
         refresh_rate: options.refresh_rate,
         engine: namespace.engine,
-        embedding: namespace.embedding,
+        embedding: this.normalizeEmbedding(namespace.embedding),
         hybrid: namespace.hybrid,
         ...(options.situated_context && { situated_context: options.situated_context }),
       }
@@ -253,41 +254,54 @@ class AiManager {
     })
   }
 
-  async resolveLLMConfig(id_project, provider = 'openai', model) {
+  async resolveLLMConfig(id_project, provider = 'openai', model, vllmServer = undefined) {
 
     if (provider === 'ollama' || provider === 'vllm') {
-      try {
-        const integration = await integrationService.getIntegration(id_project, provider);
-        
-        if (!integration?.value?.url) {
-          throw { code: 422, error: `Server url for ${provider} is empty or invalid`}
-        }
+      const integration = await integrationService.getIntegration(id_project, provider);
+      if (!integration?.value) {
+        throw { code: 422, error: `${provider} integration not found` };
+      }
 
+      const value = integration.value;
+
+      if (provider === 'vllm' && Array.isArray(value.servers)) {
+        if (!vllmServer) {
+          throw { code: 422, error: "vllmServer attribute is undefined" };
+        }
+        const server = value.servers.find(s => s.name === vllmServer);
+        if (!server) {
+          throw { code: 422, error: `vllm server '${vllmServer}' not found` };
+        }
+        if (!server.url) {
+          throw { code: 422, error: "Server url for vllm is empty or invalid" };
+        }
         return {
           provider,
           name: model,
-          url: integration.value.url,
-          api_key: integration.value.apikey || ""
-        }
-
-      } catch (err) {
-        throw { code: err.code, error: err.error }
+          url: server.url,
+          api_key: server.apikey || ""
+        };
       }
-    }
 
-    try {
-      let key = await integrationService.getKeyFromIntegration(id_project, provider)
+      if (!value.url) {
+        throw { code: 422, error: `Server url for ${provider} is empty or invalid` };
+      }
 
       return {
         provider,
         name: model,
-        api_key: key
-      }
-
-    } catch (err) {
-      throw { code: err.code, error: err.error }
+        url: value.url,
+        api_key: value.apikey || ""
+      };
     }
 
+    const key = await integrationService.getKeyFromIntegration(id_project, provider);
+
+    return {
+      provider,
+      name: model,
+      api_key: key
+    };
   }
 
   async checkQuotaAvailability(quoteManager, project, ncontents) {
@@ -443,7 +457,7 @@ class AiManager {
           if (err) {
             winston.error("deleteSitemap: deleteSchedule error for kb " + kb._id, err);
           }
-          console.log("deleteSitemap: deleteSchedule result for kb " + kb._id, result);
+          winston.info("deleteSitemap: deleteSchedule result for kb " + kb._id, result);
           resolve(result);
         });
       });
@@ -508,25 +522,6 @@ class AiManager {
 
     return true;
   }
-
-  // from webhook
-  // async scheduleScrape(resources) {
-
-  //   let scheduler = new Scheduler({ jobManager: jobManager });
-  
-  //   resources.forEach(r => {
-  //     winston.debug("(Webhook) Schedule job with following data: ", r);
-  //     scheduler.trainSchedule(r, async (err, result) => {
-  //       if (err) {
-  //         winston.error("Scheduling error: ", err);
-  //       } else {
-  //         winston.info("Scheduling result: ", result);
-  //       }
-  //     });
-  //   })
-  
-  //   return true;
-  // }
 
   async startScrape(data) {
 
@@ -610,6 +605,16 @@ class AiManager {
     })
   }
 
+  normalizeEmbedding(embedding) {
+    const normalizedEmbedding = (embedding && typeof embedding.toObject === 'function')
+      ? embedding.toObject()
+      : (embedding || default_embedding);
+    return {
+      ...normalizedEmbedding,
+      api_key: process.env.EMBEDDING_API_KEY || process.env.GPTKEY
+    };
+  }
+
   normalizeSituatedContext(enable = false) {
     situatedContext.enable = enable;
     return situatedContext.enable
@@ -618,6 +623,33 @@ class AiManager {
         api_key: process.env.SITUATED_CONTEXT_API_KEY || process.env.GPTKEY
       }
       : undefined;
+  }
+
+  async getTrackingTokens({ qaResult, publicKey, model, obj, quoteManager, project }) {
+    if (publicKey !== true) {
+      return qaResult.prompt_token_size;
+    }
+    let modelKey;
+    if (typeof model === 'string') {
+      modelKey = model;
+    } else if (model && typeof model.name === 'string') {
+      modelKey = model.name;
+    }
+    let multiplier = MODELS_MULTIPLIER[modelKey];
+    if (!multiplier) {
+      multiplier = 1;
+      winston.info("No multiplier found for AI model (qa) " + modelKey);
+    }
+    obj.multiplier = multiplier;
+    obj.tokens = qaResult.prompt_token_size;
+    const incremented_key = await quoteManager.incrementTokenCount(project, obj);
+    winston.verbose("incremented_key: ", incremented_key);
+    const trackingTokens = obj.tokens * obj.multiplier;
+    if (qaResult != null && typeof qaResult.prompt_token_size === 'number') {
+      qaResult.legacy_prompt_token_size = qaResult.prompt_token_size;
+      qaResult.prompt_token_size = trackingTokens;
+    }
+    return trackingTokens;
   }
 
 }

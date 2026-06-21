@@ -1,0 +1,483 @@
+"use strict";
+
+/**
+ * analytics-publisher pubmodule
+ *
+ * Listens to internal tiledesk-server events and forwards analytics
+ * events to the ingest sidecar via lib/analyticsClient.
+ *
+ * Fire-and-forget: no event is awaited and no error propagates to callers.
+ * Fully disabled (no listeners registered) when ANALYTICS_INGEST_URL is unset.
+ *
+ * All payloads are validated against the @tiledesk-analytics/contracts Zod
+ * schemas (packages/contracts/src/payloads/*.ts).  Field names and nullability
+ * here must match those schemas exactly.
+ */
+
+var requestEvent = require("../../event/requestEvent");
+var messageEvent = require("../../event/messageEvent");
+var authEvent = require("../../event/authEvent");
+var webhookEvent = require("../../event/webhookEvent");
+var kbEvent = require("../../event/kbEvent");
+var departmentEvent = require("../../event/departmentEvent");
+var botEvent = require("../../event/botEvent");
+var { track } = require("../../lib/analyticsClient");
+var uuidv5 = require("uuid/v5");
+
+// Deterministic event_id namespace — MUST match apps/backfill
+// BACKFILL_UUID_NAMESPACE so a live event and its backfilled twin collapse to a
+// single row (idempotency / no double-count). Applied only to the event types
+// the backfill also produces.
+var ANALYTICS_UUID_NAMESPACE = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
+
+function eventIdFor(key) {
+  return uuidv5(String(key), ANALYTICS_UUID_NAMESPACE);
+}
+
+// ─── helpers ────────────────────────────────────────────────────────────────
+
+/**
+ * Convert a boolean user_available value to the analytics status enum.
+ * Returns null for any non-boolean input so callers can guard before emitting.
+ * The contract enum is: 'available' | 'unavailable' | 'busy'.
+ * tiledesk-server only sets available/unavailable; 'busy' is reserved.
+ */
+function availabilityLabel(boolVal) {
+  if (boolVal === true) return "available";
+  if (boolVal === false) return "unavailable";
+  return null;
+}
+
+/**
+ * Derive sender_type enum value from a raw sender string.
+ * Contract enum: 'user' | 'agent' | 'bot'
+ *
+ * Uses request.lead.lead_id (the visitor's ID) to distinguish a human visitor
+ * from a human agent — without this check every non-bot sender falls through
+ * to 'user', misclassifying agent messages.
+ */
+function senderType(sender, request) {
+  if (!request) return "user"; // direct/group messages carry no request
+  let bot, agent = undefined;
+  if(request.participantsBots)
+   bot = request.participantsBots.find(participant => participant.includes(sender));
+  if(request.participantsAgents)
+    agent = request.participantsAgents.find(participant => participant.includes(sender));
+
+  if(bot)
+    return "bot";
+  if(agent)
+    return "agent";
+
+  return "user";
+}
+
+/**
+ * Return the first participant that is not a bot (i.e. the visitor/user).
+ */
+function firstVisitorId(participants) {
+  var list = participants || [];
+  for (var i = 0; i < list.length; i++) {
+    if (!list[i].startsWith("bot_")) return list[i];
+  }
+  return null;
+}
+
+/**
+ * Extract a stable string ID from a department field (ObjectId, object, or string).
+ * Returns null when no department is set.
+ */
+function departmentId(dept) {
+  if (!dept) return null;
+  if (typeof dept === "string") return dept;
+  return (dept._id || dept.id || "").toString() || null;
+}
+
+/**
+ * Extract the human-readable name from a populated department object.
+ * Falls back to the ID string so callers always get a non-null value when
+ * a department exists.
+ */
+function departmentName(dept) {
+  if (!dept) return null;
+  if (typeof dept === "string") return dept; // bare string ID — use as-is
+  return dept.name || (dept._id && dept._id.toString()) || null;
+}
+
+/**
+ * Return the _id of a Mongoose document or plain object as a string.
+ */
+function toStringId(doc) {
+  if (!doc) return null;
+  if (typeof doc === "string") return doc;
+  return (doc._id || doc.id || doc).toString() || null;
+}
+
+/**
+ * Extract the tag string from a request.updated TAG_ADD patch.
+ * The tag may be a bare string or a { tag: "..." } sub-document — the shape
+ * varies by call site (see requestService.addTagByRequestId).
+ */
+function tagString(t) {
+  if (!t) return null;
+  if (typeof t === "string") return t;
+  if (typeof t.tag === "string") return t.tag;
+  return null;
+}
+
+// ─── listeners ──────────────────────────────────────────────────────────────
+
+function listen() {
+  // ── 1. conversation.created ────────────────────────────────────────────────
+  // Contract: packages/contracts/src/payloads/conversation-created.ts
+  //   id_request          string   (required)
+  //   request_id          string   (required)
+  //   department          string|null
+  //   channel             string
+  //   first_response_time number|null
+  //   tags                string[] (default [])
+  //   tag                 string|null (optional)
+  //   with_bot            boolean  (default false)
+  //   visitor_id          string|null (optional)
+
+  function trackConversation(request) {
+    if (request.preflight === true) return;
+
+    var dept = request.department;
+    var requestId = request.request_id || toStringId(request);
+
+    track("conversation.created", request.id_project, {
+      id_request: requestId,
+      request_id: requestId,
+      department: departmentId(dept),
+      channel: (request.channel && request.channel.name) || "web",
+      first_response_time: null,
+      with_bot: request.hasBot || false,
+      visitor_id: firstVisitorId(request.participants),
+    }, eventIdFor(requestId));
+  }
+
+  requestEvent.on("request.update.preflight", function (request) {
+    trackConversation(request);
+  })
+
+  requestEvent.on("request.create", function (request) {
+    trackConversation(request);
+  });
+
+  // ── 2. conversation.closed ─────────────────────────────────────────────────
+  // Contract: packages/contracts/src/payloads/conversation-closed.ts
+  //   id_request           string   (required)
+  //   request_id           string   (required)
+  //   closed_by            string   (required, non-null)
+  //   close_reason         string|null
+  //   duration_seconds     number
+  //   waiting_time_seconds number|null
+  //   satisfaction_rating  number 1-5 | null
+  // Satisfaction is intentionally NOT included here: ratings are submitted
+  // asynchronously (after close) and emitted as a separate conversation.satisfaction
+  // event below. The conversation-closed contract has no satisfaction field, so
+  // any rating sent here would be stripped by the ingest validator anyway.
+  requestEvent.on("request.close", function (request) {
+    var createdAt = new Date(request.createdAt);
+    var closedAt = request.closed_at ? new Date(request.closed_at) : new Date();
+    var durationSeconds =
+      request.duration != null
+        ? Math.round(request.duration / 1000)
+        : Math.round((closedAt - createdAt) / 1000);
+
+    var requestId = request.request_id || toStringId(request);
+    track("conversation.closed", request.id_project, {
+      id_request: requestId,
+      request_id: requestId,
+      closed_by: request.closed_by || "system",
+      close_reason: null,
+      duration_seconds: durationSeconds,
+      waiting_time_seconds:
+        request.waiting_time != null
+          ? Math.round(request.waiting_time / 1000)
+          : null,
+    }, eventIdFor(requestId + ":closed"));
+  });
+
+  // ── conversation.satisfaction ─────────────────────────────────────────────
+  // Emitted by routes/request.js ("request.satisfaction") when a visitor submits
+  // a rating — asynchronously, after the conversation is already closed.
+  // Contract: packages/contracts/src/payloads/conversation-satisfaction.ts
+  //   id_request     string  (required)
+  //   request_id     string  (required)
+  //   rating         number  (required, integer 1-5)
+  //   rating_message string|null
+  requestEvent.on("request.satisfaction", function (data) {
+    var request = (data && data.request) || {};
+    if (request.rating == null) return;
+
+    var r = parseInt(request.rating, 10);
+    if (!(r >= 1 && r <= 5)) return; // contract requires an integer 1-5
+
+    var requestId = request.request_id || toStringId(request);
+    track("conversation.satisfaction", request.id_project, {
+      id_request: requestId,
+      request_id: requestId,
+      rating: r,
+      rating_message: request.rating_message || null,
+    }, eventIdFor(requestId + ":satisfaction"));
+  });
+
+  // ── conversation.tag_added ────────────────────────────────────────────────
+  // Tags are added via requestService.addTagByRequestId, which emits the generic
+  // "request.updated" event with comment === "TAG_ADD" and the added tag in
+  // patch.tags. One analytics event per added tag.
+  // Contract: packages/contracts/src/payloads/conversation-tag-added.ts
+  //   id_request string (required)
+  //   tag        string (required)
+  requestEvent.on("request.updated", function (data) {
+    if (!data || data.comment !== "TAG_ADD") return;
+
+    var request = data.request || {};
+    var tag = tagString(data.patch && data.patch.tags);
+    if (!tag) return; // nothing usable to record
+
+    var requestId = request.request_id || toStringId(request);
+    track("conversation.tag_added", request.id_project, {
+      id_request: requestId,
+      tag: tag,
+    }, eventIdFor(requestId + ":" + tag));
+  });
+
+  // ── 3. message.sent ────────────────────────────────────────────────────────
+  // Contract: packages/contracts/src/payloads/message-sent.ts
+  //   id_message    string   (required)
+  //   id_request    string   (required)
+  //   sender_id     string   (required, non-null)
+  //   sender_type   'user'|'agent'|'bot'
+  //   message_type  string   (required, non-null)
+  //   has_attachment boolean (default false)
+  //   language      string|null
+  messageEvent.on("message.create", function (messageJson) {
+    var sender = messageJson.sender;
+
+    if(sender === 'system') return; // skip system messages
+
+    // recipient is the room/request ID (chat21 convention)
+    var idRequest = messageJson.recipient || null;
+    if (!idRequest) return; // cannot emit without a conversation reference
+
+    // Denormalise department (id) and channel (name) from the parent request so
+    // the messages MVs can filter without a query-time join. Mirrors the
+    // backfill message mapper (department = id, channel = name). Optional in the
+    // contract, so null is fine when the message carries no populated request.
+    var msgRequest = messageJson.request || null;
+    var msgChannel =
+      (msgRequest && msgRequest.channel && msgRequest.channel.name) ||
+      (messageJson.channel && messageJson.channel.name) ||
+      null;
+
+    var idMessage = (messageJson._id || messageJson.id || "").toString();
+    track("message.sent", messageJson.id_project, {
+      id_message: idMessage,
+      id_request: idRequest,
+      sender_id: sender || "unknown", // required non-null — fallback to 'unknown'
+      sender_type: senderType(sender, msgRequest),
+      message_type: messageJson.type || "text", // required non-null — fallback to 'text'
+      has_attachment: !!(messageJson.metadata && messageJson.metadata.src),
+      language: messageJson.language || null,
+      department: departmentId(msgRequest && msgRequest.department),
+      channel: msgChannel,
+    }, eventIdFor(idMessage));
+  });
+
+  // ── handover_to_human: intentionally NOT emitted here ─────────────────────
+  // Owned by tiledesk-chatbot (DirMoveToAgent), which fires it reliably at
+  // handover time with full context (reason / agent_id / trigger_intent). The
+  // participants-diff signal that used to live here was routing-dependent — it
+  // required the bot to be removed and a human added in the SAME update, so
+  // queue/pool handovers (bot removed first, agent assigned later) were missed —
+  // and it double-counted bot escalations the chatbot already records.
+
+  // ── 5. project_user.activated ─────────────────────────────────────────────
+  // Contract: packages/contracts/src/payloads/project-user-activated.ts
+  //   id_user    string   (required)
+  //   user_email string   (required, email format — skip if unavailable)
+  //   role       string   (required)
+  //   invited_by string|null
+  // TODO: check
+  authEvent.on("project_user.invite", function (event) {
+    // console.log("project_user.invite", event);
+    var pu = event.savedProject_userPopulated || event.updatedPuserPopulated;
+    if (!pu) return;
+
+    var user = pu.id_user;
+    var email = (user && user.email) || null;
+
+    // user_email is required as a valid email string — skip rather than send
+    // a payload that will be rejected with 422 by the ingest sidecar.
+    if (!email) return;
+
+    var userId = pu.uuid_user || (user && toStringId(user)) || null;
+    if (!userId) return;
+
+    track("project_user.activated", pu.id_project, {
+      id_user: userId,
+      user_email: email,
+      role: pu.role || "agent",
+      invited_by: (event.req && event.req.user && event.req.user.id) || null,
+    }, eventIdFor(pu.id_project + ":" + toStringId(pu) + ":activated"));
+  });
+
+  // ── 7. human.status_changed ───────────────────────────────────────────────
+  // Contract: packages/contracts/src/payloads/human-status-changed.ts
+  //   human_id        string   (required)
+  //   previous_status 'available'|'unavailable'|'busy'
+  //   new_status      'available'|'unavailable'|'busy'
+  // TODO: check
+  authEvent.on("project_user.update.agent", function (event) {
+    // console.log("project_user.update.agent", event);
+    var pu = event.updatedProject_userPopulated;
+    if (!pu) return;
+    if (pu.user_available === undefined) return; // not a status-change update
+
+    var prevBool = event.previousUserAvailable;
+    if (prevBool === pu.user_available) return; // no actual change
+
+    var prevStatus = availabilityLabel(prevBool);
+    var newStatus = availabilityLabel(pu.user_available);
+
+    // Both statuses must be valid enum members — skip if either resolves to null.
+    if (!prevStatus || !newStatus) return;
+
+    var humanId = toStringId(pu.id_user);
+    if (!humanId) return;
+
+    track("human.status_changed", pu.id_project, {
+      human_id: humanId,
+      previous_status: prevStatus,
+      new_status: newStatus,
+    });
+  });
+
+  // ── 7. department.assignment ──────────────────────────────────────────────
+  // Contract: packages/contracts/src/payloads/department-assignment.ts
+  //   id_request      string   (required)
+  //   department_id   string   (required, non-null)
+  //   department_name string   (required, non-null)
+  //   assigned_by     string|null
+  //   routing_type    string
+  requestEvent.on("request.department.update", function (requestComplete) {
+    // console.log("request.department.update", requestComplete);
+    var dept = requestComplete.department;
+
+    var deptId = departmentId(dept);
+    var deptName = departmentName(dept) || deptId;
+
+    // Both department_id and department_name are required non-null in the contract.
+    if (!deptId) return;
+
+    track("department.assignment", requestComplete.id_project, {
+      id_request: requestComplete.request_id || toStringId(requestComplete),
+      department_id: deptId,
+      department_name: deptName,
+      assigned_by: requestComplete.updatedBy || null,
+      routing_type: "auto",
+    });
+  });
+
+  // ── 10. webhook.triggered ─────────────────────────────────────────────────
+  // Emitted by routes/webhook.js when a chatbot automation is triggered via
+  // the public webhook URL (production runs only — dev-mode runs are excluded).
+  //   webhook_id  string   (required)
+  //   agent_id    string   (required)
+  //   block_id    string   (required)
+  //   async       boolean
+  //   request_id  string|null  — synthetic automation-request-... identifier
+  webhookEvent.on("webhook.triggered", function ({ webhook, payload }) {
+    if (!webhook || !webhook.id_project) return;
+
+    track("webhook.triggered", webhook.id_project, {
+      webhook_id: webhook.webhook_id,
+      agent_id: webhook.chatbot_id,
+      block_id:   webhook.block_id,
+      async:      webhook.async,
+      request_id:
+        (payload && (payload.preloaded_request_id || payload.request_id)) ||
+        null,
+    });
+  });
+
+  // ── 11. kb.metadata_updated ───────────────────────────────────────────────
+  // Emitted by routes/kb.js on namespace create and update (rename).
+  // kb_id   = Namespace.id  (logical string key, NOT the ObjectId _id)
+  // kb_name = Namespace.name
+  // The consumer writes these into the kb_dimensions ReplacingMergeTree table
+  // so that dashboard queries always resolve the current KB name.
+  kbEvent.on("kb.namespace.create", function ({ savedNamespace, project_id }) {
+    if (!savedNamespace || !project_id) return;
+    track("kb.metadata_updated", project_id, {
+      kb_id:   savedNamespace.id,
+      kb_name: savedNamespace.name,
+    });
+  });
+
+  kbEvent.on("kb.namespace.update", function ({ updatedNamespace }) {
+    if (!updatedNamespace || !updatedNamespace.id_project) return;
+    track("kb.metadata_updated", updatedNamespace.id_project, {
+      kb_id:   updatedNamespace.id,
+      kb_name: updatedNamespace.name,
+    });
+  });
+
+  // ── 12. department.metadata_updated ──────────────────────────────────────
+  // Emitted by routes/department.js on department create, PUT, and PATCH.
+  // department_id   = Department._id.toString()
+  // department_name = Department.name
+  // The consumer writes these into the department_dimensions table so that
+  // dashboard queries always resolve the current department name.
+  departmentEvent.on("department.create", function (savedDepartment) {
+    if (!savedDepartment || !savedDepartment.id_project) return;
+    track("department.metadata_updated", savedDepartment.id_project, {
+      department_id:   savedDepartment._id.toString(),
+      department_name: savedDepartment.name,
+    });
+  });
+
+  departmentEvent.on("department.update", function (updatedDepartment) {
+    if (!updatedDepartment || !updatedDepartment.id_project) return;
+    track("department.metadata_updated", updatedDepartment.id_project, {
+      department_id:   updatedDepartment._id.toString(),
+      department_name: updatedDepartment.name,
+    });
+  });
+
+  // ── 13. agent.metadata_updated ────────────────────────────────────────────
+  // Emitted by routes/faq_kb.js on bot create and update (rename, attribute
+  // changes, language, etc.).
+  // agent_id   = Faq_kb.root_id  (the canonical/root agent id)
+  // agent_name = Faq_kb.name
+  // The consumer writes these into the agent_dimensions ReplacingMergeTree so
+  // that dashboard queries always resolve the current bot name.
+  //
+  // Only PUBLISHED chatbots are tracked. Publishing forks the chatbot into a
+  // trashed faq_kb that carries root_id (-> the editable draft); the draft/root
+  // copy never has root_id. Gating on root_id therefore: (a) excludes drafts
+  // that were never published, (b) keys the dimension on the canonical root id
+  // — the same id the chatbot stamps on its runtime events — and (c) makes the
+  // name reflect the *published* name (a draft rename only lands here on the
+  // next publish, when a fresh fork fires faqbot.update).
+  botEvent.on("faqbot.create", function (savedBot) {
+    if (!savedBot || !savedBot.id_project || !savedBot.name || !savedBot.root_id) return;
+    track("agent.metadata_updated", savedBot.id_project, {
+      agent_id:   savedBot.root_id,
+      agent_name: savedBot.name,
+    });
+  });
+
+  botEvent.on("faqbot.update", function (updatedBot) {
+    if (!updatedBot || !updatedBot.id_project || !updatedBot.name || !updatedBot.root_id) return;
+    track("agent.metadata_updated", updatedBot.id_project, {
+      agent_id:   updatedBot.root_id,
+      agent_name: updatedBot.name,
+    });
+  });
+}
+
+module.exports = { listen: listen };

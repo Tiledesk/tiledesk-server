@@ -4,10 +4,11 @@ config/.firebase-key
 data
 .firebasekey-pre.json
 .firebasekey.json
-.env
+.env*
 copyfiles
 logs
 CLAUDE.md
 .claude
-
+.idea
+**/.DS_Store
 docs/openapi/*

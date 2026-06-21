@@ -5,6 +5,7 @@ const fs = require('fs');
 const TEXT_MIME_TYPES = [
   'text/plain',
   'text/csv',
+  'text/markdown',
   'image/svg+xml',
   'application/xml',
   'text/xml'
@@ -39,6 +40,9 @@ function areMimeTypesEquivalent(mimeType1, mimeType2) {
     'image/jpg': ['image/jpeg'],
     'application/x-zip-compressed': ['application/zip'],
     'application/zip': ['application/x-zip-compressed'],
+    'text/markdown': ['text/plain', 'text/x-markdown'],
+    'text/plain': ['text/markdown', 'text/x-markdown'],
+    'text/x-markdown': ['text/markdown', 'text/plain'],
   };
   
   // Check if m1 is an alias of m2 or vice versa
