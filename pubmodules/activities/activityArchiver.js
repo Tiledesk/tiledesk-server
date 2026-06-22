@@ -115,14 +115,25 @@ class ActivityArchiver {
           return winston.debug('ActivityArchiver skipping archive empty user'); //from i think chat21webhook
         }
 
-        const updateContext = event.updateContext || projectUserUpdateContextUtil.buildProjectUserUpdateContext(
+        const fallbackTargetUserId = projectUserUpdateContextUtil.resolveUserId(
+          project_user.id_user && project_user.id_user._id ? project_user.id_user : project_user.id_user
+        );
+        let updateContext = event.updateContext || projectUserUpdateContextUtil.buildProjectUserUpdateContext(
           event.req,
           event.previousUserAvailable,
-          null,
-          project_user.id_user
+          event.previousProfileStatus,
+          fallbackTargetUserId
         );
-        const actor = projectUserUpdateContextUtil.actorFromUpdateContext(event.req, updateContext);
-        const verb = projectUserUpdateContextUtil.verbForProjectUserUpdate(event.req.body, updateContext);
+        let verb = projectUserUpdateContextUtil.verbForProjectUserUpdate(event.req.body, updateContext);
+        const reconciled = projectUserUpdateContextUtil.reconcileAvailabilityVerb(
+          event,
+          project_user,
+          verb,
+          updateContext
+        );
+        verb = reconciled.verb;
+        updateContext = reconciled.updateContext;
+        const actor = reconciled.actor || projectUserUpdateContextUtil.actorFromUpdateContext(event.req, updateContext);
         const previousStatus = projectUserUpdateContextUtil.availabilityStatusLabel({
           user_available: updateContext.previousUserAvailable,
           profileStatus: updateContext.previousProfileStatus

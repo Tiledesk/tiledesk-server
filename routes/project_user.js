@@ -226,7 +226,7 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     req,
     previousUserAvailable,
     previousProfileStatus,
-    req.projectuser.id_user
+    projectUserUpdateContextUtil.resolveUserId(req.projectuser.id_user)
   );
 
   Project_user.findByIdAndUpdate(req.projectuser.id, update,  { new: true, upsert: true }, function (err, updatedProject_user) {

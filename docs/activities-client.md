@@ -191,11 +191,34 @@ interface AvailabilityActionObj {
 | `actor.type` | `user` | `system` |
 | `actor.id` | `id_user` di chi ha cambiato stato | `system` |
 | `target.id` | `project_user_id` dell'agente | `project_user_id` dell'agente |
-| `target.object.id_user` | profilo dell'agente interessato | profilo dell'agente interessato |
 | `actionObj.updateType` | `self` | `system` |
 | `actionObj.source` | `api` | `subscription` |
 
-> **Nota:** prima della distinzione esplicita, le activity di sistema potevano avere `actor.type: "user"` con `actor.id` uguale all'id della subscription. Con i nuovi verb usare sempre `actor.type === "system"` e ignorare eventuali record legacy confrontando `actor.id` con gli id noti delle subscription.
+**Logica server (dopo la correzione):**
+
+1. **System** se `req.user` è una **Subscription** (JWT `sub: subscription`, oppure documento con `event` + `target` + `id_project`)
+2. **System** se il body contiene `"availabilityInitiator": "system"` (vedi sotto)
+3. **Self** se l'utente chiama `PUT /project_users/` (aggiornamento del proprio profilo)
+4. **Self** se `actor.id` coincide con `target.object.id_user._id` (confronto normalizzato)
+5. **Safety net in archiver:** se `verb` è `SELF` ma `actor.id ≠ target.id_user` → riclassificato come `PROJECT_USER_UPDATE` o `SYSTEM` (se subscription)
+
+> **Caso tipico di errore (evento 1):** la subscription chiama l'API con JWT utente su `PUT /project_users/` oppure `req.user` è il documento Subscription ma non viene riconosciuto (`instanceof` fallito). In entrambi i casi il vecchio codice marcava `SELF` in modo errato.
+
+### Disconnessione da dashboard (subscription client)
+
+Se il client di disconnessione usa il **token utente** (non JWT subscription) su `PUT /project_users/`, passare esplicitamente:
+
+```json
+{
+  "user_available": false,
+  "profileStatus": "inactive",
+  "availabilityInitiator": "system"
+}
+```
+
+In alternativa usare JWT **subscription** su `PUT /project_users/:project_userid` — viene classificato automaticamente come system.
+
+> **Nota legacy:** nelle activity archiviate prima di questa correzione, `actor.id` poteva contenere l'id della subscription con `actor.type: "user"`. Per i record legacy: se `actor.id` non corrisponde a `target.object.id_user._id` e il `verb` è `SELF`, trattare come system.
 
 ### Template frasi — disponibilità
 

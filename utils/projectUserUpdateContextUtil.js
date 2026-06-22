@@ -6,6 +6,59 @@ function systemActor() {
   return { type: 'system', id: 'system', name: 'System' };
 }
 
+function resolveUserId(userRef) {
+  if (userRef === undefined || userRef === null) {
+    return '';
+  }
+
+  if (typeof userRef === 'string' || typeof userRef === 'number') {
+    return String(userRef);
+  }
+
+  if (userRef._id) {
+    return String(userRef._id);
+  }
+
+  if (userRef.id) {
+    return String(userRef.id);
+  }
+
+  return String(userRef);
+}
+
+function isSubscriptionActor(user) {
+  if (!user) {
+    return false;
+  }
+
+  if (user instanceof Subscription) {
+    return true;
+  }
+
+  if (user.constructor && user.constructor.modelName === 'subscription') {
+    return true;
+  }
+
+  // Webhook subscription document (no user profile fields)
+  return Boolean(
+    user.event &&
+    user.target &&
+    user.id_project &&
+    user.createdBy &&
+    !user.email &&
+    !user.firstname &&
+    !user.lastname
+  );
+}
+
+function isSystemAvailabilityInitiator(req) {
+  if (!req || !req.body) {
+    return false;
+  }
+
+  return req.body.availabilityInitiator === 'system';
+}
+
 function isAvailabilityUpdate(body) {
   if (!body) {
     return false;
@@ -27,22 +80,22 @@ function buildProjectUserUpdateContext(req, previousUserAvailable, previousProfi
     return context;
   }
 
-  if (req.user instanceof Subscription) {
-    context.source = 'subscription';
+  if (isSubscriptionActor(req.user) || isSystemAvailabilityInitiator(req)) {
+    context.source = isSubscriptionActor(req.user) ? 'subscription' : 'api';
     context.updateType = 'system';
     return context;
   }
 
-  const actorUserId = String(req.user.id || req.user._id || '');
-  const resolvedTargetUserId = String(
-    targetUserId ||
-    (req.projectuser && req.projectuser.id_user) ||
-    ''
-  );
-
+  const actorUserId = resolveUserId(req.user);
+  const targetId = resolveUserId(targetUserId);
   const isSelfRoute = !req.params || !req.params.project_userid;
 
-  if (isSelfRoute || (actorUserId && resolvedTargetUserId && actorUserId === resolvedTargetUserId)) {
+  if (isSelfRoute) {
+    context.updateType = 'self';
+    return context;
+  }
+
+  if (actorUserId && targetId && actorUserId === targetId) {
     context.updateType = 'self';
   }
 
@@ -50,13 +103,19 @@ function buildProjectUserUpdateContext(req, previousUserAvailable, previousProfi
 }
 
 function actorFromUpdateContext(req, updateContext) {
-  if (!req || !req.user || (updateContext && updateContext.updateType === 'system')) {
+  if (
+    !req ||
+    !req.user ||
+    (updateContext && updateContext.updateType === 'system') ||
+    isSubscriptionActor(req.user) ||
+    isSystemAvailabilityInitiator(req)
+  ) {
     return systemActor();
   }
 
   return {
     type: 'user',
-    id: String(req.user.id || req.user._id),
+    id: resolveUserId(req.user),
     name: req.user.fullName || req.user.fullname || undefined
   };
 }
@@ -90,6 +149,36 @@ function availabilityStatusLabel({ user_available, profileStatus }) {
   return 'unknown';
 }
 
+function reconcileAvailabilityVerb(event, project_user, verb, updateContext) {
+  if (!isAvailabilityUpdate(event.req && event.req.body)) {
+    return { verb: verb, updateContext: updateContext, actor: null };
+  }
+
+  const context = Object.assign({}, updateContext);
+  let resolvedVerb = verb;
+  const targetUserId = resolveUserId(project_user && project_user.id_user);
+  const actorUserId = resolveUserId(event.req && event.req.user);
+
+  if (isSubscriptionActor(event.req && event.req.user) || isSystemAvailabilityInitiator(event.req)) {
+    context.updateType = 'system';
+    context.source = isSubscriptionActor(event.req.user) ? 'subscription' : (context.source || 'api');
+    resolvedVerb = 'PROJECT_USER_AVAILABILITY_SYSTEM';
+    return {
+      verb: resolvedVerb,
+      updateContext: context,
+      actor: systemActor()
+    };
+  }
+
+  if (resolvedVerb === 'PROJECT_USER_AVAILABILITY_SELF' && targetUserId && actorUserId && actorUserId !== targetUserId) {
+    context.updateType = 'admin';
+    resolvedVerb = 'PROJECT_USER_UPDATE';
+    return { verb: resolvedVerb, updateContext: context, actor: null };
+  }
+
+  return { verb: resolvedVerb, updateContext: context, actor: null };
+}
+
 function verbFromAvailabilityUpdateType(updateType) {
   switch (updateType) {
     case 'system':
@@ -103,10 +192,14 @@ function verbFromAvailabilityUpdateType(updateType) {
 
 module.exports = {
   systemActor,
+  resolveUserId,
+  isSubscriptionActor,
+  isSystemAvailabilityInitiator,
   isAvailabilityUpdate,
   buildProjectUserUpdateContext,
   actorFromUpdateContext,
   verbForProjectUserUpdate,
   availabilityStatusLabel,
+  reconcileAvailabilityVerb,
   verbFromAvailabilityUpdateType
 };
