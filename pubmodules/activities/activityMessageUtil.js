@@ -109,16 +109,14 @@ function buildDefaultActivityMessage(activity) {
 
     case 'PROJECT_USER_AVAILABILITY_SELF': {
       const targetUser = targetUserLabel(activity);
-      const previousStatus = actionObj.previousStatus || 'unknown';
       const newStatus = actionObj.newStatus || 'unknown';
-      return targetUser + ' changed availability status from ' + previousStatus + ' to ' + newStatus;
+      return targetUser + ' changed availability status to ' + newStatus;
     }
 
     case 'PROJECT_USER_AVAILABILITY_SYSTEM': {
       const targetUser = targetUserLabel(activity);
       const newStatus = actionObj.newStatus || 'unknown';
-      const resolvedSource = source === 'subscription' ? 'system' : source;
-      return targetUser + ' availability status was changed to ' + newStatus + ' by ' + resolvedSource;
+      return targetUser + ' availability status was changed to ' + newStatus + ' by the system';
     }
 
     default:

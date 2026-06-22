@@ -242,6 +242,7 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
         updatedProject_userPopulated: pu,
         req: req,
         previousUserAvailable: previousUserAvailable,
+        previousProfileStatus: previousProfileStatus,
         updateContext: updateContext
       });
     });
@@ -323,6 +324,7 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
               updatedProject_userPopulated: pu,
               req: req,
               previousUserAvailable: previousUserAvailable,
+              previousProfileStatus: previousProfileStatus,
               updateContext: updateContext
             });
         });

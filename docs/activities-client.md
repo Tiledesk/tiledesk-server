@@ -152,7 +152,7 @@ interface Activity {
 
 | Verb | Significato | Esempio frase (IT) |
 |---|---|---|
-| `PROJECT_USER_AVAILABILITY_SELF` | L'agente ha cambiato **il proprio** stato di disponibilità | *L'utente **X** ha modificato il suo stato da **disponibile** a **inattivo*** |
+| `PROJECT_USER_AVAILABILITY_SELF` | L'agente ha cambiato **il proprio** stato di disponibilità | *L'utente **X** ha modificato il suo stato in **inattivo*** |
 | `PROJECT_USER_AVAILABILITY_SYSTEM` | Lo stato è stato cambiato **automaticamente dal sistema** (es. disconnessione via subscription) | *Lo stato dell'utente **X** è stato modificato in **inattivo** dal sistema* |
 
 > `PROJECT_USER_UPDATE` resta in uso per le modifiche fatte da un admin sul profilo di un altro utente (ruolo, disponibilità altrui, impostazioni, ecc.).
@@ -165,23 +165,20 @@ Per `PROJECT_USER_AVAILABILITY_SELF` e `PROJECT_USER_AVAILABILITY_SYSTEM`:
 
 ```ts
 interface AvailabilityActionObj {
-  /** Valore richiesto nel body della PATCH/PUT */
+  /** Valore inviato nel body della PUT */
   user_available?: boolean;
   profileStatus?: string;
 
-  /** Stato precedente (boolean o profileStatus) */
-  previousUserAvailable?: boolean | null;
-  previousProfileStatus?: string | null;
-
-  /** Etichette già normalizzate dal server — preferire per i18n */
-  previousStatus?: string;   // es. "available", "unavailable", "inactive"
-  newStatus?: string;
+  /** Etichetta normalizzata del nuovo stato — usare per i18n */
+  newStatus?: string;   // es. "available", "unavailable", "inactive"
 
   /** Tipo semantico (ridondante con verb) */
   updateType: 'self' | 'system' | 'admin';
   source: 'api' | 'subscription' | 'system';
 }
 ```
+
+> **Nota:** lo stato precedente non è incluso nell'activity. Il server legge i valori `previous` prima dell'update ma, soprattutto con job worker/queue attivo, questa informazione non era affidabilmente disponibile nell'archiver. Le frasi UI usano solo il **nuovo stato** (`newStatus`).
 
 ### Come distinguere self vs system
 
@@ -226,8 +223,8 @@ In alternativa usare JWT **subscription** su `PUT /project_users/:project_userid
 
 | Lingua | Template |
 |---|---|
-| **IT** | `{{targetUser}} ha modificato il suo stato da {{previousStatus}} a {{newStatus}}` |
-| **EN** | `{{targetUser}} changed availability status from {{previousStatus}} to {{newStatus}}` |
+| **IT** | `{{targetUser}} ha modificato il suo stato in {{newStatus}}` |
+| **EN** | `{{targetUser}} changed availability status to {{newStatus}}` |
 
 **`PROJECT_USER_AVAILABILITY_SYSTEM`**
 
@@ -238,7 +235,7 @@ In alternativa usare JWT **subscription** su `PUT /project_users/:project_userid
 
 `targetUser` si ricava da `target.object.id_user` (firstname + lastname).
 
-### Valori di stato (`previousStatus` / `newStatus`)
+### Valori di `newStatus`
 
 | Valore | Significato |
 |---|---|
@@ -506,7 +503,7 @@ Due sotto-casi:
     "REQUEST_ASSIGNED_MANUAL_REPLACED": "All'utente {{assignee}} è stata assegnata la conversazione {{conversation}} da {{actor}} (sostituisce {{previous}})",
     "REQUEST_UNASSIGNED": "{{actor}} ha rimosso {{assignee}} dalla conversazione {{conversation}}",
 
-    "PROJECT_USER_AVAILABILITY_SELF": "{{targetUser}} ha modificato il suo stato da {{previousStatus}} a {{newStatus}}",
+    "PROJECT_USER_AVAILABILITY_SELF": "{{targetUser}} ha modificato il suo stato in {{newStatus}}",
     "PROJECT_USER_AVAILABILITY_SYSTEM": "Lo stato di {{targetUser}} è stato modificato in {{newStatus}} dal sistema",
 
     "REQUEST_CREATE": "{{actor}} ha avviato una nuova conversazione",

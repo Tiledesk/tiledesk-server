@@ -124,6 +124,12 @@ class ActivityArchiver {
           event.previousProfileStatus,
           fallbackTargetUserId
         );
+        if (event.previousUserAvailable !== undefined && updateContext.previousUserAvailable === undefined) {
+          updateContext.previousUserAvailable = event.previousUserAvailable;
+        }
+        if (event.previousProfileStatus !== undefined && updateContext.previousProfileStatus === undefined) {
+          updateContext.previousProfileStatus = event.previousProfileStatus;
+        }
         let verb = projectUserUpdateContextUtil.verbForProjectUserUpdate(event.req.body, updateContext);
         const reconciled = projectUserUpdateContextUtil.reconcileAvailabilityVerb(
           event,
@@ -134,10 +140,6 @@ class ActivityArchiver {
         verb = reconciled.verb;
         updateContext = reconciled.updateContext;
         const actor = reconciled.actor || projectUserUpdateContextUtil.actorFromUpdateContext(event.req, updateContext);
-        const previousStatus = projectUserUpdateContextUtil.availabilityStatusLabel({
-          user_available: updateContext.previousUserAvailable,
-          profileStatus: updateContext.previousProfileStatus
-        });
         const newStatus = projectUserUpdateContextUtil.availabilityStatusLabel({
           user_available: project_user.user_available,
           profileStatus: project_user.profileStatus
@@ -148,9 +150,6 @@ class ActivityArchiver {
           actor: actor,
           verb: verb,
           actionObj: Object.assign({}, event.req.body, {
-            previousUserAvailable: updateContext.previousUserAvailable,
-            previousProfileStatus: updateContext.previousProfileStatus,
-            previousStatus: previousStatus,
             newStatus: newStatus,
             updateType: updateContext.updateType,
             source: updateContext.source

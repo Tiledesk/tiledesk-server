@@ -469,7 +469,13 @@ function listen() {
             body = data.req.body;
           }
         }
-        var dat = {updatedProject_userPopulated: data.updatedProject_userPopulated, req: {user: user, body: body}}; //remove request
+        var dat = {
+          updatedProject_userPopulated: data.updatedProject_userPopulated,
+          req: { user: user, body: body, params: data.req && data.req.params },
+          previousUserAvailable: data.previousUserAvailable,
+          previousProfileStatus: data.previousProfileStatus,
+          updateContext: data.updateContext
+        };
         winston.debug("dat",dat);
         publish(exchange, "project_user_update", Buffer.from(JSON.stringify(dat)));
       });
