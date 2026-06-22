@@ -13,6 +13,8 @@ Le activity vengono archiviate solo se sul server è attivo:
 ACTIVITY_HISTORY_ENABLED=true
 ```
 
+Con `QUEUE_ENABLED=true`, gli eventi chatbot e KB passano dalla coda AMQP (come `request.assigned` e `project_user.update`): l'archiver ascolta le versioni `.queue` (`faqbot.created.queue`, `kb.namespace.create.queue`, ecc.) e il payload include `req.user` serializzato per ricostruire l'attore.
+
 ---
 
 ## API

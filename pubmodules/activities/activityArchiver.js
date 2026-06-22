@@ -378,7 +378,10 @@ class ActivityArchiver {
 
     // ********** CHATBOT / FAQ_KB EVENTS **********
 
-    botEvent.on('faqbot.created', function (data) {
+    const faqbotCreatedKey = resolveEventKey('faqbot.created', botEvent.queueEnabled);
+    winston.debug('ActivityArchiver faqbotCreatedKey: ' + faqbotCreatedKey);
+
+    botEvent.on(faqbotCreatedKey, function (data) {
       setImmediate(() => {
         try {
           const chatbot = data && (data.chatbot || data);
@@ -404,7 +407,10 @@ class ActivityArchiver {
       });
     });
 
-    botEvent.on('faqbot.deleted', function (data) {
+    const faqbotDeletedKey = resolveEventKey('faqbot.deleted', botEvent.queueEnabled);
+    winston.debug('ActivityArchiver faqbotDeletedKey: ' + faqbotDeletedKey);
+
+    botEvent.on(faqbotDeletedKey, function (data) {
       setImmediate(() => {
         try {
           const chatbot = data && data.chatbot;
@@ -429,7 +435,10 @@ class ActivityArchiver {
       });
     });
 
-    botEvent.on('faqbot.publish', function (data) {
+    const faqbotPublishKey = resolveEventKey('faqbot.publish', botEvent.queueEnabled);
+    winston.debug('ActivityArchiver faqbotPublishKey: ' + faqbotPublishKey);
+
+    botEvent.on(faqbotPublishKey, function (data) {
       setImmediate(() => {
         try {
           if (!data || !data.chatbot || !data.chatbot.id_project) {
@@ -457,7 +466,10 @@ class ActivityArchiver {
 
     // ********** KB / NAMESPACE EVENTS **********
 
-    kbEvent.on('kb.namespace.create', function (data) {
+    const kbNamespaceCreateKey = resolveEventKey('kb.namespace.create', kbEvent.queueEnabled);
+    winston.debug('ActivityArchiver kbNamespaceCreateKey: ' + kbNamespaceCreateKey);
+
+    kbEvent.on(kbNamespaceCreateKey, function (data) {
       setImmediate(() => {
         try {
           if (!data || !data.project_id || !data.savedNamespace) {
@@ -482,7 +494,10 @@ class ActivityArchiver {
       });
     });
 
-    kbEvent.on('kb.namespace.delete', function (data) {
+    const kbNamespaceDeleteKey = resolveEventKey('kb.namespace.delete', kbEvent.queueEnabled);
+    winston.debug('ActivityArchiver kbNamespaceDeleteKey: ' + kbNamespaceDeleteKey);
+
+    kbEvent.on(kbNamespaceDeleteKey, function (data) {
       setImmediate(() => {
         try {
           if (!data || !data.project_id || !data.namespace_id) {
@@ -506,7 +521,10 @@ class ActivityArchiver {
       });
     });
 
-    kbEvent.on('kb.contents.add', function (data) {
+    const kbContentsAddKey = resolveEventKey('kb.contents.add', kbEvent.queueEnabled);
+    winston.debug('ActivityArchiver kbContentsAddKey: ' + kbContentsAddKey);
+
+    kbEvent.on(kbContentsAddKey, function (data) {
       setImmediate(() => {
         try {
           if (!data || !data.project_id || !data.namespace_id) {
@@ -533,7 +551,10 @@ class ActivityArchiver {
       });
     });
 
-    kbEvent.on('kb.contents.delete', function (data) {
+    const kbContentsDeleteKey = resolveEventKey('kb.contents.delete', kbEvent.queueEnabled);
+    winston.debug('ActivityArchiver kbContentsDeleteKey: ' + kbContentsDeleteKey);
+
+    kbEvent.on(kbContentsDeleteKey, function (data) {
       setImmediate(() => {
         try {
           if (!data || !data.project_id || !data.namespace_id) {

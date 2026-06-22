@@ -6,6 +6,7 @@ const leadEvent = require('../../event/leadEvent');
 
 const botEvent = require('../../event/botEvent');
 const authEvent = require('../../event/authEvent');
+const kbEvent = require('../../event/kbEvent');
 // https://elements.heroku.com/addons/cloudamqp
 // https://gist.github.com/carlhoerberg/006b01ac17a0a94859ba#file-reconnect-js
 // http://www.rabbitmq.com/tutorials/tutorial-one-javascript.html
@@ -199,6 +200,41 @@ function startWorker() {
           winston.info("Data queue", oka)
         });
 
+        ch.bindQueue(_ok.queue, exchange, "faqbot_created", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: faqbot_created");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "faqbot_deleted", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: faqbot_deleted");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "faqbot_publish", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: faqbot_publish");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "kb_namespace_create", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: kb_namespace_create");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "kb_namespace_delete", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: kb_namespace_delete");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "kb_contents_add", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: kb_contents_add");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "kb_contents_delete", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: kb_contents_delete");
+          winston.info("Data queue", oka)
+        });
+
         ch.bindQueue(_ok.queue, exchange, "lead_create", {}, function(err3, oka) {
           winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: lead_create");
           winston.info("Data queue", oka)
@@ -323,6 +359,34 @@ function work(msg, cb) {
     botEvent.emit('faqbot.update.queue',  JSON.parse(message_string));
   }
 
+  if (topic === 'faqbot_created') {
+    botEvent.emit('faqbot.created.queue', JSON.parse(message_string));
+  }
+
+  if (topic === 'faqbot_deleted') {
+    botEvent.emit('faqbot.deleted.queue', JSON.parse(message_string));
+  }
+
+  if (topic === 'faqbot_publish') {
+    botEvent.emit('faqbot.publish.queue', JSON.parse(message_string));
+  }
+
+  if (topic === 'kb_namespace_create') {
+    kbEvent.emit('kb.namespace.create.queue', JSON.parse(message_string));
+  }
+
+  if (topic === 'kb_namespace_delete') {
+    kbEvent.emit('kb.namespace.delete.queue', JSON.parse(message_string));
+  }
+
+  if (topic === 'kb_contents_add') {
+    kbEvent.emit('kb.contents.add.queue', JSON.parse(message_string));
+  }
+
+  if (topic === 'kb_contents_delete') {
+    kbEvent.emit('kb.contents.delete.queue', JSON.parse(message_string));
+  }
+
   if (topic === 'lead_create') {
     winston.debug("reconnect here topic lead_create:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
@@ -366,6 +430,44 @@ function closeOnErr(err) {
 //   publish(exchange, "request_create", Buffer.from("work work work: "+d));
 //   publish(exchange, "request_update", Buffer.from("work2 work work: "+d));
 // }, 1000);
+
+function serializeReqUser(req) {
+  if (!req || !req.user) {
+    return { user: null };
+  }
+  return {
+    user: {
+      id: req.user.id,
+      fullName: req.user.fullName
+    }
+  };
+}
+
+function serializeFaqbotActivityPayload(data) {
+  return {
+    chatbot: data.chatbot,
+    req: serializeReqUser(data.req),
+    id_project: data.id_project,
+    publishedBotId: data.publishedBotId,
+    release_note: data.release_note
+  };
+}
+
+function serializeKbActivityPayload(data) {
+  return {
+    req: serializeReqUser(data.req),
+    project_id: data.project_id,
+    namespace_id: data.namespace_id,
+    namespace_name: data.namespace_name,
+    savedNamespace: data.savedNamespace,
+    contentAddType: data.contentAddType,
+    count: data.count,
+    type: data.type,
+    source: data.source,
+    deletedCount: data.deletedCount,
+    deleteMode: data.deleteMode
+  };
+}
 
 
 function listen() {
@@ -490,6 +592,55 @@ function listen() {
       });
     });
 
+    botEvent.on('faqbot.created', function(data) {
+      setImmediate(() => {
+        publish(exchange, "faqbot_created", Buffer.from(JSON.stringify(serializeFaqbotActivityPayload(data))));
+        winston.debug("reconnect faqbot.created published");
+      });
+    });
+
+    botEvent.on('faqbot.deleted', function(data) {
+      setImmediate(() => {
+        publish(exchange, "faqbot_deleted", Buffer.from(JSON.stringify(serializeFaqbotActivityPayload(data))));
+        winston.debug("reconnect faqbot.deleted published");
+      });
+    });
+
+    botEvent.on('faqbot.publish', function(data) {
+      setImmediate(() => {
+        publish(exchange, "faqbot_publish", Buffer.from(JSON.stringify(serializeFaqbotActivityPayload(data))));
+        winston.debug("reconnect faqbot.publish published");
+      });
+    });
+
+    kbEvent.on('kb.namespace.create', function(data) {
+      setImmediate(() => {
+        publish(exchange, "kb_namespace_create", Buffer.from(JSON.stringify(serializeKbActivityPayload(data))));
+        winston.debug("reconnect kb.namespace.create published");
+      });
+    });
+
+    kbEvent.on('kb.namespace.delete', function(data) {
+      setImmediate(() => {
+        publish(exchange, "kb_namespace_delete", Buffer.from(JSON.stringify(serializeKbActivityPayload(data))));
+        winston.debug("reconnect kb.namespace.delete published");
+      });
+    });
+
+    kbEvent.on('kb.contents.add', function(data) {
+      setImmediate(() => {
+        publish(exchange, "kb_contents_add", Buffer.from(JSON.stringify(serializeKbActivityPayload(data))));
+        winston.debug("reconnect kb.contents.add published");
+      });
+    });
+
+    kbEvent.on('kb.contents.delete', function(data) {
+      setImmediate(() => {
+        publish(exchange, "kb_contents_delete", Buffer.from(JSON.stringify(serializeKbActivityPayload(data))));
+        winston.debug("reconnect kb.contents.delete published");
+      });
+    });
+
 
     leadEvent.on('lead.create', function(lead) {
       setImmediate(() => {
@@ -527,6 +678,7 @@ if (process.env.QUEUE_ENABLED === "true") {
     messageEvent.queueEnabled = true;
     authEvent.queueEnabled = true;
     botEvent.queueEnabled = true;
+    kbEvent.queueEnabled = true;
     leadEvent.queueEnabled = true;
     listen();
     start();
