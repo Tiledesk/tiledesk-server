@@ -190,6 +190,15 @@ function buildDefaultActivityMessage(activity) {
     case 'KB_CONTENTS_DELETE':
       return actor + ' deleted all contents from namespace ' + namespaceLabel(activity);
 
+    case 'KB_CONTENT_DELETE': {
+      const content = (activity.target && activity.target.object && activity.target.object.name) ||
+        actionObj.source ||
+        actionObj.name ||
+        (activity.target && activity.target.id) ||
+        'content';
+      return actor + ' deleted content ' + content + ' from namespace ' + namespaceLabel(activity);
+    }
+
     default:
       return null;
   }

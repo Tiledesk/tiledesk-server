@@ -32,8 +32,9 @@ L’archiviazione è attiva solo se `ACTIVITY_HISTORY_ENABLED=true`.
 
 | Verb | Evento | Route / azione | Descrizione | Target |
 |------|--------|----------------|-------------|--------|
-| **CHATBOT_DELETE** | `faqbot.delete.activity` | `DELETE /:faq_kbid` | Eliminazione di un chatbot | `chatbot` |
-| **CHATBOT_PUBLISH** | `faqbot.publish.activity` | `PUT /:faq_kbid/publish` | Pubblicazione di un chatbot (fork + release) | `chatbot` |
+| **FAQ_KB_CREATE** | `faqbot.created` | `POST /`, `POST /importjson`, `POST /fork` | Creazione di un chatbot | `faq_kb` |
+| **FAQ_KB_DELETE** | `faqbot.deleted` | `DELETE /:faq_kbid` | Eliminazione di un chatbot | `faq_kb` |
+| **FAQ_KB_PUBLISH** | `faqbot.publish` | `PUT /:faq_kbid/publish` | Pubblicazione di un chatbot (fork + release) | `faq_kb` |
 
 ### Da kbEvent ([`routes/kb.js`](../../routes/kb.js) → [`activityArchiver.js`](activityArchiver.js))
 
@@ -41,8 +42,11 @@ L’archiviazione è attiva solo se `ACTIVITY_HISTORY_ENABLED=true`.
 |------|--------|----------------|-------------|--------|
 | **KB_NAMESPACE_CREATE** | `kb.namespace.create` | `POST /namespace` | Creazione di un nuovo namespace (KB) | `kb_namespace` |
 | **KB_NAMESPACE_DELETE** | `kb.namespace.delete` | `DELETE /namespace/:id` (senza `contents_only`) | Eliminazione di un namespace (e relativi contenuti) | `kb_namespace` |
+| **KB_CONTENTS_ADD** | `kb.contents.add` | `POST /`, `/multi`, `/csv`, `/sitemap/import` | Aggiunta contenuti a un namespace | `kb_namespace` |
 | **KB_CONTENTS_DELETE** | `kb.contents.delete` | `DELETE /namespace/:id?contents_only=true` o `DELETE /deleteall` | Eliminazione di tutti i contenuti di un namespace | `kb_namespace` |
 | **KB_CONTENT_DELETE** | `kb.content.delete` | `DELETE /:kb_id` | Eliminazione di un singolo contenuto della KB | `kb_content` |
+
+> Con `QUEUE_ENABLED=true` l'archiver ascolta le versioni `.queue` (es. `kb.content.delete.queue`, `kb.contents.delete.queue`).
 
 ---
 

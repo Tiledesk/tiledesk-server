@@ -236,6 +236,11 @@ function startWorker() {
           winston.info("Data queue", oka)
         });
 
+        ch.bindQueue(_ok.queue, exchange, "kb_content_delete", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: kb_content_delete");
+          winston.info("Data queue", oka)
+        });
+
         ch.bindQueue(_ok.queue, exchange, "lead_create", {}, function(err3, oka) {
           winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: lead_create");
           winston.info("Data queue", oka)
@@ -260,25 +265,6 @@ function startWorker() {
         ch.bindQueue(_ok.queue, exchange, "project_retention_recalc", {}, function(err3, oka) {
           winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: project_retention_recalc");
           winston.info("Data queue", oka)
-        });
-
-        ch.bindQueue(_ok.queue, exchange, "kb_namespace_create", {}, function(err3, oka) {
-          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: kb_namespace_create");
-        });
-        ch.bindQueue(_ok.queue, exchange, "kb_namespace_delete", {}, function(err3, oka) {
-          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: kb_namespace_delete");
-        });
-        ch.bindQueue(_ok.queue, exchange, "kb_contents_delete", {}, function(err3, oka) {
-          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: kb_contents_delete");
-        });
-        ch.bindQueue(_ok.queue, exchange, "kb_content_delete", {}, function(err3, oka) {
-          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: kb_content_delete");
-        });
-        ch.bindQueue(_ok.queue, exchange, "faqbot_delete_activity", {}, function(err3, oka) {
-          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: faqbot_delete_activity");
-        });
-        ch.bindQueue(_ok.queue, exchange, "faqbot_publish_activity", {}, function(err3, oka) {
-          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: faqbot_publish_activity");
         });
 
         ch.consume(queueName, processMsg, { noAck: false });
@@ -412,6 +398,10 @@ function work(msg, cb) {
     kbEvent.emit('kb.contents.delete.queue', JSON.parse(message_string));
   }
 
+  if (topic === 'kb_content_delete') {
+    kbEvent.emit('kb.content.delete.queue', JSON.parse(message_string));
+  }
+
   if (topic === 'lead_create') {
     winston.debug("reconnect here topic lead_create:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
@@ -438,32 +428,6 @@ function work(msg, cb) {
   if (topic === 'project_retention_recalc') {
     winston.debug("reconnect here topic project_retention_recalc:" + topic);
     projectEvent.emit('project.retentionRecalc.queue', JSON.parse(message_string));
-  }
-
-
-  if (topic === 'kb_namespace_create') {
-    winston.debug("reconnect here topic:" + topic);
-    kbEvent.emit('kb.namespace.create.queue', JSON.parse(message_string));
-  }
-  if (topic === 'kb_namespace_delete') {
-    winston.debug("reconnect here topic:" + topic);
-    kbEvent.emit('kb.namespace.delete.queue', JSON.parse(message_string));
-  }
-  if (topic === 'kb_contents_delete') {
-    winston.debug("reconnect here topic:" + topic);
-    kbEvent.emit('kb.contents.delete.queue', JSON.parse(message_string));
-  }
-  if (topic === 'kb_content_delete') {
-    winston.debug("reconnect here topic:" + topic);
-    kbEvent.emit('kb.content.delete.queue', JSON.parse(message_string));
-  }
-  if (topic === 'faqbot_delete_activity') {
-    winston.debug("reconnect here topic:" + topic);
-    botEvent.emit('faqbot.delete.activity.queue', JSON.parse(message_string));
-  }
-  if (topic === 'faqbot_publish_activity') {
-    winston.debug("reconnect here topic:" + topic);
-    botEvent.emit('faqbot.publish.activity.queue', JSON.parse(message_string));
   }
 
   cb(true);
@@ -519,7 +483,9 @@ function serializeKbActivityPayload(data) {
     type: data.type,
     source: data.source,
     deletedCount: data.deletedCount,
-    deleteMode: data.deleteMode
+    deleteMode: data.deleteMode,
+    kb_id: data.kb_id,
+    kb: data.kb
   };
 }
 
@@ -695,6 +661,13 @@ function listen() {
       });
     });
 
+    kbEvent.on('kb.content.delete', function(data) {
+      setImmediate(() => {
+        publish(exchange, "kb_content_delete", Buffer.from(JSON.stringify(serializeKbActivityPayload(data))));
+        winston.debug("reconnect kb.content.delete published");
+      });
+    });
+
 
     leadEvent.on('lead.create', function(lead) {
       setImmediate(() => {
@@ -742,7 +715,6 @@ if (process.env.QUEUE_ENABLED === "true") {
     kbEvent.queueEnabled = true;
     leadEvent.queueEnabled = true;
     projectEvent.queueEnabled = true;
-    kbEvent.queueEnabled = true;
     listen();
     start();
     winston.info("Queue enabled. endpoint: " + url );
