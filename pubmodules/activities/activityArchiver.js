@@ -1,7 +1,10 @@
 const authEvent = require('../../event/authEvent');
 const requestEvent = require('../../event/requestEvent');
+const botEvent = require('../../event/botEvent');
+const kbEvent = require('../../event/kbEvent');
 const assignmentContextUtil = require('../../utils/assignmentContextUtil');
 const projectUserUpdateContextUtil = require('../../utils/projectUserUpdateContextUtil');
+const activityActorUtil = require('../../utils/activityActorUtil');
 const Activity = require('./models/activity');
 const winston = require('../../config/winston');
 
@@ -16,6 +19,34 @@ async function save(activity) {
   } catch (err) {
     winston.error('Error saving activity ', { activity: activity.toObject(), err: err });
   }
+}
+
+function toObject(doc) {
+  if (!doc) {
+    return doc;
+  }
+  if (doc.toObject) {
+    return doc.toObject();
+  }
+  return doc;
+}
+
+function faqKbTarget(chatbot) {
+  const object = toObject(chatbot);
+  return {
+    type: 'faq_kb',
+    id: activityActorUtil.resolveId(object && object._id),
+    object: object
+  };
+}
+
+function namespaceTarget(namespaceId, namespaceObject) {
+  const object = namespaceObject ? toObject(namespaceObject) : { id: namespaceId };
+  return {
+    type: 'kb_namespace',
+    id: activityActorUtil.resolveId(namespaceId || (object && object.id)),
+    object: object
+  };
 }
 
 class ActivityArchiver {
@@ -264,7 +295,7 @@ class ActivityArchiver {
               object: request 
             }
           });
-          that.save(activity);
+          save(activity);
         } catch (e) {
           winston.error('ActivityArchiver error saving activity', e);
         }
@@ -340,6 +371,189 @@ class ActivityArchiver {
           save(activity);
         } catch (e) {
           winston.error('ActivityArchiver error saving request.assigned activity', e);
+        }
+      });
+    });
+
+
+    // ********** CHATBOT / FAQ_KB EVENTS **********
+
+    botEvent.on('faqbot.created', function (data) {
+      setImmediate(() => {
+        try {
+          const chatbot = data && (data.chatbot || data);
+          if (!chatbot || !(data.id_project || chatbot.id_project)) {
+            return winston.debug('ActivityArchiver skipping faqbot.created: missing chatbot');
+          }
+
+          const activity = new Activity({
+            id_project: data.id_project || chatbot.id_project,
+            actor: activityActorUtil.actorFromReq(data.req),
+            verb: 'FAQ_KB_CREATE',
+            actionObj: {
+              name: chatbot.name,
+              type: chatbot.type,
+              subtype: chatbot.subtype
+            },
+            target: faqKbTarget(chatbot)
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving faqbot.created activity', e);
+        }
+      });
+    });
+
+    botEvent.on('faqbot.deleted', function (data) {
+      setImmediate(() => {
+        try {
+          const chatbot = data && data.chatbot;
+          if (!chatbot || !chatbot.id_project) {
+            return winston.debug('ActivityArchiver skipping faqbot.deleted: missing chatbot');
+          }
+
+          const activity = new Activity({
+            id_project: chatbot.id_project,
+            actor: activityActorUtil.actorFromReq(data.req),
+            verb: 'FAQ_KB_DELETE',
+            actionObj: {
+              name: chatbot.name,
+              type: chatbot.type
+            },
+            target: faqKbTarget(chatbot)
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving faqbot.deleted activity', e);
+        }
+      });
+    });
+
+    botEvent.on('faqbot.publish', function (data) {
+      setImmediate(() => {
+        try {
+          if (!data || !data.chatbot || !data.chatbot.id_project) {
+            return winston.debug('ActivityArchiver skipping faqbot.publish: missing chatbot');
+          }
+
+          const activity = new Activity({
+            id_project: data.chatbot.id_project,
+            actor: activityActorUtil.actorFromReq(data.req),
+            verb: 'FAQ_KB_PUBLISH',
+            actionObj: {
+              name: data.chatbot.name,
+              publishedBotId: data.publishedBotId,
+              release_note: data.release_note
+            },
+            target: faqKbTarget(data.chatbot)
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving faqbot.publish activity', e);
+        }
+      });
+    });
+
+
+    // ********** KB / NAMESPACE EVENTS **********
+
+    kbEvent.on('kb.namespace.create', function (data) {
+      setImmediate(() => {
+        try {
+          if (!data || !data.project_id || !data.savedNamespace) {
+            return winston.debug('ActivityArchiver skipping kb.namespace.create: missing data');
+          }
+
+          const activity = new Activity({
+            id_project: data.project_id,
+            actor: activityActorUtil.actorFromReq(data.req),
+            verb: 'KB_NAMESPACE_CREATE',
+            actionObj: {
+              namespaceName: data.savedNamespace.name,
+              hybrid: data.savedNamespace.hybrid,
+              default: data.savedNamespace.default === true
+            },
+            target: namespaceTarget(data.namespace_id || data.savedNamespace.id, data.savedNamespace)
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving kb.namespace.create activity', e);
+        }
+      });
+    });
+
+    kbEvent.on('kb.namespace.delete', function (data) {
+      setImmediate(() => {
+        try {
+          if (!data || !data.project_id || !data.namespace_id) {
+            return winston.debug('ActivityArchiver skipping kb.namespace.delete: missing data');
+          }
+
+          const activity = new Activity({
+            id_project: data.project_id,
+            actor: activityActorUtil.actorFromReq(data.req),
+            verb: 'KB_NAMESPACE_DELETE',
+            actionObj: {
+              namespaceName: data.namespace_name,
+              deletedCount: data.deletedCount
+            },
+            target: namespaceTarget(data.namespace_id, { id: data.namespace_id, name: data.namespace_name })
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving kb.namespace.delete activity', e);
+        }
+      });
+    });
+
+    kbEvent.on('kb.contents.add', function (data) {
+      setImmediate(() => {
+        try {
+          if (!data || !data.project_id || !data.namespace_id) {
+            return winston.debug('ActivityArchiver skipping kb.contents.add: missing data');
+          }
+
+          const activity = new Activity({
+            id_project: data.project_id,
+            actor: activityActorUtil.actorFromReq(data.req),
+            verb: 'KB_CONTENTS_ADD',
+            actionObj: {
+              contentAddType: data.contentAddType,
+              namespaceName: data.namespace_name,
+              count: data.count,
+              type: data.type,
+              source: data.source
+            },
+            target: namespaceTarget(data.namespace_id, { id: data.namespace_id, name: data.namespace_name })
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving kb.contents.add activity', e);
+        }
+      });
+    });
+
+    kbEvent.on('kb.contents.delete', function (data) {
+      setImmediate(() => {
+        try {
+          if (!data || !data.project_id || !data.namespace_id) {
+            return winston.debug('ActivityArchiver skipping kb.contents.delete: missing data');
+          }
+
+          const activity = new Activity({
+            id_project: data.project_id,
+            actor: activityActorUtil.actorFromReq(data.req),
+            verb: 'KB_CONTENTS_DELETE',
+            actionObj: {
+              namespaceName: data.namespace_name,
+              deletedCount: data.deletedCount,
+              deleteMode: data.deleteMode || 'contents_only'
+            },
+            target: namespaceTarget(data.namespace_id, { id: data.namespace_id, name: data.namespace_name })
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving kb.contents.delete activity', e);
         }
       });
     });

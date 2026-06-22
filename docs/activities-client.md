@@ -157,6 +157,36 @@ interface Activity {
 
 > `PROJECT_USER_UPDATE` resta in uso per le modifiche fatte da un admin sul profilo di un altro utente (ruolo, disponibilità altrui, impostazioni, ecc.).
 
+### Chatbot (FAQ_KB)
+
+| Verb | Significato | Esempio frase (IT) |
+|---|---|---|
+| `FAQ_KB_CREATE` | Creazione di un chatbot | *L'utente **X** ha creato il chatbot **Y*** |
+| `FAQ_KB_DELETE` | Eliminazione di un chatbot | *L'utente **X** ha eliminato il chatbot **Y*** |
+| `FAQ_KB_PUBLISH` | Pubblicazione di un chatbot | *L'utente **X** ha pubblicato il chatbot **Y*** |
+
+`target.type` = `faq_kb` — nome in `target.object.name` o `actionObj.name`.
+
+### Knowledge Base — namespace e contenuti
+
+| Verb | Significato | Esempio frase (IT) |
+|---|---|---|
+| `KB_NAMESPACE_CREATE` | Creazione di un nuovo namespace | *L'utente **X** ha creato il namespace **Y*** |
+| `KB_NAMESPACE_DELETE` | Eliminazione completa di un namespace (namespace + contenuti) | *L'utente **X** ha eliminato il namespace **Y*** |
+| `KB_CONTENTS_ADD` | Aggiunta di contenuti a un namespace | *L'utente **X** ha aggiunto … al namespace **Y*** |
+| `KB_CONTENTS_DELETE` | Eliminazione di tutti i contenuti di un namespace (il namespace resta) | *L'utente **X** ha eliminato tutti i contenuti dal namespace **Y*** |
+
+`target.type` = `kb_namespace` — nome in `target.object.name` o `actionObj.namespaceName`.
+
+Per `KB_CONTENTS_ADD`, il tipo di aggiunta è in `actionObj.contentAddType`:
+
+| `contentAddType` | Endpoint API | Descrizione |
+|---|---|---|
+| `content` | `POST /kb/` | Singolo contenuto (testo, URL, ecc.) |
+| `url_list` | `POST /kb/multi` | Lista di URL |
+| `csv` | `POST /kb/csv` | Import da file CSV |
+| `sitemap` | `POST /kb/sitemap/import` | Import da sitemap |
+
 ---
 
 ## `actionObj` per i verb di disponibilità
@@ -242,6 +272,62 @@ In alternativa usare JWT **subscription** su `PUT /project_users/:project_userid
 | `available` | `user_available: true` |
 | `unavailable` | `user_available: false` |
 | valore di `profileStatus` | es. `inactive`, `away`, … (se presente ha priorità su `user_available` nel label server) |
+
+---
+
+## `actionObj` per chatbot e Knowledge Base
+
+### Chatbot (`FAQ_KB_*`)
+
+```ts
+interface FaqKbActionObj {
+  name?: string;
+  type?: string;
+  subtype?: string;
+  publishedBotId?: string;   // solo FAQ_KB_PUBLISH
+  release_note?: string;     // solo FAQ_KB_PUBLISH
+}
+```
+
+### Namespace e contenuti (`KB_*`)
+
+```ts
+interface KbNamespaceActionObj {
+  namespaceName?: string;
+  hybrid?: boolean;
+  default?: boolean;           // KB_NAMESPACE_CREATE
+  deletedCount?: number;       // KB_NAMESPACE_DELETE, KB_CONTENTS_DELETE
+}
+
+interface KbContentsAddActionObj {
+  contentAddType: 'content' | 'url_list' | 'csv' | 'sitemap';
+  namespaceName?: string;
+  count?: number;
+  type?: string;               // tipo KB (txt, url, sitemap, …) — solo content/sitemap
+  source?: string;             // URL o nome sorgente
+}
+
+interface KbContentsDeleteActionObj {
+  namespaceName?: string;
+  deletedCount?: number;
+  deleteMode: 'contents_only';
+}
+```
+
+### Template frasi — chatbot e KB
+
+| Verb | IT | EN |
+|---|---|---|
+| `FAQ_KB_CREATE` | `{{actor}} ha creato il chatbot {{chatbot}}` | `{{actor}} created chatbot {{chatbot}}` |
+| `FAQ_KB_DELETE` | `{{actor}} ha eliminato il chatbot {{chatbot}}` | `{{actor}} deleted chatbot {{chatbot}}` |
+| `FAQ_KB_PUBLISH` | `{{actor}} ha pubblicato il chatbot {{chatbot}}` | `{{actor}} published chatbot {{chatbot}}` |
+| `KB_NAMESPACE_CREATE` | `{{actor}} ha creato il namespace {{namespace}}` | `{{actor}} created namespace {{namespace}}` |
+| `KB_NAMESPACE_DELETE` | `{{actor}} ha eliminato il namespace {{namespace}}` | `{{actor}} deleted namespace {{namespace}}` |
+| `KB_CONTENTS_ADD` (singolo) | `{{actor}} ha aggiunto un contenuto al namespace {{namespace}}` | `{{actor}} added content to namespace {{namespace}}` |
+| `KB_CONTENTS_ADD` (multi) | `{{actor}} ha aggiunto {{count}} elementi ({{addType}}) al namespace {{namespace}}` | `{{actor}} added {{count}} items ({{addType}}) to namespace {{namespace}}` |
+| `KB_CONTENTS_DELETE` | `{{actor}} ha eliminato tutti i contenuti dal namespace {{namespace}}` | `{{actor}} deleted all contents from namespace {{namespace}}` |
+
+Per `KB_CONTENTS_ADD` con `contentAddType: 'sitemap'`, includere opzionalmente `{{source}}` (URL della sitemap).
 
 ---
 
@@ -506,6 +592,15 @@ Due sotto-casi:
     "PROJECT_USER_AVAILABILITY_SELF": "{{targetUser}} ha modificato il suo stato in {{newStatus}}",
     "PROJECT_USER_AVAILABILITY_SYSTEM": "Lo stato di {{targetUser}} è stato modificato in {{newStatus}} dal sistema",
 
+    "FAQ_KB_CREATE": "{{actor}} ha creato il chatbot {{chatbot}}",
+    "FAQ_KB_DELETE": "{{actor}} ha eliminato il chatbot {{chatbot}}",
+    "FAQ_KB_PUBLISH": "{{actor}} ha pubblicato il chatbot {{chatbot}}",
+    "KB_NAMESPACE_CREATE": "{{actor}} ha creato il namespace {{namespace}}",
+    "KB_NAMESPACE_DELETE": "{{actor}} ha eliminato il namespace {{namespace}}",
+    "KB_CONTENTS_ADD": "{{actor}} ha aggiunto contenuti al namespace {{namespace}}",
+    "KB_CONTENTS_ADD_MULTI": "{{actor}} ha aggiunto {{count}} elementi ({{addType}}) al namespace {{namespace}}",
+    "KB_CONTENTS_DELETE": "{{actor}} ha eliminato tutti i contenuti dal namespace {{namespace}}",
+
     "REQUEST_CREATE": "{{actor}} ha avviato una nuova conversazione",
     "REQUEST_CLOSE": "{{actor}} ha chiuso la conversazione {{conversation}}",
 
@@ -654,6 +749,12 @@ GET /{project_id}/activities?activities=REQUEST_ASSIGNED_AUTO,REQUEST_ASSIGNED_S
 
 Per storico completo includere anche `REQUEST_CREATE` e `REQUEST_CLOSE`.
 
+Per attività chatbot e Knowledge Base:
+
+```
+GET /{project_id}/activities?activities=FAQ_KB_CREATE,FAQ_KB_DELETE,FAQ_KB_PUBLISH,KB_NAMESPACE_CREATE,KB_NAMESPACE_DELETE,KB_CONTENTS_ADD,KB_CONTENTS_DELETE
+```
+
 Per attività di un singolo agente:
 
 ```
@@ -668,4 +769,4 @@ GET /{project_id}/activities?agent_id={user_id}
 2. **Non usare l'endpoint HTTP** per capire il tipo di assegnazione — usare sempre `verb` e `actionObj.assignmentType`.
 3. **`actor.id` su `PROJECT_USER_UPDATE`** può essere `_id` MongoDB, mentre su altri eventi è `user.id` — confrontare sempre come stringa.
 4. **Preflight** — le request con `preflight: true` non generano activity di creazione.
-5. Il campo `message` dalla API è **solo inglese** e copre al momento i verb di assegnazione; per gli altri verb il client deve costruire la frase localmente.
+5. Il campo `message` dalla API è **solo inglese** e copre i verb di assegnazione, disponibilità, chatbot e Knowledge Base; per gli altri verb legacy il client deve costruire la frase localmente.

@@ -894,7 +894,13 @@ router.delete('/deleteall', async (req, res) => {
 
   aiService.deleteNamespace(data).then((resp) => {
     winston.debug("delete namespace resp: ", resp.data);
-    kbEvent.emit('kb.contents.delete', { req, namespace_id, project_id });
+    kbEvent.emit('kb.contents.delete', {
+      req,
+      namespace_id,
+      project_id,
+      namespace_name: namespace.name,
+      deleteMode: 'contents_only'
+    });
     res.status(200).send(resp.data);
   }).catch((err) => {
     winston.error("delete namespace err: ", err);
@@ -1440,7 +1446,14 @@ router.delete('/namespace/:id', async (req, res) => {
       })
       winston.debug("delete all contents response: ", deleteResponse);
 
-      kbEvent.emit('kb.contents.delete', { req, namespace_id, project_id, deletedCount: deleteResponse?.deletedCount });
+      kbEvent.emit('kb.contents.delete', {
+        req,
+        namespace_id,
+        project_id,
+        namespace_name: namespace.name,
+        deletedCount: deleteResponse?.deletedCount,
+        deleteMode: 'contents_only'
+      });
 
       return res.status(200).send({ success: true, message: "All contents deleted successfully" })
 
@@ -1481,6 +1494,14 @@ router.delete('/namespace/:id', async (req, res) => {
         return res.status(500).send({ success: false, error: err });
       })
       winston.debug("delete namespace response: ", deleteNamespaceResponse);
+
+      kbEvent.emit('kb.namespace.delete', {
+        req,
+        namespace_id,
+        project_id,
+        namespace_name: namespace.name,
+        deletedCount: deleteResponse?.deletedCount
+      });
 
       return res.status(200).send({ success: true, message: "Namespace deleted succesfully" })
 
@@ -1753,6 +1774,18 @@ router.post('/', async (req, res) => {
       }
 
       aiManager.scheduleScrape([json], namespace.hybrid);
+
+      kbEvent.emit('kb.contents.add', {
+        req,
+        project_id: id_project,
+        namespace_id: namespace_id,
+        namespace_name: namespace.name,
+        contentAddType: 'content',
+        count: 1,
+        type: saved_kb.type,
+        source: saved_kb.source || saved_kb.name
+      });
+
       return res.status(200).send(raw_content);
 
     }
@@ -1821,6 +1854,14 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
   try {
     const result = await aiManager.addMultipleUrls(namespace, list, options);
+    kbEvent.emit('kb.contents.add', {
+      req,
+      project_id: id_project,
+      namespace_id: namespace_id,
+      namespace_name: namespace.name,
+      contentAddType: 'url_list',
+      count: list.length
+    });
     return res.status(200).send(result);
   } catch (err) {
     winston.error("addMultipleUrls error: ", err)
@@ -1927,6 +1968,16 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
         }
 
         aiManager.scheduleScrape(resources, hybrid);
+
+        kbEvent.emit('kb.contents.add', {
+          req,
+          project_id: project_id,
+          namespace_id: namespace_id,
+          namespace_name: namespace.name,
+          contentAddType: 'csv',
+          count: kbs.length
+        });
+
         return res.status(200).send(result);
 
       }).catch((err) => {
@@ -2064,6 +2115,18 @@ router.post('/sitemap/import', async (req, res) => {
       return res.status(200).send(result);
     }
     result.push(saved_content);
+
+    kbEvent.emit('kb.contents.add', {
+      req,
+      project_id: id_project,
+      namespace_id: namespace_id,
+      namespace_name: namespace.name,
+      contentAddType: 'sitemap',
+      count: urls.length,
+      type: 'sitemap',
+      source: source
+    });
+
     return res.status(200).send(result);
   } catch (err) {
     return res.status(500).send({ success: false, error: "Unable to add multiple urls from sitemap due to an error." });

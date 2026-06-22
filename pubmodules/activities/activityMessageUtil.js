@@ -70,6 +70,46 @@ function resolveParticipantLabel(activity, participantId) {
   return String(participantId);
 }
 
+function namespaceLabel(activity) {
+  const object = activity && activity.target && activity.target.object;
+  if (object && object.name) {
+    return object.name;
+  }
+  if (activity && activity.actionObj && activity.actionObj.namespaceName) {
+    return activity.actionObj.namespaceName;
+  }
+  if (activity && activity.target && activity.target.id) {
+    return String(activity.target.id);
+  }
+  return 'namespace';
+}
+
+function chatbotLabel(activity) {
+  const object = activity && activity.target && activity.target.object;
+  if (object && object.name) {
+    return object.name;
+  }
+  if (activity && activity.actionObj && activity.actionObj.name) {
+    return activity.actionObj.name;
+  }
+  return 'chatbot';
+}
+
+function contentAddTypeLabel(contentAddType) {
+  switch (contentAddType) {
+    case 'content':
+      return 'content';
+    case 'url_list':
+      return 'URL list';
+    case 'csv':
+      return 'CSV file';
+    case 'sitemap':
+      return 'sitemap';
+    default:
+      return contentAddType || 'content';
+  }
+}
+
 function buildDefaultActivityMessage(activity) {
   if (!activity || !activity.verb) {
     return null;
@@ -119,6 +159,37 @@ function buildDefaultActivityMessage(activity) {
       return targetUser + ' availability status was changed to ' + newStatus + ' by the system';
     }
 
+    case 'FAQ_KB_CREATE':
+      return actor + ' created chatbot ' + chatbotLabel(activity);
+
+    case 'FAQ_KB_DELETE':
+      return actor + ' deleted chatbot ' + chatbotLabel(activity);
+
+    case 'FAQ_KB_PUBLISH':
+      return actor + ' published chatbot ' + chatbotLabel(activity);
+
+    case 'KB_NAMESPACE_CREATE':
+      return actor + ' created namespace ' + namespaceLabel(activity);
+
+    case 'KB_NAMESPACE_DELETE':
+      return actor + ' deleted namespace ' + namespaceLabel(activity);
+
+    case 'KB_CONTENTS_ADD': {
+      const namespace = namespaceLabel(activity);
+      const addType = contentAddTypeLabel(actionObj.contentAddType);
+      const count = actionObj.count;
+      if (count && count > 1) {
+        return actor + ' added ' + count + ' items (' + addType + ') to namespace ' + namespace;
+      }
+      if (actionObj.source) {
+        return actor + ' added ' + addType + ' to namespace ' + namespace + ' (' + actionObj.source + ')';
+      }
+      return actor + ' added ' + addType + ' to namespace ' + namespace;
+    }
+
+    case 'KB_CONTENTS_DELETE':
+      return actor + ' deleted all contents from namespace ' + namespaceLabel(activity);
+
     default:
       return null;
   }
@@ -136,6 +207,8 @@ module.exports = {
   actorLabel,
   targetUserLabel,
   requestLabel,
+  namespaceLabel,
+  chatbotLabel,
   resolveParticipantLabel,
   buildDefaultActivityMessage,
   enrichActivityWithMessage
