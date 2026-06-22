@@ -18,6 +18,162 @@ class MCPService {
   }
 
   /**
+   * Normalizes auth.type to a canonical value
+   * Accepts: mcp_api_key, X-MCP-API-Key, x-mcp-api-key, etc.
+   * @param {String} type - Auth type from request body
+   * @returns {String} - Normalized auth type
+   */
+  normalizeAuthType(type) {
+    return (type || '').toLowerCase().replace(/_/g, '-');
+  }
+
+  /**
+   * Applies custom headers from the client payload: [{ key, value }] or [{ name, value }]
+   * @param {Object} headers - HTTP headers object
+   * @param {Array} customHeaders - Custom headers array
+   * @returns {Boolean} - Whether any header was applied
+   */
+  applyCustomHeaders(headers, customHeaders) {
+    if (!Array.isArray(customHeaders)) {
+      return false;
+    }
+
+    let applied = false;
+    for (const header of customHeaders) {
+      const name = header.key || header.name || header.headerName;
+      const value = header.value ?? header.headerValue;
+      if (name && value != null && value !== '') {
+        headers[name] = value;
+        applied = true;
+      }
+    }
+    return applied;
+  }
+
+  /**
+   * Applies customHeaders and/or legacy auth config to outgoing MCP requests
+   * @param {Object} headers - HTTP headers object
+   * @param {Object} serverConfig - { auth?, customHeaders? }
+   * @returns {Boolean} - Whether any header was applied
+   */
+  applyRequestHeaders(headers, serverConfig) {
+    if (!serverConfig) {
+      return false;
+    }
+
+    const fromCustom = this.applyCustomHeaders(headers, serverConfig.customHeaders);
+    const fromAuth = serverConfig.auth ? this.applyAuthHeaders(headers, serverConfig.auth) : false;
+    return fromCustom || fromAuth;
+  }
+
+  /**
+   * Builds serverConfig from the client request body
+   * @param {String} projectId - Tiledesk project ID
+   * @param {Object} body - Request body
+   * @returns {Object} - Normalized server configuration
+   */
+  buildServerConfig(projectId, body) {
+    const { url, auth, customHeaders, oauth } = body;
+
+    if (!url) {
+      throw new Error("Missing required parameter 'url'");
+    }
+
+    const hasCustomHeaders = Array.isArray(customHeaders) && customHeaders.length > 0;
+    const hasAuth = auth && typeof auth === 'object' && Object.keys(auth).length > 0;
+    const hasOAuth = oauth && typeof oauth === 'object' && (
+      oauth.clientId || oauth.clientSecret || oauth.redirectUrl || oauth.scope
+    );
+
+    if (hasOAuth && !hasCustomHeaders && !hasAuth) {
+      throw new Error('OAuth2 authentication is not supported yet. Use customHeaders instead.');
+    }
+
+    if (hasOAuth) {
+      winston.warn('MCP OAuth2 config received but not supported yet; ignoring oauth object');
+    }
+
+    return {
+      url,
+      projectId,
+      auth: hasAuth ? auth : undefined,
+      customHeaders: hasCustomHeaders ? customHeaders : undefined
+    };
+  }
+
+  /**
+   * Applies authentication headers to an HTTP request config (legacy auth object).
+   * Supports predefined types and generic custom headers (headerName/headerValue).
+   * @param {Object} headers - HTTP headers object
+   * @param {Object} auth - Authentication configuration (optional)
+   * @returns {Boolean} - Whether auth headers were applied
+   */
+  applyAuthHeaders(headers, auth) {
+    if (!auth) {
+      return false;
+    }
+
+    // Generic custom header — matches UI "header name" / "header value" fields
+    if (auth.headerName && auth.headerValue != null && auth.headerValue !== '') {
+      headers[auth.headerName] = auth.headerValue;
+      return true;
+    }
+    if (auth.name && auth.value != null && auth.value !== '') {
+      headers[auth.name] = auth.value;
+      return true;
+    }
+
+    const hasCredentials = !!(auth.token || auth.key || auth.username || auth.password);
+    if (!auth.type && !hasCredentials) {
+      return false;
+    }
+
+    const authType = this.normalizeAuthType(auth.type);
+
+    if (authType === 'custom') {
+      if (Array.isArray(auth.headers)) {
+        let applied = false;
+        for (const header of auth.headers) {
+          const name = header.key || header.name || header.headerName;
+          const value = header.value ?? header.headerValue;
+          if (name && value != null && value !== '') {
+            headers[name] = value;
+            applied = true;
+          }
+        }
+        return applied;
+      }
+      return false;
+    }
+
+    if (authType === 'bearer') {
+      const token = auth.token || auth.key;
+      if (token) {
+        headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+        return true;
+      }
+    }
+    if ((authType === 'mcp-api-key' || authType === 'x-mcp-api-key') && auth.key) {
+      headers['X-MCP-API-Key'] = auth.key;
+      return true;
+    }
+    if ((authType === 'api-key' || authType === 'x-api-key') && auth.key) {
+      headers['X-API-Key'] = auth.key;
+      return true;
+    }
+    if (authType === 'basic' && auth.username && auth.password) {
+      const credentials = Buffer.from(`${auth.username}:${auth.password}`).toString('base64');
+      headers['Authorization'] = `Basic ${credentials}`;
+      return true;
+    }
+
+    if (auth.type || hasCredentials) {
+      winston.warn(`MCP auth type not recognized or incomplete: "${auth.type}"`);
+    }
+    return false;
+  }
+
+  /**
    * Parses a response in SSE (Server-Sent Events) format and extracts the JSON object
    * @param {String} sseData - String with SSE format
    * @returns {Object} - Parsed JSON object
@@ -38,14 +194,121 @@ class MCPService {
   }
 
   /**
+   * Parses an MCP HTTP response body (JSON, SSE, or empty)
+   * @param {*} data - Response body
+   * @returns {Object|null} - Parsed JSON object, or null for empty bodies
+   */
+  parseResponseBody(data) {
+    if (data === '' || data == null) {
+      return null;
+    }
+    if (typeof data === 'string') {
+      if (!data.trim()) {
+        return null;
+      }
+      return this.parseSSEResponse(data);
+    }
+    return data;
+  }
+
+  /**
+   * Sends an initialize request, retrying with an older protocol version if needed
+   * @param {String} url - MCP server URL
+   * @param {Object} auth - Authentication configuration (optional)
+   * @returns {Promise<Object>} - Initialize response
+   */
+  async sendInitializeRequest(serverConfig) {
+    const protocolVersions = ['2025-03-26', '2024-11-05'];
+    let lastError = null;
+
+    for (const protocolVersion of protocolVersions) {
+      try {
+        return await this.sendJSONRPCRequest(serverConfig.url, {
+          jsonrpc: '2.0',
+          id: Date.now(),
+          method: 'initialize',
+          params: {
+            protocolVersion,
+            capabilities: {
+              tools: {}
+            },
+            clientInfo: {
+              name: 'tiledesk-server',
+              version: '1.0.0'
+            }
+          }
+        }, serverConfig, null);
+      } catch (error) {
+        lastError = error;
+        const isProtocolError = error.message && (
+          error.message.includes('protocol version') ||
+          error.message.includes('Unsupported protocol') ||
+          error.message.includes('code: -32602')
+        );
+        if (!isProtocolError) {
+          throw error;
+        }
+        winston.debug(`MCP initialize failed with protocolVersion ${protocolVersion}, trying fallback`);
+      }
+    }
+
+    throw lastError;
+  }
+
+  /**
+   * Sends notifications/initialized when the server uses sessions.
+   * Best-effort: some servers require it (Streamable HTTP), others ignore or reject it.
+   * @returns {Promise<Boolean>} - true if notification was accepted
+   */
+  async sendInitializedNotification(serverConfig, sessionId) {
+    const config = {
+      method: 'POST',
+      url: serverConfig.url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json, text/event-stream',
+        'mcp-session-id': sessionId
+      },
+      data: {
+        jsonrpc: '2.0',
+        method: 'notifications/initialized'
+      },
+      timeout: 30000,
+      validateStatus: function (status) {
+        return status >= 200 && status < 500;
+      }
+    };
+
+    this.applyRequestHeaders(config.headers, serverConfig);
+
+    try {
+      const response = await axios(config);
+
+      if (response.status >= 400) {
+        return false;
+      }
+
+      const responseData = this.parseResponseBody(response.data);
+      if (responseData?.error) {
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      winston.debug(`MCP notifications/initialized failed: ${error.message}`);
+      return false;
+    }
+  }
+
+  /**
    * Sends a JSON-RPC request to an MCP server
    * @param {String} url - MCP server URL
    * @param {Object} request - JSON-RPC request
-   * @param {Object} auth - Authentication configuration (optional)
+   * @param {Object} serverConfig - MCP server configuration { url, projectId?, auth?, customHeaders? }
    * @param {String} sessionId - Session ID for the MCP server (optional)
    * @returns {Promise<Object>} - Server response (includes sessionId if present in headers)
    */
-  async sendJSONRPCRequest(url, request, auth, sessionId) {
+  async sendJSONRPCRequest(url, request, serverConfig, sessionId) {
     const config = {
       method: 'POST',
       url: url,
@@ -65,33 +328,33 @@ class MCPService {
       config.headers['mcp-session-id'] = sessionId;
     }
 
-    // Add authentication if present
-    if (auth) {
-      if (auth.type === 'bearer' && auth.token) {
-        config.headers['Authorization'] = `Bearer ${auth.token}`;
-      } else if (auth.type === 'api_key' && auth.key) {
-        config.headers['X-API-Key'] = auth.key;
-      } else if (auth.type === 'basic' && auth.username && auth.password) {
-        const credentials = Buffer.from(`${auth.username}:${auth.password}`).toString('base64');
-        config.headers['Authorization'] = `Basic ${credentials}`;
-      }
-    }
+    this.applyRequestHeaders(config.headers, serverConfig);
 
     try {
       const response = await axios(config);
 
+      if (response.status >= 400) {
+        const details = response.data ? ` - ${JSON.stringify(response.data)}` : '';
+        throw new Error(`HTTP Error ${response.status}: ${response.statusText}${details}`);
+      }
+
       // Capture session ID from response headers (if present)
-      const sessionIdFromHeader = response.headers['mcp-session-id'] || 
+      const sessionIdFromHeader = response.headers['mcp-session-id'] ||
                                   response.headers['x-mcp-session-id'];
 
+      // Notifications and empty responses (e.g. 202 Accepted)
+      if (response.status === 202 || response.data === '' || response.data == null) {
+        const result = { status: response.status };
+        if (sessionIdFromHeader) {
+          result.sessionId = sessionIdFromHeader;
+        }
+        return result;
+      }
+
       // Parse response: could be SSE (text/event-stream) or direct JSON
-      let responseData;
-      if (typeof response.data === 'string') {
-        // SSE format: extracts JSON from "data:" line
-        responseData = this.parseSSEResponse(response.data);
-      } else {
-        // JSON response already parsed
-        responseData = response.data;
+      let responseData = this.parseResponseBody(response.data);
+      if (!responseData) {
+        responseData = { status: response.status };
       }
 
       // Add session ID from response if present in headers
@@ -136,7 +399,7 @@ class MCPService {
 
   /**
    * Initializes a connection to an MCP server
-   * @param {Object} serverConfig - MCP server configuration { url, projectId?, auth? }
+   * @param {Object} serverConfig - MCP server configuration { url, projectId?, auth?, customHeaders? }
    * @returns {Promise<Object>} - Initialization result
    */
   async initializeServer(serverConfig) {
@@ -150,38 +413,30 @@ class MCPService {
       // Initialize session (some MCP servers require session ID)
       let sessionId = null;
       let initializeResponse = null;
-      
+
       try {
-        // JSON-RPC call to initialize the server
-        const response = await this.sendJSONRPCRequest(serverConfig.url, {
-          jsonrpc: '2.0',
-          id: Date.now(),
-          method: 'initialize',
-          params: {
-            protocolVersion: '2024-11-05',
-            capabilities: {
-              tools: {}
-            },
-            clientInfo: {
-              name: 'tiledesk-server',
-              version: '1.0.0'
-            }
-          }
-        }, serverConfig.auth, null);
+        const response = await this.sendInitializeRequest(serverConfig);
 
         // Session ID is returned in 'mcp-session-id' header from response
         sessionId = response.sessionId || null;
         initializeResponse = response;
 
         if (sessionId) {
-          winston.debug(`MCP Server ${serverId} session initialized with ID: ${sessionId}`);
+          winston.info(`MCP Server ${serverId} session initialized with ID: ${sessionId}`);
+          const notificationAccepted = await this.sendInitializedNotification(
+            serverConfig,
+            sessionId
+          );
+          if (notificationAccepted) {
+            winston.info(`MCP Server ${serverId} sent notifications/initialized`);
+          } else {
+            winston.warn(`MCP Server ${serverId} notifications/initialized not accepted (continuing)`);
+          }
         } else {
-          winston.debug(`MCP Server ${serverId} initialized (stateless, no session ID required)`);
+          winston.info(`MCP Server ${serverId} initialized (stateless, no session ID required)`);
         }
       } catch (initError) {
-        // If initialization fails, try anyway without session ID
-        // (some MCP servers don't require session ID)
-        winston.debug(`MCP Server ${serverId} initialization failed: ${initError.message}`);
+        winston.error(`MCP Server ${serverId} initialization failed: ${initError.message}`);
         throw initError;
       }
 
@@ -193,7 +448,7 @@ class MCPService {
         capabilities: initializeResponse.result?.capabilities || {}
       });
 
-      winston.info(`MCP Server initialized: ${serverId}${sessionId ? ` (session: ${sessionId})` : ' (stateless)'}`);
+      winston.info(`MCP Server ready: ${serverId}${sessionId ? ` (session: ${sessionId})` : ' (stateless)'}`);
       return initializeResponse.result;
     } catch (error) {
       winston.error(`Error initializing MCP server ${serverId}:`, error);
@@ -203,7 +458,7 @@ class MCPService {
 
   /**
    * Gets the list of available tools from an MCP server
-   * @param {Object} serverConfig - MCP server configuration { url, projectId?, auth? }
+   * @param {Object} serverConfig - MCP server configuration { url, projectId?, auth?, customHeaders? }
    * @returns {Promise<Array>} - List of available tools
    */
   async listTools(serverConfig) {
@@ -214,6 +469,8 @@ class MCPService {
     const serverId = this.getCacheKey(serverConfig.url, serverConfig.projectId);
 
     try {
+      winston.info(`MCP listTools request for ${serverId}`);
+
       // Check if server is already initialized
       let connection = this.connections.get(serverId);
       if (!connection) {
@@ -232,9 +489,9 @@ class MCPService {
           id: Date.now(),
           method: 'tools/list',
           params: {}
-        }, serverConfig.auth, sessionId);
+        }, serverConfig, sessionId);
       } catch (error) {
-        // If it fails and we have a "No valid session ID" error, try without session ID
+        // Fallback for stateless servers that reject session IDs
         if (sessionId && error.message && error.message.includes('No valid session ID')) {
           winston.debug(`Retrying tools/list without session ID for server ${serverId}...`);
           response = await this.sendJSONRPCRequest(serverConfig.url, {
@@ -242,14 +499,14 @@ class MCPService {
             id: Date.now(),
             method: 'tools/list',
             params: {}
-          }, serverConfig.auth, null);
+          }, serverConfig, null);
         } else {
           throw error;
         }
       }
 
       const tools = response.result?.tools || [];
-      winston.debug(`MCP Server ${serverId} returned ${tools.length} tools`);
+      winston.info(`MCP Server ${serverId} returned ${tools.length} tools`);
       return tools;
     } catch (error) {
       winston.error(`Error listing tools from MCP server ${serverId}:`, error);
@@ -280,4 +537,3 @@ class MCPService {
 const mcpService = new MCPService();
 
 module.exports = mcpService;
-
