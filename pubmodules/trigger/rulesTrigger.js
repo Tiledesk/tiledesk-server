@@ -774,7 +774,6 @@ class RulesTrigger {
               ).then(function(request) {
 
                 winston.verbose('request.department.bot.launch action reroute request_id: ' + request_id);
-                console.log("[Performance] trigger invite bot reroute time: " + (Date.now() - t1));
                 // rendi dinamico /start
                 messageService.send(
                   'system', 
