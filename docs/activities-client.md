@@ -145,8 +145,83 @@ interface Activity {
 | Verb | Quando viene emesso |
 |---|---|
 | `PROJECT_USER_INVITE` | Invito di un utente al progetto |
-| `PROJECT_USER_UPDATE` | Modifica ruolo o disponibilità di un project user |
+| `PROJECT_USER_UPDATE` | Modifica ruolo, impostazioni o disponibilità di un altro utente (admin → agente) |
 | `PROJECT_USER_DELETE` | Rimozione di un utente dal progetto |
+
+### Team — disponibilità (nuovi)
+
+| Verb | Significato | Esempio frase (IT) |
+|---|---|---|
+| `PROJECT_USER_AVAILABILITY_SELF` | L'agente ha cambiato **il proprio** stato di disponibilità | *L'utente **X** ha modificato il suo stato da **disponibile** a **inattivo*** |
+| `PROJECT_USER_AVAILABILITY_SYSTEM` | Lo stato è stato cambiato **automaticamente dal sistema** (es. disconnessione via subscription) | *Lo stato dell'utente **X** è stato modificato in **inattivo** dal sistema* |
+
+> `PROJECT_USER_UPDATE` resta in uso per le modifiche fatte da un admin sul profilo di un altro utente (ruolo, disponibilità altrui, impostazioni, ecc.).
+
+---
+
+## `actionObj` per i verb di disponibilità
+
+Per `PROJECT_USER_AVAILABILITY_SELF` e `PROJECT_USER_AVAILABILITY_SYSTEM`:
+
+```ts
+interface AvailabilityActionObj {
+  /** Valore richiesto nel body della PATCH/PUT */
+  user_available?: boolean;
+  profileStatus?: string;
+
+  /** Stato precedente (boolean o profileStatus) */
+  previousUserAvailable?: boolean | null;
+  previousProfileStatus?: string | null;
+
+  /** Etichette già normalizzate dal server — preferire per i18n */
+  previousStatus?: string;   // es. "available", "unavailable", "inactive"
+  newStatus?: string;
+
+  /** Tipo semantico (ridondante con verb) */
+  updateType: 'self' | 'system' | 'admin';
+  source: 'api' | 'subscription' | 'system';
+}
+```
+
+### Come distinguere self vs system
+
+| Campo | Self | System |
+|---|---|---|
+| `verb` | `PROJECT_USER_AVAILABILITY_SELF` | `PROJECT_USER_AVAILABILITY_SYSTEM` |
+| `actor.type` | `user` | `system` |
+| `actor.id` | `id_user` di chi ha cambiato stato | `system` |
+| `target.id` | `project_user_id` dell'agente | `project_user_id` dell'agente |
+| `target.object.id_user` | profilo dell'agente interessato | profilo dell'agente interessato |
+| `actionObj.updateType` | `self` | `system` |
+| `actionObj.source` | `api` | `subscription` |
+
+> **Nota:** prima della distinzione esplicita, le activity di sistema potevano avere `actor.type: "user"` con `actor.id` uguale all'id della subscription. Con i nuovi verb usare sempre `actor.type === "system"` e ignorare eventuali record legacy confrontando `actor.id` con gli id noti delle subscription.
+
+### Template frasi — disponibilità
+
+**`PROJECT_USER_AVAILABILITY_SELF`**
+
+| Lingua | Template |
+|---|---|
+| **IT** | `{{targetUser}} ha modificato il suo stato da {{previousStatus}} a {{newStatus}}` |
+| **EN** | `{{targetUser}} changed availability status from {{previousStatus}} to {{newStatus}}` |
+
+**`PROJECT_USER_AVAILABILITY_SYSTEM`**
+
+| Lingua | Template |
+|---|---|
+| **IT** | `Lo stato di {{targetUser}} è stato modificato in {{newStatus}} dal sistema` |
+| **EN** | `{{targetUser}} availability status was changed to {{newStatus}} by the system` |
+
+`targetUser` si ricava da `target.object.id_user` (firstname + lastname).
+
+### Valori di stato (`previousStatus` / `newStatus`)
+
+| Valore | Significato |
+|---|---|
+| `available` | `user_available: true` |
+| `unavailable` | `user_available: false` |
+| valore di `profileStatus` | es. `inactive`, `away`, … (se presente ha priorità su `user_available` nel label server) |
 
 ---
 
@@ -407,6 +482,9 @@ Due sotto-casi:
     "REQUEST_ASSIGNED_MANUAL": "All'utente {{assignee}} è stata assegnata la conversazione {{conversation}} da {{actor}}",
     "REQUEST_ASSIGNED_MANUAL_REPLACED": "All'utente {{assignee}} è stata assegnata la conversazione {{conversation}} da {{actor}} (sostituisce {{previous}})",
     "REQUEST_UNASSIGNED": "{{actor}} ha rimosso {{assignee}} dalla conversazione {{conversation}}",
+
+    "PROJECT_USER_AVAILABILITY_SELF": "{{targetUser}} ha modificato il suo stato da {{previousStatus}} a {{newStatus}}",
+    "PROJECT_USER_AVAILABILITY_SYSTEM": "Lo stato di {{targetUser}} è stato modificato in {{newStatus}} dal sistema",
 
     "REQUEST_CREATE": "{{actor}} ha avviato una nuova conversazione",
     "REQUEST_CLOSE": "{{actor}} ha chiuso la conversazione {{conversation}}",

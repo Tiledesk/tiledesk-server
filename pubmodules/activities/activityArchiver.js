@@ -1,6 +1,7 @@
 const authEvent = require('../../event/authEvent');
 const requestEvent = require('../../event/requestEvent');
 const assignmentContextUtil = require('../../utils/assignmentContextUtil');
+const projectUserUpdateContextUtil = require('../../utils/projectUserUpdateContextUtil');
 const Activity = require('./models/activity');
 const winston = require('../../config/winston');
 
@@ -113,15 +114,36 @@ class ActivityArchiver {
         if (!event.req.user) {
           return winston.debug('ActivityArchiver skipping archive empty user'); //from i think chat21webhook
         }
+
+        const updateContext = event.updateContext || projectUserUpdateContextUtil.buildProjectUserUpdateContext(
+          event.req,
+          event.previousUserAvailable,
+          null,
+          project_user.id_user
+        );
+        const actor = projectUserUpdateContextUtil.actorFromUpdateContext(event.req, updateContext);
+        const verb = projectUserUpdateContextUtil.verbForProjectUserUpdate(event.req.body, updateContext);
+        const previousStatus = projectUserUpdateContextUtil.availabilityStatusLabel({
+          user_available: updateContext.previousUserAvailable,
+          profileStatus: updateContext.previousProfileStatus
+        });
+        const newStatus = projectUserUpdateContextUtil.availabilityStatusLabel({
+          user_available: project_user.user_available,
+          profileStatus: project_user.profileStatus
+        });
+
         var activity = new Activity({
           id_project: event.updatedProject_userPopulated.id_project,
-          actor: { 
-            type: "user", 
-            id: event.req.user._id, 
-            name: event.req.user.fullName 
-          },
-          verb: "PROJECT_USER_UPDATE", 
-          actionObj: event.req.body,
+          actor: actor,
+          verb: verb,
+          actionObj: Object.assign({}, event.req.body, {
+            previousUserAvailable: updateContext.previousUserAvailable,
+            previousProfileStatus: updateContext.previousProfileStatus,
+            previousStatus: previousStatus,
+            newStatus: newStatus,
+            updateType: updateContext.updateType,
+            source: updateContext.source
+          }),
           target: { 
             type: "project_user", 
             id: event.updatedProject_userPopulated._id.toString(), 

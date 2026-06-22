@@ -1,5 +1,25 @@
 'use strict';
 
+function targetUserLabel(activity) {
+  const user = activity &&
+    activity.target &&
+    activity.target.object &&
+    activity.target.object.id_user;
+
+  if (!user) {
+    return 'unknown user';
+  }
+
+  const firstname = user.firstname || '';
+  const lastname = user.lastname || '';
+  const fullname = (firstname + ' ' + lastname).trim();
+  if (fullname) {
+    return fullname;
+  }
+
+  return String(user._id || user.id || 'unknown user');
+}
+
 function actorLabel(activity) {
   const actor = activity && activity.actor;
   if (!actor) {
@@ -87,6 +107,20 @@ function buildDefaultActivityMessage(activity) {
       return actor + ' unassigned ' + assignee + ' from conversation ' + conversation +
         ' (source: ' + source + ')';
 
+    case 'PROJECT_USER_AVAILABILITY_SELF': {
+      const targetUser = targetUserLabel(activity);
+      const previousStatus = actionObj.previousStatus || 'unknown';
+      const newStatus = actionObj.newStatus || 'unknown';
+      return targetUser + ' changed availability status from ' + previousStatus + ' to ' + newStatus;
+    }
+
+    case 'PROJECT_USER_AVAILABILITY_SYSTEM': {
+      const targetUser = targetUserLabel(activity);
+      const newStatus = actionObj.newStatus || 'unknown';
+      const resolvedSource = source === 'subscription' ? 'system' : source;
+      return targetUser + ' availability status was changed to ' + newStatus + ' by ' + resolvedSource;
+    }
+
     default:
       return null;
   }
@@ -102,6 +136,7 @@ function enrichActivityWithMessage(activity) {
 
 module.exports = {
   actorLabel,
+  targetUserLabel,
   requestLabel,
   resolveParticipantLabel,
   buildDefaultActivityMessage,
