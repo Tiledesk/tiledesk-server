@@ -3,6 +3,7 @@ var Message = require("../models/message");
 var Request = require("../models/request");
 
 var winston = require('../config/winston');
+const assignmentContextUtil = require('../utils/assignmentContextUtil');
 
 class RequestEvent extends EventEmitter {
     constructor() {
@@ -45,6 +46,19 @@ requestEvent.on('request.create.simple', function(request, snapshot) {
 
             requestEvent.emit("request.snapshot.update", { request: request, snapshot: snapshot });
             requestEvent.emit('request.create', requestComplete);
+
+            const humanAgents = assignmentContextUtil.filterHumanParticipants(requestComplete.participantsAgents);
+            if (humanAgents.length > 0) {
+                requestEvent.emit('request.assigned', {
+                    request: requestComplete,
+                    assigneeId: String(humanAgents[0]),
+                    assignmentType: 'auto',
+                    actor: assignmentContextUtil.systemActor(),
+                    source: 'create',
+                    removedParticipants: [],
+                    previousAssigneeId: null
+                });
+            }
 
             //with request.create no messages are sent. So don't load messages
         // Message.find({recipient:  request.request_id, id_project: request.id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) {                  

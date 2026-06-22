@@ -20,6 +20,7 @@ var Message = require("../models/message");
 var cacheUtil = require('../utils/cacheUtil');
 var RequestConstants = require("../models/requestConstants");
 var cacheEnabler = require("../services/cacheEnabler");
+var assignmentContextUtil = require('../utils/assignmentContextUtil');
 var Project_user = require("../models/project_user");
 var Lead = require("../models/lead");
 var UIDGenerator = require("../utils/UIDGenerator");
@@ -408,7 +409,8 @@ router.post('/:requestid/participants',
     }
 
     //addParticipantByRequestId(request_id, id_project, member)
-    return requestService.addParticipantByRequestId(req.params.requestid, req.projectid, req.body.member).then(function (updatedRequest) {
+    const assignmentOptions = assignmentContextUtil.buildAddParticipantOptions(req, req.body.member);
+    return requestService.addParticipantByRequestId(req.params.requestid, req.projectid, req.body.member, assignmentOptions).then(function (updatedRequest) {
 
       winston.verbose("participant added", updatedRequest);
 
@@ -439,7 +441,8 @@ router.put('/:requestid/participants', async (req, res) => {
   winston.debug("var participants", participants);
 
   //setParticipantsByRequestId(request_id, id_project, participants)
-  return requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then(function (updatedRequest) {
+  const assignmentOptions = assignmentContextUtil.buildSetParticipantsOptions(req, participants);
+  return requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants, assignmentOptions).then(function (updatedRequest) {
 
     winston.debug("participant set", updatedRequest);
 
@@ -499,7 +502,8 @@ router.put('/:requestid/replace', async (req, res) => {
   participants.push(id);
   winston.verbose("participants to be set: ", participants);
 
-  requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then((updatedRequest) => {
+  const assignmentOptions = assignmentContextUtil.buildSetParticipantsOptions(req, participants);
+  requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants, assignmentOptions).then((updatedRequest) => {
     winston.debug("SetParticipant response: ", updatedRequest);
     res.status(200).send(updatedRequest);
   }).catch((err) => {
@@ -573,7 +577,8 @@ router.put('/:requestid/assign', function (req, res) {
         return res.json(request);
       }
       //route(request_id, departmentid, id_project) {      
-      requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
+      const assignmentOptions = assignmentContextUtil.buildAutoRouteOptions(req, 'api');
+      requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate, assignmentOptions).then(function (updatedRequest) {
 
         winston.debug("department changed", updatedRequest);
 
@@ -595,7 +600,8 @@ router.put('/:requestid/assign', function (req, res) {
 router.put('/:requestid/departments', function (req, res) {
   winston.debug(req.body);
   //route(request_id, departmentid, id_project) {      
-  requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
+  const assignmentOptions = assignmentContextUtil.buildAutoRouteOptions(req, 'api');
+  requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate, assignmentOptions).then(function (updatedRequest) {
 
     winston.debug("department changed", updatedRequest);
 
@@ -631,7 +637,8 @@ router.put('/:requestid/agent', async (req, res) => {
   }
   winston.debug("departmentid after: " + departmentid);
 
-  requestService.route(req.params.requestid, departmentid, req.projectid, true, undefined).then(function (updatedRequest) {
+  const assignmentOptions = assignmentContextUtil.buildAutoRouteOptions(req, 'chatbot');
+  requestService.route(req.params.requestid, departmentid, req.projectid, true, undefined, assignmentOptions).then(function (updatedRequest) {
 
     winston.debug("department changed", updatedRequest);
 

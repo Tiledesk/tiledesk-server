@@ -10,6 +10,7 @@ const leadEvent = require('../event/leadEvent');
 var winston = require('../config/winston');
 var RequestConstants = require("../models/requestConstants");
 var requestUtil = require("../utils/requestUtil");
+var assignmentContextUtil = require("../utils/assignmentContextUtil");
 var cacheUtil = require("../utils/cacheUtil");
 var arrayUtil = require("../utils/arrayUtil");
 var cacheEnabler = require("../services/cacheEnabler");
@@ -245,7 +246,7 @@ class RequestService {
 
   // TODO  changePreflightByRequestId se un agente entra in request freflight true disabilitare add agente e reassing ma mettere un bottone removePreflight???
   // usalo no_populate
-  async route(request_id, departmentid, id_project, nobot, no_populate) {
+  async route(request_id, departmentid, id_project, nobot, no_populate, options) {
 
     try {
       winston.debug("request_id:" + request_id);
@@ -322,7 +323,8 @@ class RequestService {
         this.emitParticipantsEvents(
           request,
           requestComplete,
-          beforeParticipants
+          beforeParticipants,
+          options
         );
   
         return requestComplete;
@@ -380,7 +382,8 @@ class RequestService {
       this.emitParticipantsEvents(
         request,
         requestComplete,
-        beforeParticipants
+        beforeParticipants,
+        options
       );
 
       requestEvent.emit("request.department.update", requestComplete);
@@ -394,9 +397,14 @@ class RequestService {
   }
 
 
-  reroute(request_id, id_project, nobot) {
+  reroute(request_id, id_project, nobot, options) {
     var that = this;
     var startDate = new Date();
+    const assignmentOptions = options || {
+      actor: assignmentContextUtil.systemActor(),
+      source: 'queue',
+      assignmentType: 'auto'
+    };
     return new Promise(function (resolve, reject) {
       // winston.debug("request_id", request_id);
       // winston.debug("newstatus", newstatus);
@@ -427,7 +435,7 @@ class RequestService {
         }
 
 
-        return that.route(request_id, request.department.toString(), id_project, nobot).then(function (routedRequest) {
+        return that.route(request_id, request.department.toString(), id_project, nobot, undefined, assignmentOptions).then(function (routedRequest) {
 
           var endDate = new Date();
           winston.verbose("Performance Request reroute in millis: " + endDate - startDate);
@@ -1523,10 +1531,11 @@ class RequestService {
 
 
 
-  setParticipantsByRequestId(request_id, id_project, newparticipants) {
+  setParticipantsByRequestId(request_id, id_project, newparticipants, options) {
 
     //TODO validate participants
     // validate if array of string newparticipants
+    var that = this;
     return new Promise(function (resolve, reject) {
 
       var isArray = Array.isArray(newparticipants);
@@ -1672,6 +1681,14 @@ class RequestService {
                   request: requestComplete
                 });
 
+                that.emitAssignedEvent(requestComplete, {
+                  assignmentType: options && options.assignmentType,
+                  actor: options && options.actor,
+                  source: options && options.source,
+                  addedParticipants: addedParticipants,
+                  removedParticipants: removedParticipants
+                });
+
                 // TODO allora neanche qui participatingAgent è ok?
                 return resolve(requestComplete);
               });
@@ -1683,12 +1700,12 @@ class RequestService {
     });
   }
 
-  addParticipantByRequestId(request_id, id_project, member) {
+  addParticipantByRequestId(request_id, id_project, member, options) {
     winston.debug("request_id: " + request_id);
     winston.debug("id_project: " + id_project);
     winston.debug("addParticipantByRequestId member: " + member);
 
-
+    var that = this;
 
     //TODO control if member is a valid project_user of the project
     // validate member is string
@@ -1770,6 +1787,14 @@ class RequestService {
                   requestEvent.emit("request.update.comment", { comment: "PARTICIPANT_ADD", request: requestComplete });//Deprecated
                   requestEvent.emit("request.updated", { comment: "PARTICIPANT_ADD", request: requestComplete, patch: { member: member } });
                   requestEvent.emit('request.participants.join', { member: member, request: requestComplete });
+
+                  that.emitAssignedEvent(requestComplete, {
+                    assignmentType: options && options.assignmentType,
+                    actor: options && options.actor,
+                    source: options && options.source,
+                    addedParticipants: [member],
+                    removedParticipants: []
+                  });
 
                   return resolve(requestComplete);
                 });
@@ -2482,7 +2507,8 @@ class RequestService {
     })
   }
 
-  emitParticipantsEvents(beforeRequest, requestComplete, oldParticipants) {
+  emitParticipantsEvents(beforeRequest, requestComplete, oldParticipants, options) {
+    const that = this;
     const newParticipants = requestComplete.participants;
   
     const removedParticipants = oldParticipants.filter(
@@ -2504,6 +2530,70 @@ class RequestService {
       removedParticipants,
       addedParticipants,
       request: requestComplete
+    });
+
+    that.emitAssignedEvent(requestComplete, {
+      assignmentType: options && options.assignmentType,
+      actor: options && options.actor,
+      source: options && options.source,
+      addedParticipants,
+      removedParticipants
+    });
+  }
+
+  emitAssignedEvent(requestComplete, context) {
+    const {
+      assignmentType,
+      actor,
+      source,
+      addedParticipants = [],
+      removedParticipants = []
+    } = context || {};
+
+    const humanAdded = assignmentContextUtil.filterHumanParticipants(addedParticipants);
+    const humanRemoved = assignmentContextUtil.filterHumanParticipants(removedParticipants);
+    const resolvedActor = actor || assignmentContextUtil.systemActor();
+    const resolvedSource = source || 'system';
+
+    if (assignmentType === 'unassign' || (humanAdded.length === 0 && humanRemoved.length > 0)) {
+      humanRemoved.forEach((assigneeId) => {
+        requestEvent.emit('request.assigned', {
+          request: requestComplete,
+          assigneeId: String(assigneeId),
+          assignmentType: 'unassign',
+          actor: resolvedActor,
+          source: resolvedSource,
+          removedParticipants: humanRemoved,
+          previousAssigneeId: String(assigneeId)
+        });
+      });
+      return;
+    }
+
+    if (humanAdded.length === 0) {
+      return;
+    }
+
+    const resolvedType = assignmentType || assignmentContextUtil.deriveAssignmentType({
+      actor: resolvedActor,
+      assigneeIds: humanAdded,
+      isUnassign: false
+    });
+
+    if (!resolvedType) {
+      return;
+    }
+
+    humanAdded.forEach((assigneeId) => {
+      requestEvent.emit('request.assigned', {
+        request: requestComplete,
+        assigneeId: String(assigneeId),
+        assignmentType: resolvedType,
+        actor: resolvedActor,
+        source: resolvedSource,
+        removedParticipants: humanRemoved,
+        previousAssigneeId: humanRemoved.length > 0 ? String(humanRemoved[0]) : null
+      });
     });
   }
 

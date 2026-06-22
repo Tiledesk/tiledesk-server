@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Activity = require("../models/activity");
+const activityMessageUtil = require('../activityMessageUtil');
 const winston = require('../../../config/winston');
 const moment = require('moment');
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -73,6 +74,8 @@ router.get('/', async (req, res) => {
       .exec();
 
     let totalRowCount = await Activity.countDocuments(query);
+
+    activities = activities.map(activityMessageUtil.enrichActivityWithMessage);
 
     let objectToReturn = {
       perPage: limit,
@@ -485,6 +488,7 @@ router.get('/csv', function (req, res) {
       // if (lang) {
       winston.debug('buildCsv lang: ', lang);
 
+      var message = activityMessageUtil.buildDefaultActivityMessage(activity) || '';
       var actor_name = '';
       var target_fullname = '';
       if (activity.actor) {
@@ -507,21 +511,24 @@ router.get('/csv', function (req, res) {
       }
 
       if (activity.verb === "PROJECT_USER_UPDATE") {
-        var message = buildMsg_PROJECT_USER_UPDATE(actor_name, target_fullname, lang, activity)
+        message = buildMsg_PROJECT_USER_UPDATE(actor_name, target_fullname, lang, activity)
       }
 
       if (activity.verb === "PROJECT_USER_DELETE") {
-        var message = buildMsg_PROJECT_USER_DELETE(actor_name, target_fullname, lang)
+        message = buildMsg_PROJECT_USER_DELETE(actor_name, target_fullname, lang)
       }
 
       if (activity.verb === "PROJECT_USER_INVITE") {
-        var message = buildMsg_PROJECT_USER_INVITE(actor_name, target_fullname, lang, activity)
+        message = buildMsg_PROJECT_USER_INVITE(actor_name, target_fullname, lang, activity)
       }
 
       if (activity.verb === "REQUEST_CREATE") {
-        var message = buildMsg_REQUEST_CREATE(lang, activity)
+        message = buildMsg_REQUEST_CREATE(lang, activity)
       }
 
+      if (!message) {
+        message = activityMessageUtil.buildDefaultActivityMessage(activity) || '';
+      }
 
       if (activity.actionObj && activity.actionObj.email) {
         var actionObj_email = activity.actionObj.email;

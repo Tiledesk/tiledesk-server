@@ -1,5 +1,6 @@
 const authEvent = require('../../event/authEvent');
 const requestEvent = require('../../event/requestEvent');
+const assignmentContextUtil = require('../../utils/assignmentContextUtil');
 const Activity = require('./models/activity');
 const winston = require('../../config/winston');
 
@@ -267,6 +268,46 @@ class ActivityArchiver {
           save(activity);
         } catch (e) {
           winston.error('ActivityArchiver error saving activity', e);
+        }
+      });
+    });
+
+
+    const requestAssignedKey = resolveEventKey('request.assigned', requestEvent.queueEnabled);
+    winston.debug('ActivityArchiver requestAssignedKey: ' + requestAssignedKey);
+
+    requestEvent.on(requestAssignedKey, function (data) {
+      setImmediate(() => {
+        try {
+          if (!data || !data.request) {
+            return winston.debug('ActivityArchiver skipping request.assigned: missing request');
+          }
+
+          const verb = assignmentContextUtil.verbFromAssignmentType(data.assignmentType);
+          if (!verb) {
+            return winston.debug('ActivityArchiver skipping request.assigned: unknown assignmentType', data.assignmentType);
+          }
+
+          const activity = new Activity({
+            id_project: data.request.id_project,
+            actor: data.actor || assignmentContextUtil.systemActor(),
+            verb: verb,
+            actionObj: {
+              assigneeId: data.assigneeId,
+              assignmentType: data.assignmentType,
+              source: data.source,
+              previousAssigneeId: data.previousAssigneeId,
+              removedParticipants: data.removedParticipants
+            },
+            target: {
+              type: 'request',
+              id: data.request._id,
+              object: data.request
+            }
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving request.assigned activity', e);
         }
       });
     });

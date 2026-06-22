@@ -160,6 +160,11 @@ function startWorker() {
           winston.info("Data queue", oka)
         });
 
+        ch.bindQueue(_ok.queue, exchange, "request_assigned", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: request_assigned");
+          winston.info("Data queue", oka)
+        });
+
         ch.bindQueue(_ok.queue, exchange, "request_update", {}, function(err3, oka) {
           winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: request_update");
           winston.info("Data queue", oka)
@@ -278,6 +283,11 @@ function work(msg, cb) {
     // requestEvent.emit('request.update.queue',  msg.content);
     requestEvent.emit('request.participants.update.queue',  JSON.parse(message_string));
   }   
+
+  if (topic === 'request_assigned') {
+    winston.debug("reconnect here topic:" + topic);
+    requestEvent.emit('request.assigned.queue', JSON.parse(message_string));
+  }
   
   if (topic === 'request_close') {
     winston.debug("reconnect here topic:" + topic); 
@@ -395,6 +405,13 @@ function listen() {
       setImmediate(() => {
         publish(exchange, "request_participants_update", Buffer.from(JSON.stringify(request)));
         winston.debug("reconnect participants.update published")
+      });
+    });
+
+    requestEvent.on('request.assigned', function(data) {
+      setImmediate(() => {
+        publish(exchange, "request_assigned", Buffer.from(JSON.stringify(data)));
+        winston.debug("reconnect request.assigned published")
       });
     });
 
