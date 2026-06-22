@@ -78,6 +78,7 @@ router.post('/kb/reindex', async (req, res) => {
     return res.status(500).send({ success: false, error: "Error getting content with id " + content_id });
   }
 
+  
   if (!kb) {
     winston.warn("(webhook) Kb content not found with id " + content_id + ". Deleting scheduler...");
 
@@ -166,6 +167,7 @@ router.post('/kb/reindex', async (req, res) => {
 
     let json = {
       id: kb._id,
+      id_project: kb.id_project,
       type: kb.type,
       source: kb.source,
       content: "",
@@ -311,7 +313,11 @@ router.all('/:webhook_id', async (req, res) => {
   //webhookService.run(webhook, payload)
   // To delete - End
   webhookService.run(webhook, payload, dev, redis_client).then((response) => {
-    webhookEvent.emit("webhook.triggered", { webhook: webhook, payload: payload });
+    // Only count production runs: a dev/test invocation (?dev=true here, or the
+    // dedicated /:webhook_id/dev route below) must not emit analytics.
+    if (dev !== true && dev !== 'true') {
+      webhookEvent.emit("webhook.triggered", { webhook: webhook, payload: payload });
+    }
     return res.status(200).send(response);
   }).catch((err) => {
     if (err.code === errorCodes.WEBHOOK.ERRORS.NO_PRELOADED_DEV_REQUEST) {
@@ -321,7 +327,7 @@ router.all('/:webhook_id', async (req, res) => {
       return res.status(status).send(err.data);
     }
   })
-  
+
 })
 
 router.all('/:webhook_id/dev', async (req, res) => {
