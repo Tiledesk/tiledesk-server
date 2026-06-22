@@ -1,6 +1,8 @@
 const authEvent = require('../../event/authEvent');
 const requestEvent = require('../../event/requestEvent');
 const assignmentContextUtil = require('../../utils/assignmentContextUtil');
+const botEvent = require('../../event/botEvent');
+const kbEvent = require('../../event/kbEvent');
 const Activity = require('./models/activity');
 const winston = require('../../config/winston');
 
@@ -40,7 +42,7 @@ class ActivityArchiver {
 
 
     // ********** AUTH EVENTS **********
-    
+
     // Works only if worker is disabled
     // Doesn't work if job_worker enabled because queue.worker is disabled
     const authProjectUserInvitePendingKey = resolveEventKey('project_user.invite.pending', false);
@@ -53,17 +55,17 @@ class ActivityArchiver {
         }
         let activity = new Activity({
           id_project: event.req.projectid,
-          actor: { 
-            type: "user", 
-            id: event.req.user.id, 
-            name: event.req.user.fullName 
+          actor: {
+            type: "user",
+            id: event.req.user.id,
+            name: event.req.user.fullName
           },
-          verb: "PROJECT_USER_INVITE", 
+          verb: "PROJECT_USER_INVITE",
           actionObj: event.req.body,
-          target: { 
-            type: "pendinginvitation", 
-            id: event.savedPendingInvitation._id.toString(), 
-            object: event.savedPendingInvitation 
+          target: {
+            type: "pendinginvitation",
+            id: event.savedPendingInvitation._id.toString(),
+            object: event.savedPendingInvitation
           }
         });
         save(activity);
@@ -115,17 +117,17 @@ class ActivityArchiver {
         }
         var activity = new Activity({
           id_project: event.updatedProject_userPopulated.id_project,
-          actor: { 
-            type: "user", 
-            id: event.req.user._id, 
-            name: event.req.user.fullName 
+          actor: {
+            type: "user",
+            id: event.req.user._id,
+            name: event.req.user.fullName
           },
-          verb: "PROJECT_USER_UPDATE", 
+          verb: "PROJECT_USER_UPDATE",
           actionObj: event.req.body,
-          target: { 
-            type: "project_user", 
-            id: event.updatedProject_userPopulated._id.toString(), 
-            object: project_user 
+          target: {
+            type: "project_user",
+            id: event.updatedProject_userPopulated._id.toString(),
+            object: project_user
           }
         });
         save(activity);
@@ -146,17 +148,17 @@ class ActivityArchiver {
 
         let activity = new Activity({
           id_project: event.req.projectid,
-          actor: { 
-            type: "user", 
-            id: event.req.user.id, 
-            name: event.req.user.fullName 
+          actor: {
+            type: "user",
+            id: event.req.user.id,
+            name: event.req.user.fullName
           },
-          verb: "PROJECT_USER_DELETE", 
+          verb: "PROJECT_USER_DELETE",
           actionObj: event.req.body,
-          target: { 
-            type: "project_user", 
-            id: event.req.params.project_userid, 
-            object: event.project_userPopulated.toObject() 
+          target: {
+            type: "project_user",
+            id: event.req.params.project_userid,
+            object: event.project_userPopulated.toObject()
           }
         });
         save(activity);
@@ -172,7 +174,7 @@ class ActivityArchiver {
     requestEvent.on(requestCreateKey, function (request) {
       setImmediate(() => {
         winston.debug('ActivityArchiver requestCreate triggered');
-        
+
         try {
 
           if (request.preflight === true) {
@@ -181,17 +183,17 @@ class ActivityArchiver {
           }
           let activity = new Activity({
             id_project: request.id_project,
-            actor: { 
-              type: "user", 
-              id: request.requester_id, 
-              name: request.requester_name 
+            actor: {
+              type: "user",
+              id: request.requester_id,
+              name: request.requester_name
             },
-            verb: "REQUEST_CREATE", 
+            verb: "REQUEST_CREATE",
             actionObj: request,
-            target: { 
-              type: "request", 
-              id: request._id, 
-              object: request 
+            target: {
+              type: "request",
+              id: request._id,
+              object: request
             }
           });
           save(activity);
@@ -219,17 +221,17 @@ class ActivityArchiver {
           }
           let activity = new Activity({
             id_project: request.id_project,
-            actor: { 
-              type: "user", 
-              id: request.requester_id, 
-              name: request.requester_name 
+            actor: {
+              type: "user",
+              id: request.requester_id,
+              name: request.requester_name
             },
-            verb: "REQUEST_CREATE", 
+            verb: "REQUEST_CREATE",
             actionObj: request,
-            target: { 
-              type: "request", 
-              id: request._id, 
-              object: request 
+            target: {
+              type: "request",
+              id: request._id,
+              object: request
             }
           });
           that.save(activity);
@@ -252,23 +254,144 @@ class ActivityArchiver {
 
           let activity = new Activity({
             id_project: request.id_project,
-            actor: { 
-              type: "user", 
-              id: request.closed_by, 
-              name: request.closed_by_name 
+            actor: {
+              type: "user",
+              id: request.closed_by,
+              name: request.closed_by_name
             },
-            verb: "REQUEST_CLOSE", 
+            verb: "REQUEST_CLOSE",
             actionObj: request,
-            target: { 
-              type: "request", 
-              id: request._id, 
-              object: request 
+            target: {
+              type: "request",
+              id: request._id,
+              object: request
             }
           });
           save(activity);
         } catch (e) {
           winston.error('ActivityArchiver error saving activity', e);
         }
+      });
+    });
+
+    // Chatbot activities (routes/faq_kb.js)
+    var faqbotDeleteActivityKey = 'faqbot.delete.activity';
+    if (botEvent.queueEnabled) {
+      faqbotDeleteActivityKey = 'faqbot.delete.activity.queue';
+    }
+    botEvent.on(faqbotDeleteActivityKey, function (event) {
+      setImmediate(() => {
+        if (!event.req?.user) return;
+        var actorId = event.req.user.id || event.req.user._id;
+        var faq_kb = event.faq_kb;
+        var activity = new Activity({
+          actor: { type: 'user', id: actorId, name: event.req.user.fullName },
+          verb: 'CHATBOT_DELETE',
+          actionObj: {},
+          target: { type: 'chatbot', id: event.chatbot_id, object: faq_kb?.toObject ? faq_kb.toObject() : faq_kb },
+          id_project: event.id_project
+        });
+        that.save(activity);
+      });
+    });
+
+    var faqbotPublishActivityKey = 'faqbot.publish.activity';
+    if (botEvent.queueEnabled) {
+      faqbotPublishActivityKey = 'faqbot.publish.activity.queue';
+    }
+    botEvent.on(faqbotPublishActivityKey, function (event) {
+      setImmediate(() => {
+        if (!event.req?.user) return;
+        var actorId = event.req.user.id || event.req.user._id;
+        var activity = new Activity({
+          actor: { type: 'user', id: actorId, name: event.req.user.fullName },
+          verb: 'CHATBOT_PUBLISH',
+          actionObj: { root_id: event.id_faq_kb, bot_id: event.forkedChatBotId, release_note: event.release_note },
+          target: { type: 'chatbot', id: event.id_faq_kb, object: { bot_id: event.forkedChatBotId } },
+          id_project: event.id_project
+        });
+        that.save(activity);
+      });
+    });
+
+    // KB activities (routes/kb.js)
+    var kbNamespaceCreateKey = 'kb.namespace.create';
+    if (kbEvent.queueEnabled) {
+      kbNamespaceCreateKey = 'kb.namespace.create.queue';
+    }
+    kbEvent.on(kbNamespaceCreateKey, function (event) {
+      setImmediate(() => {
+        if (!event.req?.user) return;
+        var actorId = event.req.user.id || event.req.user._id;
+        var savedNamespace = event.savedNamespace;
+        var activity = new Activity({
+          actor: { type: 'user', id: actorId, name: event.req.user.fullName },
+          verb: 'KB_NAMESPACE_CREATE',
+          actionObj: { name: event.body?.name },
+          target: { type: 'kb_namespace', id: String(event.namespace_id), object: savedNamespace?.toObject ? savedNamespace.toObject() : savedNamespace },
+          id_project: event.project_id
+        });
+        that.save(activity);
+      });
+    });
+
+    var kbNamespaceDeleteKey = 'kb.namespace.delete';
+    if (kbEvent.queueEnabled) {
+      kbNamespaceDeleteKey = 'kb.namespace.delete.queue';
+    }
+    kbEvent.on(kbNamespaceDeleteKey, function (event) {
+      setImmediate(() => {
+        if (!event.req?.user) return;
+        var actorId = event.req.user.id || event.req.user._id;
+        var namespace = event.namespace;
+        var activity = new Activity({
+          actor: { type: 'user', id: actorId, name: event.req.user.fullName },
+          verb: 'KB_NAMESPACE_DELETE',
+          actionObj: { namespace: event.namespace_id, deletedContentsCount: event.deletedCount },
+          target: { type: 'kb_namespace', id: event.namespace_id, object: namespace?.toObject ? namespace.toObject() : {} },
+          id_project: event.project_id
+        });
+        that.save(activity);
+      });
+    });
+
+    var kbContentsDeleteKey = 'kb.contents.delete';
+    if (kbEvent.queueEnabled) {
+      kbContentsDeleteKey = 'kb.contents.delete.queue';
+    }
+    kbEvent.on(kbContentsDeleteKey, function (event) {
+      setImmediate(() => {
+        if (!event.req?.user) return;
+        var actorId = event.req.user.id || event.req.user._id;
+        var activity = new Activity({
+          actor: { type: 'user', id: actorId, name: event.req.user.fullName },
+          verb: 'KB_CONTENTS_DELETE',
+          actionObj: { namespace: event.namespace_id, deletedCount: event.deletedCount },
+          target: { type: 'kb_namespace', id: event.namespace_id, object: { namespace: event.namespace_id } },
+          id_project: event.project_id
+        });
+        that.save(activity);
+      });
+    });
+
+    var kbContentDeleteKey = 'kb.content.delete';
+    if (kbEvent.queueEnabled) {
+      kbContentDeleteKey = 'kb.content.delete.queue';
+    }
+    kbEvent.on(kbContentDeleteKey, function (event) {
+      setImmediate(() => {
+        if (!event.req?.user) return;
+        var actorId = event.req.user.id || event.req.user._id;
+        var kb = event.kb;
+        var activity = new Activity({
+          actor: { type: 'user', id: actorId, name: event.req.user.fullName },
+          verb: 'KB_CONTENT_DELETE',
+          actionObj: { namespace: event.namespace_id },
+          target: { type: 'kb_content', id: event.kb_id, object: kb?.toObject ? kb.toObject() : { _id: event.kb_id, namespace: event.namespace_id } },
+          id_project: event.project_id
+        });
+        console.log("kb.content.delete activity: ", activity);
+        that.save(activity);
       });
     });
 

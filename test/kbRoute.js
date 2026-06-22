@@ -50,6 +50,66 @@ mongoose.connect(config.databasetest);
 chai.use(chaiHttp);
 
 describe('KbRoute', () => {
+    
+    describe('/qa', () => {
+        
+        it('ask-kb', (done) => {
+
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("get namespaces res.body: ", res.body); }
+
+                            res.should.have.status(200);
+                            expect(res.body.length).to.equal(1);
+                            expect(res.body[0].engine.index_name).to.equal('test-index')
+
+                            let namespace_id = res.body[0].id;
+
+                            let data = {
+                                question: "sample question?",
+                                namespace: namespace_id,
+                                llm: "openai",
+                                model: "gpt-4o",
+                                temperature: 0.7,
+                                max_tokens: 128,
+                                top_k: 4,
+                                chunks_only: false,
+                                system_context: "",
+                                advancedPrompt: false,
+                                citations: true
+                            }
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb/qa')
+                                .auth(email, pwd)
+                                .send(data)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("ask kb res.body: ", res.body); }
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    
+                                    done();
+                                })
+                        })
+                });
+            });
+
+        })
+    })
 
     describe('Namespaces', () => {
 
@@ -244,7 +304,7 @@ describe('KbRoute', () => {
                                             expect(res.body.embedding.name).to.equal('text-embedding-ada-002')
                                             expect(res.body.embedding.dimension).to.equal(1536)
                                             expect(res.body.embedding.api_key).to.equal('')
-                
+
                                             done();
                                         })
                                 })
@@ -321,7 +381,7 @@ describe('KbRoute', () => {
                                                 .end((err, res) => {
                                                     if (err) { console.error("err: ", err); }
                                                     if (log) { console.log("get all namespaces res.body: ", res.body); }
-                                                    
+
                                                     res.should.have.status(200);
                                                     res.body.should.be.a('array');
                                                     expect(res.body.length).to.equal(1);
@@ -633,6 +693,7 @@ describe('KbRoute', () => {
 
                                     let scheduleJson = res.body.schedule_json;
                                     expect(scheduleJson.namespace).to.equal(namespace_id)
+                                    expect(scheduleJson.id_project).to.equal(namespace_id)
                                     expect(scheduleJson.type).to.equal("url")
                                     expect(scheduleJson.source).to.equal("https://www.exampleurl5.com")
                                     expect(scheduleJson.hybrid).to.equal(false);
@@ -1180,6 +1241,7 @@ describe('KbRoute', () => {
                                     scheduleJson.should.be.a('array');
                                     expect(scheduleJson.length).to.equal(2);
                                     expect(scheduleJson[0].namespace).to.equal(namespace_id);
+                                    expect(scheduleJson[0].id_project).to.equal(namespace_id);
                                     expect(scheduleJson[0].type).to.equal('faq');
                                     expect(scheduleJson[0].source).to.equal('Question 1');
                                     should.exist(scheduleJson[0].engine)
@@ -1344,6 +1406,7 @@ describe('KbRoute', () => {
                                     let scheduleJson = res.body.schedule_json;
                                     expect(scheduleJson.length).to.equal(4);
                                     expect(scheduleJson[0].namespace).to.equal(namespace_id);
+                                    expect(scheduleJson[0].id_project).to.equal(namespace_id);
                                     expect(scheduleJson[0].source).to.equal('https://gethelp.tiledesk.com/articles/article1');
                                     expect(scheduleJson[0].tags.length).to.equal(2);
                                     expect(scheduleJson[0].tags[0]).to.equal('tag1');
@@ -1546,6 +1609,7 @@ describe('KbRoute', () => {
                                     scheduleJson.should.be.a('array');
                                     should.exist(scheduleJson[0].engine)
                                     should.exist(scheduleJson[0].embedding)
+                                    expect(scheduleJson[0].id_project).to.equal(namespace_id)
                                     expect(scheduleJson[0].embedding.api_key).to.equal('fakegptkey');
 
                                     done();
@@ -2211,6 +2275,64 @@ describe('KbRoute', () => {
                                         done();
                                     });
                             });
+                        });
+                });
+            });
+        });
+    });
+
+    describe('activities tracking', (done) => {
+
+        it('delete-content-activity', (done) => {
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-activities-delete-content", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("get namespaces res.body: ", res.body); }
+                            res.should.have.status(200);
+                            expect(res.body.length).to.equal(1);
+
+                            let namespace_id = res.body[0].id;
+
+                            let content = {
+                                name: "test-content",
+                                type: "text",
+                                content: "test-content",
+                                namespace: namespace_id
+                            }
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb')
+                                .auth(email, pwd)
+                                .send(content)
+                                .end((err, res) => {
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("add content res.body: ", res.body); }
+                                    console.log("add content res.body: ", res.body);
+                                    res.should.have.status(200);
+
+                                    let content_id = res.body.data.value._id;
+
+                                    chai.request(server)
+                                        .delete('/' + savedProject._id + '/kb/' + content_id)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+                                            
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("delete content res.body: ", res.body); }
+                                            console.log("delete content res.body: ", res.body);
+                                            res.should.have.status(200);
+
+                                            done();
+                                        });
+                                });
                         });
                 });
             });
