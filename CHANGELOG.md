@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.19.9
+- Fixed an issue with the handling of situated_context during namespace import
+
 # 2.19.8
 - Fix analytics integration
 
