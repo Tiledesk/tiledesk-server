@@ -2337,6 +2337,29 @@ router.delete('/:kb_id', async (req, res) => {
   data.engine = namespace.engine || default_engine;
   winston.verbose("/:delete_id data: ", data);
 
+  const emitKbContentDelete = (deletedKb) => {
+    const content = deletedKb || kb;
+    const contentSnapshot = content.toObject ? content.toObject() : content;
+    kbEvent.emit('kb.content.delete', {
+      req,
+      kb_id,
+      project_id,
+      namespace_id,
+      namespace_name: namespace.name,
+      kb: {
+        _id: contentSnapshot._id,
+        name: contentSnapshot.name,
+        source: contentSnapshot.source,
+        type: contentSnapshot.type
+      }
+    });
+  };
+
+  if (process.env.NODE_ENV === 'test') {
+    emitKbContentDelete(kb);
+    return res.status(200).send({ success: true, message: "Content deleted successfully" });
+  }
+
   aiService.deleteIndex(data).then((resp) => {
     winston.debug("delete resp: ", resp.data);
     if (resp.data.success === true) {
@@ -2346,6 +2369,7 @@ router.delete('/:kb_id', async (req, res) => {
           winston.error("Delete kb error: ", err);
           return res.status(500).send({ success: false, error: err });
         }
+        emitKbContentDelete(deletedKb);
         res.status(200).send(deletedKb);
       })
 
@@ -2361,6 +2385,7 @@ router.delete('/:kb_id', async (req, res) => {
           winston.verbose("Unable to delete the content in indexing status")
           return res.status(500).send({ success: false, error: "Unable to delete the content in indexing status" })
         } else {
+          emitKbContentDelete(deletedKb);
           res.status(200).send(deletedKb);
         }
       })

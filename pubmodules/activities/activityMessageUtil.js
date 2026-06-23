@@ -110,6 +110,27 @@ function contentAddTypeLabel(contentAddType) {
   }
 }
 
+function kbContentLabel(activity) {
+  const actionObj = (activity && activity.actionObj) || {};
+  const object = activity && activity.target && activity.target.object;
+  if (actionObj.source) {
+    return actionObj.source;
+  }
+  if (actionObj.name) {
+    return actionObj.name;
+  }
+  if (object && object.source) {
+    return object.source;
+  }
+  if (object && object.name) {
+    return object.name;
+  }
+  if (activity && activity.target && activity.target.id) {
+    return String(activity.target.id);
+  }
+  return 'content';
+}
+
 function buildDefaultActivityMessage(activity) {
   if (!activity || !activity.verb) {
     return null;
@@ -190,6 +211,10 @@ function buildDefaultActivityMessage(activity) {
     case 'KB_CONTENTS_DELETE':
       return actor + ' deleted all contents from namespace ' + namespaceLabel(activity);
 
+    case 'KB_CONTENT_DELETE':
+      return actor + ' deleted content ' + kbContentLabel(activity) +
+        ' from namespace ' + namespaceLabel(activity);
+
     default:
       return null;
   }
@@ -209,6 +234,7 @@ module.exports = {
   requestLabel,
   namespaceLabel,
   chatbotLabel,
+  kbContentLabel,
   resolveParticipantLabel,
   buildDefaultActivityMessage,
   enrichActivityWithMessage

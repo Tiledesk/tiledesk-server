@@ -235,6 +235,11 @@ function startWorker() {
           winston.info("Data queue", oka)
         });
 
+        ch.bindQueue(_ok.queue, exchange, "kb_content_delete", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: kb_content_delete");
+          winston.info("Data queue", oka)
+        });
+
         ch.bindQueue(_ok.queue, exchange, "lead_create", {}, function(err3, oka) {
           winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: lead_create");
           winston.info("Data queue", oka)
@@ -387,6 +392,10 @@ function work(msg, cb) {
     kbEvent.emit('kb.contents.delete.queue', JSON.parse(message_string));
   }
 
+  if (topic === 'kb_content_delete') {
+    kbEvent.emit('kb.content.delete.queue', JSON.parse(message_string));
+  }
+
   if (topic === 'lead_create') {
     winston.debug("reconnect here topic lead_create:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
@@ -465,7 +474,9 @@ function serializeKbActivityPayload(data) {
     type: data.type,
     source: data.source,
     deletedCount: data.deletedCount,
-    deleteMode: data.deleteMode
+    deleteMode: data.deleteMode,
+    kb_id: data.kb_id,
+    kb: data.kb
   };
 }
 
@@ -638,6 +649,13 @@ function listen() {
       setImmediate(() => {
         publish(exchange, "kb_contents_delete", Buffer.from(JSON.stringify(serializeKbActivityPayload(data))));
         winston.debug("reconnect kb.contents.delete published");
+      });
+    });
+
+    kbEvent.on('kb.content.delete', function(data) {
+      setImmediate(() => {
+        publish(exchange, "kb_content_delete", Buffer.from(JSON.stringify(serializeKbActivityPayload(data))));
+        winston.debug("reconnect kb.content.delete published");
       });
     });
 

@@ -49,6 +49,15 @@ function namespaceTarget(namespaceId, namespaceObject) {
   };
 }
 
+function kbContentTarget(kbId, kbObject) {
+  const object = kbObject ? toObject(kbObject) : { _id: kbId };
+  return {
+    type: 'kb_content',
+    id: activityActorUtil.resolveId(kbId || (object && object._id)),
+    object: object
+  };
+}
+
 class ActivityArchiver {
 
   listen() {
@@ -575,6 +584,38 @@ class ActivityArchiver {
           save(activity);
         } catch (e) {
           winston.error('ActivityArchiver error saving kb.contents.delete activity', e);
+        }
+      });
+    });
+
+
+    const kbContentDeleteKey = resolveEventKey('kb.content.delete', kbEvent.queueEnabled);
+    winston.debug('ActivityArchiver kbContentDeleteKey: ' + kbContentDeleteKey);
+
+    kbEvent.on(kbContentDeleteKey, function (data) {
+      setImmediate(() => {
+        try {
+          if (!data || !data.project_id || !data.kb_id) {
+            return winston.debug('ActivityArchiver skipping kb.content.delete: missing data');
+          }
+
+          const kb = data.kb || {};
+          const activity = new Activity({
+            id_project: data.project_id,
+            actor: activityActorUtil.actorFromReq(data.req),
+            verb: 'KB_CONTENT_DELETE',
+            actionObj: {
+              name: kb.name,
+              source: kb.source,
+              type: kb.type,
+              namespaceId: data.namespace_id,
+              namespaceName: data.namespace_name
+            },
+            target: kbContentTarget(data.kb_id, kb)
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving kb.content.delete activity', e);
         }
       });
     });
