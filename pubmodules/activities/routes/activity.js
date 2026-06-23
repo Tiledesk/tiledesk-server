@@ -1,182 +1,95 @@
-var express = require('express');
-var router = express.Router();
-var Activity = require("../models/activity");
-var winston = require('../../../config/winston');
-var moment = require('moment');
-var ObjectId = require('mongoose').Types.ObjectId;
+const express = require('express');
+const router = express.Router();
+const Activity = require("../models/activity");
+const activityMessageUtil = require('../activityMessageUtil');
+const winston = require('../../../config/winston');
+const moment = require('moment');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 csv = require('csv-express');
 csv.separator = ';';
-// csv = require('csv-express');
-// csv.separator = ';';
 
+router.get('/', async (req, res) => {
+  
+  let id_project = req.projectid;
+  let limit = 40; // Number of activities per page
+  let page = parseInt(req.query.page) || 0;
+  let skip = page * limit;
 
-// router.post('/', function (req, res) {
+  let query = { id_project: id_project };
 
-//   winston.debug(req.body);
-//   winston.debug("req.user", req.user);
-
-//   var newLead = new Lead({
-//     fullname: req.body.fullname,
-//     lead_id: req.body.lead_id,
-//     email: req.body.email,
-//     id_project: req.projectid,
-//     createdBy: req.user.id,
-//     updatedBy: req.user.id
-//   });
-
-//   newLead.save(function (err, savedLead) {
-//     if (err) {
-//       winston.debug('--- > ERROR ', err)
-//       return res.status(500).send({ success: false, msg: 'Error saving object.' });
-//     }
-//     res.json(savedLead);
-//   });
-// });
-
-// router.get('/:leadid', function (req, res) {
-//   winston.debug(req.body);
-
-//   Lead.findById(req.params.leadid, function (err, lead) {
-//     if (err) {
-//       return res.status(500).send({ success: false, msg: 'Error getting object.' });
-//     }
-//     if (!lead) {
-//       return res.status(404).send({ success: false, msg: 'Object not found.' });
-//     }
-//     res.json(lead);
-//   });
-// });
-
-
-
-router.get('/', function (req, res) {
-  var limit = 40; // Number of activities per page
-  var page = 0;
-
-  if (req.query.page) {
-    page = req.query.page;
-  }
-
-  var skip = page * limit;
-  winston.debug('Activity ROUTE - SKIP PAGE ', skip);
-  // winston.debug('Activity ROUTE - SKIP PAGE ', skip);
-
-  winston.debug('Activity ROUTE - QUERY ', req.query)
-
-
-  var query = { "id_project": req.projectid };
-
-
-  /**
-   * DATE RANGE  */
   if (req.query.start_date && req.query.end_date) {
-    winston.debug('Activity ROUTE - REQ QUERY start_date ', req.query.start_date);
-    winston.debug('Activity ROUTE - REQ QUERY end_date ', req.query.end_date);
+    winston.verbose('(ActivityRoute) start_date and end_date provided: ' + req.query.start_date + ' - ' + req.query.end_date);
 
-    /**
-     * USING MOMENT      */
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-    var endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    const startDate = moment(req.query.start_date, 'DD/MM/YYYY')
+      .format('YYYY-MM-DD')
+      .startOf('day')
+      .toDate();
 
-    winston.debug('Activity ROUTE - REQ QUERY FORMATTED START DATE ', startDate);
-    winston.debug('Activity ROUTE - REQ QUERY FORMATTED END DATE ', endDate);
+    const endDate = moment(req.query.end_date, 'DD/MM/YYYY')
+      .format('YYYY-MM-DD')
+      .endOf('day')
+      .toDate();
 
-    // ADD ONE DAY TO THE END DAY
-    var date = new Date(endDate);
-    var newdate = new Date(date);
-    var endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
-    winston.debug('Activity ROUTE - REQ QUERY FORMATTED END DATE + 1 DAY ', endDate_plusOneDay);
-    // var endDate_plusOneDay =   moment('2018-09-03').add(1, 'd')
-    // var endDate_plusOneDay =   endDate.add(1).day();
-    // var toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
-
-    query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString(), $lte: new Date(endDate_plusOneDay).toISOString() }
-    winston.debug('Activity ROUTE - QUERY CREATED AT ', query.createdAt);
+    query.createdAt = { $gte: startDate, $lte: endDate };
 
   } else if (req.query.start_date && !req.query.end_date) {
-    winston.debug('Activity ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)');
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    winston.verbose('(ActivityRoute) start_date provided: ' + req.query.start_date);
 
-    query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString() };
-    winston.debug('Activity ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
+    const startDate = moment(req.query.start_date, 'DD/MM/YYYY')
+      .format('YYYY-MM-DD')
+      .startOf('day')
+      .toDate();
+
+    query.createdAt = { $gte: startDate };
   }
 
   if (req.query.agent_id) {
-    winston.debug('req.query.agent', req.query.agent_id);
     query["$or"] = [
-      { "target.object.id_user._id": new ObjectId(req.query.agent_id) },
+      { "target.object.id_user._id": req.query.agent_id },
       { "actor.id": req.query.agent_id }
     ];
-
-    // query["$or"] = [
-    //   { $or: [{"target.object.id_user._id": new ObjectId(req.query.agent_id) }, { "actor.id": new ObjectId(req.query.agent_id) }]}
-    // ];
   }
 
   if (req.query.activities) {
-    winston.debug('req.query.activities:', req.query.activities);
-
-    let verbs = req.query.activities.split(",")
-
-    winston.debug('verbs: ', verbs);
-    query.verb = verbs;
-
-    // to test
-    // query.verb = ['PROJECT_USER_DELETE','PROJECT_USER_INVITE']
+    query.verb = {
+      $in: req.query.activities.split(',')
+    };
   }
 
+  let direction = parseInt(req.query.direction) || -1;
+  let sortField = req.query.sort || "createdAt";
 
-  var direction = -1; //-1 descending , 1 ascending
-  if (req.query.direction) {
-    direction = req.query.direction;
-  }
-  winston.debug("direction", direction);
-
-  var sortField = "createdAt";
-  if (req.query.sort) {
-    sortField = req.query.sort;
-  }
-  winston.debug("sortField", sortField);
-
-  var sortQuery = {};
+  let sortQuery = {};
   sortQuery[sortField] = direction;
 
-  winston.debug("sort query", sortQuery);
+  winston.verbose('(ActivityRoute) Find query: ', query)
 
-  winston.debug('Activity ROUTE - Activity.find(query) ', query)
-  return Activity.find(query).
-    skip(skip).limit(limit).
-    sort(sortQuery).
-    exec(function (err, activities) {
-      if (err) {
-        winston.error('Activity ROUTE - REQUEST FIND ERR ', err)
-        return (err);
-      }
+  try {
+    let activities = await Activity.find(query)
+      .skip(skip)
+      .limit(limit)
+      .sort(sortQuery)
+      .lean()
+      .exec();
 
-      return Activity.countDocuments(query, function (err, totalRowCount) {
-        if (err) {
-          winston.error('Activity ROUTE - REQUEST FIND ERR ', err)
-          return (err);
-        }
+    let totalRowCount = await Activity.countDocuments(query);
 
-        var objectToReturn = {
-          perPage: limit,
-          count: totalRowCount,
-          activities: activities
-        };
-        winston.debug('Activity ROUTE - objectToReturn ', objectToReturn);
+    activities = activities.map(activityMessageUtil.enrichActivityWithMessage);
 
-        objectToReturn.activities.forEach(activity => {
-          winston.debug('Activity ROUTE - activity.target ', activity.target);
-          if (activity.target && activity.target.object && activity.target.object.id_user) {
-            winston.debug('Activity ROUTE - *** 9-+activity.target.id_user ', activity.target.object.id_user._id);
-          }
-        });
+    let objectToReturn = {
+      perPage: limit,
+      count: totalRowCount,
+      activities: activities
+    };
 
-        return res.json(objectToReturn);
-      });
-    });
+    return res.status(200).send(objectToReturn);
+
+  } catch (error) {
+    winston.error('(ActivityRoute) Find query error: ', error)
+    return res.status(500).send({ success: false, msg: 'Error getting activities.' });
+  }
+
 });
 
 // DOWNLOAD ACTIVITIES AS CSV
@@ -575,6 +488,7 @@ router.get('/csv', function (req, res) {
       // if (lang) {
       winston.debug('buildCsv lang: ', lang);
 
+      var message = activityMessageUtil.buildDefaultActivityMessage(activity) || '';
       var actor_name = '';
       var target_fullname = '';
       if (activity.actor) {
@@ -597,21 +511,24 @@ router.get('/csv', function (req, res) {
       }
 
       if (activity.verb === "PROJECT_USER_UPDATE") {
-        var message = buildMsg_PROJECT_USER_UPDATE(actor_name, target_fullname, lang, activity)
+        message = buildMsg_PROJECT_USER_UPDATE(actor_name, target_fullname, lang, activity)
       }
 
       if (activity.verb === "PROJECT_USER_DELETE") {
-        var message = buildMsg_PROJECT_USER_DELETE(actor_name, target_fullname, lang)
+        message = buildMsg_PROJECT_USER_DELETE(actor_name, target_fullname, lang)
       }
 
       if (activity.verb === "PROJECT_USER_INVITE") {
-        var message = buildMsg_PROJECT_USER_INVITE(actor_name, target_fullname, lang, activity)
+        message = buildMsg_PROJECT_USER_INVITE(actor_name, target_fullname, lang, activity)
       }
 
       if (activity.verb === "REQUEST_CREATE") {
-        var message = buildMsg_REQUEST_CREATE(lang, activity)
+        message = buildMsg_REQUEST_CREATE(lang, activity)
       }
 
+      if (!message) {
+        message = activityMessageUtil.buildDefaultActivityMessage(activity) || '';
+      }
 
       if (activity.actionObj && activity.actionObj.email) {
         var actionObj_email = activity.actionObj.email;

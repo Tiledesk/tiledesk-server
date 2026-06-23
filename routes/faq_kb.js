@@ -52,6 +52,7 @@ router.post('/', roleChecker.hasRole('admin'), async function (req, res) {
   }
 
   faqService.create(req.projectid, req.user.id, req.body).then((savedFaq_kb) => {
+    botEvent.emit('faqbot.created', { req, chatbot: savedFaq_kb });
     res.status(200).send(savedFaq_kb);
   }).catch((err) => {
     res.status(500).send({ succes: false, error: err })
@@ -294,6 +295,13 @@ router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) 
 
     botEvent.emit('faqbot.update', updatedOriginalChabot);
 
+    botEvent.emit('faqbot.publish', {
+      req: req,
+      chatbot: updatedOriginalChabot,
+      publishedBotId: forkedChatBotId,
+      release_note: release_note
+    });
+
     return res.status(200).send({ message: "Chatbot published successfully", bot_id: forkedChatBotId });
 
   } catch (e) {
@@ -460,6 +468,7 @@ router.delete('/:faq_kbid', roleChecker.hasRole('admin'), function (req, res) {
      * WARNING: faq_kb is the operation result, not the faq_kb object. The event subscriber will not receive the object as expected.
      */
     botEvent.emit('faqbot.delete', faq_kb);
+    botEvent.emit('faqbot.deleted', { req, chatbot: faq_kb });
     res.status(200).send({ success: true, message: "Chatbot with id " + req.params.faq_kbid + " deleted successfully" })
   });
 });
@@ -707,6 +716,8 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
     return res.status(500).send({ success: false, message: "Unable to import intents in the new chatbot" });
   }
 
+  botEvent.emit('faqbot.created', { req, chatbot: savedChatbot, id_project: landing_project_id });
+
   return res.status(200).send({ message: "Chatbot forked successfully", bot_id: savedChatbot._id });
 
 })
@@ -774,6 +785,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
     })
 
     botEvent.emit('faqbot.create', savedChatbot);
+    botEvent.emit('faqbot.created', { req, chatbot: savedChatbot });
 
     if (json.intents) {
 

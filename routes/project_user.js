@@ -18,6 +18,7 @@ var validtoken = require('../middleware/valid-token')
 var roleChecker = require('../middleware/has-role');
 const puEvent = require('../event/projectUserEvent');
 const { track } = require('../lib/analyticsClient');
+const projectUserUpdateContextUtil = require('../utils/projectUserUpdateContextUtil');
 
 
 router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
@@ -69,7 +70,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
       // winston.debug("role", role);
     
       // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
-      return Project_user.findOne({ id_project: req.projectid, id_user: user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active"}, function (err, puser) {
+      return Project_user.findOne({ id_project: id_project, id_user: user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active"}, function (err, puser) {
       // return Project_user.find({ id_project: req.projectid, role: { $in : role }, status: "active"}, function (err, projectuser) {
         //puser = projectuser
       
@@ -113,7 +114,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
 
             updatedPuser.populate({path:'id_user', select:{'firstname':1, 'lastname':1, 'email': 1}},function (err, updatedPuserPopulated){
               var pu = updatedPuserPopulated.toJSON();
-              pu.isBusy = ProjectUserUtil.isBusy(savedProject_userPopulated, req.project.settings && req.project.settings.max_agent_assigned_chat);
+              pu.isBusy = ProjectUserUtil.isBusy(pu, req.project.settings && req.project.settings.max_agent_assigned_chat);
               var eventData = {req:req, updatedPuserPopulated: pu};
               winston.debug("eventData",eventData);
               authEvent.emit('project_user.invite', eventData);
@@ -220,6 +221,13 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   }
 
   const previousUserAvailable = req.projectuser.user_available;
+  const previousProfileStatus = req.projectuser.profileStatus;
+  const updateContext = projectUserUpdateContextUtil.buildProjectUserUpdateContext(
+    req,
+    previousUserAvailable,
+    previousProfileStatus,
+    projectUserUpdateContextUtil.resolveUserId(req.projectuser.id_user)
+  );
 
   Project_user.findByIdAndUpdate(req.projectuser.id, update,  { new: true, upsert: true }, function (err, updatedProject_user) {
     if (err) {
@@ -230,7 +238,13 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     updatedProject_user.populate({ path:'id_user', select: { 'firstname': 1, 'lastname': 1 }}, function (err, updatedProject_userPopulated) {    
       var pu = updatedProject_userPopulated.toJSON();
       pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, req.project.settings && req.project.settings.max_agent_assigned_chat);
-      authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req, previousUserAvailable: previousUserAvailable});
+      authEvent.emit('project_user.update', {
+        updatedProject_userPopulated: pu,
+        req: req,
+        previousUserAvailable: previousUserAvailable,
+        previousProfileStatus: previousProfileStatus,
+        updateContext: updateContext
+      });
     });
     
     res.json(updatedProject_user);
@@ -272,6 +286,10 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
       update.status = req.body.status;
   }
 
+  if (req.body.trashed != undefined) {
+    update.trashed = req.body.trashed;
+  }
+
   if (req.body["settings.email.notification.conversation.assigned.toyou"]!=undefined) {
     update["settings.email.notification.conversation.assigned.toyou"] = req.body["settings.email.notification.conversation.assigned.toyou"];
   }
@@ -286,7 +304,14 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 
   winston.debug("project_userid update", update);
 
-  function _doUpdateProjectUser(previousUserAvailable) {
+  function _doUpdateProjectUser(previousUserAvailable, previousProfileStatus, targetUserId) {
+    const updateContext = projectUserUpdateContextUtil.buildProjectUserUpdateContext(
+      req,
+      previousUserAvailable,
+      previousProfileStatus,
+      targetUserId
+    );
+
     Project_user.findByIdAndUpdate(req.params.project_userid, update, { new: true, upsert: true }, function (err, updatedProject_user) {
       if (err) {
         winston.error("Error gettting project_user for update", err);
@@ -299,7 +324,13 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
           var pu = updatedProject_userPopulated.toJSON();
           pu.isBusy = ProjectUserUtil.isBusy(updatedProject_user, req.project.settings && req.project.settings.max_agent_assigned_chat);
           
-            authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req, previousUserAvailable: previousUserAvailable});
+            authEvent.emit('project_user.update', {
+              updatedProject_userPopulated: pu,
+              req: req,
+              previousUserAvailable: previousUserAvailable,
+              previousProfileStatus: previousProfileStatus,
+              updateContext: updateContext
+            });
         });
       
 
@@ -307,12 +338,16 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
     });
   }
 
-  if (update.user_available !== undefined && process.env.ANALYTICS_INGEST_URL) {
-    Project_user.findById(req.params.project_userid, 'user_available').lean().exec(function(err, currentPu) {
-      _doUpdateProjectUser(currentPu ? currentPu.user_available : null);
+  if (update.user_available !== undefined || update.profileStatus !== undefined) {
+    Project_user.findById(req.params.project_userid, 'user_available profileStatus id_user').lean().exec(function(err, currentPu) {
+      _doUpdateProjectUser(
+        currentPu ? currentPu.user_available : null,
+        currentPu ? currentPu.profileStatus : null,
+        currentPu ? currentPu.id_user : null
+      );
     });
   } else {
-    _doUpdateProjectUser(null);
+    _doUpdateProjectUser(null, null, null);
   }
 });
 
@@ -597,7 +632,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     winston.debug("role", role);
     query =  {id_project: req.projectid, role: { $in : role } };
   } else {
-     query =  {id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS };
+    query =  {id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS };
   }
 
   if (!req.query.trashed || req.query.trashed === 'false' || req.query.trashed === false) {

@@ -8,6 +8,7 @@ var requestService = require('../../services/requestService');
 var i8nUtil = require("../../utils/i8nUtil");
 var MessageConstants = require("../../models/messageConstants");
 var BotFromParticipant = require("../../utils/botFromParticipant");
+var assignmentContextUtil = require('../../utils/assignmentContextUtil');
 
 class MessageActionsInterceptor {
 
@@ -98,7 +99,14 @@ class MessageActionsInterceptor {
     
                     // route(request_id, departmentid, id_project, nobot) {
                         // se \agent ma nessuno opertore online non toglie il bot 
-                        requestService.route(request.request_id, request.department, request.id_project, true ).then(function(routedRequest) {
+                        requestService.route(
+                          request.request_id,
+                          request.department,
+                          request.id_project,
+                          true,
+                          undefined,
+                          assignmentContextUtil.buildInternalOptions('system', 'auto')
+                        ).then(function(routedRequest) {
                             winston.debug("routedRequest: ", routedRequest);
 
                                 // messageService.send(
@@ -119,7 +127,12 @@ class MessageActionsInterceptor {
                 //route(request_id, departmentid, id_project) {      
                     //TODO USE FINALLY?
 
-                    requestService.reroute(request.request_id, request.id_project, true ).then(function() {
+                    requestService.reroute(
+                      request.request_id,
+                      request.id_project,
+                      true,
+                      assignmentContextUtil.buildInternalOptions('system', 'auto')
+                    ).then(function() {
 
                         // messageService.send(
                         //     'system', 

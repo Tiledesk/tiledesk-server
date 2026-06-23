@@ -136,6 +136,14 @@ var ProjectSchema = new Schema({
   createdBy: {
     type: String,
     required: true
+  },
+  /**
+   * Incrementato ad ogni cambio effettivo della policy di retention; i job di ricalcolo expiresAt
+   * confrontano questo valore con la seq del messaggio per interrompersi se è arrivato un aggiornamento più recente.
+   */
+  retentionRecalcSeq: {
+    type: Number,
+    default: 0
   }
 }, {
     timestamps: true,
