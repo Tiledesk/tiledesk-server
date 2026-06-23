@@ -4,6 +4,11 @@ let winston = require('../config/winston');
 const mcpService = require('../services/mcpService');
 const Project = require('../models/project');
 
+
+router.get('/native', async (req, res) => {
+  
+})
+
 /**
  * POST /mcp/connect
  * Initializes a connection to an MCP server

@@ -1,0 +1,185 @@
+[
+    {
+        "name": "Tiledesk Communicator",
+        "url": "https://stage.eks.tiledesk.com/mcp-tools/communicator/mcp",
+
+        "transport": "streamable_http",
+        "tools": [
+            {
+                "name": "GMAIL_CREATE_EMAIL_DRAFT",
+                "description": "Creates a Gmail email draft. All fields are optional per the Gmail API - drafts can be created with minimal content and edited later before sending. Supports To/Cc/Bcc recipients, subject, plain/HTML body (ensure `is_html=True` for HTML), attachments, and threading. When creating a draft reply to an existing thread (thread_id provided), leave subject empty to stay in the same thread; setting a subject will create a NEW thread instead."
+            },
+            {
+                "name": "GMAIL_DELETE_DRAFT",
+                "description": "Permanently deletes a specific Gmail draft using its ID; ensure the draft exists and the user has necessary permissions for the given `user_id`."
+            },
+            {
+                "name": "GMAIL_DELETE_MESSAGE",
+                "description": "Permanently deletes a specific email message by its ID from a Gmail mailbox; for `user_id`, use 'me' for the authenticated user or an email address to which the authenticated user has delegated access."
+            },
+            {
+                "name": "GMAIL_FETCH_EMAILS",
+                "description": "Fetches a list of email messages from a Gmail account, supporting filtering, pagination, and optional full content retrieval."
+            },
+            {
+                "name": "GMAIL_FETCH_MESSAGE_BY_MESSAGE_ID",
+                "description": "Fetches a specific email message by its ID, provided the `message_id` exists and is accessible to the authenticated `user_id`."
+            },
+            {
+                "name": "GMAIL_GET_ATTACHMENT",
+                "description": "Retrieves a specific attachment by ID from a message in a user's Gmail mailbox, requiring valid message and attachment IDs."
+            },
+            {
+                "name": "GMAIL_LIST_DRAFTS",
+                "description": "Retrieves a paginated list of email drafts from a user's Gmail account. Use verbose=true to get full draft details including subject, body, sender, and timestamp."
+            },
+            {
+                "name": "GMAIL_MOVE_TO_TRASH",
+                "description": "Moves an existing, non-deleted email message to the trash for the specified user."
+            },
+            {
+                "name": "GMAIL_PATCH_LABEL",
+                "description": "Patches the specified label."
+            },
+            {
+                "name": "GMAIL_REPLY_TO_THREAD",
+                "description": "Sends a reply within a specific Gmail thread using the original thread's subject, requiring a valid `thread_id` and at least one of recipient_email, cc, or bcc must be provided. Supports attachments via the `attachment` parameter with valid `s3key`, `mimetype`, and `name`."
+            },
+            {
+                "name": "GMAIL_SEARCH_PEOPLE",
+                "description": "Searches contacts by matching the query against names, nicknames, emails, phone numbers, and organizations, optionally including 'Other Contacts'."
+            },
+            {
+                "name": "GMAIL_SEND_DRAFT",
+                "description": "Sends an existing draft email AS-IS to recipients already defined within the draft. IMPORTANT: This action does NOT accept recipient parameters (to, cc, bcc). The Gmail API's drafts/send endpoint sends drafts to whatever recipients are already set in the draft's To, Cc, and Bcc headers - it cannot add or override recipients. If the draft has no recipients, you must either: 1. Create a new draft with recipients using GMAIL_CREATE_EMAIL_DRAFT, then send it 2. Use GMAIL_SEND_EMAIL to send a new email directly with recipients This action only requires the draft_id parameter."
+            },
+            {
+                "name": "GMAIL_SEND_EMAIL",
+                "description": "Sends an email via Gmail API using the authenticated user's Google profile display name. At least one of 'to' (or 'recipient_email'), 'cc', or 'bcc' must be provided. At least one of subject or body must be provided. Requires `is_html=True` if the body contains HTML. For attachments, you must provide a FileUploadable object with valid `s3key` (obtained from a previous file download action like GMAIL_GET_ATTACHMENT), `mimetype` (e.g., 'image/png', 'application/pdf'), and `name` (filename). All common file types including PNG, JPG, PDF, MP4, etc. are supported. Gmail API limits total message size to ~25 MB after base64 encoding."
+            }
+        ],
+        "selectedTools": [
+            {
+                "name": "GMAIL_DELETE_DRAFT"
+            },
+            {
+                "name": "GMAIL_SEND_DRAFT"
+            },
+            {
+                "name": "GMAIL_SEND_EMAIL"
+            },
+            {
+                "name": "GMAIL_CREATE_EMAIL_DRAFT"
+            }
+        ],
+        "customHeaders": [
+            {
+                "enabled": true,
+                "key": "x-auth-token",
+                "value": "ak_30uORZp8EogiSAXNmr_f",
+                "revealValue": true
+            }
+        ]
+    },
+    {
+        "name": "Tiledesk Communicator",
+        "url": "https://stage.eks.tiledesk.com/mcp-tools/communicator/mcp",
+        "native": true,
+        "transport": "streamable_http",
+        "customHeaders": [],
+        "tools": [
+            {
+                "name": "reply_to_user",
+                "description": "Sends a message to the end user."
+            },
+            {
+                "name": "reply_and_await_response",
+                "description": "Sends a message to the end user and awaits for the response. Useful to ask data to the user using the txt as a lable"
+            },
+            {
+                "name": "close_conversation",
+                "description": "Closes the conversation"
+            }
+        ],
+        "selectedTools": [
+            {
+                "name": "close_conversation"
+            },
+            {
+                "name": "reply_and_await_response"
+            },
+            {
+                "name": "reply_to_user"
+            }
+        ],
+        "oauth": {}
+    },
+    {
+        "name": "WooCommerce",
+        "url": "https://saeid-kajkolah.com/wp-json/woocommerce/mcp",
+        "transport": "streamable_http",
+        "customHeaders": [
+            {
+                "enabled": true,
+                "key": "X-MCP-API-Key",
+                "value": "ck_7d6e26ffe90074010c2028ba6aa3348a138f25ec:cs_4b4ac8a099113d3cd253bb8b11fcaba1aae64964",
+                "revealValue": false
+            }
+        ],
+        "tools": [
+            {
+                "name": "woocommerce-products-list",
+                "description": "Retrieve a paginated list of products with optional filters for status, category, price range, and other attributes."
+            },
+            {
+                "name": "woocommerce-products-get",
+                "description": "Retrieve detailed information about a single product by ID, including price, description, images, and metadata."
+            },
+            {
+                "name": "woocommerce-products-create",
+                "description": "Create a new product in WooCommerce with name, price, description, and other product attributes."
+            },
+            {
+                "name": "woocommerce-products-update",
+                "description": "Update an existing product by modifying its attributes such as price, stock, description, or metadata."
+            },
+            {
+                "name": "woocommerce-products-delete",
+                "description": "Permanently delete a product from the store. This action cannot be undone."
+            },
+            {
+                "name": "woocommerce-orders-list",
+                "description": "Retrieve a paginated list of orders with optional filters for status, customer, date range, and other criteria."
+            },
+            {
+                "name": "woocommerce-orders-get",
+                "description": "Retrieve detailed information about a single order by ID, including line items, customer details, and payment information."
+            },
+            {
+                "name": "woocommerce-orders-create",
+                "description": "Create a new order with customer information, line items, shipping details, and payment information."
+            },
+            {
+                "name": "woocommerce-orders-update",
+                "description": "Update an existing order by modifying status, customer information, line items, or other order details."
+            }
+        ],
+        "selectedTools": [
+            {
+                "name": "woocommerce-orders-create"
+            },
+            {
+                "name": "woocommerce-orders-get"
+            },
+            {
+                "name": "woocommerce-orders-list"
+            },
+            {
+                "name": "woocommerce-orders-update"
+            },
+            {
+                "name": "woocommerce-products-get"
+            }
+        ]
+    }
+]
