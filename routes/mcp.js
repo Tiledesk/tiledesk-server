@@ -2,10 +2,11 @@ let express = require('express');
 let router = express.Router();
 let winston = require('../config/winston');
 const mcpService = require('../services/mcpService');
-const Project = require('../models/project');
 
 
 router.get('/native', async (req, res) => {
+  const native_mcp_servers = require('../config/native_mcp/native_mcp_servers.json');
+
   
 })
 
