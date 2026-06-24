@@ -5,6 +5,8 @@ const path = require('path');
 const axios = require('axios').default;
 const winston = require('../config/winston');
 const cacheUtil = require('../utils/cacheUtil');
+const Integration = require('../models/integrations');
+const integrationEvent = require('../event/integrationEvent');
 
 const NATIVE_MCP_CACHE_KEY = 'native_mcp:servers';
 const NATIVE_MCP_CONFIG_PATH = path.join(__dirname, '../config/native_mcp/native_mcp_servers.json');
@@ -208,6 +210,158 @@ class MCPService {
   async getNativeServerById(id) {
     const servers = await this.getNativeServersCatalog();
     return servers.find((server) => server.id === id) || null;
+  }
+
+  async resolveNativeServerConfig(nativeId, projectId) {
+    const native = await this.getNativeServerById(nativeId);
+    if (!native) {
+      const error = new Error(`Native MCP server '${nativeId}' not found`);
+      error.statusCode = 404;
+      throw error;
+    }
+
+    return {
+      url: native.url,
+      projectId,
+      transport: native.transport,
+      auth: native.auth || undefined
+    };
+  }
+
+  formatToolsForIntegration(tools) {
+    return (tools || []).map((tool) => ({
+      name: tool.name,
+      description: tool.description || ''
+    }));
+  }
+
+  formatSelectedTools(selectedTools) {
+    return (selectedTools || []).map((tool) => ({
+      name: typeof tool === 'string' ? tool : tool.name
+    })).filter((tool) => tool.name);
+  }
+
+  findServerIndex(servers, entry) {
+    if (entry.type === 'native') {
+      return servers.findIndex((server) => server.type === 'native' && server.nativeId === entry.nativeId);
+    }
+
+    return servers.findIndex((server) => {
+      const isCustom = server.type === 'custom' || !server.type;
+      return isCustom && server.url === entry.url;
+    });
+  }
+
+  async normalizeMcpServerEntry(serverEntry, projectId) {
+    if (!serverEntry) {
+      throw new Error('MCP server entry is missing or invalid');
+    }
+
+    const type = serverEntry.type || (serverEntry.nativeId ? 'native' : 'custom');
+
+    if (type === 'native') {
+      if (!serverEntry.nativeId) {
+        throw new Error("Missing required field 'nativeId'");
+      }
+
+      const native = await this.getNativeServerById(serverEntry.nativeId);
+      if (!native) {
+        const error = new Error(`Native MCP server '${serverEntry.nativeId}' not found`);
+        error.statusCode = 404;
+        throw error;
+      }
+
+      let tools = serverEntry.tools;
+      if (!tools || !tools.length) {
+        const serverConfig = await this.resolveNativeServerConfig(serverEntry.nativeId, projectId);
+        tools = await this.listTools(serverConfig);
+      }
+
+      return {
+        type: 'native',
+        nativeId: native.id,
+        name: native.name,
+        transport: native.transport,
+        tools: this.formatToolsForIntegration(tools),
+        selectedTools: this.formatSelectedTools(serverEntry.selectedTools)
+      };
+    }
+
+    if (!serverEntry.url) {
+      throw new Error("Missing required field 'url'");
+    }
+
+    let tools = serverEntry.tools;
+    if (!tools || !tools.length) {
+      tools = await this.listTools({
+        url: serverEntry.url,
+        projectId,
+        auth: serverEntry.auth || undefined
+      });
+    }
+
+    return {
+      type: 'custom',
+      name: serverEntry.name || serverEntry.url,
+      url: serverEntry.url,
+      transport: serverEntry.transport || 'streamable_http',
+      customHeaders: serverEntry.customHeaders || [],
+      tools: this.formatToolsForIntegration(tools),
+      selectedTools: this.formatSelectedTools(serverEntry.selectedTools)
+    };
+  }
+
+  async upsertMcpServerInIntegration(projectId, serverEntry) {
+    const normalized = await this.normalizeMcpServerEntry(serverEntry, projectId);
+
+    let integration = await Integration.findOne({ id_project: projectId, name: 'mcp' });
+
+    if (!integration) {
+      integration = new Integration({
+        id_project: projectId,
+        name: 'mcp',
+        value: { servers: [normalized] }
+      });
+    } else {
+      const servers = Array.isArray(integration.value?.servers) ? [...integration.value.servers] : [];
+      const index = this.findServerIndex(servers, normalized);
+
+      if (index >= 0) {
+        servers[index] = normalized;
+      } else {
+        servers.push(normalized);
+      }
+
+      integration.value = {
+        ...integration.value,
+        servers
+      };
+      integration.markModified('value');
+    }
+
+    const savedIntegration = await integration.save();
+    const integrations = await Integration.find({ id_project: projectId });
+    integrationEvent.emit('integration.update', integrations, projectId);
+
+    return {
+      integration: savedIntegration,
+      server: normalized
+    };
+  }
+
+  /**
+   * Connects to an MCP server and returns capabilities + tools
+   * @param {Object} serverConfig - MCP server configuration { url, projectId?, auth? }
+   * @returns {Promise<Object>} - { capabilities, tools }
+   */
+  async connectServer(serverConfig) {
+    const result = await this.initializeServer(serverConfig);
+    const tools = await this.listTools(serverConfig);
+
+    return {
+      capabilities: result?.capabilities || {},
+      tools
+    };
   }
 
   /**
