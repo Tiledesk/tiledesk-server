@@ -660,7 +660,7 @@ class ActivityArchiver {
       });
     });
 
-
+    
     const kbContentDeleteKey = resolveEventKey('kb.content.delete', kbEvent.queueEnabled);
     winston.debug('ActivityArchiver kbContentDeleteKey: ' + kbContentDeleteKey);
 
