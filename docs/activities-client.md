@@ -13,7 +13,7 @@ Le activity vengono archiviate solo se sul server è attivo:
 ACTIVITY_HISTORY_ENABLED=true
 ```
 
-Con `QUEUE_ENABLED=true`, gli eventi chatbot e KB passano dalla coda AMQP (come `request.assigned` e `project_user.update`): l'archiver ascolta le versioni `.queue` (`faqbot.created.queue`, `kb.namespace.create.queue`, ecc.) e il payload include `req.user` serializzato per ricostruire l'attore.
+Con `QUEUE_ENABLED=true`, gli eventi chatbot, KB, **invite** e **rimozione teammate** passano dalla coda AMQP (come `request.assigned` e `project_user.update`): l'archiver ascolta le versioni `.queue` (`project_user.invite.queue`, `project_user.delete.queue`, ecc.) e il payload include `req.user` serializzato per ricostruire l'attore.
 
 ---
 
@@ -546,23 +546,47 @@ const conversation = conversationLabel(activity);
 
 ### `PROJECT_USER_INVITE`
 
+Invito di un teammate al progetto (`POST /project_users/invite`). Copre sia utenti già registrati sia inviti in pending (email non ancora su Tiledesk).
+
 | Lingua | Template |
 |---|---|
 | **IT** | `**{{actor}}** ha invitato **{{target}}** ({{email}}) ad assumere il ruolo di **{{role}}**` |
 | **EN** | `**{{actor}}** invited **{{target}}** ({{email}}) to take on the role of **{{role}}**` |
 
 Dati da usare:
-- `actor.name`
-- `target.object.id_user.firstname/lastname` oppure `actionObj.email`
-- `actionObj.role`
+- `actor.name` (da `activityActorUtil` / `req.user`)
+- `actionObj.email`, `actionObj.role`
+- `actionObj.inviteType`: `'registered'` (utente esistente) | `'pending'` (pending invitation)
 - `target.type`: `pendinginvitation` vs `project_user`
+- `target.object.id_user.firstname/lastname` per utenti registrati, oppure `target.object.email` per pending
+
+```ts
+const actor = actorName(activity);
+const target = inviteTargetLabel(activity); // nome o email
+const email = activity.actionObj?.email || target;
+const role = activity.actionObj?.role || 'agent';
+```
 
 ### `PROJECT_USER_DELETE`
+
+Rimozione di un teammate dal progetto (`DELETE /project_users/:id?soft=true` o `?hard=true`).
 
 | Lingua | Template |
 |---|---|
 | **IT** | `**{{actor}}** ha rimosso **{{target}}** dal progetto` |
 | **EN** | `**{{actor}}** removed **{{target}}** from the project` |
+
+Dati da usare:
+- `actor.name`
+- `target.object.id_user.firstname/lastname` (o `actionObj.email` come fallback)
+- `actionObj.deleteType`: `'soft'` | `'hard'`
+- `actionObj.role`: ruolo dell'utente rimosso
+
+```ts
+const actor = actorName(activity);
+const target = targetUserLabel(activity);
+// IT: "Laura Bianchi ha rimosso Mario Rossi dal progetto"
+```
 
 ### `PROJECT_USER_UPDATE`
 

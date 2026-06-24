@@ -58,6 +58,92 @@ function kbContentTarget(kbId, kbObject) {
   };
 }
 
+function resolveInvitedProjectUser(event) {
+  return event.savedProject_userPopulated ||
+    event.updatedProject_userPopulated ||
+    event.updatedPuserPopulated;
+}
+
+function buildProjectUserInviteActivity(event, pending) {
+  if (!event || !event.req) {
+    return null;
+  }
+
+  const body = event.req.body || {};
+  const actionObj = {
+    email: body.email,
+    role: body.role,
+    user_available: body.user_available,
+    inviteType: pending ? 'pending' : 'registered'
+  };
+  const actor = activityActorUtil.actorFromReq(event.req);
+
+  if (pending) {
+    const pendingInvitation = toObject(event.savedPendingInvitation);
+    if (!pendingInvitation) {
+      return null;
+    }
+    return new Activity({
+      id_project: event.req.projectid,
+      actor: actor,
+      verb: 'PROJECT_USER_INVITE',
+      actionObj: actionObj,
+      target: {
+        type: 'pendinginvitation',
+        id: activityActorUtil.resolveId(pendingInvitation._id),
+        object: pendingInvitation
+      }
+    });
+  }
+
+  const projectUser = toObject(resolveInvitedProjectUser(event));
+  if (!projectUser) {
+    return null;
+  }
+
+  return new Activity({
+    id_project: projectUser.id_project || event.req.projectid,
+    actor: actor,
+    verb: 'PROJECT_USER_INVITE',
+    actionObj: actionObj,
+    target: {
+      type: 'project_user',
+      id: activityActorUtil.resolveId(projectUser._id),
+      object: projectUser
+    }
+  });
+}
+
+function buildProjectUserDeleteActivity(event) {
+  if (!event || !event.req) {
+    return null;
+  }
+
+  const projectUser = toObject(event.project_userPopulated);
+  if (!projectUser) {
+    return null;
+  }
+
+  const user = projectUser.id_user;
+  const actor = activityActorUtil.actorFromReq(event.req);
+
+  return new Activity({
+    id_project: projectUser.id_project || event.req.projectid,
+    actor: actor,
+    verb: 'PROJECT_USER_DELETE',
+    actionObj: {
+      deleteType: event.deleteType || 'soft',
+      role: projectUser.role,
+      email: user && user.email
+    },
+    target: {
+      type: 'project_user',
+      id: activityActorUtil.resolveId(projectUser._id),
+      object: projectUser
+    }
+  });
+}
+
 class ActivityArchiver {
 
   listen() {
@@ -84,51 +170,44 @@ class ActivityArchiver {
     
     // Works only if worker is disabled
     // Doesn't work if job_worker enabled because queue.worker is disabled
-    const authProjectUserInvitePendingKey = resolveEventKey('project_user.invite.pending', false);
+    const authProjectUserInvitePendingKey = resolveEventKey('project_user.invite.pending', authEvent.queueEnabled);
     winston.debug('ActivityArchiver authProjectUserInvitePendingKey: ' + authProjectUserInvitePendingKey);
 
     authEvent.on(authProjectUserInvitePendingKey, function (event) {
       setImmediate(() => {
-        if (event.skipArchive) {
-          return 0;
-        }
-        let activity = new Activity({
-          id_project: event.req.projectid,
-          actor: { 
-            type: "user", 
-            id: event.req.user.id, 
-            name: event.req.user.fullName 
-          },
-          verb: "PROJECT_USER_INVITE", 
-          actionObj: event.req.body,
-          target: { 
-            type: "pendinginvitation", 
-            id: event.savedPendingInvitation._id.toString(), 
-            object: event.savedPendingInvitation 
+        try {
+          if (event.skipArchive) {
+            return 0;
           }
-        });
-        save(activity);
+          const activity = buildProjectUserInviteActivity(event, true);
+          if (!activity) {
+            return winston.debug('ActivityArchiver skipping project_user.invite.pending: missing data');
+          }
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving project_user.invite.pending activity', e);
+        }
       });
     });
 
 
-    // Works only if worker is disabled
-    // Doesn't work if job_worker enabled because queue.worker is disabled
-    const authProjectUserInviteKey = resolveEventKey('project_user.invite', false);
+    const authProjectUserInviteKey = resolveEventKey('project_user.invite', authEvent.queueEnabled);
     winston.debug('ActivityArchiver authProjectUserInviteKey: ' + authProjectUserInviteKey);
 
     authEvent.on(authProjectUserInviteKey, function (event) {
       setImmediate(() => {
-        if (event.skipArchive) {
-          return 0;
+        try {
+          if (event.skipArchive) {
+            return 0;
+          }
+          const activity = buildProjectUserInviteActivity(event, false);
+          if (!activity) {
+            return winston.debug('ActivityArchiver skipping project_user.invite: missing data');
+          }
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving project_user.invite activity', e);
         }
-        let activity = new Activity({
-          actor: { type: "user", id: event.req.user.id, name: event.req.user.fullName },
-          verb: "PROJECT_USER_INVITE", actionObj: event.req.body,
-          target: { type: "project_user", id: event.savedProject_userPopulated._id.toString(), object: event.savedProject_userPopulated },
-          id_project: event.req.projectid
-        });
-        save(activity);
       });
     });
 
@@ -206,33 +285,23 @@ class ActivityArchiver {
     });
 
 
-    // Works only if worker is disabled
-    // Doesn't work if job_worker enabled because queue.worker is disabled
-    const authProjectUserDeleteKey = resolveEventKey('project_user.delete', false);
+    const authProjectUserDeleteKey = resolveEventKey('project_user.delete', authEvent.queueEnabled);
     winston.debug('ActivityArchiver authProjectUserDeleteKey: ' + authProjectUserDeleteKey);
 
     authEvent.on(authProjectUserDeleteKey, function (event) {
       setImmediate(() => {
-        if (event.skipArchive) {
-          return 0;
-        }
-
-        let activity = new Activity({
-          id_project: event.req.projectid,
-          actor: { 
-            type: "user", 
-            id: event.req.user.id, 
-            name: event.req.user.fullName 
-          },
-          verb: "PROJECT_USER_DELETE", 
-          actionObj: event.req.body,
-          target: { 
-            type: "project_user", 
-            id: event.req.params.project_userid, 
-            object: event.project_userPopulated.toObject() 
+        try {
+          if (event.skipArchive) {
+            return 0;
           }
-        });
-        save(activity);
+          const activity = buildProjectUserDeleteActivity(event);
+          if (!activity) {
+            return winston.debug('ActivityArchiver skipping project_user.delete: missing data');
+          }
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving project_user.delete activity', e);
+        }
       });
     });
 

@@ -70,6 +70,50 @@ function resolveParticipantLabel(activity, participantId) {
   return String(participantId);
 }
 
+function inviteTargetLabel(activity) {
+  const target = activity && activity.target;
+  if (!target) {
+    return 'unknown user';
+  }
+
+  if (target.type === 'pendinginvitation') {
+    const pending = target.object || {};
+    return pending.email || (activity.actionObj && activity.actionObj.email) || 'unknown user';
+  }
+
+  const user = target.object && target.object.id_user;
+  if (user) {
+    const firstname = user.firstname || '';
+    const lastname = user.lastname || '';
+    const fullname = (firstname + ' ' + lastname).trim();
+    if (fullname) {
+      return fullname;
+    }
+    return user.email || 'unknown user';
+  }
+
+  return (activity.actionObj && activity.actionObj.email) || 'unknown user';
+}
+
+function inviteEmailLabel(activity) {
+  const actionObj = activity && activity.actionObj || {};
+  if (actionObj.email) {
+    return actionObj.email;
+  }
+
+  const target = activity && activity.target;
+  if (target && target.type === 'pendinginvitation' && target.object && target.object.email) {
+    return target.object.email;
+  }
+
+  const user = target && target.object && target.object.id_user;
+  if (user && user.email) {
+    return user.email;
+  }
+
+  return '';
+}
+
 function resolveAssigneeLabel(activity) {
   const actionObj = activity && activity.actionObj || {};
   if (actionObj.assigneeName) {
@@ -212,6 +256,17 @@ function buildDefaultActivityMessage(activity) {
       const newStatus = actionObj.newStatus || 'unknown';
       return targetUser + ' availability status was changed to ' + newStatus + ' by the system';
     }
+
+    case 'PROJECT_USER_INVITE': {
+      const target = inviteTargetLabel(activity);
+      const email = inviteEmailLabel(activity);
+      const role = actionObj.role || 'agent';
+      const emailPart = email && target !== email ? ' (' + email + ')' : '';
+      return actor + ' invited ' + target + emailPart + ' to take on the role of ' + role;
+    }
+
+    case 'PROJECT_USER_DELETE':
+      return actor + ' removed ' + targetUserLabel(activity) + ' from the project';
 
     case 'FAQ_KB_CREATE':
       return actor + ' created chatbot ' + chatbotLabel(activity);

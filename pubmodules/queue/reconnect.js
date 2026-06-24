@@ -196,6 +196,21 @@ function startWorker() {
           winston.info("Data queue", oka)
         });
 
+        ch.bindQueue(_ok.queue, exchange, "project_user_invite", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: project_user_invite");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "project_user_invite_pending", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: project_user_invite_pending");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "project_user_delete", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: project_user_delete");
+          winston.info("Data queue", oka)
+        });
+
         ch.bindQueue(_ok.queue, exchange, "faqbot_update", {}, function(err3, oka) {
           winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: faqbot_update");
           winston.info("Data queue", oka)
@@ -359,6 +374,21 @@ function work(msg, cb) {
     authEvent.emit('project_user.update.queue', JSON.parse(message_string));
   }
 
+  if (topic === 'project_user_invite') {
+    winston.debug("reconnect here topic:" + topic);
+    authEvent.emit('project_user.invite.queue', JSON.parse(message_string));
+  }
+
+  if (topic === 'project_user_invite_pending') {
+    winston.debug("reconnect here topic:" + topic);
+    authEvent.emit('project_user.invite.pending.queue', JSON.parse(message_string));
+  }
+
+  if (topic === 'project_user_delete') {
+    winston.debug("reconnect here topic:" + topic);
+    authEvent.emit('project_user.delete.queue', JSON.parse(message_string));
+  }
+
   if (topic === 'faqbot_update') {
     winston.debug("reconnect here topic faqbot_update:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
@@ -450,6 +480,59 @@ function serializeReqUser(req) {
       id: req.user.id,
       fullName: req.user.fullName
     }
+  };
+}
+
+function serializeProjectUserInvitePayload(data) {
+  let user = undefined;
+  let body = undefined;
+  if (data.req) {
+    if (data.req.user) {
+      const u = data.req.user;
+      user = {
+        id: u.id || u._id,
+        _id: u._id,
+        firstname: u.firstname,
+        lastname: u.lastname,
+        fullName: projectUserUpdateContextUtil.userDisplayName(u)
+      };
+    }
+    if (data.req.body) {
+      body = data.req.body;
+    }
+  }
+  return {
+    req: {
+      user: user,
+      body: body,
+      projectid: data.req && data.req.projectid
+    },
+    savedProject_userPopulated: data.savedProject_userPopulated,
+    updatedProject_userPopulated: data.updatedProject_userPopulated,
+    updatedPuserPopulated: data.updatedPuserPopulated,
+    savedPendingInvitation: data.savedPendingInvitation
+  };
+}
+
+function serializeProjectUserDeletePayload(data) {
+  let user = undefined;
+  if (data.req && data.req.user) {
+    const u = data.req.user;
+    user = {
+      id: u.id || u._id,
+      _id: u._id,
+      firstname: u.firstname,
+      lastname: u.lastname,
+      fullName: projectUserUpdateContextUtil.userDisplayName(u)
+    };
+  }
+  return {
+    req: {
+      user: user,
+      projectid: data.req && data.req.projectid
+    },
+    project_userPopulated: data.project_userPopulated,
+    deleteType: data.deleteType
   };
 }
 
@@ -599,6 +682,27 @@ function listen() {
         };
         winston.debug("dat",dat);
         publish(exchange, "project_user_update", Buffer.from(JSON.stringify(dat)));
+      });
+    });
+
+    authEvent.on('project_user.invite', function(data) {
+      setImmediate(() => {
+        publish(exchange, "project_user_invite", Buffer.from(JSON.stringify(serializeProjectUserInvitePayload(data))));
+        winston.debug("reconnect project_user.invite published");
+      });
+    });
+
+    authEvent.on('project_user.invite.pending', function(data) {
+      setImmediate(() => {
+        publish(exchange, "project_user_invite_pending", Buffer.from(JSON.stringify(serializeProjectUserInvitePayload(data))));
+        winston.debug("reconnect project_user.invite.pending published");
+      });
+    });
+
+    authEvent.on('project_user.delete', function(data) {
+      setImmediate(() => {
+        publish(exchange, "project_user_delete", Buffer.from(JSON.stringify(serializeProjectUserDeletePayload(data))));
+        winston.debug("reconnect project_user.delete published");
       });
     });
 
