@@ -139,7 +139,7 @@ interface Activity {
 |---|---|---|
 | `REQUEST_ASSIGNED_AUTO` | Il **sistema** ha assegnato la conversazione a un agente (round robin, queue, chatbot, creazione) | *All'utente **X** è stata assegnata la conversazione **Y** dal sistema* |
 | `REQUEST_ASSIGNED_SELF` | Un agente ha fatto **join/pick** manuale sulla conversazione | *L'utente **X** ha fatto join sulla conversazione **Y*** |
-| `REQUEST_ASSIGNED_MANUAL` | Un operatore ha **riassegnato** la conversazione a un altro agente | *All'utente **X** è stata assegnata la conversazione **Y** dall'utente **Z*** |
+| `REQUEST_ASSIGNED_MANUAL` | Un operatore ha **riassegnato** la conversazione a un altro agente, a un chatbot o a un dipartimento (`assigneeType`: `user` \| `bot` \| `department`) | *Vedi template per tipo in `REQUEST_ASSIGNED_MANUAL`* |
 | `REQUEST_UNASSIGNED` | Un agente è stato rimosso dalla conversazione | *L'utente **X** è stato rimosso dalla conversazione **Y*** |
 
 ### Team / progetto — legacy
@@ -339,11 +339,17 @@ Per i verb `REQUEST_ASSIGNED_*` e `REQUEST_UNASSIGNED`, `actionObj` ha questa fo
 
 ```ts
 interface AssignmentActionObj {
-  /** id_user dell'agente coinvolto nell'assegnazione/rimozione */
+  /** id dell'assegnatario: id_user (agente), id chatbot o id dipartimento */
   assigneeId: string;
 
+  /** Nome leggibile dell'assegnatario (agente, chatbot o dipartimento) */
+  assigneeName?: string;
+
+  /** Tipo di assegnatario */
+  assigneeType?: 'user' | 'bot' | 'department';
+
   /** Tipo semantico (ridondante con verb, utile per debug) */
-  assignmentType: 'auto' | 'self_join' | 'manual_reassign' | 'unassign';
+  assignmentType: 'auto' | 'self_join' | 'manual_reassign' | 'manual_reassign_bot' | 'manual_reassign_department' | 'unassign';
 
   /** Origine tecnica dell'evento */
   source: 'api' | 'chatbot' | 'queue' | 'webhook' | 'rules' | 'create' | 'system';
@@ -475,26 +481,31 @@ if (activity.actor?.type === 'system') {
 
 ### `REQUEST_ASSIGNED_MANUAL`
 
-Un operatore ha assegnato la conversazione a un altro agente.
+Un operatore ha assegnato la conversazione a un altro agente, a un chatbot o a un dipartimento.
 
-| Lingua | Template |
-|---|---|
-| **IT** | `All'utente **{{assignee}}** è stata assegnata la conversazione **{{conversation}}** da **{{actor}}**` |
-| **EN** | `**{{actor}}** assigned conversation **{{conversation}}** to **{{assignee}}**` |
+Usare `actionObj.assigneeType` per distinguere i tre casi. Se presente, preferire `actionObj.assigneeName` al posto della risoluzione da `assigneeId`.
 
-**Con agente precedente** (`previousAssigneeId` presente):
+| `assigneeType` | IT | EN |
+|---|---|---|
+| `user` (default) | `All'utente **{{assignee}}** è stata assegnata la conversazione **{{conversation}}** da **{{actor}}**` | `**{{actor}}** assigned conversation **{{conversation}}** to **{{assignee}}**` |
+| `bot` | `**{{actor}}** ha riassegnato la conversazione **{{conversation}}** al chatbot **{{assignee}}**` | `**{{actor}}** reassigned conversation **{{conversation}}** to chatbot **{{assignee}}**` |
+| `department` | `**{{actor}}** ha riassegnato la conversazione **{{conversation}}** al dipartimento **{{assignee}}**` | `**{{actor}}** reassigned conversation **{{conversation}}** to department **{{assignee}}**` |
 
-| Lingua | Template |
-|---|---|
-| **IT** | `All'utente **{{assignee}}** è stata assegnata la conversazione **{{conversation}}** da **{{actor}}** (sostituisce **{{previous}}**)` |
-| **EN** | `**{{actor}}** reassigned conversation **{{conversation}}** to **{{assignee}}** (replacing **{{previous}}**)` |
+**Con agente precedente** (`previousAssigneeId` presente, tipico su reassign):
+
+| `assigneeType` | IT | EN |
+|---|---|---|
+| `user` | `All'utente **{{assignee}}** è stata assegnata la conversazione **{{conversation}}** da **{{actor}}** (sostituisce **{{previous}}**)` | `**{{actor}}** reassigned conversation **{{conversation}}** to **{{assignee}}** (replacing **{{previous}}**)` |
+| `bot` / `department` | Aggiungere `(sostituisce **{{previous}}**)` / `(replacing **{{previous}}**)` | stesso pattern |
 
 ```ts
 const actor = actorName(activity);
-const assignee = resolveAgentName(activity, activity.actionObj?.assigneeId);
+const assignee = activity.actionObj?.assigneeName || resolveAssigneeName(activity);
+const assigneeType = activity.actionObj?.assigneeType || 'user';
 const previous = resolveAgentName(activity, activity.actionObj?.previousAssigneeId);
 const conversation = conversationLabel(activity);
-// IT: "All'utente Mario Rossi è stata assegnata la conversazione support-group-abc da Laura Bianchi"
+// IT bot: "Laura Bianchi ha riassegnato la conversazione support-group-abc al chatbot Support Bot"
+// IT department: "Laura Bianchi ha riassegnato la conversazione support-group-abc al dipartimento Vendite"
 ```
 
 ---
@@ -589,6 +600,10 @@ Due sotto-casi:
     "REQUEST_ASSIGNED_AUTO_TRIGGERED": "All'utente {{assignee}} è stata assegnata la conversazione {{conversation}} (assegnazione automatica avviata da {{actor}})",
     "REQUEST_ASSIGNED_MANUAL": "All'utente {{assignee}} è stata assegnata la conversazione {{conversation}} da {{actor}}",
     "REQUEST_ASSIGNED_MANUAL_REPLACED": "All'utente {{assignee}} è stata assegnata la conversazione {{conversation}} da {{actor}} (sostituisce {{previous}})",
+    "REQUEST_ASSIGNED_MANUAL_BOT": "{{actor}} ha riassegnato la conversazione {{conversation}} al chatbot {{assignee}}",
+    "REQUEST_ASSIGNED_MANUAL_BOT_REPLACED": "{{actor}} ha riassegnato la conversazione {{conversation}} al chatbot {{assignee}} (sostituisce {{previous}})",
+    "REQUEST_ASSIGNED_MANUAL_DEPARTMENT": "{{actor}} ha riassegnato la conversazione {{conversation}} al dipartimento {{assignee}}",
+    "REQUEST_ASSIGNED_MANUAL_DEPARTMENT_REPLACED": "{{actor}} ha riassegnato la conversazione {{conversation}} al dipartimento {{assignee}} (sostituisce {{previous}})",
     "REQUEST_UNASSIGNED": "{{actor}} ha rimosso {{assignee}} dalla conversazione {{conversation}}",
 
     "PROJECT_USER_AVAILABILITY_SELF": "{{targetUser}} ha modificato il suo stato in {{newStatus}}",
@@ -643,10 +658,23 @@ function renderActivity(activity: Activity, t: TranslateFn): string {
         ? t('ACTIVITY.REQUEST_ASSIGNED_AUTO_SYSTEM', { assignee, conversation })
         : t('ACTIVITY.REQUEST_ASSIGNED_AUTO_TRIGGERED', { assignee, conversation, actor });
 
-    case 'REQUEST_ASSIGNED_MANUAL':
+    case 'REQUEST_ASSIGNED_MANUAL': {
+      const assigneeType = activity.actionObj?.assigneeType || 'user';
+      const resolvedAssignee = activity.actionObj?.assigneeName || assignee;
+      if (assigneeType === 'bot') {
+        return activity.actionObj?.previousAssigneeId
+          ? t('ACTIVITY.REQUEST_ASSIGNED_MANUAL_BOT_REPLACED', { assignee: resolvedAssignee, conversation, actor, previous })
+          : t('ACTIVITY.REQUEST_ASSIGNED_MANUAL_BOT', { assignee: resolvedAssignee, conversation, actor });
+      }
+      if (assigneeType === 'department') {
+        return activity.actionObj?.previousAssigneeId
+          ? t('ACTIVITY.REQUEST_ASSIGNED_MANUAL_DEPARTMENT_REPLACED', { assignee: resolvedAssignee, conversation, actor, previous })
+          : t('ACTIVITY.REQUEST_ASSIGNED_MANUAL_DEPARTMENT', { assignee: resolvedAssignee, conversation, actor });
+      }
       return activity.actionObj?.previousAssigneeId
-        ? t('ACTIVITY.REQUEST_ASSIGNED_MANUAL_REPLACED', { assignee, conversation, actor, previous })
-        : t('ACTIVITY.REQUEST_ASSIGNED_MANUAL', { assignee, conversation, actor });
+        ? t('ACTIVITY.REQUEST_ASSIGNED_MANUAL_REPLACED', { assignee: resolvedAssignee, conversation, actor, previous })
+        : t('ACTIVITY.REQUEST_ASSIGNED_MANUAL', { assignee: resolvedAssignee, conversation, actor });
+    }
 
     case 'REQUEST_UNASSIGNED':
       return t('ACTIVITY.REQUEST_UNASSIGNED', { actor, assignee, conversation });

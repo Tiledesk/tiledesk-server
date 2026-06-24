@@ -600,7 +600,7 @@ router.put('/:requestid/assign', function (req, res) {
 router.put('/:requestid/departments', function (req, res) {
   winston.debug(req.body);
   //route(request_id, departmentid, id_project) {      
-  const assignmentOptions = assignmentContextUtil.buildAutoRouteOptions(req, 'api');
+  const assignmentOptions = assignmentContextUtil.buildDepartmentRouteOptions(req, 'api');
   requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate, assignmentOptions).then(function (updatedRequest) {
 
     winston.debug("department changed", updatedRequest);

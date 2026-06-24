@@ -367,6 +367,8 @@ class ActivityArchiver {
             verb: verb,
             actionObj: {
               assigneeId: data.assigneeId,
+              assigneeName: data.assigneeName,
+              assigneeType: data.assigneeType || 'user',
               assignmentType: data.assignmentType,
               source: data.source,
               previousAssigneeId: data.previousAssigneeId,

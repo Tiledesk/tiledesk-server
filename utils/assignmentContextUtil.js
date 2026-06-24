@@ -23,6 +23,45 @@ function filterHumanParticipants(participantIds) {
   return (participantIds || []).filter(isHumanParticipant);
 }
 
+function isBotParticipant(participantId) {
+  return participantId && String(participantId).startsWith('bot_');
+}
+
+function filterBotParticipants(participantIds) {
+  return (participantIds || []).filter(isBotParticipant);
+}
+
+function botIdFromParticipant(participantId) {
+  return String(participantId).replace('bot_', '');
+}
+
+function resolveBotName(requestComplete, botParticipantOrId) {
+  const botId = isBotParticipant(botParticipantOrId)
+    ? botIdFromParticipant(botParticipantOrId)
+    : String(botParticipantOrId);
+  const bots = requestComplete && requestComplete.participatingBots;
+  if (Array.isArray(bots)) {
+    for (const bot of bots) {
+      const id = String(bot._id || bot.id);
+      if (id === botId) {
+        return bot.name || id;
+      }
+    }
+  }
+  return botId;
+}
+
+function resolveDepartmentName(requestComplete) {
+  const dep = requestComplete && requestComplete.department;
+  if (!dep) {
+    return undefined;
+  }
+  if (dep.name) {
+    return dep.name;
+  }
+  return dep._id ? String(dep._id) : undefined;
+}
+
 function deriveAssignmentType({ actor, assigneeIds, isUnassign }) {
   if (isUnassign) {
     return 'unassign';
@@ -52,6 +91,8 @@ function verbFromAssignmentType(assignmentType) {
     case 'self_join':
       return 'REQUEST_ASSIGNED_SELF';
     case 'manual_reassign':
+    case 'manual_reassign_bot':
+    case 'manual_reassign_department':
       return 'REQUEST_ASSIGNED_MANUAL';
     case 'unassign':
       return 'REQUEST_UNASSIGNED';
@@ -68,6 +109,17 @@ function buildSetParticipantsOptions(req, participants) {
       actor,
       source: 'api',
       assignmentType: 'unassign'
+    };
+  }
+
+  const botParticipants = filterBotParticipants(participants);
+  const humanParticipants = filterHumanParticipants(participants);
+
+  if (botParticipants.length > 0 && humanParticipants.length === 0) {
+    return {
+      actor,
+      source: 'api',
+      assignmentType: 'manual_reassign_bot'
     };
   }
 
@@ -104,6 +156,14 @@ function buildAutoRouteOptions(req, source) {
   };
 }
 
+function buildDepartmentRouteOptions(req, source) {
+  return {
+    actor: actorFromUser(req && req.user),
+    source: source || 'api',
+    assignmentType: 'manual_reassign_department'
+  };
+}
+
 function buildInternalOptions(source, assignmentType) {
   return {
     actor: systemActor(),
@@ -117,10 +177,16 @@ module.exports = {
   actorFromUser,
   isHumanParticipant,
   filterHumanParticipants,
+  isBotParticipant,
+  filterBotParticipants,
+  botIdFromParticipant,
+  resolveBotName,
+  resolveDepartmentName,
   deriveAssignmentType,
   verbFromAssignmentType,
   buildSetParticipantsOptions,
   buildAddParticipantOptions,
   buildAutoRouteOptions,
+  buildDepartmentRouteOptions,
   buildInternalOptions
 };

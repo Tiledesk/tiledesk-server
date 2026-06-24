@@ -70,6 +70,20 @@ function resolveParticipantLabel(activity, participantId) {
   return String(participantId);
 }
 
+function resolveAssigneeLabel(activity) {
+  const actionObj = activity && activity.actionObj || {};
+  if (actionObj.assigneeName) {
+    return actionObj.assigneeName;
+  }
+  if (actionObj.assigneeType === 'department') {
+    return actionObj.assigneeId || 'department';
+  }
+  if (actionObj.assigneeType === 'bot') {
+    return actionObj.assigneeId || 'chatbot';
+  }
+  return resolveParticipantLabel(activity, actionObj.assigneeId);
+}
+
 function namespaceLabel(activity) {
   const object = activity && activity.target && activity.target.object;
   if (object && object.name) {
@@ -139,7 +153,7 @@ function buildDefaultActivityMessage(activity) {
   const actionObj = activity.actionObj || {};
   const actor = actorLabel(activity);
   const conversation = requestLabel(activity);
-  const assignee = resolveParticipantLabel(activity, actionObj.assigneeId);
+  const assignee = resolveAssigneeLabel(activity);
   const source = actionObj.source || 'unknown';
 
   switch (activity.verb) {
@@ -155,6 +169,25 @@ function buildDefaultActivityMessage(activity) {
       return actor + ' joined conversation ' + conversation + ' (source: ' + source + ')';
 
     case 'REQUEST_ASSIGNED_MANUAL': {
+      const assigneeType = actionObj.assigneeType || 'user';
+      if (assigneeType === 'bot') {
+        let message = actor + ' reassigned conversation ' + conversation +
+          ' to chatbot ' + assignee + ' (source: ' + source + ')';
+        if (actionObj.previousAssigneeId) {
+          const previous = resolveParticipantLabel(activity, actionObj.previousAssigneeId);
+          message += ' (replaced ' + previous + ')';
+        }
+        return message;
+      }
+      if (assigneeType === 'department') {
+        let message = actor + ' reassigned conversation ' + conversation +
+          ' to department ' + assignee + ' (source: ' + source + ')';
+        if (actionObj.previousAssigneeId) {
+          const previous = resolveParticipantLabel(activity, actionObj.previousAssigneeId);
+          message += ' (replaced ' + previous + ')';
+        }
+        return message;
+      }
       let message = actor + ' manually assigned conversation ' + conversation +
         ' to ' + assignee + ' (source: ' + source + ')';
       if (actionObj.previousAssigneeId) {

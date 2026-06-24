@@ -324,7 +324,12 @@ class RequestService {
           request,
           requestComplete,
           beforeParticipants,
-          options
+          options,
+          beforeDepartmentId !== afterDepartmentId ? {
+            previousDepartmentId: beforeDepartmentId,
+            departmentId: afterDepartmentId,
+            departmentName: requestComplete.department && requestComplete.department.name
+          } : undefined
         );
   
         return requestComplete;
@@ -379,11 +384,18 @@ class RequestService {
         .execPopulate();
 
 
+      const departmentChange = beforeDepartmentId !== afterDepartmentId ? {
+        previousDepartmentId: beforeDepartmentId,
+        departmentId: afterDepartmentId,
+        departmentName: requestComplete.department && requestComplete.department.name
+      } : undefined;
+
       this.emitParticipantsEvents(
         request,
         requestComplete,
         beforeParticipants,
-        options
+        options,
+        departmentChange
       );
 
       requestEvent.emit("request.department.update", requestComplete);
@@ -2507,7 +2519,7 @@ class RequestService {
     })
   }
 
-  emitParticipantsEvents(beforeRequest, requestComplete, oldParticipants, options) {
+  emitParticipantsEvents(beforeRequest, requestComplete, oldParticipants, options, departmentChange) {
     const that = this;
     const newParticipants = requestComplete.participants;
   
@@ -2537,7 +2549,8 @@ class RequestService {
       actor: options && options.actor,
       source: options && options.source,
       addedParticipants,
-      removedParticipants
+      removedParticipants,
+      departmentChange
     });
   }
 
@@ -2547,13 +2560,51 @@ class RequestService {
       actor,
       source,
       addedParticipants = [],
-      removedParticipants = []
+      removedParticipants = [],
+      departmentChange
     } = context || {};
 
     const humanAdded = assignmentContextUtil.filterHumanParticipants(addedParticipants);
     const humanRemoved = assignmentContextUtil.filterHumanParticipants(removedParticipants);
+    const botAdded = assignmentContextUtil.filterBotParticipants(addedParticipants);
     const resolvedActor = actor || assignmentContextUtil.systemActor();
     const resolvedSource = source || 'system';
+
+    if (
+      assignmentType === 'manual_reassign_department' &&
+      departmentChange &&
+      departmentChange.departmentId &&
+      String(departmentChange.departmentId) !== String(departmentChange.previousDepartmentId || '')
+    ) {
+      requestEvent.emit('request.assigned', {
+        request: requestComplete,
+        assigneeId: String(departmentChange.departmentId),
+        assigneeName: departmentChange.departmentName || assignmentContextUtil.resolveDepartmentName(requestComplete),
+        assigneeType: 'department',
+        assignmentType: 'manual_reassign_department',
+        actor: resolvedActor,
+        source: resolvedSource,
+        previousAssigneeId: humanRemoved.length > 0 ? String(humanRemoved[0]) : null,
+        removedParticipants: humanRemoved
+      });
+      return;
+    }
+
+    if (assignmentType === 'manual_reassign_bot' && botAdded.length > 0) {
+      const botId = assignmentContextUtil.botIdFromParticipant(botAdded[0]);
+      requestEvent.emit('request.assigned', {
+        request: requestComplete,
+        assigneeId: botId,
+        assigneeName: assignmentContextUtil.resolveBotName(requestComplete, botId),
+        assigneeType: 'bot',
+        assignmentType: 'manual_reassign_bot',
+        actor: resolvedActor,
+        source: resolvedSource,
+        previousAssigneeId: humanRemoved.length > 0 ? String(humanRemoved[0]) : null,
+        removedParticipants: humanRemoved
+      });
+      return;
+    }
 
     if (assignmentType === 'unassign' || (humanAdded.length === 0 && humanRemoved.length > 0)) {
       humanRemoved.forEach((assigneeId) => {
@@ -2588,6 +2639,7 @@ class RequestService {
       requestEvent.emit('request.assigned', {
         request: requestComplete,
         assigneeId: String(assigneeId),
+        assigneeType: 'user',
         assignmentType: resolvedType,
         actor: resolvedActor,
         source: resolvedSource,
