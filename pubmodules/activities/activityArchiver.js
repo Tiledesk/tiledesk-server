@@ -179,7 +179,8 @@ class ActivityArchiver {
         );
         verb = reconciled.verb;
         updateContext = reconciled.updateContext;
-        const actor = reconciled.actor || projectUserUpdateContextUtil.actorFromUpdateContext(event.req, updateContext);
+        const actor = reconciled.actor ||
+          projectUserUpdateContextUtil.actorFromProjectUserUpdate(event, verb, updateContext);
         const newStatus = projectUserUpdateContextUtil.availabilityStatusLabel({
           user_available: project_user.user_available,
           profileStatus: project_user.profileStatus

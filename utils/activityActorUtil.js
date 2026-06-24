@@ -1,13 +1,15 @@
 'use strict';
 
+const projectUserUpdateContextUtil = require('./projectUserUpdateContextUtil');
+
 function actorFromReq(req) {
   if (!req || !req.user) {
     return { type: 'system', id: 'system', name: 'System' };
   }
   return {
     type: 'user',
-    id: req.user.id,
-    name: req.user.fullName
+    id: req.user.id || req.user._id,
+    name: projectUserUpdateContextUtil.userDisplayName(req.user)
   };
 }
 

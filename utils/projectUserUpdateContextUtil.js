@@ -6,6 +6,24 @@ function systemActor() {
   return { type: 'system', id: 'system', name: 'System' };
 }
 
+function userDisplayName(user) {
+  if (!user) {
+    return undefined;
+  }
+
+  const fullName = user.fullName || user.fullname;
+  if (fullName && String(fullName).trim()) {
+    return String(fullName).trim();
+  }
+
+  const name = ((user.firstname || '') + ' ' + (user.lastname || '')).trim();
+  if (name) {
+    return name;
+  }
+
+  return undefined;
+}
+
 function resolveUserId(userRef) {
   if (userRef === undefined || userRef === null) {
     return '';
@@ -116,8 +134,30 @@ function actorFromUpdateContext(req, updateContext) {
   return {
     type: 'user',
     id: resolveUserId(req.user),
-    name: req.user.fullName || req.user.fullname || undefined
+    name: userDisplayName(req.user)
   };
+}
+
+function actorFromProjectUserUpdate(event, verb, updateContext) {
+  const actor = actorFromUpdateContext(event.req, updateContext);
+
+  if (actor.name) {
+    return actor;
+  }
+
+  const project_user = event.updatedProject_userPopulated;
+  const targetUser = project_user && project_user.id_user;
+  const targetName = userDisplayName(targetUser);
+
+  if (
+    targetName &&
+    (verb === 'PROJECT_USER_AVAILABILITY_SELF' ||
+      resolveUserId(targetUser) === actor.id)
+  ) {
+    return Object.assign({}, actor, { name: targetName });
+  }
+
+  return actor;
 }
 
 function verbForProjectUserUpdate(body, updateContext) {
@@ -192,12 +232,14 @@ function verbFromAvailabilityUpdateType(updateType) {
 
 module.exports = {
   systemActor,
+  userDisplayName,
   resolveUserId,
   isSubscriptionActor,
   isSystemAvailabilityInitiator,
   isAvailabilityUpdate,
   buildProjectUserUpdateContext,
   actorFromUpdateContext,
+  actorFromProjectUserUpdate,
   verbForProjectUserUpdate,
   availabilityStatusLabel,
   reconcileAvailabilityVerb,

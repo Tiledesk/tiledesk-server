@@ -7,6 +7,7 @@ const leadEvent = require('../../event/leadEvent');
 const botEvent = require('../../event/botEvent');
 const authEvent = require('../../event/authEvent');
 const kbEvent = require('../../event/kbEvent');
+const projectUserUpdateContextUtil = require('../../utils/projectUserUpdateContextUtil');
 // https://elements.heroku.com/addons/cloudamqp
 // https://gist.github.com/carlhoerberg/006b01ac17a0a94859ba#file-reconnect-js
 // http://www.rabbitmq.com/tutorials/tutorial-one-javascript.html
@@ -576,7 +577,14 @@ function listen() {
         let body = undefined;
         if (data.req ) {
           if (data.req.user) { //i think is null from chat21webhook 
-            user = data.req.user;
+            const u = data.req.user;
+            user = {
+              id: u.id || u._id,
+              _id: u._id,
+              firstname: u.firstname,
+              lastname: u.lastname,
+              fullName: projectUserUpdateContextUtil.userDisplayName(u)
+            };
           }
           if (data.req.body) { 
             body = data.req.body;
