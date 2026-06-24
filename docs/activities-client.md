@@ -167,6 +167,8 @@ interface Activity {
 | `FAQ_KB_DELETE` | Eliminazione di un chatbot | *L'utente **X** ha eliminato il chatbot **Y*** |
 | `FAQ_KB_PUBLISH` | Pubblicazione di un chatbot | *L'utente **X** ha pubblicato il chatbot **Y*** |
 
+> **Publish vs fork interno:** la publish fork-a il chatbot in uno snapshot `trashed` (non visibile in UI). Quel fork **non** genera `FAQ_KB_CREATE` — solo `FAQ_KB_PUBLISH` sul chatbot originale. Il fork manuale (`POST /faq_kb/fork/:id` senza `for_publish=true`) continua a generare `FAQ_KB_CREATE`.
+
 `target.type` = `faq_kb` — nome in `target.object.name` o `actionObj.name`.
 
 ### Knowledge Base — namespace e contenuti
