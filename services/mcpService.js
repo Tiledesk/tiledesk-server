@@ -1,7 +1,13 @@
 'use strict';
 
+const fs = require('fs').promises;
+const path = require('path');
 const axios = require('axios').default;
 const winston = require('../config/winston');
+const cacheUtil = require('../utils/cacheUtil');
+
+const NATIVE_MCP_CACHE_KEY = 'native_mcp:servers';
+const NATIVE_MCP_CONFIG_PATH = path.join(__dirname, '../config/native_mcp/native_mcp_servers.json');
 
 
 /**
@@ -15,6 +21,11 @@ class MCPService {
     // Key: `${projectId}_${url}` or just `${url}` if projectId is not provided
     // Value: { config, sessionId?, initialized, capabilities }
     this.connections = new Map();
+    this.tdCache = undefined;
+  }
+
+  setTdCache(tdCache) {
+    this.tdCache = tdCache;
   }
 
   /**
@@ -132,6 +143,71 @@ class MCPService {
    */
   getCacheKey(url, projectId) {
     return projectId ? `${projectId}_${url}` : url;
+  }
+
+  async getNativeServersCatalog() {
+    if (this.tdCache) {
+      try {
+        const cached = await this.tdCache.getJSON(NATIVE_MCP_CACHE_KEY);
+        if (cached) {
+          return cached;
+        }
+      } catch (error) {
+        winston.warn('Error reading native MCP servers from cache:', error);
+      }
+    }
+
+    const servers = await this.loadNativeServersFromFile();
+
+    if (this.tdCache) {
+      try {
+        await this.tdCache.setJSON(NATIVE_MCP_CACHE_KEY, servers, { EX: cacheUtil.longTTL });
+      } catch (error) {
+        winston.warn('Error caching native MCP servers:', error);
+      }
+    }
+
+    return servers;
+  }
+
+  sanitizeNativeServerForPublic(server) {
+    const publicServer = {
+      id: server.id,
+      name: server.name,
+      native: server.native,
+      transport: server.transport
+    };
+    if (server.description) {
+      publicServer.description = server.description;
+    }
+    return publicServer;
+  }
+
+  async loadNativeServersFromFile() {
+    const content = await fs.readFile(NATIVE_MCP_CONFIG_PATH, 'utf8');
+    const servers = JSON.parse(content);
+
+    if (!Array.isArray(servers)) {
+      throw new Error('Native MCP servers configuration must be an array');
+    }
+
+    for (const server of servers) {
+      if (!server.id) {
+        throw new Error(`Native MCP server '${server.name || 'unknown'}' is missing required field 'id'`);
+      }
+    }
+
+    return servers;
+  }
+
+  async getNativeServersPublic() {
+    const servers = await this.getNativeServersCatalog();
+    return servers.map((server) => this.sanitizeNativeServerForPublic(server));
+  }
+
+  async getNativeServerById(id) {
+    const servers = await this.getNativeServersCatalog();
+    return servers.find((server) => server.id === id) || null;
   }
 
   /**

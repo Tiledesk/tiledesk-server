@@ -93,6 +93,9 @@ let tdCache = new TdCache({
 
 tdCache.connect();
 
+const mcpService = require('./services/mcpService');
+mcpService.setTdCache(tdCache);
+
 // ROUTES DECLARATION
 var troubleshooting = require('./routes/troubleshooting');
 var auth = require('./routes/auth');

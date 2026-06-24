@@ -4,11 +4,19 @@ let winston = require('../config/winston');
 const mcpService = require('../services/mcpService');
 
 
+/**
+ * GET /mcp/native
+ * Returns the list of available native MCP servers (without URLs)
+ */
 router.get('/native', async (req, res) => {
-  const native_mcp_servers = require('../config/native_mcp/native_mcp_servers.json');
-
-  
-})
+  try {
+    const servers = await mcpService.getNativeServersPublic();
+    res.status(200).send(servers);
+  } catch (error) {
+    winston.error('Error getting native MCP servers:', error);
+    res.status(500).send({ success: false, error: error.message || 'Error getting native MCP servers' });
+  }
+});
 
 /**
  * POST /mcp/connect
