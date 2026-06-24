@@ -22,6 +22,17 @@ var kbEvent = require("../../event/kbEvent");
 var departmentEvent = require("../../event/departmentEvent");
 var botEvent = require("../../event/botEvent");
 var { track } = require("../../lib/analyticsClient");
+var uuidv5 = require("uuid/v5");
+
+// Deterministic event_id namespace — MUST match apps/backfill
+// BACKFILL_UUID_NAMESPACE so a live event and its backfilled twin collapse to a
+// single row (idempotency / no double-count). Applied only to the event types
+// the backfill also produces.
+var ANALYTICS_UUID_NAMESPACE = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
+
+function eventIdFor(key) {
+  return uuidv5(String(key), ANALYTICS_UUID_NAMESPACE);
+}
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -46,6 +57,7 @@ function availabilityLabel(boolVal) {
  * to 'user', misclassifying agent messages.
  */
 function senderType(sender, request) {
+  if (!request) return "user"; // direct/group messages carry no request
   let bot, agent = undefined;
   if(request.participantsBots)
    bot = request.participantsBots.find(participant => participant.includes(sender));
@@ -101,6 +113,18 @@ function toStringId(doc) {
   return (doc._id || doc.id || doc).toString() || null;
 }
 
+/**
+ * Extract the tag string from a request.updated TAG_ADD patch.
+ * The tag may be a bare string or a { tag: "..." } sub-document — the shape
+ * varies by call site (see requestService.addTagByRequestId).
+ */
+function tagString(t) {
+  if (!t) return null;
+  if (typeof t === "string") return t;
+  if (typeof t.tag === "string") return t.tag;
+  return null;
+}
+
 // ─── listeners ──────────────────────────────────────────────────────────────
 
 function listen() {
@@ -120,16 +144,17 @@ function listen() {
     if (request.preflight === true) return;
 
     var dept = request.department;
+    var requestId = request.request_id || toStringId(request);
 
     track("conversation.created", request.id_project, {
-      id_request: request.request_id || toStringId(request),
-      request_id: request.request_id || toStringId(request),
+      id_request: requestId,
+      request_id: requestId,
       department: departmentId(dept),
       channel: (request.channel && request.channel.name) || "web",
       first_response_time: null,
       with_bot: request.hasBot || false,
       visitor_id: firstVisitorId(request.participants),
-    });
+    }, eventIdFor(requestId));
   }
 
   requestEvent.on("request.update.preflight", function (request) {
@@ -149,6 +174,10 @@ function listen() {
   //   duration_seconds     number
   //   waiting_time_seconds number|null
   //   satisfaction_rating  number 1-5 | null
+  // Satisfaction is intentionally NOT included here: ratings are submitted
+  // asynchronously (after close) and emitted as a separate conversation.satisfaction
+  // event below. The conversation-closed contract has no satisfaction field, so
+  // any rating sent here would be stripped by the ingest validator anyway.
   requestEvent.on("request.close", function (request) {
     var createdAt = new Date(request.createdAt);
     var closedAt = request.closed_at ? new Date(request.closed_at) : new Date();
@@ -157,18 +186,10 @@ function listen() {
         ? Math.round(request.duration / 1000)
         : Math.round((closedAt - createdAt) / 1000);
 
-    // Normalise rating: must be an integer 1–5 or null.
-    var rawRating = request.rating;
-    var satisfactionRating = null;
-    if (rawRating != null) {
-      var r = parseInt(rawRating, 10);
-      satisfactionRating = r >= 1 && r <= 5 ? r : null;
-    }
-
-    // TODO: da splittare rispetto al rating
+    var requestId = request.request_id || toStringId(request);
     track("conversation.closed", request.id_project, {
-      id_request: request.request_id || toStringId(request),
-      request_id: request.request_id || toStringId(request),
+      id_request: requestId,
+      request_id: requestId,
       closed_by: request.closed_by || "system",
       close_reason: null,
       duration_seconds: durationSeconds,
@@ -176,8 +197,52 @@ function listen() {
         request.waiting_time != null
           ? Math.round(request.waiting_time / 1000)
           : null,
-      satisfaction_rating: satisfactionRating,
-    });
+    }, eventIdFor(requestId + ":closed"));
+  });
+
+  // ── conversation.satisfaction ─────────────────────────────────────────────
+  // Emitted by routes/request.js ("request.satisfaction") when a visitor submits
+  // a rating — asynchronously, after the conversation is already closed.
+  // Contract: packages/contracts/src/payloads/conversation-satisfaction.ts
+  //   id_request     string  (required)
+  //   request_id     string  (required)
+  //   rating         number  (required, integer 1-5)
+  //   rating_message string|null
+  requestEvent.on("request.satisfaction", function (data) {
+    var request = (data && data.request) || {};
+    if (request.rating == null) return;
+
+    var r = parseInt(request.rating, 10);
+    if (!(r >= 1 && r <= 5)) return; // contract requires an integer 1-5
+
+    var requestId = request.request_id || toStringId(request);
+    track("conversation.satisfaction", request.id_project, {
+      id_request: requestId,
+      request_id: requestId,
+      rating: r,
+      rating_message: request.rating_message || null,
+    }, eventIdFor(requestId + ":satisfaction"));
+  });
+
+  // ── conversation.tag_added ────────────────────────────────────────────────
+  // Tags are added via requestService.addTagByRequestId, which emits the generic
+  // "request.updated" event with comment === "TAG_ADD" and the added tag in
+  // patch.tags. One analytics event per added tag.
+  // Contract: packages/contracts/src/payloads/conversation-tag-added.ts
+  //   id_request string (required)
+  //   tag        string (required)
+  requestEvent.on("request.updated", function (data) {
+    if (!data || data.comment !== "TAG_ADD") return;
+
+    var request = data.request || {};
+    var tag = tagString(data.patch && data.patch.tags);
+    if (!tag) return; // nothing usable to record
+
+    var requestId = request.request_id || toStringId(request);
+    track("conversation.tag_added", request.id_project, {
+      id_request: requestId,
+      tag: tag,
+    }, eventIdFor(requestId + ":" + tag));
   });
 
   // ── 3. message.sent ────────────────────────────────────────────────────────
@@ -198,64 +263,37 @@ function listen() {
     var idRequest = messageJson.recipient || null;
     if (!idRequest) return; // cannot emit without a conversation reference
 
+    // Denormalise department (id) and channel (name) from the parent request so
+    // the messages MVs can filter without a query-time join. Mirrors the
+    // backfill message mapper (department = id, channel = name). Optional in the
+    // contract, so null is fine when the message carries no populated request.
+    var msgRequest = messageJson.request || null;
+    var msgChannel =
+      (msgRequest && msgRequest.channel && msgRequest.channel.name) ||
+      (messageJson.channel && messageJson.channel.name) ||
+      null;
+
+    var idMessage = (messageJson._id || messageJson.id || "").toString();
     track("message.sent", messageJson.id_project, {
-      id_message: (messageJson._id || messageJson.id || "").toString(),
+      id_message: idMessage,
       id_request: idRequest,
       sender_id: sender || "unknown", // required non-null — fallback to 'unknown'
-      sender_type: senderType(sender, messageJson.request),
+      sender_type: senderType(sender, msgRequest),
       message_type: messageJson.type || "text", // required non-null — fallback to 'text'
       has_attachment: !!(messageJson.metadata && messageJson.metadata.src),
       language: messageJson.language || null,
-    });
+      department: departmentId(msgRequest && msgRequest.department),
+      channel: msgChannel,
+    }, eventIdFor(idMessage));
   });
 
-  // ── 5. handover_to_human ──────────────────────────────────────────────────
-  // Contract: packages/contracts/src/payloads/handover-to-human.ts
-  //   id_request           string   (required)
-  //   human_id             string|null
-  //   reason               string|null
-  //   department_id        string|null
-  //   waiting_time_seconds number int>=0 | null
-  //   agent_id             string|null (optional)
-  //   trigger_intent       string|null (optional)
-  requestEvent.on("request.participants.update", function (data) {
-    var request = data.request || {};
-    var removedParticipants = data.removedParticipants || [];
-    var addedParticipants = data.addedParticipants || [];
-
-    var botRemoved = removedParticipants.some(function (p) {
-      return p.startsWith("bot_");
-    });
-    var humanAdded = addedParticipants.some(function (p) {
-      return !p.startsWith("bot_");
-    });
-    if (!botRemoved || !humanAdded) return;
-
-    var botId =
-      removedParticipants.find(function (p) {
-        return p.startsWith("bot_");
-      }) || null;
-    var humanId =
-      addedParticipants.find(function (p) {
-        return !p.startsWith("bot_");
-      }) || null;
-
-    var waitingTimeSecs = null;
-    if (request.waiting_time != null) {
-      waitingTimeSecs = Math.round(request.waiting_time / 1000);
-    }
-
-    track("handover_to_human", request.id_project, {
-      id_request: request.request_id || toStringId(request),
-      human_id: humanId,
-      reason: null,
-      department_id: departmentId(request.department),
-      waiting_time_seconds: waitingTimeSecs,
-      agent_id: null,
-      trigger_intent: null,
-    });
-  });
-
+  // ── handover_to_human: intentionally NOT emitted here ─────────────────────
+  // Owned by tiledesk-chatbot (DirMoveToAgent), which fires it reliably at
+  // handover time with full context (reason / agent_id / trigger_intent). The
+  // participants-diff signal that used to live here was routing-dependent — it
+  // required the bot to be removed and a human added in the SAME update, so
+  // queue/pool handovers (bot removed first, agent assigned later) were missed —
+  // and it double-counted bot escalations the chatbot already records.
 
   // ── 5. project_user.activated ─────────────────────────────────────────────
   // Contract: packages/contracts/src/payloads/project-user-activated.ts
@@ -284,7 +322,7 @@ function listen() {
       user_email: email,
       role: pu.role || "agent",
       invited_by: (event.req && event.req.user && event.req.user.id) || null,
-    });
+    }, eventIdFor(pu.id_project + ":" + toStringId(pu) + ":activated"));
   });
 
   // ── 7. human.status_changed ───────────────────────────────────────────────
@@ -413,22 +451,30 @@ function listen() {
   // ── 13. agent.metadata_updated ────────────────────────────────────────────
   // Emitted by routes/faq_kb.js on bot create and update (rename, attribute
   // changes, language, etc.).
-  // agent_id   = Faq_kb._id.toString()
+  // agent_id   = Faq_kb.root_id  (the canonical/root agent id)
   // agent_name = Faq_kb.name
   // The consumer writes these into the agent_dimensions ReplacingMergeTree so
   // that dashboard queries always resolve the current bot name.
+  //
+  // Only PUBLISHED chatbots are tracked. Publishing forks the chatbot into a
+  // trashed faq_kb that carries root_id (-> the editable draft); the draft/root
+  // copy never has root_id. Gating on root_id therefore: (a) excludes drafts
+  // that were never published, (b) keys the dimension on the canonical root id
+  // — the same id the chatbot stamps on its runtime events — and (c) makes the
+  // name reflect the *published* name (a draft rename only lands here on the
+  // next publish, when a fresh fork fires faqbot.update).
   botEvent.on("faqbot.create", function (savedBot) {
-    if (!savedBot || !savedBot.id_project || !savedBot.name) return;
+    if (!savedBot || !savedBot.id_project || !savedBot.name || !savedBot.root_id) return;
     track("agent.metadata_updated", savedBot.id_project, {
-      agent_id:   savedBot.root_id || savedBot._id.toString(),
+      agent_id:   savedBot.root_id,
       agent_name: savedBot.name,
     });
   });
 
   botEvent.on("faqbot.update", function (updatedBot) {
-    if (!updatedBot || !updatedBot.id_project || !updatedBot.name) return;
+    if (!updatedBot || !updatedBot.id_project || !updatedBot.name || !updatedBot.root_id) return;
     track("agent.metadata_updated", updatedBot.id_project, {
-      agent_id:   updatedBot.root_id || updatedBot._id.toString(),
+      agent_id:   updatedBot.root_id,
       agent_name: updatedBot.name,
     });
   });
