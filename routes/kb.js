@@ -1272,6 +1272,10 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
       }
     }
 
+    if (e.situated_context === true && (e.type !== "url" || content.scrape_type === 0)) {
+      content.situated_context = true;
+    }
+
     addingContents.push(content);
   })
 
@@ -1296,8 +1300,6 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   let engine = ns.engine || default_engine;
   let embedding = aiManager.normalizeEmbedding(ns.embedding);
   let hybrid = ns.hybrid;
-  const situated_context = normalizeSituatedContext();
-
 
   if (process.env.NODE_ENV !== "test") {
     await aiService.deleteNamespace({
@@ -1333,13 +1335,14 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   }
 
   let resources = new_contents.map(({ name, status, __v, createdAt, updatedAt, ...keepAttrs }) => keepAttrs)
-  resources = resources.map(({ _id, scrape_options, ...rest }) => {
+  resources = resources.map(({ _id, scrape_options, situated_context, ...rest }) => {
+    const situated_context_obj = aiManager.normalizeSituatedContext(situated_context);
     return {
       id: _id,
       parameters_scrape_type_4: scrape_options,
       embedding: embedding,
       engine: engine,
-      ...(situated_context && { situated_context: situated_context }),
+      ...(situated_context_obj && { situated_context: situated_context_obj }),
       ...rest
     }
   });
