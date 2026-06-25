@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.19.11
+- Updated payments module
+
 # 2.19.10
 - Fixed bug on add answered question route.
 
