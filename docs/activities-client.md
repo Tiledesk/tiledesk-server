@@ -30,10 +30,27 @@ GET /{project_id}/activities
 | Parametro | Descrizione |
 |---|---|
 | `page` | Pagina (default `0`) |
+| `limit` | Elementi per pagina (default `40`, max `100` in lista, max `1000` con `chart=true`) |
+| `chart` | `true` se il client sta visualizzando il grafico/timeline (abilita `limit` > 100, fino a 1000) |
 | `direction` | Ordinamento su `createdAt`: `-1` desc (default), `1` asc |
 | `agent_id` | Filtra per agente coinvolto (`actor.id` o `target.object.id_user._id`) |
 | `activities` | Lista verb separati da virgola, es. `REQUEST_ASSIGNED_AUTO,REQUEST_ASSIGNED_SELF` |
 | `start_date` / `end_date` | Filtro data (`DD/MM/YYYY`) |
+
+**Limiti `limit`**
+
+| Modalità | Query | Max `limit` |
+|---|---|---|
+| Lista (default) | senza `chart` | `100` (valori superiori vengono ridotti a 100) |
+| Grafico / timeline | `chart=true` | `1000` |
+
+Se con `chart=true` il client passa `limit` > 1000, il server restituisce al massimo 1000 activity (in base ai filtri) e aggiunge `limitWarning` nella risposta.
+
+**Esempio grafico ultimo mese**
+
+```
+GET /{project_id}/activities?chart=true&limit=1000&start_date=01/06/2026&end_date=30/06/2026&direction=1
+```
 
 **Risposta**
 
@@ -64,6 +81,10 @@ GET /{project_id}/activities
   ]
 }
 ```
+
+Campi opzionali nella risposta:
+- `chart: true` — presente se la richiesta include `chart=true`
+- `limitWarning` — presente solo se `limit` richiesto > 1000 (con `chart=true`); i risultati sono comunque limitati a 1000
 
 > **Nota:** il campo `message` è un **fallback in inglese** generato dal server. È utile per debug e come testo di riserva se manca la traduzione i18n lato client. In produzione la dashboard dovrebbe preferire le proprie traduzioni basate su `verb` + dati strutturati.
 

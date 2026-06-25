@@ -9,12 +9,56 @@ const ObjectId = require('mongoose').Types.ObjectId;
 csv = require('csv-express');
 csv.separator = ';';
 
+const DEFAULT_ACTIVITY_LIMIT = 40;
+const LIST_MAX_ACTIVITY_LIMIT = 100;
+const CHART_MAX_ACTIVITY_LIMIT = 1000;
+
+function isChartView(query) {
+  return query && (query.chart === 'true' || query.chart === true || query.chart === '1');
+}
+
+function resolveActivityQueryLimit(query) {
+  const isChart = isChartView(query);
+  const parsedLimit = parseInt(query && query.limit, 10);
+  const requestedLimit = Number.isFinite(parsedLimit) && parsedLimit > 0
+    ? parsedLimit
+    : DEFAULT_ACTIVITY_LIMIT;
+
+  if (isChart) {
+    if (requestedLimit > CHART_MAX_ACTIVITY_LIMIT) {
+      return {
+        limit: CHART_MAX_ACTIVITY_LIMIT,
+        requestedLimit: requestedLimit,
+        isChart: true,
+        limitWarning: 'Limit exceeded the maximum allowed value of 1000. Only the first 1000 matching activities are returned.'
+      };
+    }
+    return {
+      limit: requestedLimit,
+      requestedLimit: requestedLimit,
+      isChart: true,
+      limitWarning: null
+    };
+  }
+
+  const limit = Math.min(requestedLimit, LIST_MAX_ACTIVITY_LIMIT);
+  return {
+    limit: limit,
+    requestedLimit: requestedLimit,
+    isChart: false,
+    limitWarning: null
+  };
+}
+
 router.get('/', async (req, res) => {
   
   let id_project = req.projectid;
-  let limit = 40; // Number of activities per page
+  const limitConfig = resolveActivityQueryLimit(req.query);
+  let limit = limitConfig.limit;
   let page = parseInt(req.query.page) || 0;
   let skip = page * limit;
+
+
 
   let query = { id_project: id_project };
 
@@ -22,12 +66,10 @@ router.get('/', async (req, res) => {
     winston.verbose('(ActivityRoute) start_date and end_date provided: ' + req.query.start_date + ' - ' + req.query.end_date);
 
     const startDate = moment(req.query.start_date, 'DD/MM/YYYY')
-      .format('YYYY-MM-DD')
       .startOf('day')
       .toDate();
 
     const endDate = moment(req.query.end_date, 'DD/MM/YYYY')
-      .format('YYYY-MM-DD')
       .endOf('day')
       .toDate();
 
@@ -37,7 +79,6 @@ router.get('/', async (req, res) => {
     winston.verbose('(ActivityRoute) start_date provided: ' + req.query.start_date);
 
     const startDate = moment(req.query.start_date, 'DD/MM/YYYY')
-      .format('YYYY-MM-DD')
       .startOf('day')
       .toDate();
 
@@ -82,6 +123,14 @@ router.get('/', async (req, res) => {
       count: totalRowCount,
       activities: activities
     };
+
+    if (limitConfig.isChart) {
+      objectToReturn.chart = true;
+    }
+
+    if (limitConfig.limitWarning) {
+      objectToReturn.limitWarning = limitConfig.limitWarning;
+    }
 
     return res.status(200).send(objectToReturn);
 
