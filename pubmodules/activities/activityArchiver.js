@@ -1,432 +1,704 @@
 const authEvent = require('../../event/authEvent');
 const requestEvent = require('../../event/requestEvent');
-var Activity = require('./models/activity');
-var winston = require('../../config/winston');
+const botEvent = require('../../event/botEvent');
+const kbEvent = require('../../event/kbEvent');
+const assignmentContextUtil = require('../../utils/assignmentContextUtil');
+const projectUserUpdateContextUtil = require('../../utils/projectUserUpdateContextUtil');
+const activityActorUtil = require('../../utils/activityActorUtil');
+const Activity = require('./models/activity');
+const winston = require('../../config/winston');
+
+function resolveEventKey(baseKey, queueEnabled) {
+  return queueEnabled ? `${baseKey}.queue` : baseKey;
+}
+
+async function save(activity) {
+  try {
+    await activity.save();
+    winston.debug('Activity saved', activity.toObject());
+  } catch (err) {
+    winston.error('Error saving activity ', { activity: activity.toObject(), err: err });
+  }
+}
+
+function toObject(doc) {
+  if (!doc) {
+    return doc;
+  }
+  if (doc.toObject) {
+    return doc.toObject();
+  }
+  return doc;
+}
+
+function faqKbTarget(chatbot) {
+  const object = toObject(chatbot);
+  return {
+    type: 'faq_kb',
+    id: activityActorUtil.resolveId(object && object._id),
+    object: object
+  };
+}
+
+function namespaceTarget(namespaceId, namespaceObject) {
+  const object = namespaceObject ? toObject(namespaceObject) : { id: namespaceId };
+  return {
+    type: 'kb_namespace',
+    id: activityActorUtil.resolveId(namespaceId || (object && object.id)),
+    object: object
+  };
+}
+
+function kbContentTarget(kbId, kbObject) {
+  const object = kbObject ? toObject(kbObject) : { _id: kbId };
+  return {
+    type: 'kb_content',
+    id: activityActorUtil.resolveId(kbId || (object && object._id)),
+    object: object
+  };
+}
+
+function resolveInvitedProjectUser(event) {
+  return event.savedProject_userPopulated ||
+    event.updatedProject_userPopulated ||
+    event.updatedPuserPopulated;
+}
+
+function buildProjectUserInviteActivity(event, pending) {
+  if (!event || !event.req) {
+    return null;
+  }
+
+  const body = event.req.body || {};
+  const actionObj = {
+    email: body.email,
+    role: body.role,
+    user_available: body.user_available,
+    inviteType: pending ? 'pending' : 'registered'
+  };
+  const actor = activityActorUtil.actorFromReq(event.req);
+
+  if (pending) {
+    const pendingInvitation = toObject(event.savedPendingInvitation);
+    if (!pendingInvitation) {
+      return null;
+    }
+    return new Activity({
+      id_project: event.req.projectid,
+      actor: actor,
+      verb: 'PROJECT_USER_INVITE',
+      actionObj: actionObj,
+      target: {
+        type: 'pendinginvitation',
+        id: activityActorUtil.resolveId(pendingInvitation._id),
+        object: pendingInvitation
+      }
+    });
+  }
+
+  const projectUser = toObject(resolveInvitedProjectUser(event));
+  if (!projectUser) {
+    return null;
+  }
+
+  return new Activity({
+    id_project: projectUser.id_project || event.req.projectid,
+    actor: actor,
+    verb: 'PROJECT_USER_INVITE',
+    actionObj: actionObj,
+    target: {
+      type: 'project_user',
+      id: activityActorUtil.resolveId(projectUser._id),
+      object: projectUser
+    }
+  });
+}
+
+function buildProjectUserDeleteActivity(event) {
+  if (!event || !event.req) {
+    return null;
+  }
+
+  const projectUser = toObject(event.project_userPopulated);
+  if (!projectUser) {
+    return null;
+  }
+
+  const user = projectUser.id_user;
+  const actor = activityActorUtil.actorFromReq(event.req);
+
+  return new Activity({
+    id_project: projectUser.id_project || event.req.projectid,
+    actor: actor,
+    verb: 'PROJECT_USER_DELETE',
+    actionObj: {
+      deleteType: event.deleteType || 'soft',
+      role: projectUser.role,
+      email: user && user.email
+    },
+    target: {
+      type: 'project_user',
+      id: activityActorUtil.resolveId(projectUser._id),
+      object: projectUser
+    }
+  });
+}
 
 class ActivityArchiver {
 
-    listen() {
+  listen() {
 
-        winston.debug('ActivityArchiver listen');   
+    winston.debug('ActivityArchiver listen');
 
-        var enabled = process.env.ACTIVITY_HISTORY_ENABLED || "false";
-        winston.debug('ActivityArchiver enabled:'+enabled);
+    const enabled = process.env.ACTIVITY_HISTORY_ENABLED || "false";
+    winston.debug('ActivityArchiver enabled:' + enabled);
+
+    if (enabled === "true") {
+      winston.verbose('ActivityArchiver enabled');
+    } else {
+      winston.info('ActivityArchiver disabled');
+      return 0;
+    }
+
+    if (process.env.MONGOOSE_SYNCINDEX) {
+      Activity.syncIndexes();
+      winston.info("Activity.syncIndexes called");
+    }
+
+
+    // ********** AUTH EVENTS **********
     
-        if (enabled==="true") {
-          winston.debug('ActivityArchiver enabled');
-        }else {
-          winston.info('ActivityArchiver disabled');
+    // Works only if worker is disabled
+    // Doesn't work if job_worker enabled because queue.worker is disabled
+    const authProjectUserInvitePendingKey = resolveEventKey('project_user.invite.pending', authEvent.queueEnabled);
+    winston.debug('ActivityArchiver authProjectUserInvitePendingKey: ' + authProjectUserInvitePendingKey);
+
+    authEvent.on(authProjectUserInvitePendingKey, function (event) {
+      setImmediate(() => {
+        try {
+          if (event.skipArchive) {
+            return 0;
+          }
+          const activity = buildProjectUserInviteActivity(event, true);
+          if (!activity) {
+            return winston.debug('ActivityArchiver skipping project_user.invite.pending: missing data');
+          }
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving project_user.invite.pending activity', e);
+        }
+      });
+    });
+
+
+    const authProjectUserInviteKey = resolveEventKey('project_user.invite', authEvent.queueEnabled);
+    winston.debug('ActivityArchiver authProjectUserInviteKey: ' + authProjectUserInviteKey);
+
+    authEvent.on(authProjectUserInviteKey, function (event) {
+      setImmediate(() => {
+        try {
+          if (event.skipArchive) {
+            return 0;
+          }
+          const activity = buildProjectUserInviteActivity(event, false);
+          if (!activity) {
+            return winston.debug('ActivityArchiver skipping project_user.invite: missing data');
+          }
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving project_user.invite activity', e);
+        }
+      });
+    });
+
+
+    const authProjectUserUpdateKey = resolveEventKey('project_user.update', authEvent.queueEnabled);
+    winston.debug('ActivityArchiver authProjectUserUpdateKey: ' + authProjectUserUpdateKey);
+
+    authEvent.on(authProjectUserUpdateKey, function (event) {
+      setImmediate(() => {
+        if (event.skipArchive) {
           return 0;
         }
 
-        if (process.env.MONGOOSE_SYNCINDEX) {
-          Activity.syncIndexes();
-          winston.info("Activity.syncIndexes called");
+        let project_user = undefined;
+        if (event.updatedProject_userPopulated.toObject) {
+          project_user = event.updatedProject_userPopulated.toObject()
+        } else {
+          project_user = event.updatedProject_userPopulated;
         }
-        
-        var that = this;
-        
-        //modify all to async
-      
-      
-/*
-        activityEvent.on('user.verify.email', this.save);
-  
-        activityEvent.on('group.create', this.save);
-        activityEvent.on('group.update', this.save);
-        activityEvent.on('group.delete', this.save);
 
-        // activityEvent.on('lead.create', this.save);
-        activityEvent.on('lead.update', this.save);
-        activityEvent.on('lead.delete', this.save);
-        activityEvent.on('lead.download.csv', this.save);
-*/
-      
-//  works only if worker is disabled
-      var authProjectUserInvitePendingKey = 'project_user.invite.pending';  //Don't work if job_worker enabled because queue.worker is disabled
-      // if (authEvent.queueEnabled) { //queue not supported.
-      //   authProjectUserInvitePendingKey = 'project_user.invite.pending.queue';
-      // }
-      winston.debug('ActivityArchiver authProjectUserInvitePendingKey: ' + authProjectUserInvitePendingKey);
+        winston.debug('ActivityArchiver authProjectUserUpdateKey event: ', event);
 
-        authEvent.on(authProjectUserInvitePendingKey,  function(event) { 
-          setImmediate(() => {
-            if (event.skipArchive) {
-              return 0;
-            }
-              var activity = new Activity({actor: {type:"user", id: event.req.user.id, name: event.req.user.fullName }, 
-              verb: "PROJECT_USER_INVITE", actionObj: event.req.body, 
-              target: {type:"pendinginvitation", id:event.savedPendingInvitation._id.toString(), object: event.savedPendingInvitation }, 
-              id_project: event.req.projectid });
-              that.save(activity);    
-               
-          });
-       
-        });
-      
+        if (!event.req.user) {
+          return winston.debug('ActivityArchiver skipping archive empty user'); //from i think chat21webhook
+        }
 
-
-
-//  works only if worker is disabled
-        var authProjectUserInviteKey = 'project_user.invite';   //Don't work if job_worker enabled because queue.worker is disabled
-        // if (authEvent.queueEnabled) { //queue not supported
-        //   authProjectUserInviteKey = 'project_user.invite.queue';
-        // }
-        winston.debug('ActivityArchiver authProjectUserInviteKey: ' + authProjectUserInviteKey);
-  
-        authEvent.on(authProjectUserInviteKey,  function(event) { 
-          setImmediate(() => {
-            if (event.skipArchive) {
-              return 0;
-            }
-
-
-            var activity = new Activity({actor: {type:"user", id: event.req.user.id, name: event.req.user.fullName }, 
-                        verb: "PROJECT_USER_INVITE", actionObj: event.req.body, 
-                        target: {type:"project_user", id: event.savedProject_userPopulated._id.toString(), object: event.savedProject_userPopulated }, 
-                        id_project: event.req.projectid });
-              that.save(activity);   
-            
-          });
+        const fallbackTargetUserId = projectUserUpdateContextUtil.resolveUserId(
+          project_user.id_user && project_user.id_user._id ? project_user.id_user : project_user.id_user
+        );
+        let updateContext = event.updateContext || projectUserUpdateContextUtil.buildProjectUserUpdateContext(
+          event.req,
+          event.previousUserAvailable,
+          event.previousProfileStatus,
+          fallbackTargetUserId
+        );
+        if (event.previousUserAvailable !== undefined && updateContext.previousUserAvailable === undefined) {
+          updateContext.previousUserAvailable = event.previousUserAvailable;
+        }
+        if (event.previousProfileStatus !== undefined && updateContext.previousProfileStatus === undefined) {
+          updateContext.previousProfileStatus = event.previousProfileStatus;
+        }
+        let verb = projectUserUpdateContextUtil.verbForProjectUserUpdate(event.req.body, updateContext);
+        const reconciled = projectUserUpdateContextUtil.reconcileAvailabilityVerb(
+          event,
+          project_user,
+          verb,
+          updateContext
+        );
+        verb = reconciled.verb;
+        updateContext = reconciled.updateContext;
+        const actor = reconciled.actor ||
+          projectUserUpdateContextUtil.actorFromProjectUserUpdate(event, verb, updateContext);
+        const newStatus = projectUserUpdateContextUtil.availabilityStatusLabel({
+          user_available: project_user.user_available,
+          profileStatus: project_user.profileStatus
         });
 
+        var activity = new Activity({
+          id_project: event.updatedProject_userPopulated.id_project,
+          actor: actor,
+          verb: verb,
+          actionObj: Object.assign({}, event.req.body, {
+            newStatus: newStatus,
+            updateType: updateContext.updateType,
+            source: updateContext.source
+          }),
+          target: { 
+            type: "project_user", 
+            id: event.updatedProject_userPopulated._id.toString(), 
+            object: project_user 
+          }
+        });
+        save(activity);
+      });
+    });
 
 
-      
-      // verified with queue
-        var authProjectUserUpdateKey = 'project_user.update';
-        if (authEvent.queueEnabled) {
-          authProjectUserUpdateKey = 'project_user.update.queue';
-        }
-        winston.debug('ActivityArchiver authProjectUserUpdateKey: ' + authProjectUserUpdateKey);
-  
-       authEvent.on(authProjectUserUpdateKey,  function(event) { 
-        setImmediate(() => {   
-          // winston.info('ActivityArchiver authProjectUserUpdateKey: ', event);
-      
-         /*
-         2019-11-20T10:40:52.686991+00:00 app[web.1]: TypeError: Cannot read property '_id' of undefined
-*/
+    const authProjectUserDeleteKey = resolveEventKey('project_user.delete', authEvent.queueEnabled);
+    winston.debug('ActivityArchiver authProjectUserDeleteKey: ' + authProjectUserDeleteKey);
+
+    authEvent.on(authProjectUserDeleteKey, function (event) {
+      setImmediate(() => {
+        try {
           if (event.skipArchive) {
             return 0;
           }
-
-          var project_user = undefined;
-          if (event.updatedProject_userPopulated.toObject) {
-            project_user = event.updatedProject_userPopulated.toObject() 
-          } else {
-            project_user = event.updatedProject_userPopulated;
+          const activity = buildProjectUserDeleteActivity(event);
+          if (!activity) {
+            return winston.debug('ActivityArchiver skipping project_user.delete: missing data');
           }
-
-          winston.debug('ActivityArchiver authProjectUserUpdateKey event: ', event);
-
-          if (!event.req.user) {
-            return  winston.debug('ActivityArchiver skipping archive empty user'); //from i think chat21webhook
-          }
-          var activity = new Activity({actor: {type:"user", id: event.req.user._id, name: event.req.user.fullName }, 
-                verb: "PROJECT_USER_UPDATE", actionObj: event.req.body, 
-                target: {type:"project_user", id: event.updatedProject_userPopulated._id.toString(), object: project_user}, 
-                id_project: event.updatedProject_userPopulated.id_project });
-          that.save(activity);    
-        
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving project_user.delete activity', e);
+        }
       });
-        
-       });
-      
-//  works only if worker is disabled
-       var authProjectUserDeleteKey = 'project_user.delete';     //Don't work if job_worker enabled because queue.worker is disabled
-      //  if (authEvent.queueEnabled) { //queue not supported
-      //   authProjectUserDeleteKey = 'project_user.delete.queue';
-      //  }
-       winston.debug('ActivityArchiver authProjectUserDeleteKey: ' + authProjectUserDeleteKey);
- 
+    });
 
-      authEvent.on(authProjectUserDeleteKey,  function(event) { 
-        setImmediate(() => {
-          if (event.skipArchive) {
+
+    // ********** REQUEST EVENTS **********
+
+    const requestCreateKey = resolveEventKey('request.create', requestEvent.queueEnabled);
+    winston.debug('ActivityArchiver requestCreateKey: ' + requestCreateKey);
+
+    requestEvent.on(requestCreateKey, function (request) {
+      setImmediate(() => {
+        winston.debug('ActivityArchiver requestCreate triggered');
+        
+        try {
+
+          if (request.preflight === true) {
+            winston.debug("preflight request disable archiver")
             return 0;
           }
-
-            var activity = new Activity({actor: {type:"user", id: event.req.user.id, name: event.req.user.fullName }, 
-            verb: "PROJECT_USER_DELETE", actionObj: event.req.body, 
-            target: {type:"project_user", id:event.req.params.project_userid, object: event.project_userPopulated.toObject() }, //Error saving activity Maximum call stack size exceeded
-            id_project: event.req.projectid });
-            that.save(activity);    
-          
-        });
-      });
-
-
-      
-// disabled why? performance?
-      // var authUserSignineKey = 'user.signin';
-      // // if (authEvent.queueEnabled) { //queue not supported
-      // //   authUserSignineKey = 'user.signin.queue';
-      // // }
-      // winston.info('ActivityArchiver authUserSignineKey: ' + authUserSignineKey);
-
-
-      //   authEvent.on(authUserSignineKey,  function(event) { 
-      //       winston.info('ActivityArchiver user.login');
-      //     setImmediate(() => {
-           
-            
-      //       if (event.skipArchive) {
-      //         return 0;
-      //       }
-
-      //         var activity = new Activity({actor: {type:"user", id: event.user._id, name: event.user.fullName }, 
-      //                 verb: "USER_SIGNIN", actionObj: event.req.body, //insecure it store password
-      //                 target: {type:"user", id:event.user._id.toString(), object: null }, 
-      //                 id_project: '*' }); /// * project
-      //           that.save(activity);   
-            
-      //     });   
-      //   });
-
-
-        // var authUserSigninErrorKey = 'user.login.error';
-        // // if (authEvent.queueEnabled) {  //queue not supported
-        // //   authUserSigninErrorKey = 'user.login.error.queue';
-        // // }
-        // winston.info('ActivityArchiver authUserSigninErrorKey: ' + authUserSigninErrorKey);
-
-        
-        // authEvent.on(authUserSigninErrorKey,  function(event) { 
-        //   setImmediate(() => {
-            
-        //     if (event.skipArchive) {
-        //       return 0;
-        //     }
-
-        //       var activity = new Activity({actor: {type:"user"}, 
-        //       verb: "USER_SIGNIN_ERROR", actionObj: event.req.body,     //insecure it store password
-        //       target: {type:"user", id:null, object: null }, 
-        //       id_project: '*' });     /// * project
-        //       that.save(activity);     
-            
-        //   });
-        // });
-      
-
-      //   var authUserResetPasswordKey = 'user.requestresetpassword';
-      //   // if (authEvent.queueEnabled) {  //queue not supported
-      //   //   authUserResetPasswordKey = 'user.requestresetpassword.queue';
-      //   // }
-      //   winston.info('ActivityArchiver authUserResetPasswordKey: ' + authUserResetPasswordKey);
-
-      //  authEvent.on(authUserResetPasswordKey,  function(event) {   
-      //   setImmediate(() => {   
-         
-      //     if (event.skipArchive) {
-      //       return 0;
-      //     }
-
-      //       var activity = new Activity({actor: {type:"user", id: event.updatedUser._id, name: event.updatedUser.fullName }, 
-      //         verb: "USER_REQUEST_RESETPASSWORD", actionObj: event.req.body, 
-      //         target: {type:"user", id:event.updatedUser._id.toString(), object: null }, 
-      //         id_project: '*' });        /// * project
-      //       that.save(activity);       
-        
-      //   });
-      //  });
-      
-
-      //  var authUserResetPassword2Key = 'user.resetpassword';
-      // //  if (authEvent.queueEnabled) {  //queue not supported
-      // //   authUserResetPassword2Key = 'user.resetpassword.queue';
-      // //  }
-      //  winston.info('ActivityArchiver authUserResetPassword2Key: ' + authUserResetPassword2Key);
-
-
-      // authEvent.on(authUserResetPassword2Key,  function(event) {     
-      //   setImmediate(() => {     
-         
-      //     if (event.skipArchive) {
-      //       return 0;
-      //     }
-
-      //     var activity = new Activity({actor: {type:"user", id: event.saveUser._id, name: event.saveUser.fullName }, 
-      //       verb: "USER_RESETPASSWORD", actionObj: null, //req.body otherwise print password  
-      //       target: {type:"user", id:event.saveUser._id.toString(), object: null }, 
-      //       id_project: '*' });     /// * project
-      //     that.save(activity);     
-          
-      //   });
-      // });
-      
-      
-      // var authUserSignupKey = 'user.signup';
-      // //  if (authEvent.queueEnabled) {  //queue not supported
-      // //   authUserSignupKey = 'user.signup.queue';
-      // //  }
-      //  winston.info('ActivityArchiver authUserSignupKey: ' + authUserSignupKey);
-
-
-      //  authEvent.on(authUserSignupKey,  function(event) { 
-      //   setImmediate(() => {      
-      //     if (event.skipArchive) {
-      //       return 0;
-      //     }
-
-      //       var activity = new Activity({actor: {type:"user", id: event.savedUser._id, name: event.savedUser.fullName }, 
-      //             verb: "USER_SIGNUP", actionObj: event.req.body, 
-      //             target: {type:"user", id: event.savedUser._id.toString(), object: null }, 
-      //             id_project: '*' });     /// * project
-      //         that.save(activity);      
-           
-      //   });
-      //  });
-      
-
-      //  var authUserSignupErrorKey = 'user.signup.error';
-      // //  if (authEvent.queueEnabled) {   //queue not supported
-      // //   authUserSignupErrorKey = 'user.signup.error.queue';
-      // //  }
-      //  winston.info('ActivityArchiver authUserSignupErrorKey: ' + authUserSignupErrorKey);
-
-
-      // authEvent.on(authUserSignupErrorKey,  function(event) { 
-      //   setImmediate(() => {     
-      //     if (event.skipArchive) {
-      //       return 0;
-      //     }
-
-
-      //     var activity = new Activity({actor: {type:"user"}, 
-      //         verb: "USER_SIGNUP_ERROR", actionObj: event.req.body, 
-      //         target: {type:"user", id:null, object: null }, 
-      //         id_project: '*' });     /// * project
-      //       that.save(activity);    
-          
-      //   });
-      //  });
-      
-
-       var requestCreateKey = 'request.create';
-       if (requestEvent.queueEnabled) {
-         requestCreateKey = 'request.create.queue';
-       }
-       winston.debug('ActivityArchiver requestCreateKey: ' + requestCreateKey);
-
-        requestEvent.on(requestCreateKey,  function(request) {   
-          setImmediate(() => {        
-            winston.debug('ActivityArchiver requestCreate triggered');   
-          // problema requester_id
-
-          // Error saving activity  {"_id":"5e06189c6e226d358896d733","actor":{"_id":"5e06189c6e226d358896d734","type":"user","id":null},"verb":"REQUEST_CREATE","actionObj":{"status":200,"participants":["5e06189c6e226d358896d728"],"messages_count":0,"tags":[],"_id":"5e06189c6e226d358896d72e","request_id":"request_id-closeRequest","first_text":"first_text","department":{"routing":"assigned","default":true,"status":1,"_id":"5e06189c6e226d358896d72b","name":"Default Department","id_project":"5e06189c6e226d358896d729","createdBy":"5e06189c6e226d358896d728","createdAt":"2019-12-27T14:43:40.327Z","updatedAt":"2019-12-27T14:43:40.327Z","__v":0},"agents":[{"_id":"5e06189c6e226d358896d72a","id_project":"5e06189c6e226d358896d729","id_user":"5e06189c6e226d358896d728","role":"owner","user_available":true,"createdBy":"5e06189c6e226d358896d728","createdAt":"2019-12-27T14:43:40.324Z","updatedAt":"2019-12-27T14:43:40.324Z","__v":0}],"id_project":"5e06189c6e226d358896d729","createdBy":"requester_id1","channel":{"name":"chat21"},"createdAt":"2019-12-27T14:43:40.586Z","updatedAt":"2019-12-27T14:43:40.586Z","__v":0},"target":{"type":"request","id":"5e06189c6e226d358896d72e","object":{"status":200,"participants":["5e06189c6e226d358896d728"],"messages_count":0,"tags":[],"_id":"5e06189c6e226d358896d72e","request_id":"request_id-closeRequest","first_text":"first_text","department":{"routing":"assigned","default":true,"status":1,"_id":"5e06189c6e226d358896d72b","name":"Default Department","id_project":"5e06189c6e226d358896d729","createdBy":"5e06189c6e226d358896d728","createdAt":"2019-12-27T14:43:40.327Z","updatedAt":"2019-12-27T14:43:40.327Z","__v":0},"agents":[{"_id":"5e06189c6e226d358896d72a","id_project":"5e06189c6e226d358896d729","id_user":"5e06189c6e226d358896d728","role":"owner","user_available":true,"createdBy":"5e06189c6e226d358896d728","createdAt":"2019-12-27T14:43:40.324Z","updatedAt":"2019-12-27T14:43:40.324Z","__v":0}],"id_project":"5e06189c6e226d358896d729","createdBy":"requester_id1","channel":{"name":"chat21"},"createdAt":"2019-12-27T14:43:40.586Z","updatedAt":"2019-12-27T14:43:40.586Z","__v":0}},"id_project":"5e06189c6e226d358896d729"}
-
-          // TODO error: Error saving activity  {"activity":{"_id":"5e273b31f13e801703d52515","actor":{"_id":"5e273b31f13e801703d52516","type":"user","id":null},"verb":"REQUEST_CREATE","actionObj":{"status":200,"participants":["5e273b30f13e801703d52508"],"messages_count":0,"tags":[],"_id":"5e273b31f13e801703d52511","request_id":"request_id1","first_text":"first_text","department":{"routing":"assigned","default":false,"status":1,"_id":"5e273b31f13e801703d5250f","name":"PooledDepartment-for-createWithIdWith","id_project":"5e273b31f13e801703d5250a","createdBy":"5e273b30f13e801703d52507","createdAt":"2020-01-21T17:56:01.471Z","updatedAt":"2020-01-21T17:56:01.471Z","__v":0},"agents":[{"_id":"5e273b31f13e801703d5250b","id_project":"5e273b31f13e801703d5250a","id_user":"5e273b30f13e801703d52507","role":"owner","user_available":true,"createdBy":"5e273b30f13e801703d52507","createdAt":"2020-01-21T17:56:01.465Z","updatedAt":"2020-01-21T17:56:01.465Z","__v":0},{"_id":"5e273b31f13e801703d5250e","id_project":"5e273b31f13e801703d5250a","id_user":"5e273b30f13e801703d52508","role":"agent","user_available":true,"createdBy":"5e273b30f13e801703d52508","createdAt":"2020-01-21T17:56:01.469Z","updatedAt":"2020-01-21T17:56:01.469Z","__v":0}],"id_project":"5e273b31f13e801703d5250a","createdBy":"requester_id1","channel":{"name":"chat21"},"createdAt":"2020-01-21T17:56:01.480Z","updatedAt":"2020-01-21T17:56:01.480Z","__v":0},"target":{"type":"request","id":"5e273b31f13e801703d52511","object":{"status":200,"participants":["5e273b30f13e801703d52508"],"messages_count":0,"tags":[],"_id":"5e273b31f13e801703d52511","request_id":"request_id1","first_text":"first_text","department":{"routing":"assigned","default":false,"status":1,"_id":"5e273b31f13e801703d5250f","name":"PooledDepartment-for-createWithIdWith","id_project":"5e273b31f13e801703d5250a","createdBy":"5e273b30f13e801703d52507","createdAt":"2020-01-21T17:56:01.471Z","updatedAt":"2020-01-21T17:56:01.471Z","__v":0},"agents":[{"_id":"5e273b31f13e801703d5250b","id_project":"5e273b31f13e801703d5250a","id_user":"5e273b30f13e801703d52507","role":"owner","user_available":true,"createdBy":"5e273b30f13e801703d52507","createdAt":"2020-01-21T17:56:01.465Z","updatedAt":"2020-01-21T17:56:01.465Z","__v":0},{"_id":"5e273b31f13e801703d5250e","id_project":"5e273b31f13e801703d5250a","id_user":"5e273b30f13e801703d52508","role":"agent","user_available":true,"createdBy":"5e273b30f13e801703d52508","createdAt":"2020-01-21T17:56:01.469Z","updatedAt":"2020-01-21T17:56:01.469Z","__v":0}],"id_project":"5e273b31f13e801703d5250a","createdBy":"requester_id1","channel":{"name":"chat21"},"createdAt":"2020-01-21T17:56:01.480Z","updatedAt":"2020-01-21T17:56:01.480Z","__v":0}},"id_project":"5e273b31f13e801703d5250a"},"err":{"errors":{"actor.id":{"message":"Path `id` is required.","name":"ValidatorError","properties":{"message":"Path `id` is required.","type":"required","path":"id","value":null},"kind":"required","path":"id","value":null},"actor":{"errors":{"id":{"message":"Path `id` is required.","name":"ValidatorError","properties":{"message":"Path `id` is required.","type":"required","path":"id","value":null},"kind":"required","path":"id","value":null}},"_message":"Validation failed","message":"Validation failed: id: Path `id` is required.","name":"ValidationError"}},"_message":"activity validation failed","message":"activity validation failed: actor.id: Path `id` is required., actor: Validation failed: id: Path `id` is required.","name":"ValidationError"}}
-
-// request is plain object must be mongoose object oto populate
-
-          // if (event.skipArchive) {
-          //   return 0;
-          // }
-
-          //TODO remove preflight   
-
-              try {
-
-                if (request.preflight === true) {
-                  winston.debug("preflight request disable archiver")
-                  return 0;
-                }
-                var activity = new Activity({actor: {type:"user", id: request.requester_id}, 
-                verb: "REQUEST_CREATE", actionObj: request, 
-                target: {type:"request", id:request._id, object: request }, 
-                id_project: request.id_project });
-                that.save(activity);    
-              } catch(e) {
-                winston.error('ActivityArchiver error saving activity',e);
-              }
-          
-                
-          });                           
-        });
-
-
-        // verified with queue
-        var requestUpdatePreflightKey = 'request.update.preflight';
-        if (requestEvent.queueEnabled) {
-          requestUpdatePreflightKey = 'request.update.preflight.queue';
-        }
-        winston.debug('ActivityArchiver requestUpdatePreflightKey: ' + requestUpdatePreflightKey);
-
-        
-        requestEvent.on(requestUpdatePreflightKey,  function(request) {
-          winston.debug('ActivityArchiver request.update.preflight: ');
-   
-          setImmediate(() => {           
-       
-              try {
-
-                if (request.preflight === true) {
-                  winston.debug("preflight request disable archiver")
-                  return 0;
-                }
-                var activity = new Activity({actor: {type:"user", id: request.requester_id}, 
-                verb: "REQUEST_CREATE", actionObj: request, 
-                target: {type:"request", id:request._id, object: request }, 
-                id_project: request.id_project });
-                that.save(activity);    
-              } catch(e) {
-                winston.error('ActivityArchiver error saving activity',e);
-              }
-          
-                
-          });                           
-        });
-
-
-
-        // verified with queue
-        var requestCloseKey = 'request.close';   //request.close event here queued under job
-        if (requestEvent.queueEnabled) {
-          requestCloseKey = 'request.close.queue';
-        }
-        winston.debug('ActivityArchiver requestCloseKey: ' + requestCloseKey);
-
-
-        requestEvent.on(requestCloseKey,  function(request) {   
-          winston.debug("request.close event here 7")
-          setImmediate(() => {           
-       
-              try {
-                winston.debug('ActivityArchiver close');
-               
-                var activity = new Activity({actor: {type:"user", id: request.closed_by}, 
-                verb: "REQUEST_CLOSE", actionObj: request, 
-                target: {type:"request", id:request._id, object: request }, 
-                id_project: request.id_project });
-                that.save(activity);    
-              } catch(e) {
-                winston.error('ActivityArchiver error saving activity',e);
-              }
-          
-                
-          });                           
-        });
-
-
-        
-
-        winston.info('ActivityArchiver listening');
-
-    }
-
-    save(activity) {
-        activity.save(function(err, savedActivity) {
-            if (err) {
-                winston.error('Error saving activity ', {activity: activity.toObject(), err:err});
-            }else {
-                winston.debug('Activity saved', savedActivity.toObject());
+          let activity = new Activity({
+            id_project: request.id_project,
+            actor: { 
+              type: "user", 
+              id: request.requester_id, 
+              name: request.requester_name 
+            },
+            verb: "REQUEST_CREATE", 
+            actionObj: request,
+            target: { 
+              type: "request", 
+              id: request._id, 
+              object: request 
             }
-        });
-    }
+          });
+          save(activity);
+
+        } catch (e) {
+          winston.error('ActivityArchiver error saving activity', e);
+        }
+      });
+    });
+
+
+    const requestUpdatePreflightKey = resolveEventKey('request.update.preflight', requestEvent.queueEnabled);
+    winston.debug('ActivityArchiver requestUpdatePreflightKey: ' + requestUpdatePreflightKey);
+
+    requestEvent.on(requestUpdatePreflightKey, function (request) {
+      winston.debug('ActivityArchiver request.update.preflight: ');
+
+      setImmediate(() => {
+
+        try {
+
+          if (request.preflight === true) {
+            winston.debug("preflight request disable archiver")
+            return 0;
+          }
+          let activity = new Activity({
+            id_project: request.id_project,
+            actor: { 
+              type: "user", 
+              id: request.requester_id, 
+              name: request.requester_name 
+            },
+            verb: "REQUEST_CREATE", 
+            actionObj: request,
+            target: { 
+              type: "request", 
+              id: request._id, 
+              object: request 
+            }
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving activity', e);
+        }
+      });
+    });
+
+
+    const requestCloseKey = resolveEventKey('request.close', requestEvent.queueEnabled);
+    winston.debug('ActivityArchiver requestCloseKey: ' + requestCloseKey);
+
+    requestEvent.on(requestCloseKey, function (request) {
+
+      setImmediate(() => {
+
+        try {
+          winston.debug('ActivityArchiver close');
+
+          let activity = new Activity({
+            id_project: request.id_project,
+            actor: { 
+              type: "user", 
+              id: request.closed_by, 
+              name: request.closed_by_name 
+            },
+            verb: "REQUEST_CLOSE", 
+            actionObj: request,
+            target: { 
+              type: "request", 
+              id: request._id, 
+              object: request 
+            }
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving activity', e);
+        }
+      });
+    });
+
+
+    const requestAssignedKey = resolveEventKey('request.assigned', requestEvent.queueEnabled);
+    winston.debug('ActivityArchiver requestAssignedKey: ' + requestAssignedKey);
+
+    requestEvent.on(requestAssignedKey, function (data) {
+      setImmediate(() => {
+        try {
+          if (!data || !data.request) {
+            return winston.debug('ActivityArchiver skipping request.assigned: missing request');
+          }
+
+          const verb = assignmentContextUtil.verbFromAssignmentType(data.assignmentType);
+          if (!verb) {
+            return winston.debug('ActivityArchiver skipping request.assigned: unknown assignmentType', data.assignmentType);
+          }
+
+          const reconciled = assignmentContextUtil.reconcileAssignmentPayload(data);
+
+          const activity = new Activity({
+            id_project: data.request.id_project,
+            actor: reconciled.actor,
+            verb: verb,
+            actionObj: {
+              assigneeId: data.assigneeId,
+              assigneeName: data.assigneeName,
+              assigneeType: data.assigneeType || 'user',
+              assignmentType: data.assignmentType,
+              source: reconciled.source,
+              previousAssigneeId: data.previousAssigneeId,
+              removedParticipants: data.removedParticipants
+            },
+            target: {
+              type: 'request',
+              id: data.request._id,
+              object: data.request
+            }
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving request.assigned activity', e);
+        }
+      });
+    });
+
+
+    // ********** CHATBOT / FAQ_KB EVENTS **********
+
+    const faqbotCreatedKey = resolveEventKey('faqbot.created', botEvent.queueEnabled);
+    winston.debug('ActivityArchiver faqbotCreatedKey: ' + faqbotCreatedKey);
+
+    botEvent.on(faqbotCreatedKey, function (data) {
+      setImmediate(() => {
+        try {
+          const chatbot = data && (data.chatbot || data);
+          if (!chatbot || !(data.id_project || chatbot.id_project)) {
+            return winston.debug('ActivityArchiver skipping faqbot.created: missing chatbot');
+          }
+
+          const activity = new Activity({
+            id_project: data.id_project || chatbot.id_project,
+            actor: activityActorUtil.actorFromReq(data.req),
+            verb: 'FAQ_KB_CREATE',
+            actionObj: {
+              name: chatbot.name,
+              type: chatbot.type,
+              subtype: chatbot.subtype
+            },
+            target: faqKbTarget(chatbot)
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving faqbot.created activity', e);
+        }
+      });
+    });
+
+    const faqbotDeletedKey = resolveEventKey('faqbot.deleted', botEvent.queueEnabled);
+    winston.debug('ActivityArchiver faqbotDeletedKey: ' + faqbotDeletedKey);
+
+    botEvent.on(faqbotDeletedKey, function (data) {
+      setImmediate(() => {
+        try {
+          const chatbot = data && data.chatbot;
+          if (!chatbot || !chatbot.id_project) {
+            return winston.debug('ActivityArchiver skipping faqbot.deleted: missing chatbot');
+          }
+
+          const activity = new Activity({
+            id_project: chatbot.id_project,
+            actor: activityActorUtil.actorFromReq(data.req),
+            verb: 'FAQ_KB_DELETE',
+            actionObj: {
+              name: chatbot.name,
+              type: chatbot.type
+            },
+            target: faqKbTarget(chatbot)
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving faqbot.deleted activity', e);
+        }
+      });
+    });
+
+    const faqbotPublishKey = resolveEventKey('faqbot.publish', botEvent.queueEnabled);
+    winston.debug('ActivityArchiver faqbotPublishKey: ' + faqbotPublishKey);
+
+    botEvent.on(faqbotPublishKey, function (data) {
+      setImmediate(() => {
+        try {
+          if (!data || !data.chatbot || !data.chatbot.id_project) {
+            return winston.debug('ActivityArchiver skipping faqbot.publish: missing chatbot');
+          }
+
+          const activity = new Activity({
+            id_project: data.chatbot.id_project,
+            actor: activityActorUtil.actorFromReq(data.req),
+            verb: 'FAQ_KB_PUBLISH',
+            actionObj: {
+              name: data.chatbot.name,
+              publishedBotId: data.publishedBotId,
+              release_note: data.release_note
+            },
+            target: faqKbTarget(data.chatbot)
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving faqbot.publish activity', e);
+        }
+      });
+    });
+
+
+    // ********** KB / NAMESPACE EVENTS **********
+
+    const kbNamespaceCreateKey = resolveEventKey('kb.namespace.create', kbEvent.queueEnabled);
+    winston.debug('ActivityArchiver kbNamespaceCreateKey: ' + kbNamespaceCreateKey);
+
+    kbEvent.on(kbNamespaceCreateKey, function (data) {
+      setImmediate(() => {
+        try {
+          if (!data || !data.project_id || !data.savedNamespace) {
+            return winston.debug('ActivityArchiver skipping kb.namespace.create: missing data');
+          }
+
+          const activity = new Activity({
+            id_project: data.project_id,
+            actor: activityActorUtil.actorFromReq(data.req),
+            verb: 'KB_NAMESPACE_CREATE',
+            actionObj: {
+              namespaceName: data.savedNamespace.name,
+              hybrid: data.savedNamespace.hybrid,
+              default: data.savedNamespace.default === true
+            },
+            target: namespaceTarget(data.namespace_id || data.savedNamespace.id, data.savedNamespace)
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving kb.namespace.create activity', e);
+        }
+      });
+    });
+
+    const kbNamespaceDeleteKey = resolveEventKey('kb.namespace.delete', kbEvent.queueEnabled);
+    winston.debug('ActivityArchiver kbNamespaceDeleteKey: ' + kbNamespaceDeleteKey);
+
+    kbEvent.on(kbNamespaceDeleteKey, function (data) {
+      setImmediate(() => {
+        try {
+          if (!data || !data.project_id || !data.namespace_id) {
+            return winston.debug('ActivityArchiver skipping kb.namespace.delete: missing data');
+          }
+
+          const activity = new Activity({
+            id_project: data.project_id,
+            actor: activityActorUtil.actorFromReq(data.req),
+            verb: 'KB_NAMESPACE_DELETE',
+            actionObj: {
+              namespaceName: data.namespace_name,
+              deletedCount: data.deletedCount
+            },
+            target: namespaceTarget(data.namespace_id, { id: data.namespace_id, name: data.namespace_name })
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving kb.namespace.delete activity', e);
+        }
+      });
+    });
+
+    const kbContentsAddKey = resolveEventKey('kb.contents.add', kbEvent.queueEnabled);
+    winston.debug('ActivityArchiver kbContentsAddKey: ' + kbContentsAddKey);
+
+    kbEvent.on(kbContentsAddKey, function (data) {
+      setImmediate(() => {
+        try {
+          if (!data || !data.project_id || !data.namespace_id) {
+            return winston.debug('ActivityArchiver skipping kb.contents.add: missing data');
+          }
+
+          const activity = new Activity({
+            id_project: data.project_id,
+            actor: activityActorUtil.actorFromReq(data.req),
+            verb: 'KB_CONTENTS_ADD',
+            actionObj: {
+              contentAddType: data.contentAddType,
+              namespaceName: data.namespace_name,
+              count: data.count,
+              type: data.type,
+              source: data.source
+            },
+            target: namespaceTarget(data.namespace_id, { id: data.namespace_id, name: data.namespace_name })
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving kb.contents.add activity', e);
+        }
+      });
+    });
+
+    const kbContentsDeleteKey = resolveEventKey('kb.contents.delete', kbEvent.queueEnabled);
+    winston.debug('ActivityArchiver kbContentsDeleteKey: ' + kbContentsDeleteKey);
+
+    kbEvent.on(kbContentsDeleteKey, function (data) {
+      setImmediate(() => {
+        try {
+          if (!data || !data.project_id || !data.namespace_id) {
+            return winston.debug('ActivityArchiver skipping kb.contents.delete: missing data');
+          }
+
+          const activity = new Activity({
+            id_project: data.project_id,
+            actor: activityActorUtil.actorFromReq(data.req),
+            verb: 'KB_CONTENTS_DELETE',
+            actionObj: {
+              namespaceName: data.namespace_name,
+              deletedCount: data.deletedCount,
+              deleteMode: data.deleteMode || 'contents_only'
+            },
+            target: namespaceTarget(data.namespace_id, { id: data.namespace_id, name: data.namespace_name })
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving kb.contents.delete activity', e);
+        }
+      });
+    });
+
+    
+    const kbContentDeleteKey = resolveEventKey('kb.content.delete', kbEvent.queueEnabled);
+    winston.debug('ActivityArchiver kbContentDeleteKey: ' + kbContentDeleteKey);
+
+    kbEvent.on(kbContentDeleteKey, function (data) {
+      setImmediate(() => {
+        try {
+          if (!data || !data.project_id || !data.kb_id) {
+            return winston.debug('ActivityArchiver skipping kb.content.delete: missing data');
+          }
+
+          const kb = data.kb || {};
+          const activity = new Activity({
+            id_project: data.project_id,
+            actor: activityActorUtil.actorFromReq(data.req),
+            verb: 'KB_CONTENT_DELETE',
+            actionObj: {
+              name: kb.name,
+              source: kb.source,
+              type: kb.type,
+              namespaceId: data.namespace_id,
+              namespaceName: data.namespace_name
+            },
+            target: kbContentTarget(data.kb_id, kb)
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving kb.content.delete activity', e);
+        }
+      });
+    });
+
+
+    winston.info('ActivityArchiver listening');
+
+  }
 }
 
 var activityArchiver = new ActivityArchiver();
-
-
 module.exports = activityArchiver;

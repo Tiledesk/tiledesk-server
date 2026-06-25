@@ -83,8 +83,8 @@ var ActivitySchema = new Schema({
 }
 );
 
-ActivitySchema.index({id_project: 1, createdAt: -1});
-
-// TODO metti indice per query è lentina
+ActivitySchema.index({ id_project: 1, createdAt: -1 });
+ActivitySchema.index({ id_project: 1, 'actor.id': 1, createdAt: -1 });
+ActivitySchema.index({ id_project: 1, 'target.object.id_user._id': 1, createdAt: -1 });
 
 module.exports = mongoose.model('activity', ActivitySchema);

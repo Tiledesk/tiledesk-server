@@ -96,7 +96,12 @@ router.post('/servers', async (req, res) => {
 /**
  * POST /mcp/connect
  * Initializes a connection to an MCP server
- * Body: { url: string, auth?: { type: 'bearer'|'api_key'|'basic', token?: string, key?: string, username?: string, password?: string } }
+ * Body: {
+ *   url: string,
+ *   customHeaders?: [{ key: string, value: string }],
+ *   oauth?: object (not supported yet),
+ *   auth?: object (legacy, optional)
+ * }
  */
 router.post('/connect', async (req, res) => {
   try {
@@ -107,6 +112,7 @@ router.post('/connect', async (req, res) => {
       return res.status(400).send({ success: false, error: "Missing required parameter 'url'" });
     }
 
+    
     // Build server configuration
     const serverConfig = {
       url: url,
@@ -117,8 +123,8 @@ router.post('/connect', async (req, res) => {
     // Initialize the connection
     const result = await mcpService.connectServer(serverConfig);
 
-    res.status(200).send({ 
-      success: true, 
+    res.status(200).send({
+      success: true,
       message: 'MCP server connected successfully',
       capabilities: result.capabilities,
       tools: result.tools
@@ -132,25 +138,27 @@ router.post('/connect', async (req, res) => {
 /**
  * POST /mcp/tools
  * Gets the list of tools from an MCP server
- * Body: { url: string, auth?: object }
+ * Body: {
+ *   url: string,
+ *   customHeaders?: [{ key: string, value: string }],
+ *   oauth?: object (not supported yet),
+ *   auth?: object (legacy, optional)
+ * }
  */
 router.post('/tools', async (req, res) => {
   try {
     const id_project = req.projectid;
-    const { url, auth } = req.body;
+    const { url } = req.body;
 
-    if (!url) {
-      return res.status(400).send({ success: false, error: "Missing required parameter 'url' in body" });
+    winston.info(`MCP /tools called for project ${id_project}, url: ${url}`);
+
+    let serverConfig;
+    try {
+      serverConfig = mcpService.buildServerConfig(id_project, req.body);
+    } catch (error) {
+      return res.status(400).send({ success: false, error: error.message });
     }
 
-    // Build server configuration
-    const serverConfig = {
-      url: url,
-      projectId: id_project,
-      auth: auth || undefined
-    };
-
-    // listTools automatically initializes if necessary
     const tools = await mcpService.listTools(serverConfig);
 
     res.status(200).send(tools);
@@ -161,4 +169,3 @@ router.post('/tools', async (req, res) => {
 });
 
 module.exports = router;
-
