@@ -354,7 +354,7 @@ interface AssignmentActionObj {
   assignmentType: 'auto' | 'self_join' | 'manual_reassign' | 'manual_reassign_bot' | 'manual_reassign_department' | 'unassign';
 
   /** Origine tecnica dell'evento */
-  source: 'api' | 'chatbot' | 'queue' | 'webhook' | 'rules' | 'create' | 'system';
+  source: 'api' | 'subscription' | 'chatbot' | 'queue' | 'webhook' | 'rules' | 'create' | 'system';
 
   /** id_user dell'agente precedente (solo su reassign) */
   previousAssigneeId?: string | null;
@@ -368,7 +368,8 @@ interface AssignmentActionObj {
 
 | Source | Descrizione |
 |---|---|
-| `api` | Chiamata API dalla dashboard |
+| `api` | Chiamata API dalla dashboard (utente reale) |
+| `subscription` | Client automatico con JWT subscription (disconnessione, cleanup partecipanti, …) |
 | `chatbot` | Handover dal chatbot (`PUT /agent`) |
 | `queue` | Smart assignment / reroute automatico in coda |
 | `webhook` | Sincronizzazione Chat21 (`join-member`) |
@@ -519,6 +520,17 @@ const conversation = conversationLabel(activity);
 | **IT** | `**{{actor}}** ha rimosso **{{assignee}}** dalla conversazione **{{conversation}}**` |
 | **EN** | `**{{actor}}** unassigned **{{assignee}}** from conversation **{{conversation}}**` |
 
+**Via subscription** (`actionObj.source === 'subscription'`, tipico disconnessione agente):
+
+| Lingua | Template |
+|---|---|
+| **IT** | `**{{assignee}}** è stato rimosso dalla conversazione **{{conversation}}** dal sistema` |
+| **EN** | `**{{assignee}}** was unassigned from conversation **{{conversation}}** by the system` |
+
+In questo caso `actor.type` = `system`, `actor.id` = `system` (non l'id della subscription).
+
+> **Record legacy:** se `actor.type === 'user'` ma `actor.id` è un id subscription, trattare come `source: subscription` e actor = System.
+
 ---
 
 ## Template frasi — conversazioni legacy
@@ -631,6 +643,7 @@ Due sotto-casi:
     "REQUEST_ASSIGNED_MANUAL_DEPARTMENT": "{{actor}} ha riassegnato la conversazione {{conversation}} al dipartimento {{assignee}}",
     "REQUEST_ASSIGNED_MANUAL_DEPARTMENT_REPLACED": "{{actor}} ha riassegnato la conversazione {{conversation}} al dipartimento {{assignee}} (sostituisce {{previous}})",
     "REQUEST_UNASSIGNED": "{{actor}} ha rimosso {{assignee}} dalla conversazione {{conversation}}",
+    "REQUEST_UNASSIGNED_SYSTEM": "{{assignee}} è stato rimosso dalla conversazione {{conversation}} dal sistema",
 
     "PROJECT_USER_AVAILABILITY_SELF": "{{targetUser}} ha modificato il suo stato in {{newStatus}}",
     "PROJECT_USER_AVAILABILITY_SYSTEM": "Lo stato di {{targetUser}} è stato modificato in {{newStatus}} dal sistema",
@@ -703,7 +716,9 @@ function renderActivity(activity: Activity, t: TranslateFn): string {
     }
 
     case 'REQUEST_UNASSIGNED':
-      return t('ACTIVITY.REQUEST_UNASSIGNED', { actor, assignee, conversation });
+      return activity.actionObj?.source === 'subscription'
+        ? t('ACTIVITY.REQUEST_UNASSIGNED_SYSTEM', { assignee, conversation })
+        : t('ACTIVITY.REQUEST_UNASSIGNED', { actor, assignee, conversation });
 
     case 'REQUEST_CREATE':
       return t('ACTIVITY.REQUEST_CREATE', { actor });

@@ -1,5 +1,7 @@
 'use strict';
 
+const projectUserUpdateContextUtil = require('./projectUserUpdateContextUtil');
+
 function systemActor() {
   return { type: 'system', id: 'system', name: 'System' };
 }
@@ -8,11 +10,42 @@ function actorFromUser(user) {
   if (!user) {
     return systemActor();
   }
+  if (projectUserUpdateContextUtil.isSubscriptionActor(user)) {
+    return systemActor();
+  }
   return {
     type: 'user',
     id: String(user.id || user._id),
-    name: user.fullName || user.fullname || undefined
+    name: user.fullName || user.fullname || projectUserUpdateContextUtil.userDisplayName(user) || undefined
   };
+}
+
+function assignmentActorContext(req, defaultSource) {
+  const source = defaultSource || 'api';
+
+  if (!req || !req.user) {
+    return { actor: systemActor(), source: 'system' };
+  }
+
+  if (projectUserUpdateContextUtil.isSubscriptionActor(req.user)) {
+    return { actor: systemActor(), source: 'subscription' };
+  }
+
+  return { actor: actorFromUser(req.user), source: source };
+}
+
+function reconcileAssignmentPayload(data) {
+  const source = (data && data.source) || 'system';
+  let actor = (data && data.actor) || systemActor();
+
+  if (source === 'subscription' || actor.type === 'system') {
+    return {
+      actor: systemActor(),
+      source: source === 'subscription' ? 'subscription' : source
+    };
+  }
+
+  return { actor: actor, source: source };
 }
 
 function isHumanParticipant(participantId) {
@@ -102,12 +135,12 @@ function verbFromAssignmentType(assignmentType) {
 }
 
 function buildSetParticipantsOptions(req, participants) {
-  const actor = actorFromUser(req && req.user);
+  const { actor, source } = assignmentActorContext(req, 'api');
 
   if (!participants || participants.length === 0) {
     return {
       actor,
-      source: 'api',
+      source,
       assignmentType: 'unassign'
     };
   }
@@ -118,14 +151,14 @@ function buildSetParticipantsOptions(req, participants) {
   if (botParticipants.length > 0 && humanParticipants.length === 0) {
     return {
       actor,
-      source: 'api',
+      source,
       assignmentType: 'manual_reassign_bot'
     };
   }
 
   return {
     actor,
-    source: 'api',
+    source,
     assignmentType: deriveAssignmentType({
       actor,
       assigneeIds: participants,
@@ -135,11 +168,11 @@ function buildSetParticipantsOptions(req, participants) {
 }
 
 function buildAddParticipantOptions(req, member) {
-  const actor = actorFromUser(req && req.user);
+  const { actor, source } = assignmentActorContext(req, 'api');
 
   return {
     actor,
-    source: 'api',
+    source,
     assignmentType: deriveAssignmentType({
       actor,
       assigneeIds: [member],
@@ -149,17 +182,19 @@ function buildAddParticipantOptions(req, member) {
 }
 
 function buildAutoRouteOptions(req, source) {
+  const ctx = assignmentActorContext(req, source || 'api');
   return {
-    actor: actorFromUser(req && req.user),
-    source: source || 'api',
+    actor: ctx.actor,
+    source: ctx.source,
     assignmentType: 'auto'
   };
 }
 
 function buildDepartmentRouteOptions(req, source) {
+  const ctx = assignmentActorContext(req, source || 'api');
   return {
-    actor: actorFromUser(req && req.user),
-    source: source || 'api',
+    actor: ctx.actor,
+    source: ctx.source,
     assignmentType: 'manual_reassign_department'
   };
 }
@@ -175,6 +210,8 @@ function buildInternalOptions(source, assignmentType) {
 module.exports = {
   systemActor,
   actorFromUser,
+  assignmentActorContext,
+  reconcileAssignmentPayload,
   isHumanParticipant,
   filterHumanParticipants,
   isBotParticipant,

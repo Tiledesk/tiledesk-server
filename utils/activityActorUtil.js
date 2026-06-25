@@ -6,6 +6,9 @@ function actorFromReq(req) {
   if (!req || !req.user) {
     return { type: 'system', id: 'system', name: 'System' };
   }
+  if (projectUserUpdateContextUtil.isSubscriptionActor(req.user)) {
+    return { type: 'system', id: 'system', name: 'System' };
+  }
   return {
     type: 'user',
     id: req.user.id || req.user._id,

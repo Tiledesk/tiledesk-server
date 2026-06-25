@@ -242,6 +242,10 @@ function buildDefaultActivityMessage(activity) {
     }
 
     case 'REQUEST_UNASSIGNED':
+      if (actionObj.source === 'subscription') {
+        return 'System unassigned ' + assignee + ' from conversation ' + conversation +
+          ' (source: subscription)';
+      }
       return actor + ' unassigned ' + assignee + ' from conversation ' + conversation +
         ' (source: ' + source + ')';
 

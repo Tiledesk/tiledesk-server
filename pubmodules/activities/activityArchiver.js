@@ -430,16 +430,18 @@ class ActivityArchiver {
             return winston.debug('ActivityArchiver skipping request.assigned: unknown assignmentType', data.assignmentType);
           }
 
+          const reconciled = assignmentContextUtil.reconcileAssignmentPayload(data);
+
           const activity = new Activity({
             id_project: data.request.id_project,
-            actor: data.actor || assignmentContextUtil.systemActor(),
+            actor: reconciled.actor,
             verb: verb,
             actionObj: {
               assigneeId: data.assigneeId,
               assigneeName: data.assigneeName,
               assigneeType: data.assigneeType || 'user',
               assignmentType: data.assignmentType,
-              source: data.source,
+              source: reconciled.source,
               previousAssigneeId: data.previousAssigneeId,
               removedParticipants: data.removedParticipants
             },
