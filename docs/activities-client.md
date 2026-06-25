@@ -179,6 +179,7 @@ interface Activity {
 | `KB_NAMESPACE_DELETE` | Eliminazione completa di un namespace (namespace + contenuti) | *L'utente **X** ha eliminato il namespace **Y*** |
 | `KB_CONTENTS_ADD` | Aggiunta di contenuti a un namespace | *L'utente **X** ha aggiunto … al namespace **Y*** |
 | `KB_CONTENTS_DELETE` | Eliminazione di tutti i contenuti di un namespace (il namespace resta) | *L'utente **X** ha eliminato tutti i contenuti dal namespace **Y*** |
+| `KB_CONTENT_DELETE` | Eliminazione di un singolo contenuto | *L'utente **X** ha eliminato il contenuto **Z** dal namespace **Y*** |
 
 `target.type` = `kb_namespace` — nome in `target.object.name` o `actionObj.namespaceName`.
 
@@ -330,6 +331,7 @@ interface KbContentsDeleteActionObj {
 | `KB_CONTENTS_ADD` (singolo) | `{{actor}} ha aggiunto un contenuto al namespace {{namespace}}` | `{{actor}} added content to namespace {{namespace}}` |
 | `KB_CONTENTS_ADD` (multi) | `{{actor}} ha aggiunto {{count}} elementi ({{addType}}) al namespace {{namespace}}` | `{{actor}} added {{count}} items ({{addType}}) to namespace {{namespace}}` |
 | `KB_CONTENTS_DELETE` | `{{actor}} ha eliminato tutti i contenuti dal namespace {{namespace}}` | `{{actor}} deleted all contents from namespace {{namespace}}` |
+| `KB_CONTENT_DELETE` | `{{actor}} ha eliminato il contenuto {{content}} dal namespace {{namespace}}` | `{{actor}} deleted content {{content}} from namespace {{namespace}}` |
 
 Per `KB_CONTENTS_ADD` con `contentAddType: 'sitemap'`, includere opzionalmente `{{source}}` (URL della sitemap).
 
@@ -656,6 +658,7 @@ Due sotto-casi:
     "KB_CONTENTS_ADD": "{{actor}} ha aggiunto contenuti al namespace {{namespace}}",
     "KB_CONTENTS_ADD_MULTI": "{{actor}} ha aggiunto {{count}} elementi ({{addType}}) al namespace {{namespace}}",
     "KB_CONTENTS_DELETE": "{{actor}} ha eliminato tutti i contenuti dal namespace {{namespace}}",
+    "KB_CONTENT_DELETE": "{{actor}} ha eliminato il contenuto {{content}} dal namespace {{namespace}}",
 
     "REQUEST_CREATE": "{{actor}} ha avviato una nuova conversazione",
     "REQUEST_CLOSE": "{{actor}} ha chiuso la conversazione {{conversation}}",
@@ -823,7 +826,7 @@ Per storico completo includere anche `REQUEST_CREATE` e `REQUEST_CLOSE`.
 Per attività chatbot e Knowledge Base:
 
 ```
-GET /{project_id}/activities?activities=FAQ_KB_CREATE,FAQ_KB_DELETE,FAQ_KB_PUBLISH,KB_NAMESPACE_CREATE,KB_NAMESPACE_DELETE,KB_CONTENTS_ADD,KB_CONTENTS_DELETE
+GET /{project_id}/activities?activities=FAQ_KB_CREATE,FAQ_KB_DELETE,FAQ_KB_PUBLISH,KB_NAMESPACE_CREATE,KB_NAMESPACE_DELETE,KB_CONTENTS_ADD,KB_CONTENTS_DELETE,KB_CONTENT_DELETE
 ```
 
 Per attività di un singolo agente:
