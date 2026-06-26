@@ -1829,7 +1829,7 @@ class RequestService {
     });
   }
 
-  removeParticipantByRequestId(request_id, id_project, member) {
+  removeParticipantByRequestId(request_id, id_project, member, options) {
     winston.debug("request_id", request_id);
     winston.debug("id_project", id_project);
     winston.debug("member", member);
@@ -1955,7 +1955,13 @@ class RequestService {
                   requestEvent.emit('request.update', requestComplete);
                   requestEvent.emit("request.update.comment", { comment: "PARTICIPANT_REMOVE", request: requestComplete });//Deprecated
                   requestEvent.emit("request.updated", { comment: "PARTICIPANT_REMOVE", request: requestComplete, patch: { member: member } });
-                  requestEvent.emit('request.participants.leave', { member: member, request: requestComplete });
+                  requestEvent.emit('request.participants.leave', {
+                    member: member,
+                    request: requestComplete,
+                    actor: options && options.actor,
+                    source: options && options.source,
+                    trackLeave: options && options.trackLeave
+                  });
 
 
                   return resolve(requestComplete);

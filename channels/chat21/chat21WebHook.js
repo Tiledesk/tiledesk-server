@@ -569,7 +569,12 @@ router.post('/', function (req, res) {
 
     winston.verbose("Chat21WebHook: leaving member : " + new_member +" from the request with request_id: " + request_id +" from the project with id: " + id_project);
 
-    return requestService.removeParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
+    return requestService.removeParticipantByRequestId(
+      request_id,
+      id_project,
+      new_member,
+      assignmentContextUtil.buildLeaveParticipantOptions('webhook', new_member)
+    ).then(function(updatedRequest) {
       winston.debug("Leave memeber ok");
       return res.json(updatedRequest);
     }).catch(function(err){

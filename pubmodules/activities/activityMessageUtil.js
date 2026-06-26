@@ -249,6 +249,9 @@ function buildDefaultActivityMessage(activity) {
       return actor + ' unassigned ' + assignee + ' from conversation ' + conversation +
         ' (source: ' + source + ')';
 
+    case 'LEAVE_CONVERSATION':
+      return actor + ' left conversation ' + conversation + ' (source: ' + source + ')';
+
     case 'PROJECT_USER_AVAILABILITY_SELF': {
       const targetUser = targetUserLabel(activity);
       const newStatus = actionObj.newStatus || 'unknown';

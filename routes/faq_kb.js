@@ -365,6 +365,13 @@ router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscripti
     }
 
     botEvent.emit('faqbot.update', updatedFaq_kb);
+
+    // A soft-delete is performed via PUT by setting trashed: true (the schema applies a TTL).
+    // Emit faqbot.deleted so the deletion is tracked just like the hard-delete endpoint.
+    if (req.body.trashed === true || req.body.trashed === 'true') {
+      botEvent.emit('faqbot.deleted', { req, chatbot: updatedFaq_kb });
+    }
+
     res.json(updatedFaq_kb);
   });
 });

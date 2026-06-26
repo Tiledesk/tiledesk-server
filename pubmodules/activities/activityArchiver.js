@@ -149,10 +149,11 @@ class ActivityArchiver {
   listen() {
 
     winston.debug('ActivityArchiver listen');
+    console.log("\n\nActivityArchiver listen");
 
     const enabled = process.env.ACTIVITY_HISTORY_ENABLED || "false";
     winston.debug('ActivityArchiver enabled:' + enabled);
-
+    console.log("\n\nActivityArchiver enabled:" + enabled);
     if (enabled === "true") {
       winston.verbose('ActivityArchiver enabled');
     } else {
@@ -459,6 +460,44 @@ class ActivityArchiver {
     });
 
 
+    const requestParticipantsLeaveKey = resolveEventKey('request.participants.leave', requestEvent.queueEnabled);
+    winston.debug('ActivityArchiver requestParticipantsLeaveKey: ' + requestParticipantsLeaveKey);
+
+    requestEvent.on(requestParticipantsLeaveKey, function (data) {
+      setImmediate(() => {
+        try {
+          if (!data || !data.request) {
+            return winston.debug('ActivityArchiver skipping request.participants.leave: missing request');
+          }
+          if (!data.trackLeave) {
+            return winston.debug('ActivityArchiver skipping request.participants.leave: trackLeave false');
+          }
+          if (!assignmentContextUtil.isHumanParticipant(data.member)) {
+            return winston.debug('ActivityArchiver skipping request.participants.leave: bot participant');
+          }
+
+          const activity = new Activity({
+            id_project: data.request.id_project,
+            actor: data.actor || activityActorUtil.actorFromUserId(data.member),
+            verb: 'LEAVE_CONVERSATION',
+            actionObj: {
+              member: data.member,
+              source: data.source || 'api'
+            },
+            target: {
+              type: 'request',
+              id: data.request._id,
+              object: data.request
+            }
+          });
+          save(activity);
+        } catch (e) {
+          winston.error('ActivityArchiver error saving request.participants.leave activity', e);
+        }
+      });
+    });
+
+
     // ********** CHATBOT / FAQ_KB EVENTS **********
 
     const faqbotCreatedKey = resolveEventKey('faqbot.created', botEvent.queueEnabled);
@@ -492,9 +531,9 @@ class ActivityArchiver {
 
     const faqbotDeletedKey = resolveEventKey('faqbot.deleted', botEvent.queueEnabled);
     winston.debug('ActivityArchiver faqbotDeletedKey: ' + faqbotDeletedKey);
-
     botEvent.on(faqbotDeletedKey, function (data) {
       setImmediate(() => {
+        console.log("\n\nfaqbot.deleted");
         try {
           const chatbot = data && data.chatbot;
           if (!chatbot || !chatbot.id_project) {
@@ -636,9 +675,9 @@ class ActivityArchiver {
 
     const kbContentsDeleteKey = resolveEventKey('kb.contents.delete', kbEvent.queueEnabled);
     winston.debug('ActivityArchiver kbContentsDeleteKey: ' + kbContentsDeleteKey);
-
     kbEvent.on(kbContentsDeleteKey, function (data) {
       setImmediate(() => {
+        console.log("\n\nkb.contents.delete");
         try {
           if (!data || !data.project_id || !data.namespace_id) {
             return winston.debug('ActivityArchiver skipping kb.contents.delete: missing data');
@@ -665,9 +704,9 @@ class ActivityArchiver {
 
     const kbContentDeleteKey = resolveEventKey('kb.content.delete', kbEvent.queueEnabled);
     winston.debug('ActivityArchiver kbContentDeleteKey: ' + kbContentDeleteKey);
-
     kbEvent.on(kbContentDeleteKey, function (data) {
       setImmediate(() => {
+        console.log("\n\nkb.content.delete")
         try {
           if (!data || !data.project_id || !data.kb_id) {
             return winston.debug('ActivityArchiver skipping kb.content.delete: missing data');

@@ -181,6 +181,37 @@ function buildAddParticipantOptions(req, member) {
   };
 }
 
+function buildRemoveParticipantOptions(req, member) {
+  if (!isHumanParticipant(member)) {
+    return { trackLeave: false };
+  }
+
+  const { actor: reqActor, source } = assignmentActorContext(req, 'api');
+  const actor = req && req.user && String(reqActor.id) === String(member)
+    ? reqActor
+    : { type: 'user', id: String(member), name: String(member) };
+
+  return {
+    actor,
+    source,
+    member,
+    trackLeave: true
+  };
+}
+
+function buildLeaveParticipantOptions(source, member) {
+  if (!isHumanParticipant(member)) {
+    return { trackLeave: false };
+  }
+
+  return {
+    actor: { type: 'user', id: String(member), name: String(member) },
+    source: source || 'webhook',
+    member,
+    trackLeave: true
+  };
+}
+
 function buildAutoRouteOptions(req, source) {
   const ctx = assignmentActorContext(req, source || 'api');
   return {
@@ -223,6 +254,8 @@ module.exports = {
   verbFromAssignmentType,
   buildSetParticipantsOptions,
   buildAddParticipantOptions,
+  buildRemoveParticipantOptions,
+  buildLeaveParticipantOptions,
   buildAutoRouteOptions,
   buildDepartmentRouteOptions,
   buildInternalOptions

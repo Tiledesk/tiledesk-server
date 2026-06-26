@@ -515,8 +515,13 @@ router.put('/:requestid/replace', async (req, res) => {
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.delete('/:requestid/participants/:participantid', async (req, res) => {
   winston.debug(req.body);
-  //removeParticipantByRequestId(request_id, id_project, member)
-  return requestService.removeParticipantByRequestId(req.params.requestid, req.projectid, req.params.participantid).then(function (updatedRequest) {
+  const leaveOptions = assignmentContextUtil.buildRemoveParticipantOptions(req, req.params.participantid);
+  return requestService.removeParticipantByRequestId(
+    req.params.requestid,
+    req.projectid,
+    req.params.participantid,
+    leaveOptions
+  ).then(function (updatedRequest) {
 
     winston.verbose("participant removed", updatedRequest);
 
