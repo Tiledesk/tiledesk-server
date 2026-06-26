@@ -22,6 +22,9 @@ class Listener {
         var max_polling_time = process.env.MAX_POOLING_TIME || 30000;
         winston.debug("Pooling_delay: "+ pooling_delay);
 
+        var batch_window_ms = process.env.BATCH_WINDOW_MS || 50;
+        winston.debug("Batch window ms: "+ batch_window_ms);
+
         var port = process.env.CACHE_REDIS_PORT || 6379;
         winston.debug("Redis port: "+ port);
 
@@ -56,6 +59,7 @@ class Listener {
             BRAND_NAME: brand_name,
             BASE_POOLING_DELAY: pooling_delay,
             MAX_POLLING_TIME: max_polling_time,
+            BATCH_WINDOW_MS: batch_window_ms,
             log: log
         }, (err) => {
             if (!err) {
