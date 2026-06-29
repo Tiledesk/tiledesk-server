@@ -13,6 +13,21 @@ const DEFAULT_ACTIVITY_LIMIT = 40;
 const LIST_MAX_ACTIVITY_LIMIT = 100;
 const CHART_MAX_ACTIVITY_LIMIT = 1000;
 
+function buildAgentIdQuery(agentId) {
+  const conditions = [
+    { 'target.object.id_user._id': agentId },
+    { 'actor.id': agentId },
+    { 'actionObj.assigneeId': agentId }
+  ];
+
+  if (ObjectId.isValid(agentId)) {
+    const objectId = new ObjectId(agentId);
+    conditions.push({ 'target.object.id_user._id': objectId });
+  }
+
+  return { $or: conditions };
+}
+
 function isChartView(query) {
   return query && (query.chart === 'true' || query.chart === true || query.chart === '1');
 }
@@ -86,10 +101,7 @@ router.get('/', async (req, res) => {
   }
 
   if (req.query.agent_id) {
-    query["$or"] = [
-      { "target.object.id_user._id": req.query.agent_id },
-      { "actor.id": req.query.agent_id }
-    ];
+    query = Object.assign({}, query, buildAgentIdQuery(req.query.agent_id));
   }
 
   if (req.query.activities) {
@@ -195,14 +207,7 @@ router.get('/csv', function (req, res) {
 
   if (req.query.agent_id) {
     winston.debug('req.query.agent', req.query.agent_id);
-    query["$or"] = [
-      { "target.object.id_user._id": new ObjectId(req.query.agent_id) },
-      { "actor.id": req.query.agent_id }
-    ];
-
-    // query["$or"] = [
-    //   { $or: [{"target.object.id_user._id": new ObjectId(req.query.agent_id) }, { "actor.id": new ObjectId(req.query.agent_id) }]}
-    // ];
+    query = Object.assign({}, query, buildAgentIdQuery(req.query.agent_id));
   }
 
   if (req.query.activities) {

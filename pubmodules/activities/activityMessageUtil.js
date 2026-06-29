@@ -31,15 +31,42 @@ function actorLabel(activity) {
   return actor.name || actor.id || 'Someone';
 }
 
-function requestLabel(activity) {
-  const request = activity && activity.target && activity.target.object;
-  if (request && request.request_id) {
-    return request.request_id;
+function conversationObject(activity) {
+  const actionObj = (activity && activity.actionObj) || {};
+  if (actionObj.conversation) {
+    return actionObj.conversation;
   }
-  if (activity && activity.target && activity.target.id) {
-    return String(activity.target.id);
+
+  const target = activity && activity.target;
+  if (target && target.type === 'request') {
+    return target.object;
   }
+
+  return null;
+}
+
+function conversationLabel(activity) {
+  const conversation = conversationObject(activity);
+  if (conversation) {
+    if (conversation.subject) {
+      return conversation.subject;
+    }
+    if (conversation.first_text) {
+      return conversation.first_text;
+    }
+    if (conversation.request_id) {
+      return conversation.request_id;
+    }
+    if (conversation._id) {
+      return String(conversation._id);
+    }
+  }
+
   return 'conversation';
+}
+
+function requestLabel(activity) {
+  return conversationLabel(activity);
 }
 
 function resolveParticipantLabel(activity, participantId) {
@@ -47,10 +74,8 @@ function resolveParticipantLabel(activity, participantId) {
     return 'unknown agent';
   }
 
-  const agents = activity &&
-    activity.target &&
-    activity.target.object &&
-    activity.target.object.participatingAgents;
+  const conversation = conversationObject(activity);
+  const agents = conversation && conversation.participatingAgents;
 
   if (Array.isArray(agents)) {
     for (const agent of agents) {
@@ -65,6 +90,11 @@ function resolveParticipantLabel(activity, participantId) {
         }
       }
     }
+  }
+
+  const target = activity && activity.target;
+  if (target && target.type === 'user' && String(target.id) === String(participantId)) {
+    return targetUserLabel(activity);
   }
 
   return String(participantId);
@@ -115,7 +145,12 @@ function inviteEmailLabel(activity) {
 }
 
 function resolveAssigneeLabel(activity) {
-  const actionObj = activity && activity.actionObj || {};
+  const target = activity && activity.target;
+  if (target && (target.type === 'user' || target.type === 'project_user')) {
+    return targetUserLabel(activity);
+  }
+
+  const actionObj = (activity && activity.actionObj) || {};
   if (actionObj.assigneeName) {
     return actionObj.assigneeName;
   }
@@ -125,7 +160,17 @@ function resolveAssigneeLabel(activity) {
   if (actionObj.assigneeType === 'bot') {
     return actionObj.assigneeId || 'chatbot';
   }
-  return resolveParticipantLabel(activity, actionObj.assigneeId);
+  if (target && target.type === 'bot') {
+    return (target.object && target.object.name) || target.id || 'chatbot';
+  }
+  if (target && target.type === 'department') {
+    return (target.object && target.object.name) || target.id || 'department';
+  }
+  if (actionObj.assigneeId) {
+    return resolveParticipantLabel(activity, actionObj.assigneeId);
+  }
+
+  return 'unknown agent';
 }
 
 function namespaceLabel(activity) {
@@ -196,27 +241,27 @@ function buildDefaultActivityMessage(activity) {
 
   const actionObj = activity.actionObj || {};
   const actor = actorLabel(activity);
-  const conversation = requestLabel(activity);
+  const conversation = conversationLabel(activity);
   const assignee = resolveAssigneeLabel(activity);
   const source = actionObj.source || 'unknown';
 
   switch (activity.verb) {
     case 'REQUEST_ASSIGNED_AUTO':
       if (activity.actor && activity.actor.type === 'system') {
-        return 'System automatically assigned conversation ' + conversation +
-          ' to ' + assignee + ' (source: ' + source + ')';
+        return 'System assigned conversation "' + conversation + '" to ' + assignee +
+          ' (source: ' + source + ')';
       }
-      return actor + ' triggered automatic assignment of conversation ' + conversation +
-        ' to ' + assignee + ' (source: ' + source + ')';
+      return actor + ' triggered automatic assignment of conversation "' + conversation +
+        '" to ' + assignee + ' (source: ' + source + ')';
 
     case 'REQUEST_ASSIGNED_SELF':
-      return actor + ' joined conversation ' + conversation + ' (source: ' + source + ')';
+      return actor + ' joined conversation "' + conversation + '" (source: ' + source + ')';
 
     case 'REQUEST_ASSIGNED_MANUAL': {
       const assigneeType = actionObj.assigneeType || 'user';
       if (assigneeType === 'bot') {
-        let message = actor + ' reassigned conversation ' + conversation +
-          ' to chatbot ' + assignee + ' (source: ' + source + ')';
+        let message = actor + ' reassigned conversation "' + conversation +
+          '" to chatbot ' + assignee + ' (source: ' + source + ')';
         if (actionObj.previousAssigneeId) {
           const previous = resolveParticipantLabel(activity, actionObj.previousAssigneeId);
           message += ' (replaced ' + previous + ')';
@@ -224,16 +269,16 @@ function buildDefaultActivityMessage(activity) {
         return message;
       }
       if (assigneeType === 'department') {
-        let message = actor + ' reassigned conversation ' + conversation +
-          ' to department ' + assignee + ' (source: ' + source + ')';
+        let message = actor + ' reassigned conversation "' + conversation +
+          '" to department ' + assignee + ' (source: ' + source + ')';
         if (actionObj.previousAssigneeId) {
           const previous = resolveParticipantLabel(activity, actionObj.previousAssigneeId);
           message += ' (replaced ' + previous + ')';
         }
         return message;
       }
-      let message = actor + ' manually assigned conversation ' + conversation +
-        ' to ' + assignee + ' (source: ' + source + ')';
+      let message = actor + ' assigned conversation "' + conversation +
+        '" to ' + assignee + ' (source: ' + source + ')';
       if (actionObj.previousAssigneeId) {
         const previous = resolveParticipantLabel(activity, actionObj.previousAssigneeId);
         message += ' (replaced ' + previous + ')';
@@ -243,25 +288,24 @@ function buildDefaultActivityMessage(activity) {
 
     case 'REQUEST_UNASSIGNED':
       if (actionObj.source === 'subscription') {
-        return 'System unassigned ' + assignee + ' from conversation ' + conversation +
-          ' (source: subscription)';
+        return 'System unassigned ' + assignee + ' from conversation "' + conversation +
+          '" (source: subscription)';
       }
-      return actor + ' unassigned ' + assignee + ' from conversation ' + conversation +
-        ' (source: ' + source + ')';
+      return actor + ' unassigned ' + assignee + ' from conversation "' + conversation +
+        '" (source: ' + source + ')';
 
     case 'LEAVE_CONVERSATION':
-      return actor + ' left conversation ' + conversation + ' (source: ' + source + ')';
+      return actor + ' left conversation "' + conversation + '" (source: ' + source + ')';
 
     case 'PROJECT_USER_AVAILABILITY_SELF': {
-      const targetUser = targetUserLabel(activity);
       const newStatus = actionObj.newStatus || 'unknown';
-      return targetUser + ' changed availability status to ' + newStatus;
+      return actor + ' set availability status to ' + newStatus;
     }
 
     case 'PROJECT_USER_AVAILABILITY_SYSTEM': {
       const targetUser = targetUserLabel(activity);
       const newStatus = actionObj.newStatus || 'unknown';
-      return targetUser + ' availability status was changed to ' + newStatus + ' by the system';
+      return actor + ' set ' + targetUser + ' availability status to ' + newStatus;
     }
 
     case 'PROJECT_USER_INVITE': {
@@ -326,6 +370,7 @@ function enrichActivityWithMessage(activity) {
 module.exports = {
   actorLabel,
   targetUserLabel,
+  conversationLabel,
   requestLabel,
   namespaceLabel,
   chatbotLabel,

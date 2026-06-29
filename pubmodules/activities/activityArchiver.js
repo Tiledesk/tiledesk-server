@@ -5,6 +5,7 @@ const kbEvent = require('../../event/kbEvent');
 const assignmentContextUtil = require('../../utils/assignmentContextUtil');
 const projectUserUpdateContextUtil = require('../../utils/projectUserUpdateContextUtil');
 const activityActorUtil = require('../../utils/activityActorUtil');
+const activityTargetUtil = require('./activityTargetUtil');
 const Activity = require('./models/activity');
 const winston = require('../../config/winston');
 
@@ -437,20 +438,8 @@ class ActivityArchiver {
             id_project: data.request.id_project,
             actor: reconciled.actor,
             verb: verb,
-            actionObj: {
-              assigneeId: data.assigneeId,
-              assigneeName: data.assigneeName,
-              assigneeType: data.assigneeType || 'user',
-              assignmentType: data.assignmentType,
-              source: reconciled.source,
-              previousAssigneeId: data.previousAssigneeId,
-              removedParticipants: data.removedParticipants
-            },
-            target: {
-              type: 'request',
-              id: data.request._id,
-              object: data.request
-            }
+            actionObj: activityTargetUtil.buildAssignmentActionObj(data, reconciled),
+            target: activityTargetUtil.buildAssignmentTarget(data, verb)
           });
           save(activity);
         } catch (e) {
