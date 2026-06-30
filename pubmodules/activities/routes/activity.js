@@ -86,7 +86,10 @@ router.get('/', async (req, res) => {
   }
 
   if (req.query.agent_id) {
+    // involvedUserIds covers actor, target user and related user for new records.
+    // The other two clauses keep backward compatibility with legacy records.
     query["$or"] = [
+      { "involvedUserIds": req.query.agent_id },
       { "target.object.id_user._id": req.query.agent_id },
       { "actor.id": req.query.agent_id }
     ];
@@ -196,6 +199,7 @@ router.get('/csv', function (req, res) {
   if (req.query.agent_id) {
     winston.debug('req.query.agent', req.query.agent_id);
     query["$or"] = [
+      { "involvedUserIds": req.query.agent_id },
       { "target.object.id_user._id": new ObjectId(req.query.agent_id) },
       { "actor.id": req.query.agent_id }
     ];

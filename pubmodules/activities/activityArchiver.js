@@ -433,7 +433,7 @@ class ActivityArchiver {
 
           const reconciled = assignmentContextUtil.reconcileAssignmentPayload(data);
 
-          const activity = new Activity({
+          const activityFields = {
             id_project: data.request.id_project,
             actor: reconciled.actor,
             verb: verb,
@@ -451,7 +451,18 @@ class ActivityArchiver {
               id: data.request._id,
               object: data.request
             }
-          });
+          };
+
+          if (data.assigneeId) {
+            activityFields.related = {
+              role: verb === 'REQUEST_UNASSIGNED' ? 'unassigned_user' : 'assignee',
+              type: data.assigneeType || 'user',
+              id: String(data.assigneeId),
+              name: data.assigneeName
+            };
+          }
+
+          const activity = new Activity(activityFields);
           save(activity);
         } catch (e) {
           winston.error('ActivityArchiver error saving request.assigned activity', e);
