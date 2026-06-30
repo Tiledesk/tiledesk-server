@@ -10,7 +10,7 @@ class AuthEvent extends EventEmitter {
 
 const authEvent = new AuthEvent();
 
- var projectuserUpdateKey = 'project_user.update';
+var projectuserUpdateKey = 'project_user.update';
 if (process.env.QUEUE_ENABLED === "true") {
   projectuserUpdateKey = 'project_user.update.queue';
 }
@@ -18,7 +18,9 @@ if (process.env.QUEUE_ENABLED === "true") {
 authEvent.on(projectuserUpdateKey,  function(event) { 
       if (event.updatedProject_userPopulated) {
         var pu = event.updatedProject_userPopulated;
+        console.log("AuthEvent pu.roleType: ", pu.roleType)
         if (pu.roleType === RoleConstants.TYPE_AGENTS) {          
+          console.log("Emit event!!!");
           authEvent.emit("project_user.update.agent", event);
         } else {
           authEvent.emit("project_user.update.user", event);
