@@ -88,7 +88,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
       // winston.debug("role", role);
     
       // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
-      return Project_user.findOne({ id_project: req.projectid, id_user: user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active"}, function (err, puser) {
+      return Project_user.findOne({ id_project: id_project, id_user: user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active"}, function (err, puser) {
       // return Project_user.find({ id_project: req.projectid, role: { $in : role }, status: "active"}, function (err, projectuser) {
         //puser = projectuser
       
@@ -306,6 +306,10 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
   const allowedStatuses = ['active', 'disabled'];
   if (req.body.status !== undefined && allowedStatuses.includes(req.body.status)) {
       update.status = req.body.status;
+  }
+
+  if (req.body.trashed != undefined) {
+    update.trashed = req.body.trashed;
   }
 
   if (req.body["settings.email.notification.conversation.assigned.toyou"]!=undefined) {
@@ -646,7 +650,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     winston.debug("role", role);
     query =  {id_project: req.projectid, role: { $in : role } };
   } else {
-     query =  {id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS };
+    query =  {id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS };
   }
 
   if (!req.query.trashed || req.query.trashed === 'false' || req.query.trashed === false) {
