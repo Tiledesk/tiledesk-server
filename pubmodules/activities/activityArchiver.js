@@ -387,15 +387,15 @@ class ActivityArchiver {
     winston.debug('ActivityArchiver requestCloseKey: ' + requestCloseKey);
 
     requestEvent.on(requestCloseKey, function (request) {
-
-      setImmediate(() => {
-
+      setImmediate(async () => {
         try {
           winston.debug('ActivityArchiver close');
 
+          const actor = await activityActorUtil.resolveActorFromClosedBy(request);
+
           let activity = new Activity({
             id_project: request.id_project,
-            actor: activityActorUtil.actorFromClosedBy(request),
+            actor: actor,
             verb: "REQUEST_CLOSE", 
             actionObj: request,
             target: { 

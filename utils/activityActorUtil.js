@@ -1,5 +1,6 @@
 'use strict';
 
+const User = require('../models/user');
 const projectUserUpdateContextUtil = require('./projectUserUpdateContextUtil');
 
 function actorFromReq(req) {
@@ -100,9 +101,30 @@ function actorFromClosedBy(request) {
   };
 }
 
+async function resolveActorFromClosedBy(request) {
+  const actor = actorFromClosedBy(request);
+
+  if (actor.type !== 'user' || actor.name !== actor.id) {
+    return actor;
+  }
+
+  try {
+    const user = await User.findById(actor.id).select('firstname lastname email').lean().exec();
+    const displayName = user && projectUserUpdateContextUtil.userDisplayName(user);
+    if (displayName) {
+      return Object.assign({}, actor, { name: displayName });
+    }
+  } catch (err) {
+    // keep id fallback
+  }
+
+  return actor;
+}
+
 module.exports = {
   actorFromReq,
   actorFromUserId,
   actorFromClosedBy,
+  resolveActorFromClosedBy,
   resolveId
 };
