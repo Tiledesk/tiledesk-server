@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.19.12
+- Updated messenger-connector to 0.1.30
+
 # 2.19.11
 - Updated payments module
 
