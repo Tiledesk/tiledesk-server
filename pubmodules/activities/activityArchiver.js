@@ -395,11 +395,7 @@ class ActivityArchiver {
 
           let activity = new Activity({
             id_project: request.id_project,
-            actor: { 
-              type: "user", 
-              id: request.closed_by, 
-              name: request.closed_by_name 
-            },
+            actor: activityActorUtil.actorFromClosedBy(request),
             verb: "REQUEST_CLOSE", 
             actionObj: request,
             target: { 

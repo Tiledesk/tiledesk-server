@@ -1,6 +1,19 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
+const DEFAULT_ACTIVITY_TTL_SEC = 30 * 24 * 60 * 60; // 30 days
+
+function ttlSecondsFromEnv(raw, fallbackSec) {
+  if (raw == null || String(raw).trim() === '') return fallbackSec;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? n : fallbackSec;
+}
+
+let expireAfterSeconds = ttlSecondsFromEnv(
+  process.env.ACTIVITY_EXPIRATION_TIME,
+  DEFAULT_ACTIVITY_TTL_SEC
+);
+
 // https://getstream.io/blog/designing-activity-stream-newsfeed-w3c-spec/
 // {
 //   "@context": "http://www.w3.org/ns/activitystreams",
@@ -168,5 +181,7 @@ ActivitySchema.index({ id_project: 1, createdAt: -1 });
 ActivitySchema.index({ id_project: 1, 'actor.id': 1, createdAt: -1 });
 ActivitySchema.index({ id_project: 1, 'target.object.id_user._id': 1, createdAt: -1 });
 ActivitySchema.index({ id_project: 1, involvedUserIds: 1, createdAt: -1 });
+ActivitySchema.index({ createdAt: 1 }, { expireAfterSeconds: expireAfterSeconds }); 
+
 
 module.exports = mongoose.model('activity', ActivitySchema);
