@@ -1,6 +1,7 @@
 'use strict';
 
 const Subscription = require('../models/subscription');
+const Faq_kb = require('../models/faq_kb');
 
 function systemActor() {
   return { type: 'system', id: 'system', name: 'System' };
@@ -42,6 +43,59 @@ function resolveUserId(userRef) {
   }
 
   return String(userRef);
+}
+
+function isBotActor(user) {
+  if (!user) {
+    return false;
+  }
+
+  if (user instanceof Faq_kb) {
+    return true;
+  }
+
+  if (user.constructor && user.constructor.modelName === 'faq_kb') {
+    return true;
+  }
+
+  if (user.sub === 'bot') {
+    return true;
+  }
+
+  return user.type === 'tilebot' || user.subtype === 'chatbot';
+}
+
+function botDisplayName(user) {
+  if (!user || !user.name) {
+    return undefined;
+  }
+  const name = String(user.name).trim();
+  return name || undefined;
+}
+
+function actorFromPrincipal(user) {
+  if (!user) {
+    return systemActor();
+  }
+
+  if (isSubscriptionActor(user)) {
+    return systemActor();
+  }
+
+  if (isBotActor(user)) {
+    const id = resolveUserId(user);
+    return {
+      type: 'bot',
+      id: id,
+      name: botDisplayName(user) || id
+    };
+  }
+
+  return {
+    type: 'user',
+    id: resolveUserId(user),
+    name: user.fullName || user.fullname || userDisplayName(user) || undefined
+  };
 }
 
 function isSubscriptionActor(user) {
@@ -234,6 +288,9 @@ module.exports = {
   systemActor,
   userDisplayName,
   resolveUserId,
+  isBotActor,
+  botDisplayName,
+  actorFromPrincipal,
   isSubscriptionActor,
   isSystemAvailabilityInitiator,
   isAvailabilityUpdate,

@@ -7,17 +7,7 @@ function systemActor() {
 }
 
 function actorFromUser(user) {
-  if (!user) {
-    return systemActor();
-  }
-  if (projectUserUpdateContextUtil.isSubscriptionActor(user)) {
-    return systemActor();
-  }
-  return {
-    type: 'user',
-    id: String(user.id || user._id),
-    name: user.fullName || user.fullname || projectUserUpdateContextUtil.userDisplayName(user) || undefined
-  };
+  return projectUserUpdateContextUtil.actorFromPrincipal(user);
 }
 
 function assignmentActorContext(req, defaultSource) {
