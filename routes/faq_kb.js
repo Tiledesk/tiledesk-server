@@ -537,7 +537,7 @@ router.get('/:faq_kbid/subagents', roleChecker.hasRoleOrTypes('admin', ['bot', '
 
   let subagents;
   try {
-    subagents = await Faq_kb.find({ id_project: id_project, parent_id: chatbot_id }).sort({ createdAt: -1 }).exec().lean();
+    subagents = await Faq_kb.find({ id_project: id_project, parent_id: chatbot_id }).sort({ createdAt: -1 }).lean().exec();
     return res.status(200).send(subagents);
   } catch (err) {
     winston.error("Error finding subagents: ", err);

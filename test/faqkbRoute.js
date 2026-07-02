@@ -1419,7 +1419,7 @@ describe('FaqKBRoute', () => {
 
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
-                                    expect(res.body.name).to.equal("Subagent");
+                                    expect(res.body.name).to.equal("Subagent 1");
                                     expect(res.body.language).to.equal("en");
                                     expect(res.body.parent_id).to.equal(parent_id);
 
@@ -1434,7 +1434,7 @@ describe('FaqKBRoute', () => {
 
                                             res.should.have.status(200);
                                             res.body.should.be.a('object');
-                                            expect(res.body.name).to.equal("Subagent");
+                                            expect(res.body.name).to.equal("Subagent 2");
                                             expect(res.body.language).to.equal("en");
                                             expect(res.body.parent_id).to.equal(parent_id);
 
@@ -1449,8 +1449,8 @@ describe('FaqKBRoute', () => {
                                                     res.should.have.status(200);
                                                     res.body.should.be.a('array');
                                                     expect(res.body.length).to.equal(2);
-                                                    expect(res.body[0].name).to.equal("Subagent 1");
-                                                    expect(res.body[1].name).to.equal("Subagent 2");
+                                                    expect(res.body[0].name).to.equal("Subagent 2");
+                                                    expect(res.body[1].name).to.equal("Subagent 1");
 
                                                     done();
                                                 })
