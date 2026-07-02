@@ -535,7 +535,7 @@ router.get('/:faq_kbid/published', roleChecker.hasRoleOrTypes('admin', ['bot', '
   const id_project = req.projectid;
   const chatbot_id = req.params.faq_kbid;
 
-  let published_chatbots = await faq_kb.find({ id_project: id_project, root_id: chatbot_id })
+  let published_chatbots = await faq_kb.find({ id_project: id_project, parent_id: chatbot_id })
     .sort({ publishedAt: -1 })
     .limit(100)
     .populate('publishedBy', '_id firstname lastname email')
