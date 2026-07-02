@@ -3,9 +3,12 @@ var winston = require('../../config/winston');
 const requestEvent = require('../../event/requestEvent');
 const messageEvent = require('../../event/messageEvent');
 const leadEvent = require('../../event/leadEvent');
+const projectEvent = require('../../event/projectEvent');
 
 const botEvent = require('../../event/botEvent');
 const authEvent = require('../../event/authEvent');
+const kbEvent = require('../../event/kbEvent');
+const projectUserUpdateContextUtil = require('../../utils/projectUserUpdateContextUtil');
 // https://elements.heroku.com/addons/cloudamqp
 // https://gist.github.com/carlhoerberg/006b01ac17a0a94859ba#file-reconnect-js
 // http://www.rabbitmq.com/tutorials/tutorial-one-javascript.html
@@ -160,6 +163,11 @@ function startWorker() {
           winston.info("Data queue", oka)
         });
 
+        ch.bindQueue(_ok.queue, exchange, "request_assigned", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: request_assigned");
+          winston.info("Data queue", oka)
+        });
+
         ch.bindQueue(_ok.queue, exchange, "request_update", {}, function(err3, oka) {
           winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: request_update");
           winston.info("Data queue", oka)
@@ -189,8 +197,63 @@ function startWorker() {
           winston.info("Data queue", oka)
         });
 
+        ch.bindQueue(_ok.queue, exchange, "project_user_invite", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: project_user_invite");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "project_user_invite_pending", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: project_user_invite_pending");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "project_user_delete", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: project_user_delete");
+          winston.info("Data queue", oka)
+        });
+
         ch.bindQueue(_ok.queue, exchange, "faqbot_update", {}, function(err3, oka) {
           winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: faqbot_update");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "faqbot_created", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: faqbot_created");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "faqbot_deleted", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: faqbot_deleted");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "faqbot_publish", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: faqbot_publish");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "kb_namespace_create", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: kb_namespace_create");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "kb_namespace_delete", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: kb_namespace_delete");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "kb_contents_add", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: kb_contents_add");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "kb_contents_delete", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: kb_contents_delete");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "kb_content_delete", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: kb_content_delete");
           winston.info("Data queue", oka)
         });
 
@@ -214,6 +277,11 @@ function startWorker() {
           winston.info("Data queue", oka)
         });
 
+        // Ricalcolo massivo expiresAt dopo cambio retention progetto (stesso exchange topic degli altri job)
+        ch.bindQueue(_ok.queue, exchange, "project_retention_recalc", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: project_retention_recalc");
+          winston.info("Data queue", oka)
+        });
 
         ch.consume(queueName, processMsg, { noAck: false });
         winston.info("Worker is started");
@@ -278,6 +346,11 @@ function work(msg, cb) {
     // requestEvent.emit('request.update.queue',  msg.content);
     requestEvent.emit('request.participants.update.queue',  JSON.parse(message_string));
   }   
+
+  if (topic === 'request_assigned') {
+    winston.debug("reconnect here topic:" + topic);
+    requestEvent.emit('request.assigned.queue', JSON.parse(message_string));
+  }
   
   if (topic === 'request_close') {
     winston.debug("reconnect here topic:" + topic); 
@@ -307,10 +380,57 @@ function work(msg, cb) {
     authEvent.emit('project_user.update.queue', JSON.parse(message_string));
   }
 
+  if (topic === 'project_user_invite') {
+    winston.debug("reconnect here topic:" + topic);
+    authEvent.emit('project_user.invite.queue', JSON.parse(message_string));
+  }
+
+  if (topic === 'project_user_invite_pending') {
+    winston.debug("reconnect here topic:" + topic);
+    authEvent.emit('project_user.invite.pending.queue', JSON.parse(message_string));
+  }
+
+  if (topic === 'project_user_delete') {
+    winston.debug("reconnect here topic:" + topic);
+    authEvent.emit('project_user.delete.queue', JSON.parse(message_string));
+  }
+
   if (topic === 'faqbot_update') {
     winston.debug("reconnect here topic faqbot_update:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
     botEvent.emit('faqbot.update.queue',  JSON.parse(message_string));
+  }
+
+  if (topic === 'faqbot_created') {
+    botEvent.emit('faqbot.created.queue', JSON.parse(message_string));
+  }
+
+  if (topic === 'faqbot_deleted') {
+    botEvent.emit('faqbot.deleted.queue', JSON.parse(message_string));
+  }
+
+  if (topic === 'faqbot_publish') {
+    botEvent.emit('faqbot.publish.queue', JSON.parse(message_string));
+  }
+
+  if (topic === 'kb_namespace_create') {
+    kbEvent.emit('kb.namespace.create.queue', JSON.parse(message_string));
+  }
+
+  if (topic === 'kb_namespace_delete') {
+    kbEvent.emit('kb.namespace.delete.queue', JSON.parse(message_string));
+  }
+
+  if (topic === 'kb_contents_add') {
+    kbEvent.emit('kb.contents.add.queue', JSON.parse(message_string));
+  }
+
+  if (topic === 'kb_contents_delete') {
+    kbEvent.emit('kb.contents.delete.queue', JSON.parse(message_string));
+  }
+
+  if (topic === 'kb_content_delete') {
+    kbEvent.emit('kb.content.delete.queue', JSON.parse(message_string));
   }
 
   if (topic === 'lead_create') {
@@ -336,7 +456,10 @@ function work(msg, cb) {
     requestEvent.emit('request.snapshot.update.queue',  JSON.parse(message_string));
   }
 
-
+  if (topic === 'project_retention_recalc') {
+    winston.debug("reconnect here topic project_retention_recalc:" + topic);
+    projectEvent.emit('project.retentionRecalc.queue', JSON.parse(message_string));
+  }
 
   cb(true);
 //   WebSocket.cb(true);
@@ -356,6 +479,99 @@ function closeOnErr(err) {
 //   publish(exchange, "request_create", Buffer.from("work work work: "+d));
 //   publish(exchange, "request_update", Buffer.from("work2 work work: "+d));
 // }, 1000);
+
+function serializeReqUser(req) {
+  if (!req || !req.user) {
+    return { user: null };
+  }
+  return {
+    user: {
+      id: req.user.id,
+      fullName: req.user.fullName
+    }
+  };
+}
+
+function serializeProjectUserInvitePayload(data) {
+  let user = undefined;
+  let body = undefined;
+  if (data.req) {
+    if (data.req.user) {
+      const u = data.req.user;
+      user = {
+        id: u.id || u._id,
+        _id: u._id,
+        firstname: u.firstname,
+        lastname: u.lastname,
+        fullName: projectUserUpdateContextUtil.userDisplayName(u)
+      };
+    }
+    if (data.req.body) {
+      body = data.req.body;
+    }
+  }
+  return {
+    req: {
+      user: user,
+      body: body,
+      projectid: data.req && data.req.projectid
+    },
+    savedProject_userPopulated: data.savedProject_userPopulated,
+    updatedProject_userPopulated: data.updatedProject_userPopulated,
+    updatedPuserPopulated: data.updatedPuserPopulated,
+    savedPendingInvitation: data.savedPendingInvitation
+  };
+}
+
+function serializeProjectUserDeletePayload(data) {
+  let user = undefined;
+  if (data.req && data.req.user) {
+    const u = data.req.user;
+    user = {
+      id: u.id || u._id,
+      _id: u._id,
+      firstname: u.firstname,
+      lastname: u.lastname,
+      fullName: projectUserUpdateContextUtil.userDisplayName(u)
+    };
+  }
+  return {
+    req: {
+      user: user,
+      projectid: data.req && data.req.projectid
+    },
+    project_userPopulated: data.project_userPopulated,
+    deleteType: data.deleteType
+  };
+}
+
+function serializeFaqbotActivityPayload(data) {
+  return {
+    chatbot: data.chatbot,
+    req: serializeReqUser(data.req),
+    id_project: data.id_project,
+    publishedBotId: data.publishedBotId,
+    release_note: data.release_note
+  };
+}
+
+function serializeKbActivityPayload(data) {
+  return {
+    req: serializeReqUser(data.req),
+    project_id: data.project_id,
+    namespace_id: data.namespace_id,
+    namespace_name: data.namespace_name,
+    savedNamespace: data.savedNamespace,
+    contentAddType: data.contentAddType,
+    count: data.count,
+    type: data.type,
+    source: data.source,
+    deletedCount: data.deletedCount,
+    deleteMode: data.deleteMode,
+    kb_id: data.kb_id,
+    kb: data.kb
+  };
+}
 
 
 function listen() {
@@ -395,6 +611,13 @@ function listen() {
       setImmediate(() => {
         publish(exchange, "request_participants_update", Buffer.from(JSON.stringify(request)));
         winston.debug("reconnect participants.update published")
+      });
+    });
+
+    requestEvent.on('request.assigned', function(data) {
+      setImmediate(() => {
+        publish(exchange, "request_assigned", Buffer.from(JSON.stringify(data)));
+        winston.debug("reconnect request.assigned published")
       });
     });
 
@@ -446,15 +669,49 @@ function listen() {
         let body = undefined;
         if (data.req ) {
           if (data.req.user) { //i think is null from chat21webhook 
-            user = data.req.user;
+            const u = data.req.user;
+            user = {
+              id: u.id || u._id,
+              _id: u._id,
+              firstname: u.firstname,
+              lastname: u.lastname,
+              fullName: projectUserUpdateContextUtil.userDisplayName(u)
+            };
           }
           if (data.req.body) { 
             body = data.req.body;
           }
         }
-        var dat = {updatedProject_userPopulated: data.updatedProject_userPopulated, req: {user: user, body: body}}; //remove request
+        var dat = {
+          updatedProject_userPopulated: data.updatedProject_userPopulated,
+          req: { user: user, body: body, params: data.req && data.req.params },
+          previousUserAvailable: data.previousUserAvailable,
+          previousProfileStatus: data.previousProfileStatus,
+          updateContext: data.updateContext
+        };
         winston.debug("dat",dat);
         publish(exchange, "project_user_update", Buffer.from(JSON.stringify(dat)));
+      });
+    });
+
+    authEvent.on('project_user.invite', function(data) {
+      setImmediate(() => {
+        publish(exchange, "project_user_invite", Buffer.from(JSON.stringify(serializeProjectUserInvitePayload(data))));
+        winston.debug("reconnect project_user.invite published");
+      });
+    });
+
+    authEvent.on('project_user.invite.pending', function(data) {
+      setImmediate(() => {
+        publish(exchange, "project_user_invite_pending", Buffer.from(JSON.stringify(serializeProjectUserInvitePayload(data))));
+        winston.debug("reconnect project_user.invite.pending published");
+      });
+    });
+
+    authEvent.on('project_user.delete', function(data) {
+      setImmediate(() => {
+        publish(exchange, "project_user_delete", Buffer.from(JSON.stringify(serializeProjectUserDeletePayload(data))));
+        winston.debug("reconnect project_user.delete published");
       });
     });
 
@@ -464,6 +721,62 @@ function listen() {
         winston.debug("reconnect faqbot.update")
         publish(exchange, "faqbot_update", Buffer.from(JSON.stringify(bot)));
         winston.debug("reconnect: "+ Buffer.from(JSON.stringify(bot)))
+      });
+    });
+
+    botEvent.on('faqbot.created', function(data) {
+      setImmediate(() => {
+        publish(exchange, "faqbot_created", Buffer.from(JSON.stringify(serializeFaqbotActivityPayload(data))));
+        winston.debug("reconnect faqbot.created published");
+      });
+    });
+
+    botEvent.on('faqbot.deleted', function(data) {
+      setImmediate(() => {
+        publish(exchange, "faqbot_deleted", Buffer.from(JSON.stringify(serializeFaqbotActivityPayload(data))));
+        winston.debug("reconnect faqbot.deleted published");
+      });
+    });
+
+    botEvent.on('faqbot.publish', function(data) {
+      setImmediate(() => {
+        publish(exchange, "faqbot_publish", Buffer.from(JSON.stringify(serializeFaqbotActivityPayload(data))));
+        winston.debug("reconnect faqbot.publish published");
+      });
+    });
+
+    kbEvent.on('kb.namespace.create', function(data) {
+      setImmediate(() => {
+        publish(exchange, "kb_namespace_create", Buffer.from(JSON.stringify(serializeKbActivityPayload(data))));
+        winston.debug("reconnect kb.namespace.create published");
+      });
+    });
+
+    kbEvent.on('kb.namespace.delete', function(data) {
+      setImmediate(() => {
+        publish(exchange, "kb_namespace_delete", Buffer.from(JSON.stringify(serializeKbActivityPayload(data))));
+        winston.debug("reconnect kb.namespace.delete published");
+      });
+    });
+
+    kbEvent.on('kb.contents.add', function(data) {
+      setImmediate(() => {
+        publish(exchange, "kb_contents_add", Buffer.from(JSON.stringify(serializeKbActivityPayload(data))));
+        winston.debug("reconnect kb.contents.add published");
+      });
+    });
+
+    kbEvent.on('kb.contents.delete', function(data) {
+      setImmediate(() => {
+        publish(exchange, "kb_contents_delete", Buffer.from(JSON.stringify(serializeKbActivityPayload(data))));
+        winston.debug("reconnect kb.contents.delete published");
+      });
+    });
+
+    kbEvent.on('kb.content.delete', function(data) {
+      setImmediate(() => {
+        publish(exchange, "kb_content_delete", Buffer.from(JSON.stringify(serializeKbActivityPayload(data))));
+        winston.debug("reconnect kb.content.delete published");
       });
     });
 
@@ -494,6 +807,13 @@ function listen() {
       });
     });
 
+    // Inoltra sul broker il job di ricalcolo expiresAt (il processo worker emetterà project.retentionRecalc.queue)
+    projectEvent.on('project.retentionRecalc', function(payload) {
+      setImmediate(() => {
+        winston.debug("reconnect project.retentionRecalc publish");
+        publish(exchange, "project_retention_recalc", Buffer.from(JSON.stringify(payload)));
+      });
+    });
 
     
 
@@ -504,7 +824,9 @@ if (process.env.QUEUE_ENABLED === "true") {
     messageEvent.queueEnabled = true;
     authEvent.queueEnabled = true;
     botEvent.queueEnabled = true;
+    kbEvent.queueEnabled = true;
     leadEvent.queueEnabled = true;
+    projectEvent.queueEnabled = true;
     listen();
     start();
     winston.info("Queue enabled. endpoint: " + url );

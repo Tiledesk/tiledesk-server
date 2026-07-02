@@ -1,0 +1,18 @@
+[
+    {
+        "id": "tiledesk-communicator",
+        "name": "Tiledesk Communicator",
+        "url": "https://stage.eks.tiledesk.com/mcp-tools/communicator/mcp",
+        "native": true,
+        "transport": "streamable_http",
+        "description": "Tiledesk Communicator is a MCP server that allows you to communicate with the Tiledesk platform."
+    },
+    {
+        "id": "tiledesk-data-table",
+        "name": "Tiledesk Data Table",
+        "url": "https://stage.eks.tiledesk.com/mcp-tools/data-table/mcp",
+        "native": true,
+        "transport": "streamable_http",
+        "description": "Tiledesk Data Table is a MCP server that allows you to manage data tables in the Tiledesk platform."
+    }
+]

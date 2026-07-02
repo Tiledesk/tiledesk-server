@@ -1217,6 +1217,7 @@ describe('FaqKBRoute', () => {
                                     if (err) { console.error("err: ", err); }
                                     if (log) { console.log("res.body", res.body); }
 
+                                    console.log("chatbot trashed: ", res.body);
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
                                     expect(res.body.trashed).to.equal(true);
