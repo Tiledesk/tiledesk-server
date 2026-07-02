@@ -161,6 +161,10 @@ var Faq_kbSchema = new Schema({
   release_note: {
     type: String,
     required: false
+  },
+  parent_id: {
+    type: String,
+    required: false
   }
 },{
   timestamps: true
