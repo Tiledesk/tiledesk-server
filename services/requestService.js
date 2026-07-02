@@ -260,13 +260,15 @@ class RequestService {
       //winston.info("main_flow_cache_3 route");
 
       // Find request
-      let query = Request.findOne({ request_id, id_project });
-      if (cacheEnabler.request) {
-        query = query.cache(cacheUtil.defaultTTL, id_project + ":requests:request_id:" + request_id + ":simple");
-        winston.debug('request cache enabled');
-      }
-      
-      const request = await query.exec();
+      // Cache disabled: a stale cached document can have an outdated __v and cause
+      // Mongoose VersionError on save ("No matching document found for id ... version N").
+      // let query = Request.findOne({ request_id, id_project });
+      // if (cacheEnabler.request) {
+      //   query = query.cache(cacheUtil.defaultTTL, id_project + ":requests:request_id:" + request_id + ":simple");
+      //   winston.debug('request cache enabled');
+      // }
+      // const request = await query.exec();
+      const request = await Request.findOne({ request_id, id_project }).exec();
 
       if (!request) {
         throw new Error(`Request not found: ${request_id}`);
@@ -427,18 +429,18 @@ class RequestService {
       // winston.debug("request_id", request_id);
       // winston.debug("newstatus", newstatus);
 
-    // winston.info("main_flow_cache_3 reroute"); //but it is cached
-      
-
-      let q = Request
-        .findOne({ request_id: request_id, id_project: id_project });
-
-      if (cacheEnabler.request) {
-        q.cache(cacheUtil.defaultTTL, id_project + ":requests:request_id:" + request_id + ":simple")      //request_cache
-        winston.debug('request cache enabled');
-      }
-
-      return q.exec(function (err, request) {
+      // Cache disabled: a stale cached document can have an outdated __v and cause
+      // Mongoose VersionError on save ("No matching document found for id ... version N").
+      // let q = Request
+      //   .findOne({ request_id: request_id, id_project: id_project });
+      // if (cacheEnabler.request) {
+      //   q.cache(cacheUtil.defaultTTL, id_project + ":requests:request_id:" + request_id + ":simple");
+      //   winston.debug('request cache enabled');
+      // }
+      // return q.exec(function (err, request) {
+      return Request
+        .findOne({ request_id: request_id, id_project: id_project })
+        .exec(function (err, request) {
 
         if (err) {
           winston.error(err);
