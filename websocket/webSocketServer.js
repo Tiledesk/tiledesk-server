@@ -916,9 +916,10 @@ class WebSocketServer {
     eventEvent.on(eventEmitKey, function (event) {
       setImmediate(async () => {
         winston.debug('event', event);
-        if (event.project_user === undefined) {
-          //with "faqbot.answer_not_found" project_user is undefined but it's ok 
-          winston.debug('not sending with ws event with project_user undefined', event);
+        if (event.project_user === undefined || event.project_user === null) {
+          //with "faqbot.answer_not_found" project_user is undefined but it's ok
+          //project_user can also be null when populate does not resolve (e.g. agent removed by smart assignment)
+          winston.debug('not sending with ws event with project_user undefined or null', event);
           return;
         }
         pubSubServer.handlePublishMessage('/' + event.id_project + '/events/' + event.project_user._id, event, undefined, true, "CREATE");
