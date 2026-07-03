@@ -61,6 +61,7 @@ class Listener {
         var that = this;
 
         departmentEvent.on('operator.select.base2', async (res) => {
+          console.log("## operator.select.base2 event caught");
             // departmentEvent.prependListener('operator.select', async (data) => {
             
               var operatorsResult = res.result;
@@ -73,6 +74,7 @@ class Listener {
             if (disableWebHookCall===true) {      
               winston.debug("operator.select.base2 disableWebHookCall enabled: "+ disableWebHookCall);
               // return callNextEvent('operator.select', res);
+              console.log("## operator.select.base2 resolve with disableWebHookCall enabled");
               return res.resolve(operatorsResult);
           
             }
@@ -91,9 +93,10 @@ class Listener {
             if (project && project.settings && project.settings.chat_limit_on && project.settings.max_agent_assigned_chat) {
               max_agent_assigned_chat = project.settings.max_agent_assigned_chat;
               winston.debug('operator.select max_agent_assigned_chat: '+max_agent_assigned_chat);   
-          
+              console.log("## operator.select.base2 max_agent_assigned_chat: "+ max_agent_assigned_chat);
             } else {
               winston.debug("chat_limit_on not defined calling next ");
+              console.log("## operator.select.base2 chat_limit_on not defined calling next ");
               return departmentEvent.callNextEvent('operator.select', res);
             }
           
@@ -124,6 +127,7 @@ class Listener {
                 var count =  await Request.countDocuments(query);
                 winston.debug("department operators count: "+ count);
                 operatorsResult.available_agents_request.push({project_user: aa, openRequetsCount : count});
+                console.log("## operator.select.base2 available_agents_request: ", operatorsResult.available_agents_request);
           
               }
           
@@ -137,6 +141,7 @@ class Listener {
               var available_agents_request = operatorsResult.available_agents_request;
               var available_agents_not_busy = [];
               if (available_agents_request && available_agents_request.length>0) {
+                console.log("## operator.select.base2 available_agents_request length > 0: ", available_agents_request.length);
                 for (const aa of available_agents_request) {
                 // console.log("aa.openRequetsCount ", aa.openRequetsCount, " for:", aa.project_user.id_user);
           
