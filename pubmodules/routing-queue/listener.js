@@ -177,6 +177,7 @@ class Listener {
               if (res.context && res.context.request  && res.context.request && 
                 res.context.request.attributes && res.context.request.attributes.abandoned_by_project_users ) {  //&& res.context.request.attributes.queue_important==false  (vip sla continuo reassign)
                   
+                  console.log("## operator.select.base2 context: ", JSON.stringify(res.context));
                   // var abandoned_by_project_users= {"5ecd44cfa3f5670034109b44":true,"5ecd56a10e7d2d00343203cc":true}
 
                   winston.debug("res.context.request.attributes.abandoned_by_project_users: ", res.context.request.attributes.abandoned_by_project_users );
