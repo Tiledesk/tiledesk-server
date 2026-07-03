@@ -76,6 +76,8 @@ class JobsManager {
 
     listenActivityArchiver(activityArchiver) {
         winston.info("JobsManager listenActivityArchiver started"); 
+        console.log("\n\n (jobsManager) listenActivityArchiver: ", activityArchiver);
+        console.log("\n\n (jobsManager) jobWorkerEnabled: ", this.jobWorkerEnabled);
         if ( this.jobWorkerEnabled == true) {
             return winston.info("JobsManager jobWorkerEnabled is enabled. Skipping listener for Activity Archiver");  
         } 
@@ -101,6 +103,25 @@ class JobsManager {
         }
         this.multiWorkerQueue = multiWorkerQueue;
         this.multiWorkerQueue.startJobsWorker();
+    }
+
+    listenRequestRetention(requestRetention) {
+        winston.info("JobsManager listenRequestRetention started");
+        if (this.jobWorkerEnabled == true) {
+            return winston.info("JobsManager jobWorkerEnabled is enabled. Skipping listener for Request Retention");  
+        }
+        this.requestRetention = requestRetention;
+        this.requestRetention.listen();
+    }
+
+    /** Ricalcolo batch expiresAt dopo cambio retention progetto (stesso criterio di skip dell’API se JOB_WORKER_ENABLED). */
+    listenProjectRequestsExpiresRecalc(projectRequestsExpiresRecalc) {
+        winston.info("JobsManager listenProjectRequestsExpiresRecalc started");
+        if (this.jobWorkerEnabled == true) {
+            return winston.info("JobsManager jobWorkerEnabled is enabled. Skipping listener for project requests expires recalc");
+        }
+        this.projectRequestsExpiresRecalc = projectRequestsExpiresRecalc;
+        this.projectRequestsExpiresRecalc.listen();
     }
 
     // listenTrainingQueue(trainingQueue) {
