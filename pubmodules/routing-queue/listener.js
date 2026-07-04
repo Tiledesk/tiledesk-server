@@ -111,7 +111,7 @@ class Listener {
       const lastOperatorIndex = available_agents_not_busy.findIndex(projectUser => projectUser.id_user.toString() === lastOperatorId);
       winston.debug("(Listener) lastOperatorIndex: " + lastOperatorIndex);
 
-      const nextOperator = that.nextOperator(available_agents_not_busy, lastOperatorIndex);
+      const nextOperator = this.nextOperator(available_agents_not_busy, lastOperatorIndex);
       
       let nextOperatorId;
       if (nextOperator && nextOperator.id_user) {
