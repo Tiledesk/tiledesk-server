@@ -52,6 +52,7 @@ class Listener {
 
     return Request.countDocuments({ id_project: id_project, participantsAgents: id_user, status: { $lt: 1000 }, draft: { $in: [null, false] }, workingStatus: { $ne: 'pending' } }, (err, requestsCount) => {
       winston.verbose("requestsCount for id_user: ", id_user, "and project: ", id_project, "-->", requestsCount);
+      console.log("requestsCount for id_user: ", id_user, "and project: ", id_project, "-->", requestsCount);
       if (err) {
         return winston.error(err);
       }
@@ -64,9 +65,10 @@ class Listener {
           // winston.debug("Route queue number_assigned_requests +1 :" + updatedPU.id);
           // winston.debug("Route queue number_assigned_requests +1 :" + updatedPU.id);
           winston.debug("Route queue number_assigned_requests updated to " + requestsCount + "for project user " + updatedPU.id);
-  
+          console.log("Route queue number_assigned_requests updated to " + requestsCount + "for project user " + updatedPU.id);
           updatedPU.populate({ path: 'id_user', select: { 'firstname': 1, 'lastname': 1 } }, function (err, updatedProject_userPopulated) {
   
+
             var pu = updatedProject_userPopulated.toJSON();
   
             return Project.findById(id_project).exec(function (err, project) {
@@ -131,6 +133,7 @@ class Listener {
                 var userid = user.id || user._id;
                 winston.debug("updateParticipatingProjectUsers userid: "+userid); 
 
+                console.log("updateParticipatingProjectUsers userid: "+userid);
                 this.updateProjectUser(userid, request.id_project, operation);                
             });
         } 
@@ -188,6 +191,7 @@ class Listener {
           var request = data.request;
           var member = data.member;
           setImmediate(() => {
+            console.log("requestParticipantsJoinKey member: "+member);
             this.updateProjectUser(member, request.id_project, 1);          
           });
         });
@@ -204,6 +208,7 @@ class Listener {
           var request = data.request;
           var member = data.member;
           setImmediate(() => {
+            console.log("requestParticipantsLeaveKey member: "+member);
             this.updateProjectUser(member, request.id_project, -1);          
           });
         });
@@ -225,11 +230,13 @@ class Listener {
 
             addedParticipants.forEach(participant => {
               winston.debug('addedParticipants participant', participant);
+              console.log("addedParticipants participant: "+participant);
               this.updateProjectUser(participant, request.id_project, 1);          
             });
 
             removedParticipants.forEach(participant => {
               winston.debug('removedParticipants participant', participant);
+              console.log("removedParticipants participant: "+participant);
               this.updateProjectUser(participant, request.id_project, -1);          
             });
 
@@ -252,6 +259,7 @@ class Listener {
           setImmediate(() => {
             participantIds.forEach(id_user => {
               if (id_user && !String(id_user).startsWith('bot_')) {
+                console.log("requestWorkingStatusUpdateKey id_user: "+id_user);
                 this.updateProjectUser(id_user, request.id_project, 0);
               }
             });
