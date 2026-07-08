@@ -154,7 +154,7 @@ router.get('/:id/rows/list', async function (req, res) {
     const rows = await dataTableService.listRowsWithFilter(
       req.projectid,
       req.params.id,
-      getRowsListParams(req)
+      Object.assign({}, getRowsListParams(req), { sort: -1, limit: 200 })
     );
     if (rows === null) return res.status(404).send({ success: false, error: 'Table not found' });
     res.status(200).send(rows);

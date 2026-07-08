@@ -341,7 +341,15 @@ class DataTableService {
       Object.assign(baseQuery, filter);
     }
 
-    const rows = await TableRow.find(baseQuery).sort({ createdAt: 1 });
+    const sortOrder = params.sort === -1 || params.sort === 'desc' ? -1 : 1;
+    let query = TableRow.find(baseQuery).sort({ createdAt: sortOrder });
+    if (params.limit != null) {
+      const limit = parseInt(params.limit, 10);
+      if (!isNaN(limit) && limit > 0) {
+        query = query.limit(limit);
+      }
+    }
+    const rows = await query;
     return rows.map(function (row) {
       return formatRowForList(row, schema);
     });
