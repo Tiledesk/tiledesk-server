@@ -18,5 +18,9 @@ module.exports = {
     voice_twilio: {
         default: 'blank_voice_twilio',
         templates: ['empty', 'blank_voice_twilio']
+    },
+    subagent: {
+        default: 'blank_subagent',
+        templates: ['empty', 'blank_subagent']
     }
 }
