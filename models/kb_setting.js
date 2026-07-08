@@ -20,7 +20,6 @@ let expireAnsweredAfterSeconds = ttlSecondsFromEnv(
   DEFAULT_ANSWERED_TTL_SEC
 );
 
-
 const EngineSchema = new Schema({
   name: {
     type: String,

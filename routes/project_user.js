@@ -646,7 +646,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     winston.debug("role", role);
     query =  {id_project: req.projectid, role: { $in : role } };
   } else {
-     query =  {id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS };
+    query =  {id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS };
   }
 
   if (!req.query.trashed || req.query.trashed === 'false' || req.query.trashed === false) {
