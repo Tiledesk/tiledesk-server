@@ -423,16 +423,16 @@ class RequestService {
 
       // Cache disabled: a stale cached document can have an outdated __v and cause
       // Mongoose VersionError on save ("No matching document found for id ... version N").
-      // let q = Request
-      //   .findOne({ request_id: request_id, id_project: id_project });
-      // if (cacheEnabler.request) {
-      //   q.cache(cacheUtil.defaultTTL, id_project + ":requests:request_id:" + request_id + ":simple");
-      //   winston.debug('request cache enabled');
-      // }
-      // return q.exec(function (err, request) {
-      return Request
-        .findOne({ request_id: request_id, id_project: id_project })
-        .exec(function (err, request) {
+      let q = Request
+        .findOne({ request_id: request_id, id_project: id_project });
+      if (cacheEnabler.request) {
+        q.cache(cacheUtil.defaultTTL, id_project + ":requests:request_id:" + request_id + ":simple");
+        winston.debug('request cache enabled');
+      }
+      return q.exec(function (err, request) {
+      // return Request
+      //   .findOne({ request_id: request_id, id_project: id_project })
+      //   .exec(function (err, request) {
 
         if (err) {
           winston.error(err);
