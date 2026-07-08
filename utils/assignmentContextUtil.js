@@ -1,6 +1,7 @@
 'use strict';
 
 const projectUserUpdateContextUtil = require('./projectUserUpdateContextUtil');
+const winston = require('../config/winston');
 
 function systemActor() {
   return { type: 'system', id: 'system', name: 'System' };
@@ -21,7 +22,37 @@ function assignmentActorContext(req, defaultSource) {
     return { actor: systemActor(), source: 'subscription' };
   }
 
-  return { actor: actorFromUser(req.user), source: source };
+  const actor = actorFromUser(req.user);
+  const isBot = projectUserUpdateContextUtil.isBotActor(req.user);
+
+  if (isBot && actor.type !== 'bot') {
+    winston.warn('assignmentActorContext bot principal resolved as non-bot actor', {
+      actor: actor,
+      principal_id: projectUserUpdateContextUtil.resolveUserId(req.user),
+      principal_name: req.user && req.user.name,
+      principal_type: req.user && req.user.type,
+      principal_subtype: req.user && req.user.subtype,
+      principal_sub: req.user && req.user.sub,
+      principal_model: req.user && req.user.constructor && req.user.constructor.modelName,
+      source: source,
+      url: req.originalUrl
+    });
+  } else {
+    winston.info('assignmentActorContext actor resolution', {
+      actor: actor,
+      principal_id: projectUserUpdateContextUtil.resolveUserId(req.user),
+      principal_name: req.user && req.user.name,
+      principal_type: req.user && req.user.type,
+      principal_subtype: req.user && req.user.subtype,
+      principal_sub: req.user && req.user.sub,
+      principal_model: req.user && req.user.constructor && req.user.constructor.modelName,
+      isBotActor: isBot,
+      source: source,
+      url: req.originalUrl
+    });
+  }
+
+  return { actor: actor, source: source };
 }
 
 function reconcileAssignmentPayload(data) {

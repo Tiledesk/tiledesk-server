@@ -58,11 +58,32 @@ function isBotActor(user) {
     return true;
   }
 
-  if (user.sub === 'bot') {
+  if (user.sub === 'bot' || (typeof user.sub === 'string' && user.sub.endsWith('/bot'))) {
     return true;
   }
 
-  return user.type === 'tilebot' || user.subtype === 'chatbot';
+  if (typeof user.aud === 'string' && user.aud.indexOf('/bots/') > -1) {
+    return true;
+  }
+
+  if (user.type === 'tilebot' || user.subtype === 'chatbot') {
+    return true;
+  }
+
+  // Cached/plain faq_kb payloads may miss type/subtype but still carry bot identity fields.
+  if (
+    user.slug &&
+    user.name &&
+    user.id_project &&
+    user.createdBy &&
+    !user.email &&
+    !user.firstname &&
+    !user.lastname
+  ) {
+    return true;
+  }
+
+  return false;
 }
 
 function botDisplayName(user) {

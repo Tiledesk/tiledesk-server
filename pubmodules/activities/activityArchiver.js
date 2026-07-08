@@ -322,13 +322,10 @@ class ActivityArchiver {
             winston.debug("preflight request disable archiver")
             return 0;
           }
+          const actor = activityActorUtil.actorFromRequestCreate(request);
           let activity = new Activity({
             id_project: request.id_project,
-            actor: { 
-              type: "user", 
-              id: request.requester_id, 
-              name: request.requester_name 
-            },
+            actor: actor,
             verb: "REQUEST_CREATE", 
             actionObj: request,
             target: { 
@@ -360,13 +357,10 @@ class ActivityArchiver {
             winston.debug("preflight request disable archiver")
             return 0;
           }
+          const actor = activityActorUtil.actorFromRequestCreate(request);
           let activity = new Activity({
             id_project: request.id_project,
-            actor: { 
-              type: "user", 
-              id: request.requester_id, 
-              name: request.requester_name 
-            },
+            actor: actor,
             verb: "REQUEST_CREATE", 
             actionObj: request,
             target: { 
@@ -428,6 +422,16 @@ class ActivityArchiver {
           }
 
           const reconciled = assignmentContextUtil.reconcileAssignmentPayload(data);
+
+          winston.info('ActivityArchiver request.assigned actor', {
+            verb: verb,
+            assignmentType: data.assignmentType,
+            source: reconciled.source,
+            actor: reconciled.actor,
+            assigneeId: data.assigneeId,
+            assigneeType: data.assigneeType,
+            request_id: data.request && data.request.request_id
+          });
 
           const activityFields = {
             id_project: data.request.id_project,

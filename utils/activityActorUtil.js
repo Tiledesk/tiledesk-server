@@ -1,6 +1,7 @@
 'use strict';
 
 const User = require('../models/user');
+const winston = require('../config/winston');
 const projectUserUpdateContextUtil = require('./projectUserUpdateContextUtil');
 
 function actorFromReq(req) {
@@ -94,6 +95,48 @@ function actorFromClosedBy(request) {
   };
 }
 
+function actorFromRequestCreate(request) {
+  const requesterId = request && request.requester_id;
+  const lead = request && request.lead;
+  const leadId = lead && (lead._id || lead.id);
+  const leadFullname = lead && (lead.fullname || lead.fullName);
+  const participantsBots = (request && request.participantsBots) || [];
+  const participatingBotIds = (request && request.participatingBots || []).map(function (bot) {
+    return String((bot && (bot._id || bot.id)) || bot);
+  });
+
+  winston.info('ActivityArchiver REQUEST_CREATE actor resolution', {
+    request_id: request && request.request_id,
+    request_mongo_id: request && request._id && String(request._id),
+    requester_id: requesterId != null ? String(requesterId) : null,
+    requester_name: request && request.requester_name,
+    createdBy: request && request.createdBy,
+    lead_id: leadId != null ? String(leadId) : null,
+    lead_fullname: leadFullname,
+    participantsBots: participantsBots,
+    participatingBotIds: participatingBotIds,
+    hasBot: request && request.hasBot,
+    note: 'REQUEST_CREATE actor is always type=user with id=requester_id (lead virtual). JWT/token is not used here.'
+  });
+
+  const actor = {
+    type: 'user',
+    id: requesterId != null ? String(requesterId) : undefined,
+    name: (request && request.requester_name) || leadFullname || undefined
+  };
+
+  if (participantsBots.length > 0 || participatingBotIds.length > 0) {
+    winston.info('ActivityArchiver REQUEST_CREATE bot participants present (not used as actor)', {
+      request_id: request && request.request_id,
+      actor: actor,
+      participantsBots: participantsBots,
+      participatingBotIds: participatingBotIds
+    });
+  }
+
+  return actor;
+}
+
 async function resolveActorFromClosedBy(request) {
   const actor = actorFromClosedBy(request);
 
@@ -117,6 +160,7 @@ async function resolveActorFromClosedBy(request) {
 module.exports = {
   actorFromReq,
   actorFromUserId,
+  actorFromRequestCreate,
   actorFromClosedBy,
   resolveActorFromClosedBy,
   resolveId
