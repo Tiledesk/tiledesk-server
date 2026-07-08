@@ -535,7 +535,7 @@ router.get('/:faq_kbid/published', roleChecker.hasRoleOrTypes('admin', ['bot', '
   const id_project = req.projectid;
   const chatbot_id = req.params.faq_kbid;
 
-  let published_chatbots = await faq_kb.find({ id_project: id_project, root_id: chatbot_id })
+  let published_chatbots = await faq_kb.find({ id_project: id_project, parent_id: chatbot_id })
     .sort({ publishedAt: -1 })
     .limit(100)
     .populate('publishedBy', '_id firstname lastname email')
@@ -545,6 +545,22 @@ router.get('/:faq_kbid/published', roleChecker.hasRoleOrTypes('admin', ['bot', '
     })
 
   res.status(200).send(published_chatbots);
+
+})
+
+router.get('/:faq_kbid/subagents', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), async function (req, res) {
+
+  const id_project = req.projectid;
+  const chatbot_id = req.params.faq_kbid;
+
+  let subagents;
+  try {
+    subagents = await Faq_kb.find({ id_project: id_project, parent_id: chatbot_id }).sort({ createdAt: -1 }).lean().exec();
+    return res.status(200).send(subagents);
+  } catch (err) {
+    winston.error("Error finding subagents: ", err);
+    return res.status(500).send({ success: false, error: "Error finding subagents from root " + chatbot_id });
+  }
 
 })
 

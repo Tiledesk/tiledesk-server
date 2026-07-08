@@ -8,63 +8,129 @@ const templates = require('../template/chatbot');
 
 class FaqService {
 
-  create(id_project, id_user, data) {
+  // create(id_project, id_user, data) {
 
-    return new Promise((resolve, reject) => {
+  //   return new Promise((resolve, reject) => {
 
-      var newFaq_kb = new Faq_kb({
-        name: data.name,
-        slug: data.slug,
-        description: data.description,
-        url: data.url,
-        id_project: id_project,
-        webhook_url: data.webhook_url,
-        webhook_enabled: data.webhook_enabled,
-        type: data.type,
-        subtype: data.subtype,
-        language: data.language,
-        public: false,
-        certified: false,
-        mainCategory: data.mainCategory,
-        intentsEngine: data.intentsEngine,
-        trashed: false,
-        createdBy: id_user,
-        updatedBy: id_user,
-        attributes: data.attributes
-      });
+  //     if (data.type === "subagent" && !data.parent_id) {
+  //       return reject('Parent ID is required for subagent');
+  //     }
 
-      newFaq_kb.save((err, savedFaq_kb) => {
+  //     var newFaq_kb = new Faq_kb({
+  //       name: data.name,
+  //       slug: data.slug,
+  //       description: data.description,
+  //       url: data.url,
+  //       id_project: id_project,
+  //       webhook_url: data.webhook_url,
+  //       webhook_enabled: data.webhook_enabled,
+  //       type: data.type,
+  //       subtype: data.subtype,
+  //       language: data.language,
+  //       public: false,
+  //       certified: false,
+  //       mainCategory: data.mainCategory,
+  //       intentsEngine: data.intentsEngine,
+  //       trashed: false,
+  //       createdBy: id_user,
+  //       updatedBy: id_user,
+  //       attributes: data.attributes,
+  //       parent_id: data.parent_id
+  //     });
 
-        if (err) {
-          winston.error('(FaqService) error saving new chatbot ', err)
-          return reject('Error saving object.');
-        }
+  //     newFaq_kb.save((err, savedFaq_kb) => {
 
-        winston.debug('(FaqService) saved chatbot ', savedFaq_kb.toObject())
-        botEvent.emit('faqbot.create', savedFaq_kb);
+  //       if (err) {
+  //         winston.error('(FaqService) error saving new chatbot ', err)
+  //         return reject('Error saving object.');
+  //       }
 
-        winston.debug('type ' + data.type)
+  //       winston.debug('(FaqService) saved chatbot ', savedFaq_kb.toObject())
+  //       botEvent.emit('faqbot.create', savedFaq_kb);
 
-        if (data.type === "internal" || data.type === "tilebot") {
+  //       winston.debug('type ' + data.type)
 
-          let template = this.#resolveTemplate(data.subtype, data.template);
-          winston.debug('template ' + template);
+  //       if (data.type === "internal" || data.type === "tilebot") {
 
-          let options = {};
-          if (data.namespace_id) {
-            options.namespace_id = data.namespace_id;
-          }
+  //         let template = this.#resolveTemplate(data.subtype, data.template);
+  //         winston.debug('template ' + template);
 
-          this.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project, template, options);
+  //         let options = {};
+  //         if (data.namespace_id) {
+  //           options.namespace_id = data.namespace_id;
+  //         }
 
-        } else {
-          winston.debug('(FaqService) Chatbot type: external bot');
-        }
+  //         this.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project, template, options);
 
-        return resolve(savedFaq_kb);
-      });
+  //       } else {
+  //         winston.debug('(FaqService) Chatbot type: external bot');
+  //       }
 
-    });
+  //       return resolve(savedFaq_kb);
+  //     });
+
+  //   });
+  // }
+
+  async create(id_project, id_user, data) {
+
+    if (!this.validateSubagent(data)) {
+      throw new Error("parent_id is required for subtype 'subagent'");
+    }
+
+    let chatbot = this.createChatbotObject(id_project, id_user, data);
+    let savedChatbot;
+    try {
+      savedChatbot = await chatbot.save();
+      winston.verbose('(FaqService) saved chatbot ', savedChatbot.toObject());
+      botEvent.emit('faqbot.create', savedChatbot);
+    } catch (error) {
+      throw error;
+    }
+
+    if (data.type === "internal" || data.type === "tilebot") {
+      let template = this.#resolveTemplate(data.subtype, data.template);
+      let options = {};
+      if (data.namespace_id) {
+        options.namespace_id = data.namespace_id;
+      }
+
+      this.createGreetingsAndOperationalsFaqs(savedChatbot._id, savedChatbot.createdBy, savedChatbot.id_project, template, options);
+    }
+
+    return savedChatbot;
+  }
+
+  createChatbotObject(id_project, id_user, data) {
+    return new Faq_kb({
+      name: data.name,
+      slug: data.slug,
+      description: data.description,
+      url: data.url,
+      id_project: id_project,
+      webhook_url: data.webhook_url,
+      webhook_enabled: data.webhook_enabled,
+      type: data.type,
+      subtype: data.subtype,
+      language: data.language,
+      public: false,
+      certified: false,
+      mainCategory: data.mainCategory,
+      intentsEngine: data.intentsEngine,
+      trashed: false,
+      createdBy: id_user,
+      updatedBy: id_user,
+      attributes: data.attributes,
+      parent_id: data.parent_id
+    })
+  }
+
+  validateSubagent(data) {
+    if (data.subtype === "subagent" && !data.parent_id) {
+      winston.error('(FaqService) parent_id is required for subtype ' + data.subtype);
+      return false;
+    }
+    return true;
   }
 
   #resolveTemplate(subtype, template) {
