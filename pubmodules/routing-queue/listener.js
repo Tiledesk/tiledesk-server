@@ -97,10 +97,13 @@ class Listener {
         if (abandoned_by_project_users_array.length > 0) {
           winston.debug("(Listener) Request abandoned by project users array: ", abandoned_by_project_users_array);
 
+          const underCapacityAgents = available_agents_not_busy.slice();
+
           available_agents_not_busy = available_agents_not_busy.filter(agent => !abandoned_by_project_users_array.includes(agent._id.toString()))
 
-          if (available_agents_not_busy.length == 0) {
-            console.log("(Listener) Request abandoned by project users array: ", res.context.request.attributes.retries);
+          if (available_agents_not_busy.length === 0 && underCapacityAgents.length > 0) {
+            // Agents with free capacity have all abandoned this request — exhausted round.
+            winston.debug("(Listener) All under-capacity agents have abandoned; retries:", res.context.request.attributes.retries);
             res.context.request.attributes.retries = res.context.request.attributes.retries ?? 0;
 
             if (res.context.request.attributes.retries < 3) {
@@ -108,6 +111,9 @@ class Listener {
             } else {
               res.context.request.attributes.fully_abandoned = true;
             }
+          } else if (available_agents_not_busy.length === 0 && underCapacityAgents.length === 0) {
+            // Remaining agents are at capacity — wait for the next poll, do not count as exhausted.
+            winston.debug("(Listener) All agents at capacity; skipping retries increment");
           }
         }
       }

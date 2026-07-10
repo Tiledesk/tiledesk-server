@@ -202,6 +202,10 @@ class RequestService {
           }
 
           assigned_at = Date.now();
+
+          if (request.attributes?.retries) {
+            request.attributes.retries = 0;
+          }
         }
         winston.debug("routeInternal assigned_operator_id: " + assigned_operator_id);
         winston.debug("routeInternal status: " + status);
