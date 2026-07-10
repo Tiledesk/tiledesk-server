@@ -293,7 +293,18 @@ class RequestService {
           request.attributes.fully_abandoned = true;
           request.markModified("status");
           request.markModified("attributes");
-  
+
+          try {
+            await request.save();
+            console.log("Snapshot Updated (saved) (case 1) from route on ", request.request_id, new Date());
+            winston.verbose(`Status set to ABANDONED for request ${request._id}`);
+          } catch (err) {
+            winston.error("Error updating request to ABANDONED", err);
+          }
+        } else if (routedRequest.attributes?.retries && routedRequest.attributes.retries > 0) {
+          request.attributes.retries = routedRequest.attributes.retries;
+          request.markModified("attributes");
+
           try {
             await request.save();
             winston.verbose(`Status set to ABANDONED for request ${request._id}`);
@@ -301,6 +312,7 @@ class RequestService {
             winston.error("Error updating request to ABANDONED", err);
           }
         }
+
 
         /**
          * TODO: Restore proper functioning
