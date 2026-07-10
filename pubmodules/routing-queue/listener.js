@@ -100,7 +100,14 @@ class Listener {
           available_agents_not_busy = available_agents_not_busy.filter(agent => !abandoned_by_project_users_array.includes(agent._id.toString()))
 
           if (available_agents_not_busy.length == 0) {
-            res.context.request.attributes.fully_abandoned = true;
+            console.log("(Listener) Request abandoned by project users array: ", res.context.request.attributes.retries);
+            res.context.request.attributes.retries = res.context.request.attributes.retries ?? 0;
+
+            if (res.context.request.attributes.retries < 3) {
+              res.context.request.attributes.retries++;
+            } else {
+              res.context.request.attributes.fully_abandoned = true;
+            }
           }
         }
       }
