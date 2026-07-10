@@ -9,6 +9,7 @@ process.env.PINECONE_INDEX_HYBRID = "test-index-hybrid";
 process.env.PINECONE_TYPE_HYBRID = "serverless";
 process.env.ADMIN_EMAIL = "admin@tiledesk.com";
 process.env.KB_ENDPOINT_TRAIN = "http://kb-train.test";
+process.env.ACTIVITY_HISTORY_ENABLED = true;
 
 var userService = require('../services/userService');
 var projectService = require('../services/projectService');
@@ -50,6 +51,66 @@ mongoose.connect(config.databasetest);
 chai.use(chaiHttp);
 
 describe('KbRoute', () => {
+    
+    describe('/qa', () => {
+        
+        it('ask-kb', (done) => {
+
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("get namespaces res.body: ", res.body); }
+
+                            res.should.have.status(200);
+                            expect(res.body.length).to.equal(1);
+                            expect(res.body[0].engine.index_name).to.equal('test-index')
+
+                            let namespace_id = res.body[0].id;
+
+                            let data = {
+                                question: "sample question?",
+                                namespace: namespace_id,
+                                llm: "openai",
+                                model: "gpt-4o",
+                                temperature: 0.7,
+                                max_tokens: 128,
+                                top_k: 4,
+                                chunks_only: false,
+                                system_context: "",
+                                advancedPrompt: false,
+                                citations: true
+                            }
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb/qa')
+                                .auth(email, pwd)
+                                .send(data)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("ask kb res.body: ", res.body); }
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    
+                                    done();
+                                })
+                        })
+                });
+            });
+
+        })
+    })
 
     describe('Namespaces', () => {
 
@@ -791,6 +852,64 @@ describe('KbRoute', () => {
                 });
             });
         }).timeout(10000)
+
+        it('delete-content', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+                
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("get namespaces res.body: ", res.body); }
+
+                            res.should.have.status(200);
+
+                            let namespace_id = res.body[0].id;
+
+                            let kb = {
+                                name: "example_text_delete",
+                                type: "text",
+                                source: "example_text_delete",
+                                content: "Example text",
+                                namespace: namespace_id
+                            }
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb')
+                                .auth(email, pwd)
+                                .send(kb)
+                                .end((err, res) => {
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("create kb res.body: ", res.body); }
+
+                                    res.should.have.status(200);
+
+                                    let kb_id = res.body.data.value._id;
+                                    
+                                    chai.request(server)
+                                        .delete('/' + savedProject._id + '/kb/' + kb_id)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("delete kb res.body: ", res.body); }
+                                            
+                                            res.should.have.status(200);
+                                            expect(res.body.success).to.equal(true);
+                                            expect(res.body.message).to.equal("Content deleted successfully");
+
+                                            done();
+                                        })
+                                })
+                        })
+                })
+            })
+        })
 
         it('get-content-chunks', (done) => {
 
@@ -2215,6 +2334,64 @@ describe('KbRoute', () => {
                                         done();
                                     });
                             });
+                        });
+                });
+            });
+        });
+    });
+
+    describe('activities tracking', (done) => {
+
+        it('delete-content-activity', (done) => {
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-activities-delete-content", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("get namespaces res.body: ", res.body); }
+                            res.should.have.status(200);
+                            expect(res.body.length).to.equal(1);
+
+                            let namespace_id = res.body[0].id;
+
+                            let content = {
+                                name: "test-content",
+                                type: "text",
+                                content: "test-content",
+                                namespace: namespace_id
+                            }
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb')
+                                .auth(email, pwd)
+                                .send(content)
+                                .end((err, res) => {
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("add content res.body: ", res.body); }
+                                    console.log("add content res.body: ", res.body);
+                                    res.should.have.status(200);
+
+                                    let content_id = res.body.data.value._id;
+
+                                    chai.request(server)
+                                        .delete('/' + savedProject._id + '/kb/' + content_id)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+                                            
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("delete content res.body: ", res.body); }
+                                            console.log("delete content res.body: ", res.body);
+                                            res.should.have.status(200);
+
+                                            done();
+                                        });
+                                });
                         });
                 });
             });
