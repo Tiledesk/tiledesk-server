@@ -48,6 +48,7 @@ class Listener {
         voice.startApp({
             MONGODB_URI: config.databaseUri,          
             dbconnection: dbConnection,
+            API_URL: apiUrl,
             BASE_URL: baseUrl,
             RELATIVE_BASE_URL: relativeBaseUrl,
             REDIS_HOST: host,
