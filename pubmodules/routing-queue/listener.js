@@ -2,6 +2,8 @@ const departmentEvent = require('../../event/departmentEvent');
 var Request = require('../../models/request');
 var winston = require('../../config/winston');
 
+const MAX_RETRIES = process.env.MAX_RETRIES ? parseInt(process.env.MAX_RETRIES) : 1;
+
 
 class Listener {
 
@@ -11,6 +13,7 @@ class Listener {
       this.enabled = false;
     }
     winston.debug("Listener Enabled: ", this.enabled);
+
   }
 
   nextOperator(array = [], index = 0) {
@@ -84,8 +87,6 @@ class Listener {
       } else {
         winston.debug("(Listener) available_agents_request not defined");
       }
-
-      console.log("(Listener) Context: ", res.context);
       
       // Logic to avoid reassigning to the same user that already abandoned the request
       const requestAttributes = res.context?.request?.attributes;
@@ -106,7 +107,7 @@ class Listener {
             winston.debug("(Listener) All under-capacity agents have abandoned; retries:", res.context.request.attributes.retries);
             res.context.request.attributes.retries = res.context.request.attributes.retries ?? 0;
 
-            if (res.context.request.attributes.retries < 3) {
+            if (res.context.request.attributes.retries < MAX_RETRIES) {
               res.context.request.attributes.retries++;
             } else {
               res.context.request.attributes.fully_abandoned = true;
