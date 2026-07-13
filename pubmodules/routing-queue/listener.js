@@ -2,7 +2,7 @@ const departmentEvent = require('../../event/departmentEvent');
 var Request = require('../../models/request');
 var winston = require('../../config/winston');
 
-const MAX_RETRIES = process.env.MAX_RETRIES ? parseInt(process.env.MAX_RETRIES) : 1;
+const MAX_RETRIES = process.env.ASSIGNMENT_MAX_RETRIES ? parseInt(process.env.ASSIGNMENT_MAX_RETRIES) : 1;
 
 
 class Listener {
