@@ -76,6 +76,8 @@ class JobsManager {
 
     listenActivityArchiver(activityArchiver) {
         winston.info("JobsManager listenActivityArchiver started"); 
+        console.log("\n\n (jobsManager) listenActivityArchiver: ", activityArchiver);
+        console.log("\n\n (jobsManager) jobWorkerEnabled: ", this.jobWorkerEnabled);
         if ( this.jobWorkerEnabled == true) {
             return winston.info("JobsManager jobWorkerEnabled is enabled. Skipping listener for Activity Archiver");  
         } 

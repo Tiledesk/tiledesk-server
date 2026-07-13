@@ -9,6 +9,7 @@ process.env.PINECONE_INDEX_HYBRID = "test-index-hybrid";
 process.env.PINECONE_TYPE_HYBRID = "serverless";
 process.env.ADMIN_EMAIL = "admin@tiledesk.com";
 process.env.KB_ENDPOINT_TRAIN = "http://kb-train.test";
+process.env.ACTIVITY_HISTORY_ENABLED = true;
 
 var userService = require('../services/userService');
 var projectService = require('../services/projectService');
@@ -791,6 +792,64 @@ describe('KbRoute', () => {
                 });
             });
         }).timeout(10000)
+
+        it('delete-content', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+                
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("get namespaces res.body: ", res.body); }
+
+                            res.should.have.status(200);
+
+                            let namespace_id = res.body[0].id;
+
+                            let kb = {
+                                name: "example_text_delete",
+                                type: "text",
+                                source: "example_text_delete",
+                                content: "Example text",
+                                namespace: namespace_id
+                            }
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb')
+                                .auth(email, pwd)
+                                .send(kb)
+                                .end((err, res) => {
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("create kb res.body: ", res.body); }
+
+                                    res.should.have.status(200);
+
+                                    let kb_id = res.body.data.value._id;
+                                    
+                                    chai.request(server)
+                                        .delete('/' + savedProject._id + '/kb/' + kb_id)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("delete kb res.body: ", res.body); }
+                                            
+                                            res.should.have.status(200);
+                                            expect(res.body.success).to.equal(true);
+                                            expect(res.body.message).to.equal("Content deleted successfully");
+
+                                            done();
+                                        })
+                                })
+                        })
+                })
+            })
+        })
 
         it('get-content-chunks', (done) => {
 
