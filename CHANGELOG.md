@@ -5,6 +5,44 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.19.12
+- Updated messenger-connector to 0.1.30
+
+# 2.19.11
+- Updated payments module
+
+# 2.19.10
+- Fixed bug on add answered question route.
+
+# 2.19.9
+- Fixed an issue with the handling of situated_context during namespace import
+
+# 2.19.8
+- Fix analytics integration
+
+# 2.19.7
+- Added TTL for events collection
+
+# 2.19.6
+- Improved management of answered and unanswered questions, duration and token consumption
+- Improved namespace embedding management
+
+# 2.19.5 (aborted)
+- Improved management of answered and unanswered questions, duration and token consumption
+
+# 2.19.4
+- Added missing id_project in data sent for qa and single scrape
+
+# 2.19.3
+- Fixed bug on AiPrompt action with vllm models
+- Updated tybot-connector to 2.1.2
+
+# 2.19.2
+- Improved vLLM integration in order to support multiple servers
+- Added custom_regex option for .txt and .md file uploaded in a Knowledge Base
+- Improved extension management in order to support markdown files
+- Updated tybot-connector to 2.1.1
+
 # 2.19.0
 - Added Analytics tracking
 

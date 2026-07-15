@@ -456,6 +456,12 @@ router.put('/:requestid/replace', async (req, res) => {
   let id;
   let name;
   let slug;
+  // Canonical (root) id of the target bot, returned to the caller so analytics
+  // (agent.bot_switched.to_agent_id) can attribute the switch to the root agent
+  // — matching agent_dimensions and the target bot's own runtime events. A
+  // published bot is forked to a trashed copy with its own _id; root_id points
+  // back to the editable root, so root_id || _id is the canonical agent id.
+  let replacedRootId = null;
 
   if (req.body.id) {
     id = "bot_" + req.body.id;
@@ -478,6 +484,7 @@ router.put('/:requestid/replace', async (req, res) => {
     }
 
     id = "bot_" + chatbot._id;
+    replacedRootId = (chatbot.root_id || chatbot._id).toString();
     winston.verbose("Chatbot found: ", id);
   }
 
@@ -492,7 +499,17 @@ router.put('/:requestid/replace', async (req, res) => {
     }
 
     id = "bot_" + chatbot._id;
+    replacedRootId = (chatbot.root_id || chatbot._id).toString();
     winston.verbose("Chatbot found: " + id);
+  }
+
+  // Replacing by raw id: normalize a possibly-published (fork) id to its root.
+  if (req.body.id) {
+    let chatbot = await faq_kb.findById(req.body.id).catch((err) => {
+      winston.error("Error finding bot by id ", err);
+      return null;
+    });
+    replacedRootId = ((chatbot && (chatbot.root_id || chatbot._id)) || req.body.id).toString();
   }
 
   let participants = [];
@@ -501,7 +518,10 @@ router.put('/:requestid/replace', async (req, res) => {
 
   requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then((updatedRequest) => {
     winston.debug("SetParticipant response: ", updatedRequest);
-    res.status(200).send(updatedRequest);
+    // Additive: include the resolved canonical (root) bot id for analytics
+    // attribution. Existing consumers ignore the extra field.
+    const requestObj = (updatedRequest && updatedRequest.toJSON) ? updatedRequest.toJSON() : updatedRequest;
+    res.status(200).send({ ...requestObj, replaced_bot_root_id: replacedRootId });
   }).catch((err) => {
     winston.error("Error setting participants ", err);
     res.status(500).send({ success: false, error: "Error setting participants to request"})
