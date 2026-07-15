@@ -5,6 +5,25 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.19.13
+- Added new routes and services for Data Tables management
+- Updated tybot-connector to 2.1.5 
+
+# 2.19.12
+- Updated messenger-connector to 0.1.30
+
+# 2.19.11
+- Updated payments module
+
+# 2.19.10
+- Fixed bug on add answered question route.
+
+# 2.19.9
+- Fixed an issue with the handling of situated_context during namespace import
+
+# 2.19.8
+- Fix analytics integration
+
 # 2.19.7
 - Added TTL for events collection
 

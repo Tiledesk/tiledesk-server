@@ -245,7 +245,7 @@ describe('KbRoute', () => {
                                             expect(res.body.embedding.name).to.equal('text-embedding-ada-002')
                                             expect(res.body.embedding.dimension).to.equal(1536)
                                             expect(res.body.embedding.api_key).to.equal('')
-                
+
                                             done();
                                         })
                                 })
@@ -322,7 +322,7 @@ describe('KbRoute', () => {
                                                 .end((err, res) => {
                                                     if (err) { console.error("err: ", err); }
                                                     if (log) { console.log("get all namespaces res.body: ", res.body); }
-                                                    
+
                                                     res.should.have.status(200);
                                                     res.body.should.be.a('array');
                                                     expect(res.body.length).to.equal(1);
@@ -634,6 +634,7 @@ describe('KbRoute', () => {
 
                                     let scheduleJson = res.body.schedule_json;
                                     expect(scheduleJson.namespace).to.equal(namespace_id)
+                                    expect(scheduleJson.id_project).to.equal(namespace_id)
                                     expect(scheduleJson.type).to.equal("url")
                                     expect(scheduleJson.source).to.equal("https://www.exampleurl5.com")
                                     expect(scheduleJson.hybrid).to.equal(false);
@@ -1239,6 +1240,7 @@ describe('KbRoute', () => {
                                     scheduleJson.should.be.a('array');
                                     expect(scheduleJson.length).to.equal(2);
                                     expect(scheduleJson[0].namespace).to.equal(namespace_id);
+                                    expect(scheduleJson[0].id_project).to.equal(namespace_id);
                                     expect(scheduleJson[0].type).to.equal('faq');
                                     expect(scheduleJson[0].source).to.equal('Question 1');
                                     should.exist(scheduleJson[0].engine)
@@ -1403,6 +1405,7 @@ describe('KbRoute', () => {
                                     let scheduleJson = res.body.schedule_json;
                                     expect(scheduleJson.length).to.equal(4);
                                     expect(scheduleJson[0].namespace).to.equal(namespace_id);
+                                    expect(scheduleJson[0].id_project).to.equal(namespace_id);
                                     expect(scheduleJson[0].source).to.equal('https://gethelp.tiledesk.com/articles/article1');
                                     expect(scheduleJson[0].tags.length).to.equal(2);
                                     expect(scheduleJson[0].tags[0]).to.equal('tag1');
@@ -1605,6 +1608,7 @@ describe('KbRoute', () => {
                                     scheduleJson.should.be.a('array');
                                     should.exist(scheduleJson[0].engine)
                                     should.exist(scheduleJson[0].embedding)
+                                    expect(scheduleJson[0].id_project).to.equal(namespace_id)
                                     expect(scheduleJson[0].embedding.api_key).to.equal('fakegptkey');
 
                                     done();

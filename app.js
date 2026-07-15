@@ -149,6 +149,7 @@ var urls = require('./routes/urls');
 var email = require('./routes/email');
 var property = require('./routes/property');
 var segment = require('./routes/segment');
+var dataTable = require('./routes/dataTable');
 var webhook = require('./routes/webhook');
 var webhooks = require('./routes/webhooks');
 var roles = require('./routes/roles');
@@ -634,6 +635,8 @@ app.use('/:projectid/emails',[passport.authenticate(['basic', 'jwt'], { session:
 
 app.use('/:projectid/properties',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], property);
 app.use('/:projectid/segments',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], segment);
+
+app.use('/:projectid/tables', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], dataTable);
 
 app.use('/:projectid/llm', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], llm);
 app.use('/:projectid/openai', openai);

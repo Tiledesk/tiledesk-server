@@ -104,7 +104,7 @@ class AiManager {
 
         let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
 
-        let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, situated_context, ...keepAttrs }) => keepAttrs)
+        let resources = result.map(({ name, status, __v, createdAt, updatedAt, situated_context, ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, scrape_options, ...rest }) => {
           return { 
             id: _id, 
@@ -139,6 +139,7 @@ class AiManager {
 
       let kb = {
         id: sitemap_content._id,
+        id_project: namespace.id_project,
         source: sitemap_content.source,
         type: 'sitemap',
         content: "",
