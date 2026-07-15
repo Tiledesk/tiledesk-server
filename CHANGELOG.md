@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.19.13
+- Added new routes and services for Data Tables management
+- Updated tybot-connector to 2.1.5 
+
 # 2.19.12
 - Updated messenger-connector to 0.1.30
 
