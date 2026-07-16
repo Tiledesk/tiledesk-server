@@ -86,7 +86,7 @@ router.get('/', async (req, res) => {
   }
 
   if (req.query.agent_id) {
-    // involvedUserIds covers actor, target user and related user for new records.
+    // involvedUserIds covers actor, target user, related user and request participantsAgents.
     // The other two clauses keep backward compatibility with legacy records.
     query["$or"] = [
       { "involvedUserIds": req.query.agent_id },

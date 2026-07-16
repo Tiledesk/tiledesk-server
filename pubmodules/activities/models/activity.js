@@ -103,6 +103,49 @@ function userIdFromEntity(entity) {
   return null;
 }
 
+// Human agents assigned to a request target (e.g. REQUEST_CLOSE when a guest closes).
+// Without this, involvedUserIds would only contain closed_by / actor and miss the assignee,
+// so ?agent_id= filters would not return the activity for the assigned operator.
+function agentIdsFromRequestTarget(target) {
+  if (!target || !target.object) {
+    return [];
+  }
+  var ids = [];
+  var seen = {};
+  function addId(raw) {
+    if (raw == null) {
+      return;
+    }
+    var id = String(raw);
+    if (!id || id.indexOf('bot_') === 0 || seen[id]) {
+      return;
+    }
+    seen[id] = true;
+    ids.push(id);
+  }
+
+  var participantsAgents = target.object.participantsAgents;
+  if (Array.isArray(participantsAgents)) {
+    for (var i = 0; i < participantsAgents.length; i++) {
+      addId(participantsAgents[i]);
+    }
+  }
+
+  // Fallback when only the populated virtual is present on the serialized request
+  var participatingAgents = target.object.participatingAgents;
+  if (Array.isArray(participatingAgents)) {
+    for (var j = 0; j < participatingAgents.length; j++) {
+      var agent = participatingAgents[j];
+      if (!agent) {
+        continue;
+      }
+      addId(agent._id || agent.id || agent);
+    }
+  }
+
+  return ids;
+}
+
 function computeInvolvedUserIds(doc) {
   var ids = new Set();
   if (doc.actor && doc.actor.type === 'user' && doc.actor.id) {
@@ -116,6 +159,9 @@ function computeInvolvedUserIds(doc) {
   if (relatedUserId) {
     ids.add(relatedUserId);
   }
+  agentIdsFromRequestTarget(doc.target).forEach(function (id) {
+    ids.add(id);
+  });
   return Array.from(ids);
 }
 
@@ -147,7 +193,8 @@ var ActivitySchema = new Schema({
     type: RelatedActivitySchema,
     required: false
   },
-  // Denormalized list of user ids involved in the activity (actor, target user, related user).
+  // Denormalized list of user ids involved in the activity
+  // (actor, target user, related user, and request participantsAgents when target is a request).
   // Auto-filled by the pre-save hook below. Indexed for efficient "activities of a user" queries.
   involvedUserIds: {
     type: [String],
