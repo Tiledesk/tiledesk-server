@@ -222,8 +222,6 @@ class RequestService {
         request.assigned_at = assigned_at;
         request.waiting_time = undefined //reset waiting_time on reroute
 
-        //console.log("request.snapshot for ", request.request_id ," exists: ", request.snapshot ? "yes" : "no\n", new Date());
-        //console.log("request.snapshot.agents for ", request.request_id ," exists: ", request.snapshot?.agents ? "yes" : "no\n", new Date());
         if (!request.snapshot) { //if used other methods than .create
           request.snapshot = {}
         }
@@ -256,13 +254,15 @@ class RequestService {
       //winston.info("main_flow_cache_3 route");
 
       // Find request
-      let query = Request.findOne({ request_id, id_project });
-      if (cacheEnabler.request) {
-        query = query.cache(cacheUtil.defaultTTL, id_project + ":requests:request_id:" + request_id + ":simple");
-        winston.debug('request cache enabled');
-      }
-      
-      const request = await query.exec();
+      // Cache disabled: a stale cached document can have an outdated __v and cause
+      // Mongoose VersionError on save ("No matching document found for id ... version N").
+      // let query = Request.findOne({ request_id, id_project });
+      // if (cacheEnabler.request) {
+      //   query = query.cache(cacheUtil.defaultTTL, id_project + ":requests:request_id:" + request_id + ":simple");
+      //   winston.debug('request cache enabled');
+      // }
+      // const request = await query.exec();
+      const request = await Request.findOne({ request_id, id_project }).exec();
 
       if (!request) {
         throw new Error(`Request not found: ${request_id}`);
@@ -421,15 +421,18 @@ class RequestService {
       // winston.debug("request_id", request_id);
       // winston.debug("newstatus", newstatus);
 
+      // Cache disabled: a stale cached document can have an outdated __v and cause
+      // Mongoose VersionError on save ("No matching document found for id ... version N").
       let q = Request
         .findOne({ request_id: request_id, id_project: id_project });
-
       if (cacheEnabler.request) {
-        q.cache(cacheUtil.defaultTTL, id_project + ":requests:request_id:" + request_id + ":simple")      //request_cache
+        q.cache(cacheUtil.defaultTTL, id_project + ":requests:request_id:" + request_id + ":simple");
         winston.debug('request cache enabled');
       }
-
       return q.exec(function (err, request) {
+      // return Request
+      //   .findOne({ request_id: request_id, id_project: id_project })
+      //   .exec(function (err, request) {
 
         if (err) {
           winston.error(err);
@@ -1575,13 +1578,13 @@ class RequestService {
             if (Array.isArray(request.participantsAgents)) {
               if (request.participantsAgents.length === 1) {
                 winston.error('Cannot add participants: participantsAgents already has one element for request_id ' + request_id + ' and id_project ' + id_project);
-                return reject('Cannot add participants: only one participant allowed for this request');
+                return reject({ code: 403, error: 'Cannot add participants: only one participant allowed for this request' });
               } else if (request.participantsAgents.length === 0) {
                 if (Array.isArray(newparticipants) && newparticipants.length === 1) {
                   // ok, allow to add one participant
                 } else {
                   winston.error('Can only add one participant for request_id ' + request_id + ' and id_project ' + id_project);
-                  return reject('Can only add one participant for this request');
+                  return reject({ code: 403, error: 'Can only add one participant for this request' });
                 }
               }
             }

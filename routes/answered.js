@@ -3,6 +3,7 @@ const router = express.Router();
 const { Namespace, AnsweredQuestion } = require('../models/kb_setting');
 const winston = require('../config/winston');
 var fastCsv = require('fast-csv');
+const kbQuestionService = require('../services/kbQuestionService');
 
 // Add a new unanswerd question
 router.post('/', async (req, res) => {
@@ -11,7 +12,7 @@ router.post('/', async (req, res) => {
     const data = req.body;
     const id_project = req.projectid;
 
-    const savedQuestion = await KbQuestionService.createAnsweredQuestion(
+    const savedQuestion = await kbQuestionService.createAnsweredQuestion(
       id_project, 
       data
     );
