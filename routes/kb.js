@@ -270,18 +270,14 @@ router.post('/scrape/single', async (req, res) => {
       winston.verbose("/scrape/single json: ", json);
 
       json.id_project = project_id;
+      json.webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
 
       if (process.env.NODE_ENV === "test") {
-        res.status(200).send({ success: true, message: "Skip indexing in test environment", data: json })
+        return res.status(200).send({ success: true, message: "Skip indexing in test environment", data: json })
       }
 
-      aiManager.startScrape(json).then((response) => {
-        winston.verbose("startScrape response: ", response);
-        res.status(200).send(response);
-      }).catch((err) => {
-        winston.error("startScrape err: ", err);
-        res.status(500).send({ success: false, error: err });
-      })
+      aiManager.scheduleScrape([json], namespace.hybrid);
+      return res.status(200).send({ success: true, message: "Content queued for reindexing" });
 
     }
   })
