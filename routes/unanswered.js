@@ -3,338 +3,319 @@ const router = express.Router();
 const { Namespace, UnansweredQuestion } = require('../models/kb_setting');
 var winston = require('../config/winston');
 var fastCsv = require('fast-csv');
+const kbQuestionService = require('../services/kbQuestionService');
 
 // Add a new unanswered question
 router.post('/', async (req, res) => {
-    try {
-        const { namespace, question, request_id, sender } = req.body;
-        const id_project = req.projectid;
+  try {
+    const data = req.body;
+    const id_project = req.projectid;
 
-        if (!namespace || !question) {
-            return res.status(400).json({
-                success: false,
-                error: "Missing required parameters: namespace and question"
-            });
-        }
+    const savedQuestion = await kbQuestionService.createUnansweredQuestion(
+      id_project, 
+      data
+    );
 
-        // Check if namespace belongs to project
-        const isValidNamespace = await validateNamespace(id_project, namespace);
-        if (!isValidNamespace) {
-            return res.status(403).json({
-                success: false,
-                error: "Not allowed. The namespace does not belong to the current project."
-            });
-        }
+    res.status(200).json(savedQuestion);
 
-        const unansweredQuestion = new UnansweredQuestion({
-            id_project,
-            namespace,
-            question,
-            request_id,
-            sender
-        });
-
-        const savedQuestion = await unansweredQuestion.save();
-        res.status(200).json(savedQuestion);
-
-    } catch (error) {
-        winston.error('Error adding unanswered question:', error);
-        res.status(500).json({
-            success: false,
-            error: "Error adding unanswered question"
-        });
-    }
+  } catch (error) {
+    winston.error('Error adding unanswered question:', error);
+    res.status(error.status || 500).json({
+      success: false,
+      error: error.error || "Error adding unanswered question"
+    });
+  }
 });
 
 // Get all unanswered questions for a namespace
 router.get('/:namespace', async (req, res) => {
-    try {
-        const { namespace } = req.params;
-        const id_project = req.projectid;
+  try {
+    const { namespace } = req.params;
+    const id_project = req.projectid;
 
-        if (!namespace) {
-            return res.status(400).json({
-                success: false,
-                error: "Missing required parameter: namespace"
-            });
-        }
-
-        // Check if namespace belongs to project
-        const isValidNamespace = await validateNamespace(id_project, namespace);
-        if (!isValidNamespace) {
-            return res.status(403).json({
-                success: false,
-                error: "Not allowed. The namespace does not belong to the current project."
-            });
-        }
-
-        const page = parseInt(req.query.page) || 0;
-        const limit = parseInt(req.query.limit) || 20;
-        const sortField = req.query.sortField || 'createdAt';
-        const direction = parseInt(req.query.direction) || -1;
-
-        const filter = { id_project, namespace };
-
-        let projection = undefined;
-
-        if (req.query.search) {
-            filter.$text = { $search: req.query.search };
-            // Add score to projection if it's a text search
-            projection = { score: { $meta: "textScore" } };
-        }
-
-        let sortObj;
-        if (projection && projection.score) {
-            sortObj = { score: { $meta: "textScore" } };
-        } else {
-            sortObj = { [sortField]: direction };
-        }
-
-        const questions = await UnansweredQuestion.find(filter, projection)
-            .sort(sortObj)
-            .skip(page * limit)
-            .limit(limit);
-
-        const count = await UnansweredQuestion.countDocuments(filter);
-
-        res.status(200).json({
-            count,
-            questions,
-            query: {
-                page,
-                limit,
-                sortField,
-                direction,
-                search: req.query.search || undefined
-            }
-        });
-
-    } catch (error) {
-        winston.error('Error getting unanswered questions:', error);
-        res.status(500).json({
-            success: false,
-            error: "Error getting unanswered questions"
-        });
+    if (!namespace) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required parameter: namespace"
+      });
     }
+
+    // Check if namespace belongs to project
+    const isValidNamespace = await validateNamespace(id_project, namespace);
+    if (!isValidNamespace) {
+      return res.status(403).json({
+        success: false,
+        error: "Not allowed. The namespace does not belong to the current project."
+      });
+    }
+
+    const page = parseInt(req.query.page) || 0;
+    const limit = parseInt(req.query.limit) || 20;
+    const sortField = req.query.sortField || 'createdAt';
+    const direction = parseInt(req.query.direction) || -1;
+
+    const filter = { id_project, namespace };
+
+    let projection = undefined;
+
+    if (req.query.search) {
+      filter.$text = { $search: req.query.search };
+      // Add score to projection if it's a text search
+      projection = { score: { $meta: "textScore" } };
+    }
+
+    let sortObj;
+    if (projection && projection.score) {
+      sortObj = { score: { $meta: "textScore" } };
+    } else {
+      sortObj = { [sortField]: direction };
+    }
+
+    const questions = await UnansweredQuestion.find(filter, projection)
+      .sort(sortObj)
+      .skip(page * limit)
+      .limit(limit);
+
+    const count = await UnansweredQuestion.countDocuments(filter);
+
+    res.status(200).json({
+      count,
+      questions,
+      query: {
+        page,
+        limit,
+        sortField,
+        direction,
+        search: req.query.search || undefined
+      }
+    });
+
+  } catch (error) {
+    winston.error('Error getting unanswered questions:', error);
+    res.status(500).json({
+      success: false,
+      error: "Error getting unanswered questions"
+    });
+  }
 });
 
 // Delete a specific unanswered question
 router.delete('/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const id_project = req.projectid;
+  try {
+    const { id } = req.params;
+    const id_project = req.projectid;
 
-        const deleted = await UnansweredQuestion.findOneAndDelete({ _id: id, id_project });
-        if (!deleted) {
-            return res.status(404).json({
-                success: false,
-                error: "Question not found"
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            message: "Question deleted successfully"
-        });
-        
-    } catch (error) {
-        winston.error('Error deleting unanswered question:', error);
-        res.status(500).json({
-            success: false,
-            error: "Error deleting unanswered question"
-        });
+    const deleted = await UnansweredQuestion.findOneAndDelete({ _id: id, id_project });
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        error: "Question not found"
+      });
     }
+
+    res.status(200).json({
+      success: true,
+      message: "Question deleted successfully"
+    });
+
+  } catch (error) {
+    winston.error('Error deleting unanswered question:', error);
+    res.status(500).json({
+      success: false,
+      error: "Error deleting unanswered question"
+    });
+  }
 });
 
 // Delete all unanswered questions for a namespace
 router.delete('/namespace/:namespace', async (req, res) => {
-    try {
-        const { namespace } = req.params;
-        const id_project = req.projectid;
+  try {
+    const { namespace } = req.params;
+    const id_project = req.projectid;
 
-        // Check if namespace belongs to project
-        const isValidNamespace = await validateNamespace(id_project, namespace);
-        if (!isValidNamespace) {
-            return res.status(403).json({
-                success: false,
-                error: "Not allowed. The namespace does not belong to the current project."
-            });
-        }
-
-        const result = await UnansweredQuestion.deleteMany({ id_project, namespace });
-        res.status(200).json({
-            success: true,
-            count: result.deletedCount,
-            message: "All questions deleted successfully"
-        });
-
-    } catch (error) {
-        winston.error('Error deleting unanswered questions:', error);
-        res.status(500).json({
-            success: false,
-            error: "Error deleting unanswered questions"
-        });
+    // Check if namespace belongs to project
+    const isValidNamespace = await validateNamespace(id_project, namespace);
+    if (!isValidNamespace) {
+      return res.status(403).json({
+        success: false,
+        error: "Not allowed. The namespace does not belong to the current project."
+      });
     }
+
+    const result = await UnansweredQuestion.deleteMany({ id_project, namespace });
+    res.status(200).json({
+      success: true,
+      count: result.deletedCount,
+      message: "All questions deleted successfully"
+    });
+
+  } catch (error) {
+    winston.error('Error deleting unanswered questions:', error);
+    res.status(500).json({
+      success: false,
+      error: "Error deleting unanswered questions"
+    });
+  }
 });
 
 // Update an unanswered question
 router.put('/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { question } = req.body;
-        const id_project = req.projectid;
+  try {
+    const { id } = req.params;
+    const { question } = req.body;
+    const id_project = req.projectid;
 
-        if (!question) {
-            return res.status(400).json({
-                success: false,
-                error: "Missing required parameter: question"
-            });
-        }
-
-        const updatedQuestion = await UnansweredQuestion.findOneAndUpdate(
-            { _id: id, id_project },
-            { question },
-            { new: true }
-        );
-
-        if (!updatedQuestion) {
-            return res.status(404).json({
-                success: false,
-                error: "Question not found"
-            });
-        }
-
-        res.status(200).json(updatedQuestion);
-
-    } catch (error) {
-        winston.error('Error updating unanswered question:', error);
-        res.status(500).json({
-            success: false,
-            error: "Error updating unanswered question"
-        });
+    if (!question) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required parameter: question"
+      });
     }
+
+    const updatedQuestion = await UnansweredQuestion.findOneAndUpdate(
+      { _id: id, id_project },
+      { question },
+      { new: true }
+    );
+
+    if (!updatedQuestion) {
+      return res.status(404).json({
+        success: false,
+        error: "Question not found"
+      });
+    }
+
+    res.status(200).json(updatedQuestion);
+
+  } catch (error) {
+    winston.error('Error updating unanswered question:', error);
+    res.status(500).json({
+      success: false,
+      error: "Error updating unanswered question"
+    });
+  }
 });
 
 // Count unanswered questions for a namespace
 router.get('/count/:namespace', async (req, res) => {
-    try {
-        const { namespace } = req.params;
-        const id_project = req.projectid;
+  try {
+    const { namespace } = req.params;
+    const id_project = req.projectid;
 
-        if (!namespace) {
-            return res.status(400).json({
-                success: false,
-                error: "Missing required parameter: namespace"
-            });
-        }
-
-        // Check if namespace belongs to project
-        const isValidNamespace = await validateNamespace(id_project, namespace);
-        if (!isValidNamespace) {
-            return res.status(403).json({
-                success: false,
-                error: "Not allowed. The namespace does not belong to the current project."
-            });
-        }
-
-        const count = await UnansweredQuestion.countDocuments({
-            id_project,
-            namespace
-        });
-
-        res.status(200).json({ count });
-
-    } catch (error) {
-        winston.error('Error counting unanswered questions:', error);
-        res.status(500).json({
-            success: false,
-            error: "Error counting unanswered questions"
-        });
+    if (!namespace) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required parameter: namespace"
+      });
     }
+
+    // Check if namespace belongs to project
+    const isValidNamespace = await validateNamespace(id_project, namespace);
+    if (!isValidNamespace) {
+      return res.status(403).json({
+        success: false,
+        error: "Not allowed. The namespace does not belong to the current project."
+      });
+    }
+
+    const count = await UnansweredQuestion.countDocuments({
+      id_project,
+      namespace
+    });
+
+    res.status(200).json({ count });
+
+  } catch (error) {
+    winston.error('Error counting unanswered questions:', error);
+    res.status(500).json({
+      success: false,
+      error: "Error counting unanswered questions"
+    });
+  }
 });
 
 router.get('/:namespace/export', async (req, res) => {
-    try {
-        const { namespace } = req.params;
-        const id_project = req.projectid;
-        const mode = String(req.query.mode || 'csv').toLowerCase();
+  try {
+    const { namespace } = req.params;
+    const id_project = req.projectid;
+    const mode = String(req.query.mode || 'csv').toLowerCase();
 
-        if (mode !== 'csv' && mode !== 'json') {
-            return res.status(400).json({
-                success: false,
-                error: 'Invalid format. Use mode=json or mode=csv'
-            });
-        }
-
-        const isValidNamespace = await validateNamespace(id_project, namespace);
-        if (!isValidNamespace) {
-            return res.status(403).json({
-                success: false,
-                error: "Not allowed. The namespace does not belong to the current project."
-            });
-        }
-
-        const questions = await UnansweredQuestion.find({ id_project, namespace })
-            .sort({ createdAt: -1 })
-            .lean();
-
-        const safeFilename = String(namespace).replace(/[^\w.-]+/g, '_') || 'export';
-
-        if (mode === 'json') {
-            const questionsJson = questions.map((q) => {
-                const { __v, updatedAt, ...doc } = q;
-                return doc;
-            });
-            const payload = {
-                namespace,
-                exportedAt: new Date().toISOString(),
-                count: questionsJson.length,
-                questions: questionsJson
-            };
-            res.setHeader('Content-Type', 'application/json; charset=utf-8');
-            res.setHeader('Content-Disposition', `attachment; filename="unanswered-${safeFilename}.json"`);
-            return res.send(JSON.stringify(payload, null, 2));
-        }
-
-        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-        res.setHeader('Content-Disposition', `attachment; filename="unanswered-${safeFilename}.csv"`);
-
-        const csvStream = fastCsv.format({ headers: true });
-        csvStream.pipe(res);
-
-        for (const q of questions) {
-            csvStream.write({
-                id: String(q._id),
-                namespace: q.namespace,
-                question: q.question,
-                request_id: q.request_id || '',
-                createdAt: q.createdAt ? new Date(q.createdAt).toISOString() : ''
-            });
-        }
-        csvStream.end();
-    } catch (error) {
-        winston.error('Error exporting unanswered questions:', error);
-        if (!res.headersSent) {
-            res.status(500).json({
-                success: false,
-                error: "Error exporting unanswered questions"
-            });
-        }
+    if (mode !== 'csv' && mode !== 'json') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid format. Use mode=json or mode=csv'
+      });
     }
+
+    const isValidNamespace = await validateNamespace(id_project, namespace);
+    if (!isValidNamespace) {
+      return res.status(403).json({
+        success: false,
+        error: "Not allowed. The namespace does not belong to the current project."
+      });
+    }
+
+    const questions = await UnansweredQuestion.find({ id_project, namespace })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const safeFilename = String(namespace).replace(/[^\w.-]+/g, '_') || 'export';
+
+    if (mode === 'json') {
+      const questionsJson = questions.map((q) => {
+        const { __v, updatedAt, ...doc } = q;
+        return doc;
+      });
+      const payload = {
+        namespace,
+        exportedAt: new Date().toISOString(),
+        count: questionsJson.length,
+        questions: questionsJson
+      };
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="unanswered-${safeFilename}.json"`);
+      return res.send(JSON.stringify(payload, null, 2));
+    }
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="unanswered-${safeFilename}.csv"`);
+
+    const csvStream = fastCsv.format({ headers: true });
+    csvStream.pipe(res);
+
+    for (const q of questions) {
+      csvStream.write({
+        id: String(q._id),
+        namespace: q.namespace,
+        question: q.question,
+        request_id: q.request_id || '',
+        createdAt: q.createdAt ? new Date(q.createdAt).toISOString() : ''
+      });
+    }
+    csvStream.end();
+  } catch (error) {
+    winston.error('Error exporting unanswered questions:', error);
+    if (!res.headersSent) {
+      res.status(500).json({
+        success: false,
+        error: "Error exporting unanswered questions"
+      });
+    }
+  }
 });
 
 // Helper function to validate namespace
 async function validateNamespace(id_project, namespace_id) {
-    try {
-        const namespace = await Namespace.findOne({ 
-            id_project: id_project,
-            id: namespace_id 
-        });
-        return !!namespace; // return true if namespace exists, false otherwise
-    } catch (err) {
-        winston.error("validate namespace error: ", err);
-        throw err;
-    }
+  try {
+    const namespace = await Namespace.findOne({
+      id_project: id_project,
+      id: namespace_id
+    });
+    return !!namespace; // return true if namespace exists, false otherwise
+  } catch (err) {
+    winston.error("validate namespace error: ", err);
+    throw err;
+  }
 }
 
 module.exports = router; 

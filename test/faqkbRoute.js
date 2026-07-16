@@ -1217,6 +1217,7 @@ describe('FaqKBRoute', () => {
                                     if (err) { console.error("err: ", err); }
                                     if (log) { console.log("res.body", res.body); }
 
+                                    console.log("chatbot trashed: ", res.body);
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
                                     expect(res.body.trashed).to.equal(true);
@@ -1321,464 +1322,148 @@ describe('FaqKBRoute', () => {
         })
     })
 
-    // describe('Train', () => {
+    describe('Subagents', () => {
 
-    //     it('train', (done) => {
+        it('create-subagent', (done) => {
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
 
-    //         var email = "test-signup-" + Date.now() + "@email.com";
-    //         var pwd = "pwd";
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
 
-    //         userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-    //             projectService.create("test-faqkb-train", savedUser._id).then(function (savedProject) {
-    //                 faqService.create("testbot", "http://54.228.177.1644", savedProject._id, savedUser._id).then(function (savedBot) {
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ name: "Parent", type: "tilebot", language: 'en' })
+                        .end((err, res) => {
 
-    //                     var newFaq = new Faq({
-    //                         id_faq_kb: savedBot._id,
-    //                         question: "question1\nquestion2",
-    //                         answer: "answer",
-    //                         id_project: savedProject._id,
-    //                         topic: "default",
-    //                         createdBy: savedUser._id,
-    //                         updatedBy: savedUser._id
-    //                     });
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
 
-    //                     newFaq.save(function (err, savedFaq) {
-    //                         expect(savedBot.name).to.equal("testbot");
-    //                         expect(savedBot.secret).to.not.equal(null);
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("Parent");
+                            expect(res.body.language).to.equal("en");
+                            
+                            let parent_id = res.body._id;
 
-    //                         chai.request(server)
-    //                             .post('/' + savedProject._id + '/faq_kb/train')
-    //                             .auth(email, pwd)
-    //                             .send({ "id_faq_kb": savedBot._id })
-    //                             .end((err, res) => {
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/faq_kb')
+                                .auth(email, pwd)
+                                .send({ name: "Subagent", type: "tilebot", subtype: "subagent", parent_id: parent_id, language: 'en' })
+                                .end((err, res) => {
+                                    
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
 
-    //                                 if (err) { console.error("err: ", err) };
-    //                                 if (log) { console.log("res.body: ", res.body) };
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    expect(res.body.name).to.equal("Subagent");
+                                    expect(res.body.language).to.equal("en");
+                                    expect(res.body.parent_id).to.equal(parent_id);
 
-    //                                 res.should.have.status(200);
-    //                                 res.body.should.be.a('object');
-    //                                 expect(res.body.train.nlu.intent).to.equal(savedBot.intent_display_name);
-    //                                 // expect(res.body.text).to.equal("addestramento avviato");         
+                                    let subagent_id = res.body._id;
+                                    
+                                    chai.request(server)
+                                        .get('/' + savedProject._id + '/faq/?id_faq_kb=' + subagent_id)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("res.body", res.body); }
 
+                                            console.log("res.body", res.body);
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('array');
+                                            res.body.length.should.equal(2);
 
-    //                                 done();
-    //                             });
+                                            done()
+                                        })
 
+                                })
 
-    //                     });
-    //                 });
-    //             });
-    //         });
-    //     }).timeout(20000);
+                        })
+                })
+            })
+        })
 
-    // })
+        it('get-chatbot-subagents-list', (done) => {
+            let email = "test-signup-" + Date.now() + "@email.com";
+            let pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ name: "Parent", type: "tilebot", language: 'en' })
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("Parent");
+                            expect(res.body.language).to.equal("en");
+
+                            let parent_id = res.body._id;
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/faq_kb')
+                                .auth(email, pwd)
+                                .send({ name: "Subagent 1", type: "tilebot", subtype: "subagent", parent_id: parent_id, language: 'en' })
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    expect(res.body.name).to.equal("Subagent 1");
+                                    expect(res.body.language).to.equal("en");
+                                    expect(res.body.parent_id).to.equal(parent_id);
+
+                                    chai.request(server)
+                                        .post('/' + savedProject._id + '/faq_kb')
+                                        .auth(email, pwd)
+                                        .send({ name: "Subagent 2", type: "tilebot", subtype: "subagent", parent_id: parent_id, language: 'en' })
+                                        .end((err, res) => {
+
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("res.body", res.body); }
+
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('object');
+                                            expect(res.body.name).to.equal("Subagent 2");
+                                            expect(res.body.language).to.equal("en");
+                                            expect(res.body.parent_id).to.equal(parent_id);
+
+                                            chai.request(server)
+                                                .get('/' + savedProject._id + '/faq_kb/' + parent_id + '/subagents')
+                                                .auth(email, pwd)
+                                                .end((err, res) => {
+                                                    if (err) { console.error("err: ", err); }
+                                                    if (log) { console.log("res.body", res.body); }
+
+                                                    console.log("res.body", res.body);
+                                                    res.should.have.status(200);
+                                                    res.body.should.be.a('array');
+                                                    expect(res.body.length).to.equal(2);
+                                                    expect(res.body[0].name).to.equal("Subagent 2");
+                                                    expect(res.body[1].name).to.equal("Subagent 1");
+
+                                                    done();
+                                                })
+
+                                        })
+
+                                })
+
+                        })
+                })
+            })
+        })
+    })
 
 });
-
-
-/**
-* This test will be no longer available after merge with master because
-* the profile section can no longer be modified via api.
-*/
-// it('createMaximumNumberExceeded', (done) => {
-
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
-
-//     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-//         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
-
-//             chai.request(server)
-//                 .put('/projects/' + savedProject._id)
-//                 .auth(email, pwd)
-//                 .send({ profile: { quotes: { chatbots: 2 } } })
-//                 .end((err, res) => {
-
-//                     if (log) { console.log("res.body", res.body); }
-
-//                     chai.request(server)
-//                         .post('/' + savedProject._id + '/faq_kb')
-//                         .auth(email, pwd)
-//                         .send({ "name": "testbot1", type: "external", language: 'en' })
-//                         .end((err, res) => {
-//                             if (log) { console.log("res.body", res.body); }
-//                             res.should.have.status(200);
-//                             res.body.should.be.a('object');
-//                             expect(res.body.name).to.equal("testbot1");
-//                             expect(res.body.language).to.equal("en");
-
-//                             chai.request(server)
-//                                 .post('/' + savedProject._id + '/faq_kb')
-//                                 .auth(email, pwd)
-//                                 .send({ "name": "testbot2", type: "external", language: 'en' })
-//                                 .end((err, res) => {
-//                                     if (log) { console.log("res.body", res.body); }
-//                                     res.should.have.status(200);
-//                                     res.body.should.be.a('object');
-//                                     expect(res.body.name).to.equal("testbot2");
-//                                     expect(res.body.language).to.equal("en");
-
-//                                     chai.request(server)
-//                                         .post('/' + savedProject._id + '/faq_kb')
-//                                         .auth(email, pwd)
-//                                         .send({ "name": "testbot3", type: "external", language: 'en' })
-//                                         .end((err, res) => {
-
-//                                             if (log) { console.log("res.body", res.body); }
-
-//                                             res.should.have.status(403);
-//                                             res.body.should.be.a('object');
-//                                             expect(res.body.success).to.equal(false);
-//                                             expect(res.body.error).to.equal("Maximum number of chatbots reached for the current plan");
-//                                             expect(res.body.plan_limit).to.equal(2);
-
-//                                             done()
-
-//                                         });
-//                                 });
-//                         });
-//                 })
-//         });
-//     });
-
-// }).timeout(20000);
-
-
-// it('train with tiledesk-ai', (done) => {
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
-
-//     userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
-//         projectService.create("test-faqkb-create", savedUser._id).then((savedProject) => {
-
-//             chai.request(server)
-//                 .post('/' + savedProject._id + '/faq_kb')
-//                 .auth(email, pwd)
-//                 .send({ "name": "testbot", type: "internal", template: "example", intentsEngine: "tiledesk-ai" })
-//                 .end((err, res) => {
-//                     if (log) {
-//                         console.log("res.body", res.body);
-//                     }
-//                     res.should.have.status(200);
-//                     res.body.should.be.a('object');
-//                     expect(res.body.name).to.equal("testbot");
-//                     var id_faq_kb = res.body._id;
-
-//                     chai.request(server)
-//                         .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
-//                         .auth(email, pwd)
-//                         .end((err, res) => {
-//                             if (log) { console.log("faq_list: ", res.body); }
-//                             res.should.have.status(200);
-//                             res.body.should.be.an('array').that.is.not.empty;
-
-//                             chai.request(server)
-//                                 .post('/' + savedProject._id + '/faq_kb/aitrain')
-//                                 .auth(email, pwd)
-//                                 .send({ id_faq_kb: id_faq_kb, webhook_enabled: false })
-//                                 .end((err, res) => {
-//                                     if (log) { console.log("train res.body: ", res.body); }
-
-//                                     done();
-//                                 })
-
-//                         })
-
-
-
-//                 });
-//         })
-//     })
-// })
-
-
-// DEPRECATED
-// it('import json (simple)', (done) => {
-
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
-
-//     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-//         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
-
-//             chai.request(server)
-//                 .post('/' + savedProject._id + '/faq_kb')
-//                 .auth(email, pwd)
-//                 .send({ "name": "testbot", type: "internal", language: 'fr' })
-//                 .end((err, res) => {
-//                     if (log) {
-//                         console.log("res.body: ", res.body);
-//                     }
-//                     res.should.have.status(200);
-//                     res.body.should.be.a('object');
-//                     expect(res.body.name).to.equal("testbot");
-//                     expect(res.body.language).to.equal("fr");
-//                     let id_faq_kb = res.body._id;
-
-//                     chai.request(server)
-//                         .post('/' + savedProject._id + '/faq_kb/importjson/' + id_faq_kb + '?intentsOnly=true&overwrite=true')
-//                         .auth(email, pwd)
-//                         .set('Content-Type', 'text/plain')
-//                         .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-json-intents.txt')), 'example-json-intents.txt')
-//                         .end((err, res) => {
-//                             if (log) {
-//                                 console.log("import (intents only) json res: ", res.body);
-//                             }
-//                             res.should.have.status(200);
-//                             //res.should.be.a('object');
-//                             //expect(res.body.success).to.equal(true);
-
-//                             chai.request(server)
-//                                 .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
-//                                 .auth(email, pwd)
-//                                 .end((err, res) => {
-//                                     if (log) {
-//                                         console.log("faq_list: ", res.body);
-//                                     }
-//                                     res.should.have.status(200);
-//                                     res.body.should.be.an('array').that.is.not.empty;
-
-//                                     done();
-
-//                                 })
-//                         })
-//                 })
-//         })
-//     })
-// })
-
-
-// DEPRECATED
-// it('import json (intents only) (overwrite true)', (done) => {
-
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
-
-//     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-//         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
-
-//             chai.request(server)
-//                 .post('/' + savedProject._id + '/faq_kb')
-//                 .auth(email, pwd)
-//                 .send({ "name": "testbot", type: "internal", language: 'fr', template: 'blank' })
-//                 .end((err, res) => {
-//                     if (log) {
-//                         console.log("res.body: ", res.body);
-//                     }
-//                     res.should.have.status(200);
-//                     res.body.should.be.a('object');
-//                     expect(res.body.name).to.equal("testbot");
-//                     expect(res.body.language).to.equal("fr");
-//                     let id_faq_kb = res.body._id;
-
-//                     chai.request(server)
-//                         .post('/' + savedProject._id + '/faq_kb/importjson/' + id_faq_kb + '?intentsOnly=true&overwrite=true')
-//                         .auth(email, pwd)
-//                         .set('Content-Type', 'text/plain')
-//                         .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-json-intents.txt')), 'example-json-intents.txt')
-//                         .end((err, res) => {
-//                             if (log) {
-//                                 console.log("import (intents only) json res: ", res.body);
-//                             }
-//                             res.should.have.status(200);
-//                             //res.should.be.a('object');
-//                             //expect(res.body.success).to.equal(true);
-
-//                             chai.request(server)
-//                                 .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
-//                                 .auth(email, pwd)
-//                                 .end((err, res) => {
-//                                     if (log) {
-//                                         console.log("faq_list: ", res.body);
-//                                     }
-//                                     res.should.have.status(200);
-//                                     res.body.should.be.an('array').that.is.not.empty;
-
-//                                     done();
-
-//                                 })
-//                         })
-//                 })
-//         })
-//     })
-// })
-
-
-// DEPRECATED
-// it('import json (intents only) (overwrite false)', (done) => {
-
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
-
-//     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-//         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
-
-//             chai.request(server)
-//                 .post('/' + savedProject._id + '/faq_kb')
-//                 .auth(email, pwd)
-//                 .send({ "name": "testbot", type: "internal", language: 'fr', template: 'blank' })
-//                 .end((err, res) => {
-//                     if (log) {
-//                         console.log("res.body: ", res.body);
-//                     }
-//                     res.should.have.status(200);
-//                     res.body.should.be.a('object');
-//                     expect(res.body.name).to.equal("testbot");
-//                     expect(res.body.language).to.equal("fr");
-//                     let id_faq_kb = res.body._id;
-
-//                     chai.request(server)
-//                         .post('/' + savedProject._id + '/faq_kb/importjson/' + id_faq_kb + '?intentsOnly=true')
-//                         .auth(email, pwd)
-//                         .set('Content-Type', 'text/plain')
-//                         .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-json-intents.txt')), 'example-json-intents.txt')
-//                         .end((err, res) => {
-//                             if (log) {
-//                                 console.log("import (intents only) json res: ", res.body);
-//                             }
-//                             res.should.have.status(200);
-//                             //res.should.be.a('object');
-//                             //expect(res.body.success).to.equal(true);
-
-//                             chai.request(server)
-//                                 .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
-//                                 .auth(email, pwd)
-//                                 .end((err, res) => {
-//                                     if (log) {
-//                                         console.log("faq_list: ", res.body);
-//                                     }
-//                                     res.should.have.status(200);
-//                                     res.body.should.be.an('array').that.is.not.empty;
-
-//                                     done();
-
-//                                 })
-//                         })
-//                 })
-//         })
-//     })
-// })
-
-// it('publishChatbot', (done) => {
-
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
-
-//     userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(function (savedUser) {
-//         projectService.create("current-project", savedUser._id).then(function (currentProject) {
-
-//             console.log("declare chatbot_service functions...")
-
-//             class chatbot_service {
-//                 async fork(id, api_url, token, project_id) {
-//                     console.log("chatbot_service test fork called")
-//                     return { message: "Chatbot forked successfully", bot_id: savedChatbot._id }
-//                     //return chatbot_mock.existing_chatbot_mock;
-//                 }
-
-//                 async getBotById(id, published, api_url, chatbot_templates_api_url, token, project_id, globals) {
-//                     return chatbot_mock.existing_chatbot_mock;
-//                 }
-
-//                 async createBot(api_url, token, chatbot, project_id) {
-//                     return chatbot_mock.empty_chatbot_mock
-//                 }
-
-//                 async importFaqs(api_url, id_faq_kb, token, chatbot, project_id) {
-//                     return chatbot_mock.import_faqs_res_mock
-//                 }
-//             }
-
-//             server.set('chatbot_service', new chatbot_service());
-//             console.log("chatbot_service functions declared")
-
-//             chai.request(server)
-//                     .post('/' + currentProject._id + '/faq_kb')
-//                     .auth(email, pwd)
-//                     .send({ "name": "privateBot", type: "internal", language: 'en', public: "false", template: "blank" })
-//                     .end((err, res) => {
-//                         console.log("res.body: ", res.body);
-//                         if (log) {
-//                         }
-//                         res.should.have.status(200);
-//                         res.body.should.be.a('object');
-//                         expect(res.body.name).to.equal("privateBot");
-//                         expect(res.body.language).to.equal("en");
-//                         let id_faq_kb = res.body._id;
-
-//                         chai.request(server)
-//                         .put('/' + currentProject._id + '/faq_kb/' +  id_faq_kb + '/publish')
-//                         .auth(email, pwd)
-//                         .set('Content-Type', 'application/json')
-//                         .end((err, res) => {
-//                             console.log("publish bot res.body: ", res.body);
-//                             res.should.have.status(200);
-
-//                             done();
-//                         })
-//                     })
-
-
-//         })
-//     })
-// })
-
-// DEPRECATED
-// it('import-json-overwrite-true', (done) => {
-
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
-
-//     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-//         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
-
-
-//             chai.request(server)
-//                 .post('/' + savedProject._id + '/faq_kb')
-//                 .auth(email, pwd)
-//                 .send({ "name": "testbot", type: "internal", language: 'fr', template: "blank" })
-//                 .end((err, res) => {
-
-//                     if (err) { console.error("err: ", err) };
-//                     if (log) { console.log("res.body: ", res.body) };
-
-//                     res.should.have.status(200);
-//                     res.body.should.be.a('object');
-//                     expect(res.body.name).to.equal("testbot");
-//                     expect(res.body.language).to.equal("fr");
-//                     let id_faq_kb = res.body._id;
-
-//                     chai.request(server)
-//                         .post('/' + savedProject._id + '/faq_kb/importjson/' + id_faq_kb + "?overwrite=true")
-//                         .auth(email, pwd)
-//                         .set('Content-Type', 'text/plain')
-//                         .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example.json')), 'example.json')
-//                         .end((err, res) => {
-
-//                             if (err) { console.error("err: ", err) };
-//                             if (log) { console.log("res.body: ", res.body) };
-
-//                             res.should.have.status(200);
-//                             res.should.be.a('object');
-//                             expect(res.body.name).to.equal("examplebot");
-//                             expect(res.body.language).to.equal("en");
-
-//                             chai.request(server)
-//                                 .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
-//                                 .auth(email, pwd)
-//                                 .end((err, res) => {
-
-//                                     if (err) { console.error("err: ", err) };
-//                                     if (log) { console.log("res.body: ", res.body) };
-
-//                                     res.should.have.status(200);
-//                                     res.body.should.be.an('array').that.is.not.empty;
-
-//                                     done();
-
-//                                 })
-//                         })
-//                 })
-//         })
-//     })
-// })

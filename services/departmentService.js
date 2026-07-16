@@ -85,6 +85,7 @@ roundRobin(operatorSelectedEvent) {
         participants: { $exists: true, $ne: [] }};
       
       winston.debug('query', query);            
+      winston.info("main_flow_cache_3 department find last request");
 
       // let lastRequests = await 
       // requestcachefarequi nocachepopulatereqired
@@ -225,14 +226,26 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
 
       let query;
+      var cacheKey;
       if (departmentid == 'default' || departmentid == undefined) {
         query = { default: true, id_project: projectid };
+        cacheKey =  projectid+":departments:default";
       } else {
         query = { _id: departmentid };
+        cacheKey =  projectid+":departments:id:"+departmentid;
       }
+      winston.info("main_flow_cache_2 departmentService getOperators");
+      
        // console.log('query', query);
-      return Department.findOne(query).exec(function (err, department) {
-        // return Department.findOne(query).exec().then(function (department) {
+      var q = Department.findOne(query);
+      
+      if (cacheEnabler.department) {
+        winston.info("cacheKey: "+cacheKey);
+        q.cache(cacheUtil.defaultTTL, cacheKey);
+        winston.debug("cacheEnabler.lead enabled");
+      }
+
+      return q.exec(function (err, department) {
 
         if (err) {
           winston.error('-- > 1 DEPT FIND BY ID ERR ', err)
@@ -289,7 +302,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
             winston.debug('project_user cache enabled');
           }
   
-  
+          const t1 = Date.now();
           return qpu.exec(function (err, project_users) {
             if (err) {
               winston.error('-- > 2 DEPT FIND BY ID ERR ', err)
@@ -297,11 +310,12 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
             }
             // console.log('OPERATORS - BOT IS DEFINED - MEMBERS ', project_users)
             // console.log('OPERATORS - BOT IS DEFINED - MEMBERS LENGHT ', project_users.length);
-
+            console.log("[Performance] getOperatorsWithOperatingHours time: " + (Date.now() - t1));
             // getAvailableOperatorsWithOperatingHours: IN BASE ALLE 'OPERATING HOURS' DEL PROGETTO ESEGUE 
             // getAvailableOperator CHE RITORNA I PROJECT USER DISPONIBILI
+            const t2 = Date.now();
             return that.getAvailableOperatorsWithOperatingHours(project_users, projectid).then(function (_available_agents) {
-
+              console.log("[Performance] getAvailableOperatorsWithOperatingHours time: " + (Date.now() - t2));
               // console.log("D -> [ OPERATORS - BOT IS DEFINED ] -> AVAILABLE PROJECT-USERS: ", _available_agents);
 
               // here subscription notifier??              
@@ -358,16 +372,101 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
   return new Promise(function (resolve, reject) {
     // console.log('D-1 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, ' ], - ID GROUP', department.id_group);
 
-    if (department.id_group != null) {
-
-      return resolve(that.findProjectUsersAllAndAvailableWithOperatingHours_group(projectid, department, disableWebHookCall, project, context));
-
-    } else {
-
-      return resolve(that.findProjectUsersAllAndAvailableWithOperatingHours_nogroup(projectid, department, disableWebHookCall, project, context));
-
+    const groups = department.groups;
+    if (groups && Array.isArray(groups) && groups.length > 0) {
+      return resolve(that.findProjectUsersAllAndAvailableWithOperatingHours_multigroups(projectid, department, disableWebHookCall, project, context));
     }
 
+    if (department.id_group != null) {
+      return resolve(that.findProjectUsersAllAndAvailableWithOperatingHours_group(projectid, department, disableWebHookCall, project, context));
+    }
+
+    return resolve(that.findProjectUsersAllAndAvailableWithOperatingHours_nogroup(projectid, department, disableWebHookCall, project, context));
+
+  });
+};
+
+ findProjectUsersAllAndAvailableWithOperatingHours_multigroups(projectid, department, disableWebHookCall, project, context) {
+  var that = this;
+
+  return new Promise(function (resolve, reject) {
+    const groupIds = (department.groups || [])
+      .map(function (g) { return g.group_id; })
+      .filter(function (id) { return !!id; });
+
+    if (groupIds.length === 0) {
+      var emptyResult = { available_agents: [], agents: [], operators: [], context: context };
+      return resolve(emptyResult);
+    }
+
+    return Group.find({ _id: { $in: groupIds } }).exec(function (err, dbGroups) {
+      if (err) {
+        winston.error('D-2 MULTI GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err);
+        return reject(err);
+      }
+
+      if (!dbGroups || dbGroups.length === 0) {
+        winston.debug('D-2 MULTI GROUP -> no valid groups found for department', department._id);
+        var noGroupsResult = { available_agents: [], agents: [], operators: [], context: context };
+        return resolve(noGroupsResult);
+      }
+
+      const enabledGroups = dbGroups.filter(function (g) { return g.enabled !== false; });
+
+      if (enabledGroups.length === 0) {
+        winston.debug('D-2 MULTI GROUP -> all groups are disabled for department', department._id);
+        var disabledGroupsResult = { available_agents: [], agents: [], operators: [], context: context };
+        return resolve(disabledGroupsResult);
+      }
+
+      const members = [...new Set(enabledGroups.flatMap(function (g) { return g.members; }))];
+
+      if (members.length === 0) {
+        var noMembersResult = { available_agents: [], agents: [], operators: [], context: context };
+        return resolve(noMembersResult);
+      }
+
+      return Project_user.find({ id_project: projectid, id_user: { $in: members }, roleType: RoleConstants.TYPE_AGENTS, status: "active" }).exec(function (err, project_users) {
+        if (err) {
+          winston.error('D-2 MULTI GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT USER - ERR ', err);
+          return reject(err);
+        }
+
+        winston.debug("project_users (multi group)", project_users);
+
+        if (project_users && project_users.length > 0) {
+          return that.getAvailableOperatorsWithOperatingHours(project_users, projectid).then(function (_available_agents) {
+            var selectedoperator = [];
+            if (department.routing === 'assigned') {
+              selectedoperator = that.getRandomAvailableOperator(_available_agents);
+            }
+
+            let objectToReturn = {
+              available_agents: _available_agents,
+              agents: project_users,
+              operators: selectedoperator,
+              department: department,
+              groups: enabledGroups,
+              id_project: projectid,
+              project: project,
+              context: context
+            };
+
+            return that.roundRobin(objectToReturn).then(function (objectToReturnRoundRobin) {
+              winston.debug("context2", context);
+              departmentEvent.emit('operator.select.base1', { result: objectToReturnRoundRobin, disableWebHookCall: disableWebHookCall, resolve: resolve, reject: reject, context: context });
+            });
+
+          }).catch(function (error) {
+            winston.error('D-3 -> [ findProjectUsersAllAndAvailableWithOperatingHours_multigroups ] - AVAILABLE AGENT - ERROR ', error);
+            return reject(error);
+          });
+        }
+
+        var objectToReturn = { available_agents: [], agents: [], operators: [], context: context };
+        return resolve(objectToReturn);
+      });
+    });
   });
 };
 
@@ -547,8 +646,9 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
         
         if (isOpen) {
 
+          const t1 = Date.now();
           var _available_agents = that.getAvailableOperator(project_users);
-
+          console.log("[Performance] getAvailableOperator time: " + (Date.now() - t1));
           return resolve(_available_agents);
         } else {
           // console.logO ---> [ OHS ] -> PROJECT NOT FOUND("HERERERERERERE");
