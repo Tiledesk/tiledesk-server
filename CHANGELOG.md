@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.19.16
+- Queued /kb/scrape/single via scheduleScrape instead of sync startScrape
+- Improved guest closure event handling in activity monitoring
+
 # 2.19.15
 - Fixed bug on updating cells in a table row
 
