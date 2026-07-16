@@ -20,6 +20,7 @@ const roleConstants = require('../models/roleConstants');
 const errorCodes = require('../errorCodes');
 const faq_kb = require('../models/faq_kb');
 const chatbotController = require('../controllers/chatbot.controller');
+const intentsController = require('../controllers/intents.controller');
 
 let chatbot_templates_api_url = process.env.CHATBOT_TEMPLATES_API_URL
 
