@@ -35,12 +35,12 @@ let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
 let uploadlimits = undefined;
 
 if (MAX_UPLOAD_FILE_SIZE) {
-  uploadlimits = {fileSize: parseInt(MAX_UPLOAD_FILE_SIZE)} ;
+  uploadlimits = { fileSize: parseInt(MAX_UPLOAD_FILE_SIZE) };
   winston.debug("Max upload file size is : " + MAX_UPLOAD_FILE_SIZE);
 } else {
   winston.debug("Max upload file size is infinity");
 }
-var upload = multer({limits: uploadlimits});
+var upload = multer({ limits: uploadlimits });
 
 let jobManager = new JobManager(AMQP_MANAGER_URL, {
   debug: false,
@@ -84,22 +84,23 @@ const default_engine_hybrid = require('../config/kb/engine.hybrid');
 const default_embedding = require('../config/kb/embedding');
 const PromptManager = require('../config/kb/prompt/rag/PromptManager');
 const situatedContext = require('../config/kb/situatedContext');
+const kbQuestionService = require('../services/kbQuestionService');
 
 const ragPromptManager = new PromptManager(path.join(__dirname, '../config/kb/prompt/rag'));
 
 const RAG_CONTEXT_ENV_OVERRIDES = {
-  "gpt-3.5-turbo":       process.env.GPT_3_5_CONTEXT,
-  "gpt-4":               process.env.GPT_4_CONTEXT,
+  "gpt-3.5-turbo": process.env.GPT_3_5_CONTEXT,
+  "gpt-4": process.env.GPT_4_CONTEXT,
   "gpt-4-turbo-preview": process.env.GPT_4T_CONTEXT,
-  "gpt-4o":              process.env.GPT_4O_CONTEXT,
-  "gpt-4o-mini":         process.env.GPT_4O_MINI_CONTEXT,
-  "gpt-4.1":             process.env.GPT_4_1_CONTEXT,
-  "gpt-4.1-mini":        process.env.GPT_4_1_MINI_CONTEXT,
-  "gpt-4.1-nano":        process.env.GPT_4_1_NANO_CONTEXT,
-  "gpt-5":               process.env.GPT_5_CONTEXT,
-  "gpt-5-mini":          process.env.GPT_5_MINI_CONTEXT,
-  "gpt-5-nano":          process.env.GPT_5_NANO_CONTEXT,
-  "general":             process.env.GENERAL_CONTEXT
+  "gpt-4o": process.env.GPT_4O_CONTEXT,
+  "gpt-4o-mini": process.env.GPT_4O_MINI_CONTEXT,
+  "gpt-4.1": process.env.GPT_4_1_CONTEXT,
+  "gpt-4.1-mini": process.env.GPT_4_1_MINI_CONTEXT,
+  "gpt-4.1-nano": process.env.GPT_4_1_NANO_CONTEXT,
+  "gpt-5": process.env.GPT_5_CONTEXT,
+  "gpt-5-mini": process.env.GPT_5_MINI_CONTEXT,
+  "gpt-5-nano": process.env.GPT_5_NANO_CONTEXT,
+  "general": process.env.GENERAL_CONTEXT
 };
 
 /** RAG system prompt per modello: file in config/kb/prompt/rag, sovrascrivibili via env (come prima). */
@@ -112,13 +113,6 @@ function getRagContextTemplate(modelName) {
     return process.env.GENERAL_CONTEXT;
   }
   return ragPromptManager.getPrompt(modelName);
-}
-
-function normalizeEmbedding(embedding) {
-  const normalizedEmbedding = (embedding && typeof embedding.toObject === 'function')
-    ? embedding.toObject()
-    : (embedding || default_embedding);
-  return { ...normalizedEmbedding };
 }
 
 function normalizeSituatedContext(enable = false) {
@@ -142,15 +136,15 @@ router.post('/scrape/single', async (req, res) => {
 
   let data = req.body;
   winston.debug("/scrape/single data: ", data)
-  
+
   let namespace;
   try {
     namespace = await aiManager.checkNamespace(project_id, data.namespace);
   } catch (err) {
     let errorCode = err?.errorCode ?? 500;
     return res.status(errorCode).send({ success: false, error: err.error });
-  } 
-  
+  }
+
   if (data.type === "sitemap") {
 
     const urls = await aiManager.fetchSitemap(data.source).catch((err) => {
@@ -166,18 +160,18 @@ router.post('/scrape/single', async (req, res) => {
     try {
       sitemapKb = await KB.findById(data.id);
     } catch (err) {
-      winston.error("Error finding sitemap content with id " +  data.id);
+      winston.error("Error finding sitemap content with id " + data.id);
       return res.status(500).send({ success: false, error: "Error finding sitemap content with id " + data.id });
     }
 
     if (!sitemapKb) {
       return res.status(404).send({ success: false, error: "Content not found with id " + data.id });
     }
-    
+
     let existingKbs;
     try {
       existingKbs = await KB.find({ id_project: project_id, namespace: data.namespace, sitemap_origin_id: data.id }).lean().exec();
-    } catch(err) {
+    } catch (err) {
       winston.error("Error finding existing contents: ", err);
       return res.status(500).send({ success: false, error: "Error finding existing sitemap contents" });
     }
@@ -263,8 +257,7 @@ router.post('/scrape/single', async (req, res) => {
       }
 
       json.engine = namespace.engine || default_engine;
-      json.embedding = normalizeEmbedding(namespace.embedding);
-      json.embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+      json.embedding = aiManager.normalizeEmbedding(namespace.embedding);
 
       if (namespace.hybrid === true) {
         json.hybrid = true;
@@ -275,6 +268,8 @@ router.post('/scrape/single', async (req, res) => {
       }
 
       winston.verbose("/scrape/single json: ", json);
+
+      json.id_project = project_id;
 
       if (process.env.NODE_ENV === "test") {
         res.status(200).send({ success: true, message: "Skip indexing in test environment", data: json })
@@ -362,6 +357,7 @@ router.post('/qa', async (req, res) => {
   let id_project = req.projectid;
   let publicKey = false;
   let data = req.body;
+  data.id_project = id_project;
 
   let namespace;
   try {
@@ -374,7 +370,7 @@ router.post('/qa', async (req, res) => {
 
   let model;
   try {
-    model = await aiManager.resolveLLMConfig(id_project, data.llm, data.model);
+    model = await aiManager.resolveLLMConfig(id_project, data.llm, data.model, data.vllmServer);
   } catch (err) {
     let errorCode = err?.code ?? 500;
     return res.status(errorCode).send({ success: false, error: err.error });
@@ -393,7 +389,7 @@ router.post('/qa', async (req, res) => {
   if (publicKey === true) {
     let isAvailable = await quoteManager.checkQuote(req.project, obj, 'tokens');
     if (isAvailable === false) {
-      return res.status(403).send({ success: false, message: "Tokens quota exceeded", error_code: 13001})
+      return res.status(403).send({ success: false, message: "Tokens quota exceeded", error_code: 13001 })
     }
   }
 
@@ -408,15 +404,14 @@ router.post('/qa', async (req, res) => {
   }
 
   data.engine = namespace.engine || default_engine;
-  data.embedding = normalizeEmbedding(namespace.embedding);
-  data.embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+  data.embedding = aiManager.normalizeEmbedding(namespace.embedding);
 
   if (namespace.hybrid === true) {
     data.search_type = 'hybrid';
-    
+
     if (data.reranking === true) {
       data.reranker_model = process.env.RERANKING_MODEL || "cross-encoder/ms-marco-MiniLM-L-6-v2";
-      
+
       if (!data.reranking_multiplier) {
         data.reranking_multiplier = 3;
       }
@@ -429,10 +424,10 @@ router.post('/qa', async (req, res) => {
         data.reranking_multiplier = calculatedRerankingMultiplier;
       }
     }
-  } 
+  }
 
   if (!namespace.hybrid && data.reranking === true && PINECONE_RERANKING) {
-    
+
     data.reranking = {
       "provider": "pinecone",
       "api_key": process.env.PINECONE_API_KEY,
@@ -473,7 +468,7 @@ router.post('/qa', async (req, res) => {
     const sendError = (message) => {
       try {
         res.write('data: ' + JSON.stringify({ error: message }) + '\n\n');
-      } catch (_) {}
+      } catch (_) { }
       res.end();
     };
 
@@ -515,6 +510,32 @@ router.post('/qa', async (req, res) => {
       return false;
     }
 
+    let streamQaResult = null;
+    const qaStartedAt = Date.now();
+    let streamDurationSeconds = null;
+
+    function captureStreamDurationFromFirstChunk(obj) {
+      if (streamDurationSeconds != null) return;
+      const content = extractContent(obj);
+      if (content != null && content !== '') {
+        streamDurationSeconds = (Date.now() - qaStartedAt) / 1000;
+      }
+    }
+
+    function withMeasuredDuration(payload) {
+      if (streamDurationSeconds != null && payload && typeof payload === 'object') {
+        payload.duration = streamDurationSeconds;
+      }
+      return payload;
+    }
+
+    function captureStreamQaResult(obj) {
+      const normalized = normalizeKbQaPayload(obj);
+      if (normalized && typeof normalized === 'object' && typeof normalized.success === 'boolean') {
+        streamQaResult = normalized;
+      }
+    }
+
     function forwardSsePayload(payload) {
       if (payload === '[DONE]') return;
       let obj;
@@ -524,16 +545,19 @@ router.post('/qa', async (req, res) => {
         return;
       }
 
+      captureStreamQaResult(obj);
+      captureStreamDurationFromFirstChunk(obj);
+
       if (obj.status === 'started') {
         return;
       }
       if (isKbStreamCompletedSummary(obj)) {
-        res.write('data: ' + JSON.stringify(normalizeKbQaPayload(obj)) + '\n\n');
+        res.write('data: ' + JSON.stringify(withMeasuredDuration(normalizeKbQaPayload(obj))) + '\n\n');
         return;
       }
 
       if (obj.type === 'metadata' || obj.event === 'metadata') {
-        res.write('data: ' + JSON.stringify(normalizeKbQaPayload(obj)) + '\n\n');
+        res.write('data: ' + JSON.stringify(withMeasuredDuration(normalizeKbQaPayload(obj))) + '\n\n');
         return;
       }
       const content = extractContent(obj);
@@ -543,7 +567,7 @@ router.post('/qa', async (req, res) => {
       }
       const normalized = normalizeKbQaPayload(obj);
       if (isMetadataPayload(normalized, content)) {
-        res.write('data: ' + JSON.stringify(normalized) + '\n\n');
+        res.write('data: ' + JSON.stringify(withMeasuredDuration(normalized)) + '\n\n');
       }
     }
 
@@ -564,13 +588,33 @@ router.post('/qa', async (req, res) => {
         }
       });
 
-      stream.on('end', () => {
+      stream.on('end', async () => {
         const tail = buffer.trim();
         if (tail) {
           for (const line of tail.split('\n')) {
             const trimmed = line.trim();
             if (!trimmed.startsWith('data: ')) continue;
             forwardSsePayload(trimmed.slice(6));
+          }
+        }
+        if (streamQaResult) {
+          withMeasuredDuration(streamQaResult);
+          const tokens = await aiManager.getTrackingTokens({
+            qaResult: streamQaResult,
+            publicKey,
+            model: data.model,
+            obj,
+            quoteManager,
+            project: req.project,
+          });
+          kbQuestionService.trackKbQaResult(
+            id_project,
+            { namespace: data.namespace, question: data.question },
+            streamQaResult,
+            tokens
+          );
+          if (publicKey === true && typeof streamQaResult.legacy_prompt_token_size === 'number') {
+            res.write('data: ' + JSON.stringify(streamQaResult) + '\n\n');
           }
         }
         res.write('data: [DONE]\n\n');
@@ -601,31 +645,29 @@ router.post('/qa', async (req, res) => {
     return;
   }
 
-  aiService.askNamespace(data).then((resp) => {
+  const qaStartedAt = Date.now();
+
+  aiService.askNamespace(data).then(async (resp) => {
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
 
-    if (publicKey === true) {
-      let modelKey;
-      if (typeof data.model === 'string') {
-        modelKey = data.model;
-      } else if (data.model && typeof data.model.name === 'string') {
-        modelKey = data.model.name;
-      }
+    answer.duration = (Date.now() - qaStartedAt) / 1000;
 
-      let multiplier = MODELS_MULTIPLIER[modelKey];
-      if (!multiplier) {
-        multiplier = 1;
-        winston.info("No multiplier found for AI model (qa) " + modelKey);
-      }
+    const tokens = await aiManager.getTrackingTokens({
+      qaResult: answer,
+      publicKey,
+      model: data.model,
+      obj,
+      quoteManager,
+      project: req.project,
+    });
+    kbQuestionService.trackKbQaResult(
+      id_project,
+      { namespace: data.namespace, question: data.question },
+      answer,
+      tokens
+    );
 
-      obj.multiplier = multiplier;
-      obj.tokens = answer.prompt_token_size;
-
-      let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
-      winston.verbose("incremented_key: ", incremented_key);
-    }
-  
     return res.status(200).send(answer);
 
   }).catch((err) => {
@@ -731,7 +773,7 @@ router.post('/qa', async (req, res) => {
 
 //   if (namespace.hybrid === true) {
 //     data.search_type = 'hybrid';
-    
+
 //     if (data.reranking === true) {
 //       data.reranking_multiplier = 3;
 //       data.reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2";
@@ -764,7 +806,7 @@ router.post('/qa', async (req, res) => {
 
 //   delete data.advancedPrompt;
 //   winston.verbose("ask data: ", data);
-  
+
 //   if (process.env.NODE_ENV === 'test') {
 //     return res.status(200).send({ success: true, message: "Question skipped in test environment", data: data });
 //   }
@@ -787,7 +829,7 @@ router.post('/qa', async (req, res) => {
 //       let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
 //       winston.verbose("incremented_key: ", incremented_key);
 //     }
-  
+
 //     return res.status(200).send(answer);
 
 //   }).catch((err) => {
@@ -852,7 +894,13 @@ router.delete('/deleteall', async (req, res) => {
 
   aiService.deleteNamespace(data).then((resp) => {
     winston.debug("delete namespace resp: ", resp.data);
-    kbEvent.emit('kb.contents.delete', { req, namespace_id, project_id });
+    kbEvent.emit('kb.contents.delete', {
+      req,
+      namespace_id,
+      project_id,
+      namespace_name: namespace.name,
+      deleteMode: 'contents_only'
+    });
     res.status(200).send(resp.data);
   }).catch((err) => {
     winston.error("delete namespace err: ", err);
@@ -879,7 +927,7 @@ router.get('/namespace/all', async (req, res) => {
 
   let project_id = req.projectid;
 
-  Namespace.find({ id_project: project_id }).lean().exec( async (err, namespaces) => {
+  Namespace.find({ id_project: project_id }).lean().exec(async (err, namespaces) => {
 
     if (err) {
       winston.error("find namespaces error: ", err);
@@ -928,7 +976,7 @@ router.get('/namespace/all', async (req, res) => {
       } else {
         namespaceObjArray = namespaces.map(({ _id, __v, ...keepAttrs }) => keepAttrs)
       }
-        
+
       winston.debug("namespaceObjArray: ", namespaceObjArray);
       return res.status(200).send(namespaceObjArray);
     }
@@ -954,14 +1002,14 @@ router.get('/namespace/:id/chunks/:content_id', async (req, res) => {
     return res.status(403).send({ success: false, error: err })
   })
 
-  if(!content) {
+  if (!content) {
     return res.status(403).send({ success: false, error: "Not allowed. The content does not belong to the current namespace." })
   }
 
   let engine = namespace.engine || default_engine;
 
   if (process.env.NODE_ENV === 'test') {
-    return res.status(200).send({ success: true, message: "Get chunks skipped in test environment"});
+    return res.status(200).send({ success: true, message: "Get chunks skipped in test environment" });
   }
 
   aiService.getContentChunks(namespace_id, content_id, engine).then((resp) => {
@@ -982,7 +1030,7 @@ router.get('/namespace/:id/chatbots', async (req, res) => {
 
   let project_id = req.projectid;
   let namespace_id = req.params.id;
-  
+
   let chatbotsArray = [];
 
   let namespace;
@@ -1024,12 +1072,12 @@ router.get('/namespace/:id/chatbots', async (req, res) => {
   await Promise.all(chatbotPromises);
 
   winston.debug("chatbotsArray: ", chatbotsArray);
-  
+
   res.status(200).send(chatbotsArray);
 })
 
 router.get('/namespace/export/:id', async (req, res) => {
-  
+
   let id_project = req.projectid;
   let namespace_id = req.params.id;
 
@@ -1041,7 +1089,7 @@ router.get('/namespace/export/:id', async (req, res) => {
     query.status = parseInt(req.query.status)
   }
 
-  query.type = { $in: [ kbTypes.URL, kbTypes.TEXT, kbTypes.FAQ ] };
+  query.type = { $in: [kbTypes.URL, kbTypes.TEXT, kbTypes.FAQ] };
 
   let namespace;
   try {
@@ -1071,11 +1119,11 @@ router.get('/namespace/export/:id', async (req, res) => {
     let json_string = JSON.stringify(json);
     res.set({ "Content-Disposition": `attachment; filename="${filename}.json"` });
     return res.send(json_string);
-  } catch(err) {
+  } catch (err) {
     winston.error("Error genereting json ", err);
     return res.status(500).send({ success: false, error: "Error genereting json file" })
   }
-  
+
 })
 
 router.post('/namespace', async (req, res) => {
@@ -1205,7 +1253,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   }
 
   let addingContents = [];
-  contents.forEach( async (e) => {
+  contents.forEach(async (e) => {
     let content = {
       id_project: id_project,
       name: e.name,
@@ -1223,6 +1271,10 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
       if (e[key] !== undefined) {
         content[key] = e[key];
       }
+    }
+
+    if (e.situated_context === true && (e.type !== "url" || content.scrape_type === 0)) {
+      content.situated_context = true;
     }
 
     addingContents.push(content);
@@ -1247,11 +1299,8 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   //          import operation the content's limit is respected
   let ns = namespaces.find(n => n.id === namespace_id);
   let engine = ns.engine || default_engine;
-  let embedding = normalizeEmbedding(ns.embedding);
-  embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+  let embedding = aiManager.normalizeEmbedding(ns.embedding);
   let hybrid = ns.hybrid;
-  const situated_context = normalizeSituatedContext();
-
 
   if (process.env.NODE_ENV !== "test") {
     await aiService.deleteNamespace({
@@ -1286,28 +1335,34 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
     return res.status(500).send({ success: false, error: "Unable to get new content" });
   }
 
-  let resources = new_contents.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
-  resources = resources.map(({ _id, scrape_options, ...rest }) => {
-    return { 
-      id: _id, 
-      parameters_scrape_type_4: scrape_options, 
-      embedding: embedding, 
-      engine: engine, 
-      ...(situated_context && { situated_context: situated_context }), 
-      ...rest}
+  let resources = new_contents.map(({ name, status, __v, createdAt, updatedAt, ...keepAttrs }) => keepAttrs)
+  resources = resources.map(({ _id, scrape_options, situated_context, ...rest }) => {
+    const situated_context_obj = aiManager.normalizeSituatedContext(situated_context);
+    return {
+      id: _id,
+      parameters_scrape_type_4: scrape_options,
+      embedding: embedding,
+      engine: engine,
+      ...(situated_context_obj && { situated_context: situated_context_obj }),
+      ...rest
+    }
   });
-  
+
   winston.verbose("resources to be sent to worker: ", resources);
 
   if (process.env.NODE_ENV !== "test") {
     aiManager.scheduleScrape(resources, hybrid);
   }
 
+  if (process.env.NODE_ENV === "test") {
+    return res.status(200).send({ success: true, message: "Contents imported successfully", schedule_json: resources });
+  }
+
   res.status(200).send({ success: true, message: "Contents imported successfully" });
 
 
   // saveBulk(operations, addingContents, id_project).then((result) => {
-    
+
   //   let ns = namespaces.find(n => n.id === namespace_id);
   //   let engine = ns.engine || default_engine;
 
@@ -1321,7 +1376,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   //   if (process.env.NODE_ENV !== 'test') {
   //     scheduleScrape(resources);
   //   }
-    
+
   //   //res.status(200).send(result);
   //   res.status(200).send({ success: true, message: "Contents imported successfully"});
 
@@ -1329,7 +1384,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   //   winston.error("Unable to save kbs in bulk ", err)
   //   res.status(500).send(err);
   // })
-  
+
 })
 
 router.put('/namespace/:id', async (req, res) => {
@@ -1394,7 +1449,14 @@ router.delete('/namespace/:id', async (req, res) => {
       })
       winston.debug("delete all contents response: ", deleteResponse);
 
-      kbEvent.emit('kb.contents.delete', { req, namespace_id, project_id, deletedCount: deleteResponse?.deletedCount });
+      kbEvent.emit('kb.contents.delete', {
+        req,
+        namespace_id,
+        project_id,
+        namespace_name: namespace.name,
+        deletedCount: deleteResponse?.deletedCount,
+        deleteMode: 'contents_only'
+      });
 
       return res.status(200).send({ success: true, message: "All contents deleted successfully" })
 
@@ -1435,6 +1497,14 @@ router.delete('/namespace/:id', async (req, res) => {
         return res.status(500).send({ success: false, error: err });
       })
       winston.debug("delete namespace response: ", deleteNamespaceResponse);
+
+      kbEvent.emit('kb.namespace.delete', {
+        req,
+        namespace_id,
+        project_id,
+        namespace_name: namespace.name,
+        deletedCount: deleteResponse?.deletedCount
+      });
 
       return res.status(200).send({ success: true, message: "Namespace deleted succesfully" })
 
@@ -1583,20 +1653,21 @@ router.get('/', async (req, res) => {
 
 router.get('/:kb_id', async (req, res) => {
 
+  let project_id = req.projectid;
   let kb_id = req.params.kb_id;
 
-  KB.findById(kb_id, (err, kb) => {
-    if (err) {
-      winston.error("Find kb by id error: ", err);
-      return res.status(500).send({ success: false, error: err });
+  try {
+    let content = await KB.findOne({ id_project: project_id, _id: kb_id })
+    if (!content) {
+      return res.status(404).send({ success: false, error: "Content not found with id " + kb_id + " for project " + project_id });
     }
+    return res.status(200).send(content);
 
-    if (!kb) {
-      return res.status(404).send({ success: false, error: "Content not found with id " + kb_id });
-    }
+  } catch (err) {
+    winston.error("Find kb by id error: ", err);
+    return res.status(500).send({ success: false, error: "An error occurred retrieving the content" });
+  }
 
-    return res.status(200).send(kb);
-  })
 })
 
 router.post('/', async (req, res) => {
@@ -1604,9 +1675,9 @@ router.post('/', async (req, res) => {
   const id_project = req.projectid;
   const project = req.project
 
-  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags, situated_context } = req.body;
+  const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags, situated_context, chunk_regex } = req.body;
   const namespace_id = req.body?.namespace;
-  
+
   if (!namespace_id) {
     return res.status(400).send({ success: false, error: "parameter 'namespace' is not defined" });
   }
@@ -1618,11 +1689,11 @@ router.post('/', async (req, res) => {
     let errorCode = err?.errorCode ?? 500;
     return res.status(errorCode).send({ success: false, error: err.error });
   }
-  
+
   const quoteManager = req.app.get('quote_manager');
   try {
     await aiManager.checkQuotaAvailability(quoteManager, project, 1)
-  } catch(err) {
+  } catch (err) {
     let errorCode = err?.errorCode ?? 500;
     return res.status(errorCode).send({ success: false, error: err.error, plan_limit: err.plan_limit })
   }
@@ -1651,6 +1722,9 @@ router.post('/', async (req, res) => {
       new_kb.scrape_options = aiManager.setDefaultScrapeOptions();
     }
   }
+  if (type === 'regex_custom') {
+    new_kb.chunk_regex = chunk_regex;
+  }
 
   if (tags && Array.isArray(tags) && tags.every(tag => typeof tag === "string")) {
     new_kb.tags = tags;
@@ -1672,16 +1746,16 @@ router.post('/', async (req, res) => {
       delete raw_content.ok;
       delete raw_content.$clusterTime;
       delete raw_content.operationTime;
-      
+
       const saved_kb = raw_content.value;
       const webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
-      const embedding = normalizeEmbedding(namespace.embedding);
-      embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+      const embedding = aiManager.normalizeEmbedding(namespace.embedding);
 
       const situated_context_obj = normalizeSituatedContext(saved_kb.situated_context);
 
       const json = {
         id: saved_kb._id,
+        id_project: saved_kb.id_project,
         type: saved_kb.type,
         source: saved_kb.source,
         content: saved_kb.content || "",
@@ -1694,6 +1768,7 @@ router.post('/', async (req, res) => {
         ...(saved_kb.scrape_type && { scrape_type: saved_kb.scrape_type }),
         ...(saved_kb.scrape_options && { parameters_scrape_type_4: saved_kb.scrape_options }),
         ...(saved_kb.tags && { tags: saved_kb.tags }),
+        ...(saved_kb.chunk_regex && { chunk_regex: saved_kb.chunk_regex })
       }
 
       winston.debug("json: ", json);
@@ -1701,8 +1776,20 @@ router.post('/', async (req, res) => {
       if (process.env.NODE_ENV === 'test') {
         return res.status(200).send({ success: true, message: "Schedule scrape skipped in test environment", data: raw_content, schedule_json: json });
       }
-        
+
       aiManager.scheduleScrape([json], namespace.hybrid);
+
+      kbEvent.emit('kb.contents.add', {
+        req,
+        project_id: id_project,
+        namespace_id: namespace_id,
+        namespace_name: namespace.name,
+        contentAddType: 'content',
+        count: 1,
+        type: saved_kb.type,
+        source: saved_kb.source || saved_kb.name
+      });
+
       return res.status(200).send(raw_content);
 
     }
@@ -1751,7 +1838,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
   const quoteManager = req.app.get('quote_manager');
   try {
     await aiManager.checkQuotaAvailability(quoteManager, project, list.length)
-  } catch(err) {
+  } catch (err) {
     let errorCode = err?.errorCode ?? 500;
     return res.status(errorCode).send({ success: false, error: err.error, plan_limit: err.plan_limit })
   }
@@ -1771,6 +1858,14 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
   try {
     const result = await aiManager.addMultipleUrls(namespace, list, options);
+    kbEvent.emit('kb.contents.add', {
+      req,
+      project_id: id_project,
+      namespace_id: namespace_id,
+      namespace_name: namespace.name,
+      contentAddType: 'url_list',
+      count: list.length
+    });
     return res.status(200).send(result);
   } catch (err) {
     winston.error("addMultipleUrls error: ", err)
@@ -1832,7 +1927,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
       const quoteManager = req.app.get('quote_manager');
       try {
         await aiManager.checkQuotaAvailability(quoteManager, req.project, kbs.length)
-      } catch(err) {
+      } catch (err) {
         let errorCode = err?.errorCode ?? 500;
         return res.status(errorCode).send({ success: false, error: err.error, plan_limit: err.plan_limit })
       }
@@ -1851,8 +1946,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
       aiManager.saveBulk(operations, kbs, project_id, namespace_id).then((result) => {
 
         let engine = namespace.engine || default_engine;
-        let embedding = normalizeEmbedding(namespace.embedding);
-        embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+        let embedding = aiManager.normalizeEmbedding(namespace.embedding);
         let hybrid = namespace.hybrid;
 
         let situated_context_obj;
@@ -1860,15 +1954,15 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
           situated_context_obj = normalizeSituatedContext(situated_context);
         }
 
-        let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, situated_context,  ...keepAttrs }) => keepAttrs)
-        resources = resources.map(({ _id, ...rest}) => {
-          return { 
-            id: _id, 
-            webhook: webhook, 
-            embedding: embedding, 
-            engine: engine, 
-            ...(situated_context_obj && { situated_context: situated_context_obj }), 
-            ...rest 
+        let resources = result.map(({ name, status, __v, createdAt, updatedAt, situated_context, ...keepAttrs }) => keepAttrs)
+        resources = resources.map(({ _id, ...rest }) => {
+          return {
+            id: _id,
+            webhook: webhook,
+            embedding: embedding,
+            engine: engine,
+            ...(situated_context_obj && { situated_context: situated_context_obj }),
+            ...rest
           };
         })
         winston.verbose("resources to be sent to worker: ", resources);
@@ -1876,8 +1970,18 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
         if (process.env.NODE_ENV === 'test') {
           return res.status(200).send({ success: true, message: "Schedule scrape skipped in test environment", data: result, schedule_json: resources });
         }
-        
+
         aiManager.scheduleScrape(resources, hybrid);
+
+        kbEvent.emit('kb.contents.add', {
+          req,
+          project_id: project_id,
+          namespace_id: namespace_id,
+          namespace_name: namespace.name,
+          contentAddType: 'csv',
+          count: kbs.length
+        });
+
         return res.status(200).send(result);
 
       }).catch((err) => {
@@ -1908,7 +2012,7 @@ router.post('/sitemap', async (req, res) => {
     winston.debug("data: ", data);
     res.status(200).send(data);
   }).catch((err) => {
-    console.error("err ", err)
+    winston.error("Error fetching sitemap: ", err)
     res.status(500).send({ success: false, error: err });
   })
 
@@ -1925,13 +2029,13 @@ router.post('/sitemap/import', async (req, res) => {
   }
 
   if (type !== "sitemap") {
-    return res.status(403).send({success: false, error: "Endpoint available for sitemap type only." });
+    return res.status(403).send({ success: false, error: "Endpoint available for sitemap type only." });
   }
 
   if (!namespace_id) {
     return res.status(400).send({ success: false, error: "queryParam 'namespace' is not defined" })
   }
-  
+
   let namespace;
   try {
     namespace = await aiManager.checkNamespace(id_project, namespace_id);
@@ -1962,7 +2066,7 @@ router.post('/sitemap/import', async (req, res) => {
 
   if (data.errors && data.errors.length > 0) {
     winston.error("An error occurred during sitemap fetch: ", data.errors[0])
-    return res.status(500).send({ success: false, error: "Unable to fecth sitemap due to an error: " + data.errors[0].message})
+    return res.status(500).send({ success: false, error: "Unable to fecth sitemap due to an error: " + data.errors[0].message })
   }
 
   const urls = Array.isArray(data.sites) ? data.sites : [];
@@ -2006,7 +2110,7 @@ router.post('/sitemap/import', async (req, res) => {
     ...(Array.isArray(tags) && tags.length > 0 ? { tags } : {}),
     ...(situated_context && situated_context === true && scrape_type === 0 ? { situated_context: true } : {}),
   }
-  
+
   try {
     await aiManager.scheduleSitemap(namespace, saved_content, options);
     let result = await aiManager.addMultipleUrls(namespace, urls, options);
@@ -2015,11 +2119,23 @@ router.post('/sitemap/import', async (req, res) => {
       return res.status(200).send(result);
     }
     result.push(saved_content);
+
+    kbEvent.emit('kb.contents.add', {
+      req,
+      project_id: id_project,
+      namespace_id: namespace_id,
+      namespace_name: namespace.name,
+      contentAddType: 'sitemap',
+      count: urls.length,
+      type: 'sitemap',
+      source: source
+    });
+
     return res.status(200).send(result);
   } catch (err) {
     return res.status(500).send({ success: false, error: "Unable to add multiple urls from sitemap due to an error." });
-  }  
-  
+  }
+
 })
 
 router.put('/:kb_id', async (req, res) => {
@@ -2027,7 +2143,7 @@ router.put('/:kb_id', async (req, res) => {
   const id_project = req.projectid;
   const project = req.project;
   const kb_id = req.params.kb_id;
-  
+
   const { name, type, source, content, refresh_rate, scrape_type, scrape_options, tags } = req.body;
   const namespace_id = req.body.namespace;
   let situated_context = req.body.situated_context;
@@ -2145,13 +2261,13 @@ router.put('/:kb_id', async (req, res) => {
     return res.status(500).send({ success: false, error: err });
   }
 
-  const embedding = normalizeEmbedding(namespace.embedding);
-  embedding.api_key = process.env.EMBEDDING_API_KEY || process.env.GPTKEY;
+  const embedding = aiManager.normalizeEmbedding(namespace.embedding);
   let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
   const situated_context_obj = normalizeSituatedContext(updated_content.situated_context);
 
   const json = {
     id: updated_content._id,
+    id_project: updated_content.id_project,
     type: updated_content.type,
     source: updated_content.source,
     content: updated_content.content || "",
@@ -2171,7 +2287,7 @@ router.put('/:kb_id', async (req, res) => {
   if (process.env.NODE_ENV === 'test') {
     return res.status(200).send({ success: true, message: "Schedule scrape skipped in test environment", data: updated_content, schedule_json: json });
   }
-    
+
   aiManager.scheduleScrape([json], namespace.hybrid);
   return res.status(200).send(updated_content);
 
@@ -2183,11 +2299,11 @@ router.delete('/:kb_id', async (req, res) => {
   let kb_id = req.params.kb_id;
   winston.verbose("delete kb_id " + kb_id);
 
-  let kb = await KB.findOne({ id_project: project_id, _id: kb_id}).catch((err) => {
+  let kb = await KB.findOne({ id_project: project_id, _id: kb_id }).catch((err) => {
     winston.warn("Unable to find kb. Error: ", err);
     return res.status(500).send({ success: false, error: err })
   })
-  
+
   if (!kb) {
     winston.error("Unable to delete kb. Kb not found...")
     return res.status(404).send({ success: false, error: "Content not found" })
@@ -2206,7 +2322,7 @@ router.delete('/:kb_id', async (req, res) => {
   if (kb.type === 'sitemap') {
     try {
       await aiManager.deleteSitemap(kb, namespace);
-      console.log("Scheduled jobs for deleting sitemap");
+      winston.info("Scheduled jobs for deleting sitemap");
       //return res.status(200).send({ success: true, message: "Scheduled jobs for deleting sitemap" });
     } catch (err) {
       winston.error("Error deleting sitemap: ", err);
@@ -2222,9 +2338,32 @@ router.delete('/:kb_id', async (req, res) => {
   if (!data.namespace) {
     data.namespace = project_id;
   }
-  
+
   data.engine = namespace.engine || default_engine;
   winston.verbose("/:delete_id data: ", data);
+
+  const emitKbContentDelete = (deletedKb) => {
+    const content = deletedKb || kb;
+    const contentSnapshot = content.toObject ? content.toObject() : content;
+    kbEvent.emit('kb.content.delete', {
+      req,
+      kb_id,
+      project_id,
+      namespace_id,
+      namespace_name: namespace.name,
+      kb: {
+        _id: contentSnapshot._id,
+        name: contentSnapshot.name,
+        source: contentSnapshot.source,
+        type: contentSnapshot.type
+      }
+    });
+  };
+
+  if (process.env.NODE_ENV === 'test') {
+    emitKbContentDelete(kb);
+    return res.status(200).send({ success: true, message: "Content deleted successfully" });
+  }
 
   aiService.deleteIndex(data).then((resp) => {
     winston.debug("delete resp: ", resp.data);
@@ -2235,6 +2374,7 @@ router.delete('/:kb_id', async (req, res) => {
           winston.error("Delete kb error: ", err);
           return res.status(500).send({ success: false, error: err });
         }
+        emitKbContentDelete(deletedKb);
         res.status(200).send(deletedKb);
       })
 
@@ -2250,6 +2390,7 @@ router.delete('/:kb_id', async (req, res) => {
           winston.verbose("Unable to delete the content in indexing status")
           return res.status(500).send({ success: false, error: "Unable to delete the content in indexing status" })
         } else {
+          emitKbContentDelete(deletedKb);
           res.status(200).send(deletedKb);
         }
       })

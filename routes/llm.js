@@ -3,6 +3,7 @@ var router = express.Router();
 var winston = require('../config/winston');
 let Integration = require('../models/integrations');
 const aiService = require('../services/aiService');
+const aiManager = require('../services/aiManager');
 const multer = require('multer');
 const fileUtils = require('../utils/fileUtils');
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
@@ -24,36 +25,47 @@ router.post('/preview', async (req, res) => {
     let body = req.body;
     let key;
     let publicKey = false;
+    let integration;
+    let vllmConfig;
 
     if (!body.llm) {
         return res.status(400).send({ success: false, error: "Missing required parameter 'llm'" });
     }
 
-    let integration = await Integration.findOne({ id_project: id_project, name: body.llm }).catch((err) => {
-        winston.error("Error finding integration with name: ", body.llm);
-        return res.status(500).send({ success: false, error: "Error finding integration for " + body.llm});
-    })
-
-    if (!integration) {
-        winston.verbose("Integration not found for " + body.llm)
-        if (body.llm === "openai") {
-            winston.verbose("Try to retrieve shared OpenAI key")
-            if (!process.env.GPTKEY) {
-                winston.error("Shared key for OpenAI not configured.");
-                return res.status(404).send({ success: false, error: "No key found for " + body.llm });
-            }
-            key = process.env.GPTKEY;
-            publicKey = true;
-            winston.verbose("Using shared OpenAI key as fallback.");
-        } else {
-            winston.verbose("Integration for " + body.llm + " not found.")
-            return res.status(404).send({ success: false, error: "Integration for " + body.llm + " not found." })
+    if (body.llm === 'vllm') {
+        try {
+            vllmConfig = await aiManager.resolveLLMConfig(id_project, body.llm, body.model, body.vllmServer);
+            key = vllmConfig.api_key;
+        } catch (err) {
+            return res.status(err.code ?? 500).send({ success: false, error: err.error });
         }
     } else {
-        if (!integration?.value?.apikey && body.llm !== "ollama") {
-            return res.status(422).send({ success: false, error: "The key provided for " + body.llm + " is not valid or undefined." });
+        integration = await Integration.findOne({ id_project: id_project, name: body.llm }).catch((err) => {
+            winston.error("Error finding integration with name: ", body.llm);
+            return res.status(500).send({ success: false, error: "Error finding integration for " + body.llm});
+        })
+
+        if (!integration) {
+            winston.verbose("Integration not found for " + body.llm)
+            if (body.llm === "openai") {
+                winston.verbose("Try to retrieve shared OpenAI key")
+                if (!process.env.GPTKEY) {
+                    winston.error("Shared key for OpenAI not configured.");
+                    return res.status(404).send({ success: false, error: "No key found for " + body.llm });
+                }
+                key = process.env.GPTKEY;
+                publicKey = true;
+                winston.verbose("Using shared OpenAI key as fallback.");
+            } else {
+                winston.verbose("Integration for " + body.llm + " not found.")
+                return res.status(404).send({ success: false, error: "Integration for " + body.llm + " not found." })
+            }
+        } else {
+            if (!integration?.value?.apikey && body.llm !== "ollama") {
+                return res.status(422).send({ success: false, error: "The key provided for " + body.llm + " is not valid or undefined." });
+            }
+            key = integration.value.apikey;
         }
-        key = integration.value.apikey;
     }
 
     let obj = { createdAt: new Date() };
@@ -86,6 +98,17 @@ router.post('/preview', async (req, res) => {
             url: integration.value.url,
             token: integration.value.token
         },
+        json.stream = false;
+    }
+
+    if (body.llm === 'vllm') {
+        json.llm_key = key || "";
+        json.model = {
+            name: body.model,
+            url: vllmConfig.url,
+            api_key: key || "",
+            provider: 'vllm'
+        };
         json.stream = false;
     }
 

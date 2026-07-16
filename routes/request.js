@@ -20,6 +20,7 @@ var Message = require("../models/message");
 var cacheUtil = require('../utils/cacheUtil');
 var RequestConstants = require("../models/requestConstants");
 var cacheEnabler = require("../services/cacheEnabler");
+var assignmentContextUtil = require('../utils/assignmentContextUtil');
 var Project_user = require("../models/project_user");
 var Lead = require("../models/lead");
 var UIDGenerator = require("../utils/UIDGenerator");
@@ -408,7 +409,8 @@ router.post('/:requestid/participants',
     }
 
     //addParticipantByRequestId(request_id, id_project, member)
-    return requestService.addParticipantByRequestId(req.params.requestid, req.projectid, req.body.member).then(function (updatedRequest) {
+    const assignmentOptions = assignmentContextUtil.buildAddParticipantOptions(req, req.body.member);
+    return requestService.addParticipantByRequestId(req.params.requestid, req.projectid, req.body.member, assignmentOptions).then(function (updatedRequest) {
 
       winston.verbose("participant added", updatedRequest);
 
@@ -439,7 +441,8 @@ router.put('/:requestid/participants', async (req, res) => {
   winston.debug("var participants", participants);
 
   //setParticipantsByRequestId(request_id, id_project, participants)
-  return requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then(function (updatedRequest) {
+  const assignmentOptions = assignmentContextUtil.buildSetParticipantsOptions(req, participants);
+  return requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants, assignmentOptions).then(function (updatedRequest) {
 
     winston.debug("participant set", updatedRequest);
 
@@ -456,6 +459,12 @@ router.put('/:requestid/replace', async (req, res) => {
   let id;
   let name;
   let slug;
+  // Canonical (root) id of the target bot, returned to the caller so analytics
+  // (agent.bot_switched.to_agent_id) can attribute the switch to the root agent
+  // — matching agent_dimensions and the target bot's own runtime events. A
+  // published bot is forked to a trashed copy with its own _id; root_id points
+  // back to the editable root, so root_id || _id is the canonical agent id.
+  let replacedRootId = null;
 
   if (req.body.id) {
     id = "bot_" + req.body.id;
@@ -478,6 +487,7 @@ router.put('/:requestid/replace', async (req, res) => {
     }
 
     id = "bot_" + chatbot._id;
+    replacedRootId = (chatbot.root_id || chatbot._id).toString();
     winston.verbose("Chatbot found: ", id);
   }
 
@@ -492,16 +502,30 @@ router.put('/:requestid/replace', async (req, res) => {
     }
 
     id = "bot_" + chatbot._id;
+    replacedRootId = (chatbot.root_id || chatbot._id).toString();
     winston.verbose("Chatbot found: " + id);
+  }
+
+  // Replacing by raw id: normalize a possibly-published (fork) id to its root.
+  if (req.body.id) {
+    let chatbot = await faq_kb.findById(req.body.id).catch((err) => {
+      winston.error("Error finding bot by id ", err);
+      return null;
+    });
+    replacedRootId = ((chatbot && (chatbot.root_id || chatbot._id)) || req.body.id).toString();
   }
 
   let participants = [];
   participants.push(id);
   winston.verbose("participants to be set: ", participants);
 
-  requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then((updatedRequest) => {
+  const assignmentOptions = assignmentContextUtil.buildSetParticipantsOptions(req, participants);
+  requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants, assignmentOptions).then((updatedRequest) => {
     winston.debug("SetParticipant response: ", updatedRequest);
-    res.status(200).send(updatedRequest);
+    // Additive: include the resolved canonical (root) bot id for analytics
+    // attribution. Existing consumers ignore the extra field.
+    const requestObj = (updatedRequest && updatedRequest.toJSON) ? updatedRequest.toJSON() : updatedRequest;
+    res.status(200).send({ ...requestObj, replaced_bot_root_id: replacedRootId });
   }).catch((err) => {
     winston.error("Error setting participants ", err);
     res.status(500).send({ success: false, error: "Error setting participants to request"})
@@ -511,8 +535,13 @@ router.put('/:requestid/replace', async (req, res) => {
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.delete('/:requestid/participants/:participantid', async (req, res) => {
   winston.debug(req.body);
-  //removeParticipantByRequestId(request_id, id_project, member)
-  return requestService.removeParticipantByRequestId(req.params.requestid, req.projectid, req.params.participantid).then(function (updatedRequest) {
+  const leaveOptions = assignmentContextUtil.buildRemoveParticipantOptions(req, req.params.participantid);
+  return requestService.removeParticipantByRequestId(
+    req.params.requestid,
+    req.projectid,
+    req.params.participantid,
+    leaveOptions
+  ).then(function (updatedRequest) {
 
     winston.verbose("participant removed", updatedRequest);
 
@@ -573,7 +602,8 @@ router.put('/:requestid/assign', function (req, res) {
         return res.json(request);
       }
       //route(request_id, departmentid, id_project) {      
-      requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
+      const assignmentOptions = assignmentContextUtil.buildAutoRouteOptions(req, 'api');
+      requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate, assignmentOptions).then(function (updatedRequest) {
 
         winston.debug("department changed", updatedRequest);
 
@@ -595,7 +625,8 @@ router.put('/:requestid/assign', function (req, res) {
 router.put('/:requestid/departments', function (req, res) {
   winston.debug(req.body);
   //route(request_id, departmentid, id_project) {      
-  requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
+  const assignmentOptions = assignmentContextUtil.buildDepartmentRouteOptions(req, 'api');
+  requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate, assignmentOptions).then(function (updatedRequest) {
 
     winston.debug("department changed", updatedRequest);
 
@@ -631,7 +662,8 @@ router.put('/:requestid/agent', async (req, res) => {
   }
   winston.debug("departmentid after: " + departmentid);
 
-  requestService.route(req.params.requestid, departmentid, req.projectid, true, undefined).then(function (updatedRequest) {
+  const assignmentOptions = assignmentContextUtil.buildAutoRouteOptions(req, 'chatbot');
+  requestService.route(req.params.requestid, departmentid, req.projectid, true, undefined, assignmentOptions).then(function (updatedRequest) {
 
     winston.debug("department changed", updatedRequest);
 

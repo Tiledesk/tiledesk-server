@@ -97,6 +97,7 @@ async function main()
 
    
     let activityArchiver = require('./pubmodules/activities').activityArchiver;    
+    console.log("\n\n (jobs) activityArchiver: ", activityArchiver);
     jobsManager.listenActivityArchiver(activityArchiver);
 
 

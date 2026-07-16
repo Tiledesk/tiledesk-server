@@ -18,6 +18,25 @@ var validtoken = require('../middleware/valid-token')
 var roleChecker = require('../middleware/has-role');
 const puEvent = require('../event/projectUserEvent');
 const { track } = require('../lib/analyticsClient');
+const projectUserUpdateContextUtil = require('../utils/projectUserUpdateContextUtil');
+
+function emitProjectUserDeleteActivity(req, project_user, deleteType) {
+  if (!project_user) {
+    return;
+  }
+  project_user.populate({ path: 'id_user', select: { firstname: 1, lastname: 1, email: 1 } }, function (populateErr, project_userPopulated) {
+    if (populateErr) {
+      winston.error('Error populating project_user for delete activity', populateErr);
+    }
+    const pu = project_userPopulated || project_user;
+    const payload = pu.toJSON ? pu.toJSON() : pu;
+    authEvent.emit('project_user.delete', {
+      req: req,
+      project_userPopulated: payload,
+      deleteType: deleteType
+    });
+  });
+}
 
 
 router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
@@ -111,15 +130,19 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
 
             emailService.sendYouHaveBeenInvited(email, req.user.firstname, req.user.lastname, req.project.name, id_project, user.firstname, user.lastname, req.body.role)
 
-            updatedPuser.populate({path:'id_user', select:{'firstname':1, 'lastname':1, 'email': 1}},function (err, updatedPuserPopulated){
-              var pu = updatedPuserPopulated.toJSON();
+            savedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1, 'email': 1}},function (err, savedProject_userPopulated){
+              if (err) {
+                winston.error("Error populating project user after re-invite", err);
+                return;
+              }
+              var pu = savedProject_userPopulated.toJSON();
               pu.isBusy = ProjectUserUtil.isBusy(savedProject_userPopulated, req.project.settings && req.project.settings.max_agent_assigned_chat);
-              var eventData = {req:req, updatedPuserPopulated: pu};
+              var eventData = {req:req, savedProject_userPopulated: pu};
               winston.debug("eventData",eventData);
               authEvent.emit('project_user.invite', eventData);
             });
 
-            return res.status(200).send(updatedPuser);
+            return res.status(200).send(savedProject_user);
           })
 
         } else {
@@ -220,6 +243,13 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   }
 
   const previousUserAvailable = req.projectuser.user_available;
+  const previousProfileStatus = req.projectuser.profileStatus;
+  const updateContext = projectUserUpdateContextUtil.buildProjectUserUpdateContext(
+    req,
+    previousUserAvailable,
+    previousProfileStatus,
+    projectUserUpdateContextUtil.resolveUserId(req.projectuser.id_user)
+  );
 
   Project_user.findByIdAndUpdate(req.projectuser.id, update,  { new: true, upsert: true }, function (err, updatedProject_user) {
     if (err) {
@@ -230,7 +260,13 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     updatedProject_user.populate({ path:'id_user', select: { 'firstname': 1, 'lastname': 1 }}, function (err, updatedProject_userPopulated) {    
       var pu = updatedProject_userPopulated.toJSON();
       pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, req.project.settings && req.project.settings.max_agent_assigned_chat);
-      authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req, previousUserAvailable: previousUserAvailable});
+      authEvent.emit('project_user.update', {
+        updatedProject_userPopulated: pu,
+        req: req,
+        previousUserAvailable: previousUserAvailable,
+        previousProfileStatus: previousProfileStatus,
+        updateContext: updateContext
+      });
     });
     
     res.json(updatedProject_user);
@@ -286,7 +322,14 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 
   winston.debug("project_userid update", update);
 
-  function _doUpdateProjectUser(previousUserAvailable) {
+  function _doUpdateProjectUser(previousUserAvailable, previousProfileStatus, targetUserId) {
+    const updateContext = projectUserUpdateContextUtil.buildProjectUserUpdateContext(
+      req,
+      previousUserAvailable,
+      previousProfileStatus,
+      targetUserId
+    );
+
     Project_user.findByIdAndUpdate(req.params.project_userid, update, { new: true, upsert: true }, function (err, updatedProject_user) {
       if (err) {
         winston.error("Error gettting project_user for update", err);
@@ -299,7 +342,13 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
           var pu = updatedProject_userPopulated.toJSON();
           pu.isBusy = ProjectUserUtil.isBusy(updatedProject_user, req.project.settings && req.project.settings.max_agent_assigned_chat);
           
-            authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req, previousUserAvailable: previousUserAvailable});
+            authEvent.emit('project_user.update', {
+              updatedProject_userPopulated: pu,
+              req: req,
+              previousUserAvailable: previousUserAvailable,
+              previousProfileStatus: previousProfileStatus,
+              updateContext: updateContext
+            });
         });
       
 
@@ -307,12 +356,16 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
     });
   }
 
-  if (update.user_available !== undefined && process.env.ANALYTICS_INGEST_URL) {
-    Project_user.findById(req.params.project_userid, 'user_available').lean().exec(function(err, currentPu) {
-      _doUpdateProjectUser(currentPu ? currentPu.user_available : null);
+  if (update.user_available !== undefined || update.profileStatus !== undefined) {
+    Project_user.findById(req.params.project_userid, 'user_available profileStatus id_user').lean().exec(function(err, currentPu) {
+      _doUpdateProjectUser(
+        currentPu ? currentPu.user_available : null,
+        currentPu ? currentPu.profileStatus : null,
+        currentPu ? currentPu.id_user : null
+      );
     });
   } else {
-    _doUpdateProjectUser(null);
+    _doUpdateProjectUser(null, null, null);
   }
 });
 
@@ -340,7 +393,7 @@ router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { ses
       }
 
       puEvent.emit('project_user.deleted', project_user);
-      // Event 'project_user.delete' not working - Check it and improve it to manage soft/hard delete
+      emitProjectUserDeleteActivity(req, project_user, 'soft');
       return res.status(200).send(project_user);
 
     })
@@ -360,11 +413,7 @@ router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { ses
 
       winston.debug("Hard deleted project_user", project_user);
 
-      if (project_user) {
-        project_user.populate({ path: 'id_user', select: { 'firstname': 1, 'lastname': 1 } }, function (err, project_userPopulated) {
-          authEvent.emit('project_user.delete', { req: req, project_userPopulated: project_userPopulated });
-        });
-      }
+      emitProjectUserDeleteActivity(req, project_user, 'hard');
 
       puEvent.emit('project_user.deleted', project_user);
       return res.status(200).send(project_user);

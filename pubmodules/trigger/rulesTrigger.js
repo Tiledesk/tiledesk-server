@@ -13,6 +13,7 @@ var Engine = require('@tiledesk/tiledesk-json-rules-engine').Engine;
 
 var messageService = require('../../services/messageService');
 var requestService = require('../../services/requestService');
+var assignmentContextUtil = require('../../utils/assignmentContextUtil');
 var MessageConstants = require("../../models/messageConstants");
 var leadService = require('../../services/leadService');
 var LeadConstants = require('../../models/leadConstants');
@@ -477,7 +478,14 @@ class RulesTrigger {
             winston.debug('runAction action id_project: ' + id_project);
 
             // route(request_id, departmentid, id_project, nobot) {
-            requestService.route(request_id, departmentid, id_project).catch((err) => {
+            requestService.route(
+              request_id,
+              departmentid,
+              id_project,
+              undefined,
+              undefined,
+              assignmentContextUtil.buildInternalOptions('rules', 'auto')
+            ).catch((err) => {
               winston.error("Error runAction route: ", err);
             });
   
@@ -515,7 +523,12 @@ class RulesTrigger {
               winston.debug('runAction action id_project: ' + id_project);
   
               // reroute(request_id, id_project, nobot) {
-              requestService.reroute(request_id, id_project).catch((err) => {
+              requestService.reroute(
+                request_id,
+                id_project,
+                undefined,
+                assignmentContextUtil.buildInternalOptions('rules', 'auto')
+              ).catch((err) => {
                 winston.error("Error runAction on reroute", err);
               });                           
     
@@ -678,7 +691,12 @@ class RulesTrigger {
                 winston.debug('runAction action id_project: ' + id_project);
     
                 //     addParticipantByRequestId(request_id, id_project, member) {
-                requestService.addParticipantByRequestId(request_id, id_project, member).catch((err) => {
+                requestService.addParticipantByRequestId(
+                  request_id,
+                  id_project,
+                  member,
+                  assignmentContextUtil.buildInternalOptions('rules', 'manual_reassign')
+                ).catch((err) => {
                   winston.error("(RulesTrigger) addParticipantByRequestId error", err);
                 });
         
@@ -733,7 +751,12 @@ class RulesTrigger {
 
 
               // reroute(request_id, id_project, nobot) {
-              requestService.reroute(request_id, id_project).then(function(request) {
+              requestService.reroute(
+                request_id,
+                id_project,
+                undefined,
+                assignmentContextUtil.buildInternalOptions('rules', 'auto')
+              ).then(function(request) {
 
                 winston.verbose('request.department.bot.launch action reroute request_id: ' + request_id);
 
@@ -794,7 +817,12 @@ class RulesTrigger {
                 var id_project = eventTrigger.event.id_project;
                 winston.debug('runAction action id_project: ' + id_project);
     
-                 requestService.addParticipantByRequestId(request_id, id_project, member).then(function(request) {
+                 requestService.addParticipantByRequestId(
+                  request_id,
+                  id_project,
+                  member,
+                  assignmentContextUtil.buildInternalOptions('rules', 'manual_reassign')
+                ).then(function(request) {
   
                   winston.verbose('request.bot.launch action request_id: ' + request_id);
   
