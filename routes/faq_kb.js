@@ -19,6 +19,7 @@ var roleChecker = require('../middleware/has-role');
 const roleConstants = require('../models/roleConstants');
 const errorCodes = require('../errorCodes');
 const faq_kb = require('../models/faq_kb');
+const chatbotController = require('../controllers/chatbot.controller');
 
 let chatbot_templates_api_url = process.env.CHATBOT_TEMPLATES_API_URL
 
@@ -975,84 +976,134 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
   }
 })
 
-router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), (req, res) => {
-
-  winston.debug("exporting bot...")
+router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) => {
 
   const chatbot_id = req.params.id_faq_kb;
   const id_project = req.projectid;
+  const exportGlobals = req.query.globals === 'true';
+  const intentsOnly = req.query.intentsOnly === 'true';
 
-  Faq_kb.findOne({ _id: chatbot_id }, (err, faq_kb) => {
-    if (err) {
-      winston.error('GET FAQ-KB ERROR ', err)
-      return res.status(500).send({ success: false, msg: 'Error getting bot.' });
-    }
-    
-    if (!faq_kb) {
-      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id });
-    }
+  let chatbot;
+  try {
+    chatbot = await chatbotController.getChatbotById(chatbot_id);
+  } catch (err) {
+    const error_code = err.status || 500;
+    const error_message = err.message || "Internal server error";
+    return res.status(error_code).send({ success: false, message: error_message });
+  }
 
-    const isPublic = faq_kb.public === true;
-    const isOwner = faq_kb.id_project === id_project;
+  if (!chatbotController.canAccess(chatbot, id_project)) {
+    return res.status(403).send({ success: false, message: `Unauthorized to access chatbot with id ${chatbot_id} for project ${id_project}`});
+  }
 
-    if (!isPublic && !isOwner) {
-      return res.status(403).send({
-        success: false,
-        msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project
-      });
-    }
+  let intents;
+  try {
+    intents = await intentsController.getIntents(chatbot_id);
+  } catch (err) {
+    const error_code = err.status || 500;
+    const error_message = err.message || "Internal server error";
+    return res.status(error_code).send({ success: false, message: error_message });
+  }
 
-    winston.debug('FAQ-KB: ', faq_kb)
+  intents = intents.map(({ _id, id_project, topic, status, chatbot_id, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
 
-    faqService.getAll(chatbot_id).then((faqs) => {
+  if (!exportGlobals) {
+    winston.verbose("Delete globals from attributes")
+    delete chatbot.attributes?.globals;
+  }
 
-      // delete from exclude map intent_id
-      const intents = faqs.map(({ _id, id_project, topic, status, chatbot_id, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
+  let subagents = await chatbotController.findSubagents(chatbot_id, id_project);
+  await Promise.all(subagents.map(async (subagent) => {
+    let subagentIntents = await intentsController.getIntents(subagent._id);
+    subagent.intents = subagentIntents.map(({ _id, id_project, topic, status, chatbot_id, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs);
+  }));
 
-      if (!req.query.globals) {
-        winston.verbose("Delete globals from attributes!")
-        if (faq_kb.attributes) {
-          delete faq_kb.attributes.globals;
-        }
-      }
+  let exportData = chatbotController.export(chatbot, intents, intentsOnly, subagents);
+  let filename = intentsOnly ? "intents.json" : "bot.json";
+  res.set({ "Content-Disposition": `attachment; filename="${filename}"` });
+  return res.send(exportData);
 
-      let json = {
-        webhook_enabled: faq_kb.webhook_enabled,
-        webhook_url: faq_kb.webhook_url,
-        language: faq_kb.language,
-        name: faq_kb.name,
-        slug: faq_kb.slug,
-        type: faq_kb.type,
-        subtype: faq_kb.subtype,
-        description: faq_kb.description,
-        attributes: faq_kb.attributes,
-        intents: intents
-      }
-
-      if (req.query.intentsOnly == 'true') {
-        let intents_obj = {
-          intents: intents
-        }
-        let intents_string = JSON.stringify(intents_obj);
-        res.set({ "Content-Disposition": "attachment; filename=\"intents.json\"" });
-        return res.send(intents_string);
-
-      } else {
-
-        // if (req.query.file == "false") {
-        //   return res.status(200).send(json);
-        // }
-        let json_string = JSON.stringify(json);
-        res.set({ "Content-Disposition": "attachment; filename=\"bot.json\"" });
-        return res.send(json_string);
-      }
-
-    }).catch((err) => {
-      winston.error('GET FAQ ERROR: ', err)
-      return res.status(500).send({ success: false, msg: 'Error getting faqs.' });
-    })
-  })
 })
+
+// DEPRECATED
+// router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), (req, res) => {
+
+//   winston.debug("exporting bot...")
+
+//   const chatbot_id = req.params.id_faq_kb;
+//   const id_project = req.projectid;
+
+//   Faq_kb.findOne({ _id: chatbot_id }, (err, faq_kb) => {
+//     if (err) {
+//       winston.error('GET FAQ-KB ERROR ', err)
+//       return res.status(500).send({ success: false, msg: 'Error getting bot.' });
+//     }
+    
+//     if (!faq_kb) {
+//       return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id });
+//     }
+
+//     const isPublic = faq_kb.public === true;
+//     const isOwner = faq_kb.id_project === id_project;
+
+//     if (!isPublic && !isOwner) {
+//       return res.status(403).send({
+//         success: false,
+//         msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project
+//       });
+//     }
+
+//     winston.debug('FAQ-KB: ', faq_kb)
+
+//     faqService.getAll(chatbot_id).then((faqs) => {
+
+//       // delete from exclude map intent_id
+//       const intents = faqs.map(({ _id, id_project, topic, status, chatbot_id, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
+
+//       if (!req.query.globals) {
+//         winston.verbose("Delete globals from attributes!")
+//         if (faq_kb.attributes) {
+//           delete faq_kb.attributes.globals;
+//         }
+//       }
+
+//       let json = {
+//         webhook_enabled: faq_kb.webhook_enabled,
+//         webhook_url: faq_kb.webhook_url,
+//         language: faq_kb.language,
+//         name: faq_kb.name,
+//         slug: faq_kb.slug,
+//         type: faq_kb.type,
+//         subtype: faq_kb.subtype,
+//         description: faq_kb.description,
+//         attributes: faq_kb.attributes,
+//         intents: intents
+//       }
+
+//       if (req.query.intentsOnly == 'true') {
+//         let intents_obj = {
+//           intents: intents
+//         }
+//         let intents_string = JSON.stringify(intents_obj);
+//         res.set({ "Content-Disposition": "attachment; filename=\"intents.json\"" });
+//         return res.send(intents_string);
+
+//       } else {
+
+//         // if (req.query.file == "false") {
+//         //   return res.status(200).send(json);
+//         // }
+//         let json_string = JSON.stringify(json);
+//         res.set({ "Content-Disposition": "attachment; filename=\"bot.json\"" });
+//         return res.send(json_string);
+//       }
+
+//     }).catch((err) => {
+//       winston.error('GET FAQ ERROR: ', err)
+//       return res.status(500).send({ success: false, msg: 'Error getting faqs.' });
+//     })
+//   })
+// })
 
 router.post('/:faq_kbid/training', roleChecker.hasRole('admin'), function (req, res) {
 

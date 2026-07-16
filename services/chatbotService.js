@@ -122,6 +122,8 @@ class ChatbotService {
         return Promise.reject(err);
       });
   }
+
 }
+
 
 module.exports = { ChatbotService }
