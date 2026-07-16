@@ -224,7 +224,7 @@ function validateRowData(data, schema) {
     const col = schema[j];
     if (!Object.prototype.hasOwnProperty.call(data, col.name)) continue;
     const raw = data[col.name];
-    if (raw === null || raw === undefined) continue;
+    if (raw === undefined) continue;
     result[col.name] = coerceValue(raw, col);
   }
   return result;
