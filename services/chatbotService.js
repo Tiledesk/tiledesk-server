@@ -6,11 +6,14 @@ class ChatbotService {
 
   constructor() {}
 
-  async fork(id_faq_kb, api_url, token, project_id) {
+  async fork(id_faq_kb, api_url, token, project_id, options) {
     winston.debug("(ChatbotService) fork");
 
+    const forPublish = options && options.forPublish === true;
+    const forPublishQuery = forPublish ? '&for_publish=true' : '';
+
     return await axios({
-      url: api_url + '/' + project_id + '/faq_kb/fork/'+id_faq_kb+"?projectid="+project_id+"&public=false&globals=true",
+      url: api_url + '/' + project_id + '/faq_kb/fork/' + id_faq_kb + '?projectid=' + project_id + '&public=false&globals=true' + forPublishQuery,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': token
@@ -76,7 +79,7 @@ class ChatbotService {
     winston.debug("(ChatbotService) createBot");
 
     return await axios({
-      url: api_url + '/' + project_id + '/faq_kb/',
+      url: api_url + '/' + project_id + '/faq_kb/?skip_activity=true',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': token
