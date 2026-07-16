@@ -87,7 +87,7 @@
     "jsonwebtoken": "^8.5.1",
     "libphonenumber-js": "^1.12.10",
     "lodash": "^4.17.21",
-    "marked": "^3.0.4",
+    "marked": "^4.0.10",
     "maskdata": "^1.1.10",
     "migrate-mongoose": "^4.0.0",
     "mix-hash": "^1.0.7",
