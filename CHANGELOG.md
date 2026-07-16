@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.19.15
+- Fixed bug on updating cells in a table row
+
 # 2.19.14
 - Improved Activities management
 
