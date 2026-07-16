@@ -86,9 +86,25 @@
 - Enabled Situated Context for enhanced Knowledge Base content indexing
 - Bumped tybot-connector version to 2.0.48
 
+# 2.18.4-rc35
+- Disabled Authentication in URL Preview
+- Added Max 10 URLs per request — returns 422 if exceeded
+- Added SSRF Validation
+
+# 2.18.4-rc32
+- Updated maxContentLength limit
+
+# 2.18.4-rc31
+- Updated url-preview service
+
+# 2.18.4-rc27
+- Added url-preview service
+
 # 2.18.3
 - Added permissions logic
 - Added custom roles support
+
+# 2.17.5
 - Add answered questions functionality
 - Added AnsweredQuestion schema with TTL index for automatic deletion.
 - Updated UnansweredQuestion schema to include additional fields and improved query handling for searching and sorting.
@@ -147,7 +163,7 @@
 - Added migration script to add the contact field in request object improving the search by phone number
 
 # 2.15.2
-- Updated GitHub actions
+- Updated GitHub actionsm
 
 # 2.15.1
 - Updated whatsapp-connector to 1.0.24

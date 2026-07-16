@@ -111,6 +111,27 @@ class WebSocketServer {
         winston.debug('token:' + token);
         winston.debug('configSecretOrPubicKay:' + configSecretOrPubicKay);
 
+        //const req = info.req;
+        //const fullUrl = req.headers.origin + req.url;
+        //const forwardedFor = req.headers['x-forwarded-for'];
+        //const socketAddr = req.socket?.remoteAddress;
+        //const connectionAddr = req.connection?.remoteAddress;
+
+        // console.log('[WS VERIFY]', {
+        //   timestamp: new Date().toISOString(),
+        //   ipInfo: {
+        //     xForwardedFor: forwardedFor,
+        //     socketRemoteAddress: socketAddr,
+        //     connectionRemoteAddress: connectionAddr
+        //   },
+        //   origin: req.headers.origin,
+        //   url: req.url,
+        //   fullUrl,
+        //   headers: req.headers,
+        //   userAgent: req.headers['user-agent'],
+        //   tokenSnippet: token ? token.substring(0, 30) + '...' : null
+        // });
+
 
         if (!token)
           cb(false, 401, 'Unauthorized');
@@ -353,7 +374,7 @@ class WebSocketServer {
             }
             winston.debug('projectuser', projectuser.toObject());
 
-            var query = { "id_project": projectId, "status": { $lt: 1000, $gt: 50, $ne: 150 }, preflight: false, "draft": { $in: [false, null] } };
+            var query = { "id_project": projectId, "status": { $lt: 1000, $gt: 50 }, preflight: false, "draft": { $in: [false, null] } };
             
             if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
               winston.debug('ws requests query admin: ' + JSON.stringify(query));
@@ -800,6 +821,7 @@ class WebSocketServer {
 
     winston.debug('requestUpdateKey: ' + requestUpdateKey);
     requestEvent.on(requestUpdateKey, async function (request) {
+
       setImmediate(async () => {
 
         // TODO setImmediate(() => {        
@@ -894,9 +916,10 @@ class WebSocketServer {
     eventEvent.on(eventEmitKey, function (event) {
       setImmediate(async () => {
         winston.debug('event', event);
-        if (event.project_user === undefined) {
-          //with "faqbot.answer_not_found" project_user is undefined but it's ok 
-          winston.debug('not sending with ws event with project_user undefined', event);
+        if (event.project_user === undefined || event.project_user === null) {
+          //with "faqbot.answer_not_found" project_user is undefined but it's ok
+          //project_user can also be null when populate does not resolve (e.g. agent removed by smart assignment)
+          winston.debug('not sending with ws event with project_user undefined or null', event);
           return;
         }
         pubSubServer.handlePublishMessage('/' + event.id_project + '/events/' + event.project_user._id, event, undefined, true, "CREATE");
