@@ -29,6 +29,7 @@ var cors = require('cors');
 var Project = require("./models/project");
 var validtoken = require('./middleware/valid-token');
 var roleChecker = require('./middleware/has-role');
+var errorHandler = require('./middleware/errorHandler');
 
 const MaskData = require("maskdata");
 var winston = require('./config/winston');
@@ -691,39 +692,8 @@ app.use(function (err, req, res, next) {
 
 // mettere middleware qui per le quote
 
-
-
-// error handler
-app.use((err, req, res, next) => {
-
-  winston.debug("err.name", err.name)
-  if (err.name === "IpDeniedError") {
-    winston.debug("IpDeniedError");
-    return res.status(401).json({ err: "error ip filter" });
-  }
-
-  const realIp = req.headers['x-forwarded-for']?.split(',')[0] || req.headers['x-real-ip'] || req.ip;
-
-  //emitted by multer when the file is too big
-  if (err.code === "LIMIT_FILE_SIZE") {
-    winston.debug("LIMIT_FILE_SIZE");
-    winston.warn(`LIMIT_FILE_SIZE on ${req.originalUrl}`, {
-      limit: process.env.MAX_UPLOAD_FILE_SIZE,
-      ip: req.ip,
-      realIp: realIp
-    });
-    return res.status(413).json({ err: "Content Too Large", limit_file_size: process.env.MAX_UPLOAD_FILE_SIZE });
-  }
-  
-  if (err.type === "entity.too.large" || err.name === "PayloadTooLargeError") {
-    winston.warn("Payload too large", { expected: err.expected, limit: err.limit, length: err.length });
-    return res.status(413).json({ err: "Request entity too large", limit: err.limit});
-  }
-
-
-  winston.error("General error: ", err);
-  return res.status(500).json({ err: "error" });
-});
+// error handler (must be registered last)
+app.use(errorHandler);
 
 
 module.exports = app;

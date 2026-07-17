@@ -20,6 +20,9 @@ const roleConstants = require('../models/roleConstants');
 const errorCodes = require('../errorCodes');
 const faq_kb = require('../models/faq_kb');
 const chatbotController = require('../controllers/chatbot.controller');
+const intentsController = require('../controllers/intents.controller');
+const AppError = require('../utils/AppError');
+const asyncHandler = require('../utils/asyncHandler');
 
 let chatbot_templates_api_url = process.env.CHATBOT_TEMPLATES_API_URL
 
@@ -728,19 +731,16 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
 
 })
 
-router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.single('uploadFile'), async (req, res) => {
+router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.single('uploadFile'), asyncHandler(async (req, res) => {
 
-  let chatbot_id = req.params.id_faq_kb;
-  let id_project = req.projectid;
+  const chatbot_id = req.params.id_faq_kb;
+  const id_project = req.projectid;
+  const create = req.query.create === 'true';
+  const replace = req.query.replace === 'true';
+  const overwrite = req.query.overwrite === 'true';
+  const user_id = req.user.id;
 
-  winston.debug('import on id_faq_kb: ' + chatbot_id);
-
-  winston.debug('import with option create: ' + req.query.create);
-  winston.debug('import with option replace: ' + req.query.replace);
-  winston.debug('import with option overwrite: ' + req.query.overwrite);
-
-  let json_string;
-  let json;
+  let json, json_string;
   if (req.file) {
     json_string = req.file.buffer.toString('utf-8');
     json = JSON.parse(json_string);
@@ -748,263 +748,272 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
     json = req.body;
   }
 
-  winston.debug("json source " + json_string)
+  const chatbot = await chatbotController.import(json, id_project, chatbot_id, create, replace, overwrite, user_id);
+  return res.status(200).send(chatbot);
+}))
 
-  // ****************************
-  // **** CREATE TRUE option ****
-  // ****************************
-  if (req.query.create === 'true') {
-    // if (json.subtype && (json.subtype === 'webhook' || json.subtype === 'copilot')) {
-    //   json.template = 'empty';
-    // }
-    json.template = 'empty';
-    let savedChatbot = await faqService.create(req.projectid, req.user.id, json)
-      .catch((err) => {
-        winston.error("Error creating new chatbot")
-        return res.status(400).send({ succes: false, message: "Error creatings new chatbot", error: err })
-      })
+// router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.single('uploadFile'), async (req, res) => {
 
-    // Edit attributes.rules
-    let attributes = json.attributes;
-    if (attributes &&
-      attributes.rules &&
-      attributes.rules.length > 0) {
+//   let chatbot_id = req.params.id_faq_kb;
+//   let id_project = req.projectid;
 
-      await attributes.rules.forEach((rule) => {
-        if (rule.do &&
-          rule.do[0] &&
-          rule.do[0].message &&
-          rule.do[0].message.participants &&
-          rule.do[0].message.participants[0]) {
-          rule.do[0].message.participants[0] = "bot_" + savedChatbot._id
-          winston.debug("attributes rule new participant: ", rule.do[0].message.participants[0])
-        }
-      })
-    }
+//   winston.debug('import on id_faq_kb: ' + chatbot_id);
 
-    let chatbot_edited = { attributes: attributes };
+//   winston.debug('import with option create: ' + req.query.create);
+//   winston.debug('import with option replace: ' + req.query.replace);
+//   winston.debug('import with option overwrite: ' + req.query.overwrite);
 
-    let updatedChatbot = await Faq_kb.findByIdAndUpdate(savedChatbot._id, chatbot_edited, { new: true }).catch((err) => {
-      winston.error("Error updating chatbot attributes: ", err);
-      winston.debug("Skip Error updating chatbot attributes: ", err);
-      // return res.status(400).send({ success: false, message: "Error updating chatbot attributes", error: err })
-    })
+//   let json_string;
+//   let json;
+//   if (req.file) {
+//     json_string = req.file.buffer.toString('utf-8');
+//     json = JSON.parse(json_string);
+//   } else {
+//     json = req.body;
+//   }
 
-    botEvent.emit('faqbot.create', savedChatbot);
+//   winston.debug("json source " + json_string)
 
-    if (json.intents) {
+//   // ****************************
+//   // **** CREATE TRUE option ****
+//   // ****************************
+//   if (req.query.create === 'true') {
+//     // if (json.subtype && (json.subtype === 'webhook' || json.subtype === 'copilot')) {
+//     //   json.template = 'empty';
+//     // }
+//     json.template = 'empty';
+//     let savedChatbot = await faqService.create(req.projectid, req.user.id, json)
+//       .catch((err) => {
+//         winston.error("Error creating new chatbot")
+//         return res.status(400).send({ succes: false, message: "Error creatings new chatbot", error: err })
+//       })
 
-      json.intents.forEach(async (intent) => {
+//     // Edit attributes.rules
+//     let attributes = json.attributes;
+//     if (attributes &&
+//       attributes.rules &&
+//       attributes.rules.length > 0) {
 
-        let new_faq = {
-          id_faq_kb: savedChatbot._id,
-          id_project: req.projectid,
-          createdBy: req.user.id,
-          intent_display_name: intent.intent_display_name,
-          intent_id: intent.intent_id,
-          question: intent.question,
-          answer: intent.answer,
-          reply: intent.reply,
-          form: intent.form,
-          enabled: intent.enabled,
-          webhook_enabled: intent.webhook_enabled,
-          language: intent.language,
-          actions: intent.actions,
-          attributes: intent.attributes
-        }
+//       await attributes.rules.forEach((rule) => {
+//         if (rule.do &&
+//           rule.do[0] &&
+//           rule.do[0].message &&
+//           rule.do[0].message.participants &&
+//           rule.do[0].message.participants[0]) {
+//           rule.do[0].message.participants[0] = "bot_" + savedChatbot._id
+//           winston.debug("attributes rule new participant: ", rule.do[0].message.participants[0])
+//         }
+//       })
+//     }
 
-        let faq = await Faq.create(new_faq).catch((err) => {
-          if (err.code == 11000) { // should never happen
-            winston.error("Duplicate intent_display_name.");
-            winston.debug("Skip duplicated intent_display_name"); // Don't stop the flow
-          } else {
-            winston.error("Error saving new faq: ", err)
-          }
-        })
+//     let chatbot_edited = { attributes: attributes };
 
-        if (faq) {
-          winston.debug("new intent created")
-          faqBotEvent.emit('faq.create', faq);
-        }
-      })
-    }
+//     let updatedChatbot = await Faq_kb.findByIdAndUpdate(savedChatbot._id, chatbot_edited, { new: true }).catch((err) => {
+//       winston.error("Error updating chatbot attributes: ", err);
+//       winston.debug("Skip Error updating chatbot attributes: ", err);
+//       // return res.status(400).send({ success: false, message: "Error updating chatbot attributes", error: err })
+//     })
 
-    if (updatedChatbot) {
-      return res.status(200).send(updatedChatbot)
-    } else {
-      return res.status(200).send(savedChatbot)
-    }
-  }
-  // *****************************
-  // **** CREATE FALSE option ****
-  // *****************************
-  else {
+//     botEvent.emit('faqbot.create', savedChatbot);
 
-    if (!chatbot_id) {
-      return res.status(400).send({ success: false, message: "With replace or overwrite option a id_faq_kb must be provided" })
-    }
+//     if (json.intents) {
 
-    let chatbot = await Faq_kb.findOne({ _id: chatbot_id, id_project: id_project }).catch((err) => {
-      winston.error("Error finding chatbot with id " + chatbot_id);
-      return res.status(404).send({ success: false, message: "Error finding chatbot with id " + chatbot_id, error: err });
-    })
+//       json.intents.forEach(async (intent) => {
 
-    if (!chatbot) {
-      winston.error("Chatbot not found with id " + chatbot_id + " for project " + id_project);
-      return res.status(404).send({ success: false, message: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
-    }
+//         let new_faq = {
+//           id_faq_kb: savedChatbot._id,
+//           id_project: req.projectid,
+//           createdBy: req.user.id,
+//           intent_display_name: intent.intent_display_name,
+//           intent_id: intent.intent_id,
+//           question: intent.question,
+//           answer: intent.answer,
+//           reply: intent.reply,
+//           form: intent.form,
+//           enabled: intent.enabled,
+//           webhook_enabled: intent.webhook_enabled,
+//           language: intent.language,
+//           actions: intent.actions,
+//           attributes: intent.attributes
+//         }
 
-    if (json.webhook_enabled) {
-      chatbot.webhook_enabled = json.webhook_enabled;
-    }
-    if (json.webhook_url) {
-      chatbot.webhook_url = json.webhook_url;
-    }
-    if (json.language) {
-      chatbot.language = json.language;
-    }
-    if (json.name) {
-      chatbot.name = json.name;
-    }
-    if (json.description) {
-      chatbot.description = json.description;
-    }
+//         let faq = await Faq.create(new_faq).catch((err) => {
+//           if (err.code == 11000) { // should never happen
+//             winston.error("Duplicate intent_display_name.");
+//             winston.debug("Skip duplicated intent_display_name"); // Don't stop the flow
+//           } else {
+//             winston.error("Error saving new faq: ", err)
+//           }
+//         })
 
-    if (json.attributes) {
-      let attributes = json.attributes;
-      if (attributes.rules &&
-        attributes.rules.length > 0) {
-        await attributes.rules.forEach((rule) => {
-          if (rule.do &&
-            rule.do[0] &&
-            rule.do[0].message &&
-            rule.do[0].message.participants &&
-            rule.do[0].message.participants[0]) {
-            rule.do[0].message.participants[0] = "bot_" + chatbot._id
-            winston.debug("attributes rule new participant: " + rule.do[0].message.participants[0])
-          }
-        })
-        chatbot.attributes = json.attributes;
-      }
-    }
+//         if (faq) {
+//           winston.debug("new intent created")
+//           faqBotEvent.emit('faq.create', faq);
+//         }
+//       })
+//     }
 
-    let updatedChatbot = await Faq_kb.findByIdAndUpdate(chatbot._id, chatbot, { new: true }).catch((err) => {
-      winston.error("Error updating chatbot");
-      return res.status(400).send({ success: false, message: "Error updating chatbot", error: err })
-    })
+//     if (updatedChatbot) {
+//       return res.status(200).send(updatedChatbot)
+//     } else {
+//       return res.status(200).send(savedChatbot)
+//     }
+//   }
+//   // *****************************
+//   // **** CREATE FALSE option ****
+//   // *****************************
+//   else {
 
-    botEvent.emit('faqbot.update', updatedChatbot);
+//     if (!chatbot_id) {
+//       return res.status(400).send({ success: false, message: "With replace or overwrite option a id_faq_kb must be provided" })
+//     }
 
-    // *****************************
-    // **** REPLACE TRUE option ****
-    // *****************************
-    if (req.query.replace === 'true') {
-      let result = await Faq.deleteMany({ id_faq_kb: chatbot._id }).catch((err) => {
-        winston.error("Unable to delete all existing faqs with id_faq_kb " + chatbot._id);
-      })
+//     let chatbot = await Faq_kb.findOne({ _id: chatbot_id, id_project: id_project }).catch((err) => {
+//       winston.error("Error finding chatbot with id " + chatbot_id);
+//       return res.status(404).send({ success: false, message: "Error finding chatbot with id " + chatbot_id, error: err });
+//     })
 
-      winston.verbose("All faq for chatbot " + chatbot._id + " deleted successfully")
-      winston.debug("DeleteMany faqs result ", result);
-    }
+//     if (!chatbot) {
+//       winston.error("Chatbot not found with id " + chatbot_id + " for project " + id_project);
+//       return res.status(404).send({ success: false, message: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
+//     }
 
-    if (json.intents) {
-      await json.intents.forEach(async (intent) => {
+//     if (json.webhook_enabled) {
+//       chatbot.webhook_enabled = json.webhook_enabled;
+//     }
+//     if (json.webhook_url) {
+//       chatbot.webhook_url = json.webhook_url;
+//     }
+//     if (json.language) {
+//       chatbot.language = json.language;
+//     }
+//     if (json.name) {
+//       chatbot.name = json.name;
+//     }
+//     if (json.description) {
+//       chatbot.description = json.description;
+//     }
 
-        let new_faq = {
-          id_faq_kb: updatedChatbot._id,
-          id_project: req.projectid,
-          createdBy: req.user.id,
-          intent_display_name: intent.intent_display_name,
-          intent_id: intent.intent_id,
-          question: intent.question,
-          answer: intent.answer,
-          reply: intent.reply,
-          form: intent.form,
-          enabled: intent.enabled,
-          webhook_enabled: intent.webhook_enabled,
-          language: intent.language,
-          actions: intent.actions,
-          attributes: intent.attributes
-        }
+//     if (json.attributes) {
+//       let attributes = json.attributes;
+//       if (attributes.rules &&
+//         attributes.rules.length > 0) {
+//         await attributes.rules.forEach((rule) => {
+//           if (rule.do &&
+//             rule.do[0] &&
+//             rule.do[0].message &&
+//             rule.do[0].message.participants &&
+//             rule.do[0].message.participants[0]) {
+//             rule.do[0].message.participants[0] = "bot_" + chatbot._id
+//             winston.debug("attributes rule new participant: " + rule.do[0].message.participants[0])
+//           }
+//         })
+//         chatbot.attributes = json.attributes;
+//       }
+//     }
 
-        // *******************************
-        // **** OVERWRITE TRUE option ****
-        // *******************************
-        if (req.query.overwrite == "true") {
+//     let updatedChatbot = await Faq_kb.findByIdAndUpdate(chatbot._id, chatbot, { new: true }).catch((err) => {
+//       winston.error("Error updating chatbot");
+//       return res.status(400).send({ success: false, message: "Error updating chatbot", error: err })
+//     })
 
-          let savingResult = await Faq.findOneAndUpdate({ id_faq_kb: chatbot._id, intent_display_name: intent.intent_display_name }, new_faq, { new: true, upsert: true, rawResult: true }).catch((err) => {
-            winston.error("Unable to create faq: ", err);
-          })
+//     botEvent.emit('faqbot.update', updatedChatbot);
 
-          if (savingResult) {
-            if (savingResult.lastErrorObject.updatedExisting === true) {
-              winston.verbose("updated existing intent")
-              faqBotEvent.emit('faq.update', savingResult.value);
-            } else {
-              winston.verbose("new intent created")
-              faqBotEvent.emit('faq.create', savingResult.value);
-            }
-          }
+//     // *****************************
+//     // **** REPLACE TRUE option ****
+//     // *****************************
+//     if (req.query.replace === 'true') {
+//       let result = await Faq.deleteMany({ id_faq_kb: chatbot._id }).catch((err) => {
+//         winston.error("Unable to delete all existing faqs with id_faq_kb " + chatbot._id);
+//       })
 
-          // ********************************
-          // **** OVERWRITE FALSE option ****
-          // ********************************
-        } else {
+//       winston.verbose("All faq for chatbot " + chatbot._id + " deleted successfully")
+//       winston.debug("DeleteMany faqs result ", result);
+//     }
 
-          let faq = await Faq.create(new_faq).catch((err) => {
-            if (err.code == 11000) {
-              winston.error("Duplicate intent_display_name.");
-              winston.verbose("Skip duplicated intent_display_name");
-            } else {
-              winston.error("Error creating new intent: ", err);
-            }
-          })
+//     if (json.intents) {
+//       await json.intents.forEach(async (intent) => {
 
-          if (faq) {
-            winston.debug("new intent created: ", faq)
-            faqBotEvent.emit('faq.create', faq);
-          }
-        }
-      })
-    }
+//         let new_faq = {
+//           id_faq_kb: updatedChatbot._id,
+//           id_project: req.projectid,
+//           createdBy: req.user.id,
+//           intent_display_name: intent.intent_display_name,
+//           intent_id: intent.intent_id,
+//           question: intent.question,
+//           answer: intent.answer,
+//           reply: intent.reply,
+//           form: intent.form,
+//           enabled: intent.enabled,
+//           webhook_enabled: intent.webhook_enabled,
+//           language: intent.language,
+//           actions: intent.actions,
+//           attributes: intent.attributes
+//         }
 
-    if (updatedChatbot) {
-      return res.send(updatedChatbot);
-    } else {
-      return res.send(chatbot);
-    }
-  }
-})
+//         // *******************************
+//         // **** OVERWRITE TRUE option ****
+//         // *******************************
+//         if (req.query.overwrite == "true") {
 
-router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) => {
+//           let savingResult = await Faq.findOneAndUpdate({ id_faq_kb: chatbot._id, intent_display_name: intent.intent_display_name }, new_faq, { new: true, upsert: true, rawResult: true }).catch((err) => {
+//             winston.error("Unable to create faq: ", err);
+//           })
+
+//           if (savingResult) {
+//             if (savingResult.lastErrorObject.updatedExisting === true) {
+//               winston.verbose("updated existing intent")
+//               faqBotEvent.emit('faq.update', savingResult.value);
+//             } else {
+//               winston.verbose("new intent created")
+//               faqBotEvent.emit('faq.create', savingResult.value);
+//             }
+//           }
+
+//           // ********************************
+//           // **** OVERWRITE FALSE option ****
+//           // ********************************
+//         } else {
+
+//           let faq = await Faq.create(new_faq).catch((err) => {
+//             if (err.code == 11000) {
+//               winston.error("Duplicate intent_display_name.");
+//               winston.verbose("Skip duplicated intent_display_name");
+//             } else {
+//               winston.error("Error creating new intent: ", err);
+//             }
+//           })
+
+//           if (faq) {
+//             winston.debug("new intent created: ", faq)
+//             faqBotEvent.emit('faq.create', faq);
+//           }
+//         }
+//       })
+//     }
+
+//     if (updatedChatbot) {
+//       return res.send(updatedChatbot);
+//     } else {
+//       return res.send(chatbot);
+//     }
+//   }
+// })
+
+router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), asyncHandler(async (req, res) => {
 
   const chatbot_id = req.params.id_faq_kb;
   const id_project = req.projectid;
   const exportGlobals = req.query.globals === 'true';
   const intentsOnly = req.query.intentsOnly === 'true';
 
-  let chatbot;
-  try {
-    chatbot = await chatbotController.getChatbotById(chatbot_id);
-  } catch (err) {
-    const error_code = err.status || 500;
-    const error_message = err.message || "Internal server error";
-    return res.status(error_code).send({ success: false, message: error_message });
-  }
+  const chatbot = await chatbotController.getChatbotById(chatbot_id);
 
   if (!chatbotController.canAccess(chatbot, id_project)) {
-    return res.status(403).send({ success: false, message: `Unauthorized to access chatbot with id ${chatbot_id} for project ${id_project}`});
+    throw new AppError(403, `Unauthorized to access chatbot with id ${chatbot_id} for project ${id_project}`);
   }
 
-  let intents;
-  try {
-    intents = await intentsController.getIntents(chatbot_id);
-  } catch (err) {
-    const error_code = err.status || 500;
-    const error_message = err.message || "Internal server error";
-    return res.status(error_code).send({ success: false, message: error_message });
-  }
-
+  let intents = await intentsController.getIntents(chatbot_id);
   intents = intents.map(({ _id, id_project, topic, status, chatbot_id, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
 
   if (!exportGlobals) {
@@ -1023,7 +1032,7 @@ router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), async (req, r
   res.set({ "Content-Disposition": `attachment; filename="${filename}"` });
   return res.send(exportData);
 
-})
+}))
 
 // DEPRECATED
 // router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), (req, res) => {
