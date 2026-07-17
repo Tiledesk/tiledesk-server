@@ -9,6 +9,7 @@ var LeadConstants = require("../../models/leadConstants");
 var winston = require('../../config/winston');
 var i8nUtil = require("../../utils/i8nUtil");
 var BotFromParticipant = require("../../utils/botFromParticipant");
+var assignmentContextUtil = require('../../utils/assignmentContextUtil');
 const RequestConstants = require('../../models/requestConstants');
 
 class ConciergeBot {
@@ -81,7 +82,12 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                                     winston.debug("rerouting");
                                     // reroute(request_id, id_project, nobot)
                                     
-                                    requestService.reroute(message.request.request_id, message.request.id_project, false ).then(function() {
+                                    requestService.reroute(
+                                      message.request.request_id,
+                                      message.request.id_project,
+                                      false,
+                                      assignmentContextUtil.buildInternalOptions('rules', 'auto')
+                                    ).then(function() {
                                         winston.debug("reroute successful from event message.create");
                                     }).catch((err) => {
                                         winston.error("ConciergeBot error reroute: " + err);

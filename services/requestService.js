@@ -10,6 +10,7 @@ const leadEvent = require('../event/leadEvent');
 var winston = require('../config/winston');
 var RequestConstants = require("../models/requestConstants");
 var requestUtil = require("../utils/requestUtil");
+var assignmentContextUtil = require("../utils/assignmentContextUtil");
 var cacheUtil = require("../utils/cacheUtil");
 var arrayUtil = require("../utils/arrayUtil");
 var cacheEnabler = require("../services/cacheEnabler");
@@ -225,8 +226,6 @@ class RequestService {
         request.assigned_at = assigned_at;
         request.waiting_time = undefined //reset waiting_time on reroute
 
-        //console.log("request.snapshot for ", request.request_id ," exists: ", request.snapshot ? "yes" : "no\n", new Date());
-        //console.log("request.snapshot.agents for ", request.request_id ," exists: ", request.snapshot?.agents ? "yes" : "no\n", new Date());
         if (!request.snapshot) { //if used other methods than .create
           request.snapshot = {}
         }
@@ -249,7 +248,7 @@ class RequestService {
 
   // TODO  changePreflightByRequestId se un agente entra in request freflight true disabilitare add agente e reassing ma mettere un bottone removePreflight???
   // usalo no_populate
-  async route(request_id, departmentid, id_project, nobot, no_populate) {
+  async route(request_id, departmentid, id_project, nobot, no_populate, options) {
 
     try {
       winston.debug("request_id:" + request_id);
@@ -340,7 +339,13 @@ class RequestService {
         this.emitParticipantsEvents(
           request,
           requestComplete,
-          beforeParticipants
+          beforeParticipants,
+          options,
+          beforeDepartmentId !== afterDepartmentId ? {
+            previousDepartmentId: beforeDepartmentId,
+            departmentId: afterDepartmentId,
+            departmentName: requestComplete.department && requestComplete.department.name
+          } : undefined
         );
   
         return requestComplete;
@@ -395,10 +400,18 @@ class RequestService {
         .execPopulate();
 
 
+      const departmentChange = beforeDepartmentId !== afterDepartmentId ? {
+        previousDepartmentId: beforeDepartmentId,
+        departmentId: afterDepartmentId,
+        departmentName: requestComplete.department && requestComplete.department.name
+      } : undefined;
+
       this.emitParticipantsEvents(
         request,
         requestComplete,
-        beforeParticipants
+        beforeParticipants,
+        options,
+        departmentChange
       );
 
       requestEvent.emit("request.department.update", requestComplete);
@@ -412,9 +425,14 @@ class RequestService {
   }
 
 
-  reroute(request_id, id_project, nobot) {
+  reroute(request_id, id_project, nobot, options) {
     var that = this;
     var startDate = new Date();
+    const assignmentOptions = options || {
+      actor: assignmentContextUtil.systemActor(),
+      source: 'queue',
+      assignmentType: 'auto'
+    };
     return new Promise(function (resolve, reject) {
       // winston.debug("request_id", request_id);
       // winston.debug("newstatus", newstatus);
@@ -448,7 +466,7 @@ class RequestService {
         }
 
 
-        return that.route(request_id, request.department.toString(), id_project, nobot).then(function (routedRequest) {
+        return that.route(request_id, request.department.toString(), id_project, nobot, undefined, assignmentOptions).then(function (routedRequest) {
 
           var endDate = new Date();
           winston.verbose("Performance Request reroute in millis: " + endDate - startDate);
@@ -1544,10 +1562,11 @@ class RequestService {
 
 
 
-  setParticipantsByRequestId(request_id, id_project, newparticipants) {
+  setParticipantsByRequestId(request_id, id_project, newparticipants, options) {
 
     //TODO validate participants
     // validate if array of string newparticipants
+    var that = this;
     return new Promise(function (resolve, reject) {
 
       var isArray = Array.isArray(newparticipants);
@@ -1575,13 +1594,13 @@ class RequestService {
             if (Array.isArray(request.participantsAgents)) {
               if (request.participantsAgents.length === 1) {
                 winston.error('Cannot add participants: participantsAgents already has one element for request_id ' + request_id + ' and id_project ' + id_project);
-                return reject('Cannot add participants: only one participant allowed for this request');
+                return reject({ code: 403, error: 'Cannot add participants: only one participant allowed for this request' });
               } else if (request.participantsAgents.length === 0) {
                 if (Array.isArray(newparticipants) && newparticipants.length === 1) {
                   // ok, allow to add one participant
                 } else {
                   winston.error('Can only add one participant for request_id ' + request_id + ' and id_project ' + id_project);
-                  return reject('Can only add one participant for this request');
+                  return reject({ code: 403, error: 'Can only add one participant for this request' });
                 }
               }
             }
@@ -1693,6 +1712,14 @@ class RequestService {
                   request: requestComplete
                 });
 
+                that.emitAssignedEvent(requestComplete, {
+                  assignmentType: options && options.assignmentType,
+                  actor: options && options.actor,
+                  source: options && options.source,
+                  addedParticipants: addedParticipants,
+                  removedParticipants: removedParticipants
+                });
+
                 // TODO allora neanche qui participatingAgent è ok?
                 return resolve(requestComplete);
               });
@@ -1704,12 +1731,12 @@ class RequestService {
     });
   }
 
-  addParticipantByRequestId(request_id, id_project, member) {
+  addParticipantByRequestId(request_id, id_project, member, options) {
     winston.debug("request_id: " + request_id);
     winston.debug("id_project: " + id_project);
     winston.debug("addParticipantByRequestId member: " + member);
 
-
+    var that = this;
 
     //TODO control if member is a valid project_user of the project
     // validate member is string
@@ -1792,6 +1819,14 @@ class RequestService {
                   requestEvent.emit("request.updated", { comment: "PARTICIPANT_ADD", request: requestComplete, patch: { member: member } });
                   requestEvent.emit('request.participants.join', { member: member, request: requestComplete });
 
+                  that.emitAssignedEvent(requestComplete, {
+                    assignmentType: options && options.assignmentType,
+                    actor: options && options.actor,
+                    source: options && options.source,
+                    addedParticipants: [member],
+                    removedParticipants: []
+                  });
+
                   return resolve(requestComplete);
                 });
             });
@@ -1813,7 +1848,7 @@ class RequestService {
     });
   }
 
-  removeParticipantByRequestId(request_id, id_project, member) {
+  removeParticipantByRequestId(request_id, id_project, member, options) {
     winston.debug("request_id", request_id);
     winston.debug("id_project", id_project);
     winston.debug("member", member);
@@ -1939,7 +1974,13 @@ class RequestService {
                   requestEvent.emit('request.update', requestComplete);
                   requestEvent.emit("request.update.comment", { comment: "PARTICIPANT_REMOVE", request: requestComplete });//Deprecated
                   requestEvent.emit("request.updated", { comment: "PARTICIPANT_REMOVE", request: requestComplete, patch: { member: member } });
-                  requestEvent.emit('request.participants.leave', { member: member, request: requestComplete });
+                  requestEvent.emit('request.participants.leave', {
+                    member: member,
+                    request: requestComplete,
+                    actor: options && options.actor,
+                    source: options && options.source,
+                    trackLeave: options && options.trackLeave
+                  });
 
 
                   return resolve(requestComplete);
@@ -2503,7 +2544,8 @@ class RequestService {
     })
   }
 
-  emitParticipantsEvents(beforeRequest, requestComplete, oldParticipants) {
+  emitParticipantsEvents(beforeRequest, requestComplete, oldParticipants, options, departmentChange) {
+    const that = this;
     const newParticipants = requestComplete.participants;
   
     const removedParticipants = oldParticipants.filter(
@@ -2525,6 +2567,110 @@ class RequestService {
       removedParticipants,
       addedParticipants,
       request: requestComplete
+    });
+
+    that.emitAssignedEvent(requestComplete, {
+      assignmentType: options && options.assignmentType,
+      actor: options && options.actor,
+      source: options && options.source,
+      addedParticipants,
+      removedParticipants,
+      departmentChange
+    });
+  }
+
+  emitAssignedEvent(requestComplete, context) {
+    const {
+      assignmentType,
+      actor,
+      source,
+      addedParticipants = [],
+      removedParticipants = [],
+      departmentChange
+    } = context || {};
+
+    const humanAdded = assignmentContextUtil.filterHumanParticipants(addedParticipants);
+    const humanRemoved = assignmentContextUtil.filterHumanParticipants(removedParticipants);
+    const botAdded = assignmentContextUtil.filterBotParticipants(addedParticipants);
+    const resolvedActor = actor || assignmentContextUtil.systemActor();
+    const resolvedSource = source || 'system';
+
+    if (
+      assignmentType === 'manual_reassign_department' &&
+      departmentChange &&
+      departmentChange.departmentId &&
+      String(departmentChange.departmentId) !== String(departmentChange.previousDepartmentId || '')
+    ) {
+      requestEvent.emit('request.assigned', {
+        request: requestComplete,
+        assigneeId: String(departmentChange.departmentId),
+        assigneeName: departmentChange.departmentName || assignmentContextUtil.resolveDepartmentName(requestComplete),
+        assigneeType: 'department',
+        assignmentType: 'manual_reassign_department',
+        actor: resolvedActor,
+        source: resolvedSource,
+        previousAssigneeId: humanRemoved.length > 0 ? String(humanRemoved[0]) : null,
+        removedParticipants: humanRemoved
+      });
+      return;
+    }
+
+    if (assignmentType === 'manual_reassign_bot' && botAdded.length > 0) {
+      const botId = assignmentContextUtil.botIdFromParticipant(botAdded[0]);
+      requestEvent.emit('request.assigned', {
+        request: requestComplete,
+        assigneeId: botId,
+        assigneeName: assignmentContextUtil.resolveBotName(requestComplete, botId),
+        assigneeType: 'bot',
+        assignmentType: 'manual_reassign_bot',
+        actor: resolvedActor,
+        source: resolvedSource,
+        previousAssigneeId: humanRemoved.length > 0 ? String(humanRemoved[0]) : null,
+        removedParticipants: humanRemoved
+      });
+      return;
+    }
+
+    if (assignmentType === 'unassign' || (humanAdded.length === 0 && humanRemoved.length > 0)) {
+      humanRemoved.forEach((assigneeId) => {
+        requestEvent.emit('request.assigned', {
+          request: requestComplete,
+          assigneeId: String(assigneeId),
+          assignmentType: 'unassign',
+          actor: resolvedActor,
+          source: resolvedSource,
+          removedParticipants: humanRemoved,
+          previousAssigneeId: String(assigneeId)
+        });
+      });
+      return;
+    }
+
+    if (humanAdded.length === 0) {
+      return;
+    }
+
+    const resolvedType = assignmentType || assignmentContextUtil.deriveAssignmentType({
+      actor: resolvedActor,
+      assigneeIds: humanAdded,
+      isUnassign: false
+    });
+
+    if (!resolvedType) {
+      return;
+    }
+
+    humanAdded.forEach((assigneeId) => {
+      requestEvent.emit('request.assigned', {
+        request: requestComplete,
+        assigneeId: String(assigneeId),
+        assigneeType: 'user',
+        assignmentType: resolvedType,
+        actor: resolvedActor,
+        source: resolvedSource,
+        removedParticipants: humanRemoved,
+        previousAssigneeId: humanRemoved.length > 0 ? String(humanRemoved[0]) : null
+      });
     });
   }
 

@@ -20,6 +20,7 @@ var Message = require("../models/message");
 var cacheUtil = require('../utils/cacheUtil');
 var RequestConstants = require("../models/requestConstants");
 var cacheEnabler = require("../services/cacheEnabler");
+var assignmentContextUtil = require('../utils/assignmentContextUtil');
 var Project_user = require("../models/project_user");
 var Lead = require("../models/lead");
 var UIDGenerator = require("../utils/UIDGenerator");
@@ -408,7 +409,8 @@ router.post('/:requestid/participants',
     }
 
     //addParticipantByRequestId(request_id, id_project, member)
-    return requestService.addParticipantByRequestId(req.params.requestid, req.projectid, req.body.member).then(function (updatedRequest) {
+    const assignmentOptions = assignmentContextUtil.buildAddParticipantOptions(req, req.body.member);
+    return requestService.addParticipantByRequestId(req.params.requestid, req.projectid, req.body.member, assignmentOptions).then(function (updatedRequest) {
 
       winston.verbose("participant added", updatedRequest);
 
@@ -439,14 +441,17 @@ router.put('/:requestid/participants', async (req, res) => {
   winston.debug("var participants", participants);
 
   //setParticipantsByRequestId(request_id, id_project, participants)
-  return requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then(function (updatedRequest) {
+  const assignmentOptions = assignmentContextUtil.buildSetParticipantsOptions(req, participants);
+  return requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants, assignmentOptions).then(function (updatedRequest) {
 
     winston.debug("participant set", updatedRequest);
-
     return res.json(updatedRequest);
-  }).catch(function(err) {
-    winston.error("Error setting participants", err);
-    return res.status(500).send({ success: false, error: "Error setting participants" });
+
+  }).catch((err) => {
+    winston.error("Error setParticipantsByRequestId: ", err);
+    let error_code = err?.code || 500;
+    let error = err?.error || err || "General error";
+    return res.status(error_code).send({ success: false, error: error })
   });
 
 });
@@ -516,7 +521,8 @@ router.put('/:requestid/replace', async (req, res) => {
   participants.push(id);
   winston.verbose("participants to be set: ", participants);
 
-  requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then((updatedRequest) => {
+  const assignmentOptions = assignmentContextUtil.buildSetParticipantsOptions(req, participants);
+  requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants, assignmentOptions).then((updatedRequest) => {
     winston.debug("SetParticipant response: ", updatedRequest);
     // Additive: include the resolved canonical (root) bot id for analytics
     // attribution. Existing consumers ignore the extra field.
@@ -531,8 +537,13 @@ router.put('/:requestid/replace', async (req, res) => {
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.delete('/:requestid/participants/:participantid', async (req, res) => {
   winston.debug(req.body);
-  //removeParticipantByRequestId(request_id, id_project, member)
-  return requestService.removeParticipantByRequestId(req.params.requestid, req.projectid, req.params.participantid).then(function (updatedRequest) {
+  const leaveOptions = assignmentContextUtil.buildRemoveParticipantOptions(req, req.params.participantid);
+  return requestService.removeParticipantByRequestId(
+    req.params.requestid,
+    req.projectid,
+    req.params.participantid,
+    leaveOptions
+  ).then(function (updatedRequest) {
 
     winston.verbose("participant removed", updatedRequest);
 
@@ -593,7 +604,8 @@ router.put('/:requestid/assign', function (req, res) {
         return res.json(request);
       }
       //route(request_id, departmentid, id_project) {      
-      requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
+      const assignmentOptions = assignmentContextUtil.buildAutoRouteOptions(req, 'api');
+      requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate, assignmentOptions).then(function (updatedRequest) {
 
         winston.debug("department changed", updatedRequest);
 
@@ -604,7 +616,6 @@ router.put('/:requestid/assign', function (req, res) {
         return res.json(updatedRequest);
       }).catch(function (error) {
         // TODO: error log removed due to attempt to reduces logs when no department is found
-        console.log('Error changing the department.', error)
         winston.verbose('Error changing the department.', error)
         return res.status(500).send({ success: false, msg: 'Error changing the department.' });
       })
@@ -615,14 +626,14 @@ router.put('/:requestid/assign', function (req, res) {
 router.put('/:requestid/departments', function (req, res) {
   winston.debug(req.body);
   //route(request_id, departmentid, id_project) {      
-  requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
+  const assignmentOptions = assignmentContextUtil.buildDepartmentRouteOptions(req, 'api');
+  requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate, assignmentOptions).then(function (updatedRequest) {
 
     winston.debug("department changed", updatedRequest);
 
     return res.json(updatedRequest);
   }).catch(function (error) {
     // TODO: error log removed due to attempt to reduces logs when no department is found
-    console.log('Error changing the department.', error)
     winston.verbose('Error changing the department.', error)
     return res.status(500).send({ success: false, msg: 'Error changing the department.' });
   })
@@ -651,14 +662,14 @@ router.put('/:requestid/agent', async (req, res) => {
   }
   winston.debug("departmentid after: " + departmentid);
 
-  requestService.route(req.params.requestid, departmentid, req.projectid, true, undefined).then(function (updatedRequest) {
+  const assignmentOptions = assignmentContextUtil.buildAutoRouteOptions(req, 'chatbot');
+  requestService.route(req.params.requestid, departmentid, req.projectid, true, undefined, assignmentOptions).then(function (updatedRequest) {
 
     winston.debug("department changed", updatedRequest);
 
     return res.json(updatedRequest);
   }).catch(function (error) {
     // TODO: error log removed due to attempt to reduces logs when no department is found
-    console.log('Error changing the department.', error)
     winston.verbose('Error changing the department.', error)
     return res.status(500).send({ success: false, msg: 'Error changing the department.' });
   })

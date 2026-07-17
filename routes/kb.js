@@ -30,6 +30,11 @@ const KB_WEBHOOK_TOKEN = process.env.KB_WEBHOOK_TOKEN || 'kbcustomtoken';
 const PINECONE_RERANKING = process.env.PINECONE_RERANKING === true || process.env.PINECONE_RERANKING === "true";
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 
+let rerankingOff = false;
+if (process.env.RERANKING_OFF && (process.env.RERANKING_OFF === "true" || process.env.RERANKING_OFF === true)) {
+  rerankingOff = true;
+}
+
 
 let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
 let uploadlimits = undefined;
@@ -894,7 +899,13 @@ router.delete('/deleteall', async (req, res) => {
 
   aiService.deleteNamespace(data).then((resp) => {
     winston.debug("delete namespace resp: ", resp.data);
-    kbEvent.emit('kb.contents.delete', { req, namespace_id, project_id });
+    kbEvent.emit('kb.contents.delete', {
+      req,
+      namespace_id,
+      project_id,
+      namespace_name: namespace.name,
+      deleteMode: 'contents_only'
+    });
     res.status(200).send(resp.data);
   }).catch((err) => {
     winston.error("delete namespace err: ", err);
@@ -1443,7 +1454,14 @@ router.delete('/namespace/:id', async (req, res) => {
       })
       winston.debug("delete all contents response: ", deleteResponse);
 
-      kbEvent.emit('kb.contents.delete', { req, namespace_id, project_id, deletedCount: deleteResponse?.deletedCount });
+      kbEvent.emit('kb.contents.delete', {
+        req,
+        namespace_id,
+        project_id,
+        namespace_name: namespace.name,
+        deletedCount: deleteResponse?.deletedCount,
+        deleteMode: 'contents_only'
+      });
 
       return res.status(200).send({ success: true, message: "All contents deleted successfully" })
 
@@ -1484,6 +1502,14 @@ router.delete('/namespace/:id', async (req, res) => {
         return res.status(500).send({ success: false, error: err });
       })
       winston.debug("delete namespace response: ", deleteNamespaceResponse);
+
+      kbEvent.emit('kb.namespace.delete', {
+        req,
+        namespace_id,
+        project_id,
+        namespace_name: namespace.name,
+        deletedCount: deleteResponse?.deletedCount
+      });
 
       return res.status(200).send({ success: true, message: "Namespace deleted succesfully" })
 
@@ -1757,6 +1783,18 @@ router.post('/', async (req, res) => {
       }
 
       aiManager.scheduleScrape([json], namespace.hybrid);
+
+      kbEvent.emit('kb.contents.add', {
+        req,
+        project_id: id_project,
+        namespace_id: namespace_id,
+        namespace_name: namespace.name,
+        contentAddType: 'content',
+        count: 1,
+        type: saved_kb.type,
+        source: saved_kb.source || saved_kb.name
+      });
+
       return res.status(200).send(raw_content);
 
     }
@@ -1825,6 +1863,14 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
   try {
     const result = await aiManager.addMultipleUrls(namespace, list, options);
+    kbEvent.emit('kb.contents.add', {
+      req,
+      project_id: id_project,
+      namespace_id: namespace_id,
+      namespace_name: namespace.name,
+      contentAddType: 'url_list',
+      count: list.length
+    });
     return res.status(200).send(result);
   } catch (err) {
     winston.error("addMultipleUrls error: ", err)
@@ -1931,6 +1977,16 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
         }
 
         aiManager.scheduleScrape(resources, hybrid);
+
+        kbEvent.emit('kb.contents.add', {
+          req,
+          project_id: project_id,
+          namespace_id: namespace_id,
+          namespace_name: namespace.name,
+          contentAddType: 'csv',
+          count: kbs.length
+        });
+
         return res.status(200).send(result);
 
       }).catch((err) => {
@@ -2068,6 +2124,18 @@ router.post('/sitemap/import', async (req, res) => {
       return res.status(200).send(result);
     }
     result.push(saved_content);
+
+    kbEvent.emit('kb.contents.add', {
+      req,
+      project_id: id_project,
+      namespace_id: namespace_id,
+      namespace_name: namespace.name,
+      contentAddType: 'sitemap',
+      count: urls.length,
+      type: 'sitemap',
+      source: source
+    });
+
     return res.status(200).send(result);
   } catch (err) {
     return res.status(500).send({ success: false, error: "Unable to add multiple urls from sitemap due to an error." });
@@ -2279,6 +2347,29 @@ router.delete('/:kb_id', async (req, res) => {
   data.engine = namespace.engine || default_engine;
   winston.verbose("/:delete_id data: ", data);
 
+  const emitKbContentDelete = (deletedKb) => {
+    const content = deletedKb || kb;
+    const contentSnapshot = content.toObject ? content.toObject() : content;
+    kbEvent.emit('kb.content.delete', {
+      req,
+      kb_id,
+      project_id,
+      namespace_id,
+      namespace_name: namespace.name,
+      kb: {
+        _id: contentSnapshot._id,
+        name: contentSnapshot.name,
+        source: contentSnapshot.source,
+        type: contentSnapshot.type
+      }
+    });
+  };
+
+  if (process.env.NODE_ENV === 'test') {
+    emitKbContentDelete(kb);
+    return res.status(200).send({ success: true, message: "Content deleted successfully" });
+  }
+
   aiService.deleteIndex(data).then((resp) => {
     winston.debug("delete resp: ", resp.data);
     if (resp.data.success === true) {
@@ -2288,6 +2379,7 @@ router.delete('/:kb_id', async (req, res) => {
           winston.error("Delete kb error: ", err);
           return res.status(500).send({ success: false, error: err });
         }
+        emitKbContentDelete(deletedKb);
         res.status(200).send(deletedKb);
       })
 
@@ -2303,6 +2395,7 @@ router.delete('/:kb_id', async (req, res) => {
           winston.verbose("Unable to delete the content in indexing status")
           return res.status(500).send({ success: false, error: "Unable to delete the content in indexing status" })
         } else {
+          emitKbContentDelete(deletedKb);
           res.status(200).send(deletedKb);
         }
       })

@@ -10,6 +10,7 @@ var RequestConstants = require("../../models/requestConstants");
 
 var cacheUtil = require('../../utils/cacheUtil');
 var cacheEnabler = require("../../services/cacheEnabler");
+var assignmentContextUtil = require('../../utils/assignmentContextUtil');
 
 
 var mongoose = require('mongoose');
@@ -515,7 +516,12 @@ router.post('/', function (req, res) {
           }else {
 
             // se gia in participants scarta
-            return requestService.addParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
+            return requestService.addParticipantByRequestId(
+              request_id,
+              id_project,
+              new_member,
+              assignmentContextUtil.buildInternalOptions('webhook', 'self_join')
+            ).then(function(updatedRequest) {
               winston.debug("Join memeber ok");
               return res.json(updatedRequest);
             }).catch(function(err){
@@ -563,7 +569,12 @@ router.post('/', function (req, res) {
 
     winston.verbose("Chat21WebHook: leaving member : " + new_member +" from the request with request_id: " + request_id +" from the project with id: " + id_project);
 
-    return requestService.removeParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
+    return requestService.removeParticipantByRequestId(
+      request_id,
+      id_project,
+      new_member,
+      assignmentContextUtil.buildLeaveParticipantOptions('webhook', new_member)
+    ).then(function(updatedRequest) {
       winston.debug("Leave memeber ok");
       return res.json(updatedRequest);
     }).catch(function(err){
