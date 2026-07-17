@@ -29,7 +29,7 @@ class ChatbotController {
   }
 
   export(chatbot, intents, intentsOnly, subagents) {
-
+    console.log("(controller) export intents: ", intents);
     if (intentsOnly) {
       return JSON.stringify({ intents: intents });
     }
@@ -227,10 +227,12 @@ class ChatbotController {
   async import(json, id_project, chatbot_id, create, replace, overwrite, user_id) {
     let chatbot;
 
+    console.log(`(controller) import - create ${create}, replace ${replace}, overwrite ${overwrite}`)
     if (create) {
       json.template = "empty";
       try {
         chatbot = await faqService.create(id_project, user_id, json);
+        console.log("chatbot created");
       } catch (err) {
         winston.error("(ChatbotController) import create error: ", err);
         throw new AppError(400, "Error creating new chatbot");
@@ -239,6 +241,7 @@ class ChatbotController {
       if (json.attributes) {
         this._rewriteRulesParticipants(json.attributes, chatbot._id);
         chatbot = await this.updatedChatbot(chatbot._id, id_project, { attributes: json.attributes });
+        console.log("chatbot updated with attributes rules");
       }
     } else {
       if (!chatbot_id) {
@@ -276,8 +279,10 @@ class ChatbotController {
     }
 
     await this._importIntents(chatbot._id, id_project, user_id, json.intents, overwrite);
+    console.log("intents imported");
     await this._importSubagents(chatbot, json.subagents, id_project, user_id, replace, overwrite);
-
+    console.log("subagents imported");
+    
     return chatbot;
   }
 

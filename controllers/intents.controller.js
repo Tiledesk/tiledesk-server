@@ -64,6 +64,7 @@ class IntentsController {
         this.create(chatbot_id, id_project, user_id, intent, options)
       )
     );
+    console.log("createMany result: ", result)
     return results
       .filter((r) => r.status === "fulfilled" && r.value)
       .map((r) => r.value);

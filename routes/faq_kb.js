@@ -1031,6 +1031,7 @@ router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), asyncHandler(
   const id_project = req.projectid;
   const exportGlobals = req.query.globals === 'true';
   const intentsOnly = req.query.intentsOnly === 'true';
+  console.log("(export) params: ", JSON.stringify(req.query));
 
   const chatbot = await chatbotController.getChatbotById(chatbot_id);
 
@@ -1040,7 +1041,7 @@ router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), asyncHandler(
 
   let intents = await intentsController.getIntents(chatbot_id);
   intents = intents.map(({ _id, id_project, topic, status, chatbot_id, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
-
+  console.log("(export) intents: ", JSON.stringify(intents));
   if (!exportGlobals) {
     winston.verbose("Delete globals from attributes")
     delete chatbot.attributes?.globals;
@@ -1053,6 +1054,7 @@ router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), asyncHandler(
   }));
 
   let exportData = chatbotController.export(chatbot, intents, intentsOnly, subagents);
+  console.log("(export) exportData: ", exportData);
   let filename = intentsOnly ? "intents.json" : "bot.json";
   res.set({ "Content-Disposition": `attachment; filename="${filename}"` });
   return res.send(exportData);
