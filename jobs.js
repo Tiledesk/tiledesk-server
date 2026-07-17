@@ -36,6 +36,7 @@ require('./services/mongoose-cache-fn')(mongoose);
 
 
 var config = require('./config/database');
+const multiWorkerQueue = require("@tiledesk/tiledesk-multi-worker");
 
 
 //override JOB_WORKER_ENABLED to false when you start jobs.js
@@ -95,8 +96,15 @@ async function main()
     let emailNotification = require('./pubmodules/emailNotification');
     jobsManager.listenEmailNotification(emailNotification);
 
+    let requestRetention = require('./pubmodules/retention').requestRetention;
+    jobsManager.listenRequestRetention(requestRetention);
+
+    let projectRequestsExpiresRecalc = require('./pubmodules/retention').projectRequestsExpiresRecalc;
+    jobsManager.listenProjectRequestsExpiresRecalc(projectRequestsExpiresRecalc);
+
    
     let activityArchiver = require('./pubmodules/activities').activityArchiver;    
+    console.log("\n\n (jobs) activityArchiver: ", activityArchiver);
     jobsManager.listenActivityArchiver(activityArchiver);
 
 

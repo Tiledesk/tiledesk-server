@@ -56,6 +56,9 @@ router.post('/', roleChecker.hasRole('admin'), async function (req, res) {
   }
 
   faqService.create(req.projectid, req.user.id, req.body).then((savedFaq_kb) => {
+    if (req.query.skip_activity !== 'true') {
+      botEvent.emit('faqbot.created', { req, chatbot: savedFaq_kb });
+    }
     res.status(200).send(savedFaq_kb);
   }).catch((err) => {
     res.status(500).send({ succes: false, error: err })
@@ -273,7 +276,7 @@ router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) 
 
   try {
     //  fork(id_faq_kb, api_url, token, project_id)
-    let forked = await cs.fork(chatbot_id, api_url, token, current_project_id);
+    let forked = await cs.fork(chatbot_id, api_url, token, current_project_id, { forPublish: true });
     // winston.debug("forked: ", forked)
 
     let forkedChatBotId = forked.bot_id;
@@ -297,6 +300,13 @@ router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) 
     cs.setModified(id_faq_kb, false);
 
     botEvent.emit('faqbot.update', updatedOriginalChabot);
+
+    botEvent.emit('faqbot.publish', {
+      req: req,
+      chatbot: updatedOriginalChabot,
+      publishedBotId: forkedChatBotId,
+      release_note: release_note
+    });
 
     return res.status(200).send({ message: "Chatbot published successfully", bot_id: forkedChatBotId });
 
@@ -359,6 +369,13 @@ router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscripti
     }
 
     botEvent.emit('faqbot.update', updatedFaq_kb);
+
+    // A soft-delete is performed via PUT by setting trashed: true (the schema applies a TTL).
+    // Emit faqbot.deleted so the deletion is tracked just like the hard-delete endpoint.
+    if (req.body.trashed === true || req.body.trashed === 'true') {
+      botEvent.emit('faqbot.deleted', { req, chatbot: updatedFaq_kb });
+    }
+
     res.json(updatedFaq_kb);
   });
 });
@@ -464,6 +481,7 @@ router.delete('/:faq_kbid', roleChecker.hasRole('admin'), function (req, res) {
      * WARNING: faq_kb is the operation result, not the faq_kb object. The event subscriber will not receive the object as expected.
      */
     botEvent.emit('faqbot.delete', faq_kb);
+    botEvent.emit('faqbot.deleted', { req, chatbot: faq_kb });
     res.status(200).send({ success: true, message: "Chatbot with id " + req.params.faq_kbid + " deleted successfully" })
   });
 });
@@ -521,7 +539,7 @@ router.get('/:faq_kbid/published', roleChecker.hasRoleOrTypes('admin', ['bot', '
   const id_project = req.projectid;
   const chatbot_id = req.params.faq_kbid;
 
-  let published_chatbots = await faq_kb.find({ id_project: id_project, root_id: chatbot_id })
+  let published_chatbots = await faq_kb.find({ id_project: id_project, parent_id: chatbot_id })
     .sort({ publishedAt: -1 })
     .limit(100)
     .populate('publishedBy', '_id firstname lastname email')
@@ -727,6 +745,10 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
     return res.status(500).send({ success: false, message: "Unable to import intents in the new chatbot" });
   }
 
+  if (req.query.for_publish !== 'true') {
+    botEvent.emit('faqbot.created', { req, chatbot: savedChatbot, id_project: landing_project_id });
+  }
+
   return res.status(200).send({ message: "Chatbot forked successfully", bot_id: savedChatbot._id });
 
 })
@@ -749,6 +771,8 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
   }
 
   const chatbot = await chatbotController.import(json, id_project, chatbot_id, create, replace, overwrite, user_id);
+  botEvent.emit('faqbot.create', chatbot);
+  botEvent.emit('faqbot.created', { req, chatbot: chatbot });
   return res.status(200).send(chatbot);
 }))
 
@@ -772,7 +796,8 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
 //     json = req.body;
 //   }
 
-//   winston.debug("json source " + json_string)
+    // botEvent.emit('faqbot.create', savedChatbot);
+    // botEvent.emit('faqbot.created', { req, chatbot: savedChatbot });
 
 //   // ****************************
 //   // **** CREATE TRUE option ****
