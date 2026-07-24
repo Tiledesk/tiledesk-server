@@ -1264,9 +1264,9 @@ router.get('/', function (req, res, next) {
   }
 
   // If the user has the permission to view the lead history, remove the participants filter
-  // if(projectuser.hasPermissionOrRole('request_view_lead_history', [])){
-  //   delete query['participants']
-  // }
+  if(projectuser && projectuser.hasPermissionOrRole('request_view_lead_history', [])){
+    delete query['participants']
+  }
 
 
   if (req.query.dept_id) {
